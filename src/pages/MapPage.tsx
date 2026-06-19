@@ -4,19 +4,31 @@ import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { usePois } from '@/hooks/usePois'
+import { useVisitedPois } from '@/hooks/useVisitedPois'
 import type { Poi } from '@/types'
 
 export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { pois } = usePois(position)
+  const { visited, markVisited } = useVisitedPois()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
 
   const handlePoiClick = useCallback((poi: Poi) => setSelectedPoi(poi), [])
   const handleClose = useCallback(() => setSelectedPoi(null), [])
+  const handleCheckIn = useCallback(() => {
+    if (selectedPoi) {
+      markVisited(selectedPoi.id)
+    }
+  }, [selectedPoi, markVisited])
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
-      <MapView position={position} pois={pois} onPoiClick={handlePoiClick} />
+      <MapView
+        position={position}
+        pois={pois}
+        visitedPois={visited}
+        onPoiClick={handlePoiClick}
+      />
 
       {/* Top bar */}
       <div style={{
@@ -50,7 +62,13 @@ export function MapPage() {
       </div>
 
       {selectedPoi && (
-        <PoiDetailPanel poi={selectedPoi} onClose={handleClose} />
+        <PoiDetailPanel
+          poi={selectedPoi}
+          isVisited={visited.has(selectedPoi.id)}
+          position={position}
+          onCheckIn={handleCheckIn}
+          onClose={handleClose}
+        />
       )}
     </div>
   )

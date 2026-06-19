@@ -1,12 +1,26 @@
-import type { Poi } from '@/types'
+import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { haversineDistance } from '@/lib/mapUtils'
+import type { Poi, PlayerPosition } from '@/types'
+
+const CHECKIN_RADIUS_M = 50
 
 interface PoiDetailPanelProps {
   poi: Poi
+  isVisited: boolean
+  position: PlayerPosition | null
+  onCheckIn: () => void
   onClose: () => void
 }
 
-export function PoiDetailPanel({ poi, onClose }: PoiDetailPanelProps) {
+export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }: PoiDetailPanelProps) {
+  const { mode } = useConnectionMode()
   const isPermanent = poi.kind === 'permanent'
+
+  const distanceM = position
+    ? Math.round(haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon))
+    : null
+
+  const canCheckIn = mode === 'offline' || (distanceM !== null && distanceM <= CHECKIN_RADIUS_M)
 
   return (
     <div style={{
@@ -14,18 +28,15 @@ export function PoiDetailPanel({ poi, onClose }: PoiDetailPanelProps) {
       bottom: 0, left: 0, right: 0,
       background: '#ffffff',
       borderRadius: '20px 20px 0 0',
-      padding: '20px 20px 32px',
+      padding: '20px 20px 36px',
       boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
       zIndex: 10,
     }}>
       {/* Handle bar */}
-      <div style={{
-        width: 36, height: 4, borderRadius: 2,
-        background: '#e2e8f0', margin: '0 auto 16px',
-      }} />
+      <div style={{ width: 36, height: 4, borderRadius: 2, background: '#e2e8f0', margin: '0 auto 16px' }} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{
             fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
             background: isPermanent ? '#fff7ed' : '#faf5ff',
@@ -33,17 +44,17 @@ export function PoiDetailPanel({ poi, onClose }: PoiDetailPanelProps) {
           }}>
             {isPermanent ? 'Landmark' : 'Event'}
           </span>
-          {poi.activeUntil && (
-            <span style={{ fontSize: 11, color: '#94a3b8' }}>
-              Until {new Date(poi.activeUntil).toLocaleDateString()}
-            </span>
-          )}
           {poi.points !== undefined && (
             <span style={{
               fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
               background: '#f0fdf4', color: '#16a34a',
             }}>
               +{poi.points} pts
+            </span>
+          )}
+          {distanceM !== null && mode === 'online' && (
+            <span style={{ fontSize: 11, color: '#94a3b8' }}>
+              {distanceM < 1000 ? `${distanceM}m away` : `${(distanceM / 1000).toFixed(1)}km away`}
             </span>
           )}
         </div>
@@ -53,7 +64,7 @@ export function PoiDetailPanel({ poi, onClose }: PoiDetailPanelProps) {
             background: '#f1f5f9', border: 'none', cursor: 'pointer',
             width: 28, height: 28, borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, color: '#64748b', lineHeight: 1,
+            fontSize: 16, color: '#64748b',
           }}
           aria-label="Close"
         >
@@ -75,7 +86,7 @@ export function PoiDetailPanel({ poi, onClose }: PoiDetailPanelProps) {
           rel="noopener noreferrer"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
-            marginTop: 14, fontSize: 13, fontWeight: 500,
+            marginTop: 12, fontSize: 13, fontWeight: 500,
             color: '#6366f1', textDecoration: 'none',
           }}
         >
@@ -83,17 +94,40 @@ export function PoiDetailPanel({ poi, onClose }: PoiDetailPanelProps) {
         </a>
       )}
 
-      {poi.creatureRewardId && (
-        <div style={{
-          marginTop: 14, padding: '10px 14px', borderRadius: 12,
-          background: '#f0fdf4', display: 'flex', alignItems: 'center', gap: 8,
-        }}>
-          <span style={{ fontSize: 18 }}>🌿</span>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#15803d' }}>
-            Visit this landmark to unlock a creature
-          </span>
-        </div>
-      )}
+      {/* Check-in button */}
+      <div style={{ marginTop: 20 }}>
+        {isVisited ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '12px 16px', borderRadius: 12, background: '#f0fdf4',
+          }}>
+            <span style={{ fontSize: 20 }}>😊</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#15803d' }}>You visited this place!</span>
+          </div>
+        ) : canCheckIn ? (
+          <button
+            onClick={onCheckIn}
+            style={{
+              width: '100%', padding: '14px', borderRadius: 14, border: 'none',
+              background: '#6366f1', color: 'white',
+              fontSize: 15, fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(99,102,241,0.35)',
+            }}
+          >
+            {mode === 'offline' ? '✓ Check in (offline)' : '✓ Check in'}
+          </button>
+        ) : (
+          <div style={{
+            padding: '12px 16px', borderRadius: 12, background: '#f8fafc',
+            textAlign: 'center',
+          }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+              Get within {CHECKIN_RADIUS_M}m to check in
+              {distanceM !== null && ` (currently ${distanceM}m away)`}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

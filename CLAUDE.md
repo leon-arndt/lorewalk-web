@@ -4,6 +4,10 @@ A browser-based PWA companion to the Lorewalk Android game. Players can explore 
 
 The primary Lorewalk game and its design documents live in `../Lorewalk` (Unity/ARCore). This repo shares the same Supabase backend.
 
+## Game Design
+
+All game design decisions — POI system, check-in mechanic, creature system, UI/UX choices, and monetisation — are documented in [GameDesign.md](GameDesign.md). Read it before making changes to game mechanics or UI flows.
+
 ## Tech Stack
 
 - **Framework**: React 19 + TypeScript (Vite)

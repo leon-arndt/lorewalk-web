@@ -1,18 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SINGAPORE_POIS } from '@/data/singapore-pois'
-import { haversineDistance } from '@/lib/mapUtils'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import type { Poi, PlayerPosition } from '@/types'
 
 const POI_RADIUS_M = 1_000
-
-function nearbyOfflinePois(position: PlayerPosition): Poi[] {
-  return SINGAPORE_POIS.filter(
-    (poi) =>
-      haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon) <= POI_RADIUS_M,
-  )
-}
 
 export function usePois(position: PlayerPosition | null) {
   const { mode } = useConnectionMode()
@@ -20,12 +12,14 @@ export function usePois(position: PlayerPosition | null) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!position) return
-
+    // Offline: show all POIs immediately — no GPS needed, no proximity filter.
+    // When online and in Singapore, switch to Supabase for live proximity queries.
     if (mode === 'offline') {
-      setPois(nearbyOfflinePois(position))
+      setPois(SINGAPORE_POIS)
       return
     }
+
+    if (!position) return
 
     let cancelled = false
 
