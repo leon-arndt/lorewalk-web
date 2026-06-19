@@ -4,33 +4,30 @@ import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { usePois } from '@/hooks/usePois'
-import { useVisitedPois } from '@/hooks/useVisitedPois'
+import { useProfile } from '@/contexts/ProfileContext'
 import type { Poi } from '@/types'
 
 export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { pois } = usePois(position)
-  const { visited, markVisited } = useVisitedPois()
+  const { visitedPois, addVisit } = useProfile()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
 
   const handlePoiClick = useCallback((poi: Poi) => setSelectedPoi(poi), [])
   const handleClose = useCallback(() => setSelectedPoi(null), [])
   const handleCheckIn = useCallback(() => {
-    if (selectedPoi) {
-      markVisited(selectedPoi.id)
-    }
-  }, [selectedPoi, markVisited])
+    if (selectedPoi) addVisit(selectedPoi)
+  }, [selectedPoi, addVisit])
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       <MapView
         position={position}
         pois={pois}
-        visitedPois={visited}
+        visitedPois={visitedPois}
         onPoiClick={handlePoiClick}
       />
 
-      {/* Top bar */}
       <div style={{
         position: 'absolute', top: 12, left: 12, right: 12,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -39,7 +36,6 @@ export function MapPage() {
         <div style={{ pointerEvents: 'auto' }}>
           <ModeToggle />
         </div>
-
         {gpsLoading && (
           <div style={{
             background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
@@ -49,7 +45,6 @@ export function MapPage() {
             Locating…
           </div>
         )}
-
         {gpsError && !position && (
           <div style={{
             background: '#fff1f2', color: '#e11d48', fontSize: 12,
@@ -64,7 +59,7 @@ export function MapPage() {
       {selectedPoi && (
         <PoiDetailPanel
           poi={selectedPoi}
-          isVisited={visited.has(selectedPoi.id)}
+          isVisited={visitedPois.has(selectedPoi.id)}
           position={position}
           onCheckIn={handleCheckIn}
           onClose={handleClose}

@@ -46,3 +46,32 @@ export interface PlayerPosition {
   accuracy: number
   timestamp: number
 }
+
+export interface VisitRecord {
+  poiId: string
+  poiName: string
+  poiCategory: string
+  visitedAt: string       // ISO date string
+  xpEarned: number
+}
+
+export interface Achievement {
+  id: string
+  name: string
+  description: string
+  icon: string
+  unlockedAt: string | null  // ISO date, null if locked
+}
+
+export interface PlayerProfile {
+  id: string
+  displayName: string
+  level: number
+  xp: number              // XP within current level (resets on level up)
+  totalXp: number         // cumulative, never resets
+  visitHistory: VisitRecord[]
+  achievements: Achievement[]
+  createdAt: string
+  lastVisitDate: string | null  // ISO date of last check-in (for streak)
+  streakDays: number
+}
