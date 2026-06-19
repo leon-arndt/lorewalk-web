@@ -10,13 +10,15 @@ export default function App() {
   return (
     <ConnectionModeProvider>
       <BrowserRouter>
-        <div className="flex flex-col h-full">
-          <Routes>
-            <Route path="/" element={<MapPage />} />
-            <Route path="/creatures" element={<CreaturesPage />} />
-            <Route path="/expeditions" element={<ExpeditionsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Routes>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+          <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+            <Routes>
+              <Route path="/" element={<MapPage />} />
+              <Route path="/creatures" element={<CreaturesPage />} />
+              <Route path="/expeditions" element={<ExpeditionsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Routes>
+          </div>
           <BottomNav />
         </div>
       </BrowserRouter>

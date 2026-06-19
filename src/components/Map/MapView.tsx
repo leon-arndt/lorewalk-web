@@ -28,13 +28,12 @@ export function MapView({ position, pois, onPoiClick }: MapViewProps) {
   const playerMarkerRef = useRef<maplibregl.Marker | null>(null)
   const poiMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
 
-  // Initialise map once
   useEffect(() => {
     if (!containerRef.current) return
 
     const initialCenter: [number, number] = position
       ? [position.longitude, position.latitude]
-      : [103.8198, 1.3521] // Singapore default
+      : [103.8198, 1.3521]
 
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -47,7 +46,6 @@ export function MapView({ position, pois, onPoiClick }: MapViewProps) {
     return () => { map.remove(); mapRef.current = null }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Track player position
   useEffect(() => {
     const map = mapRef.current
     if (!map || !position) return
@@ -56,11 +54,10 @@ export function MapView({ position, pois, onPoiClick }: MapViewProps) {
 
     if (!playerMarkerRef.current) {
       const el = document.createElement('div')
-      el.className = 'player-dot'
       el.style.cssText = `
-        width: 20px; height: 20px; border-radius: 50%;
+        width: 18px; height: 18px; border-radius: 50%;
         background: #6366f1; border: 3px solid white;
-        box-shadow: 0 0 0 4px rgba(99,102,241,0.3);
+        box-shadow: 0 0 0 5px rgba(99,102,241,0.25), 0 2px 8px rgba(0,0,0,0.2);
       `
       playerMarkerRef.current = new maplibregl.Marker({ element: el })
         .setLngLat(lngLat)
@@ -72,14 +69,12 @@ export function MapView({ position, pois, onPoiClick }: MapViewProps) {
     map.easeTo({ center: lngLat, duration: 500 })
   }, [position])
 
-  // Sync POI markers
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
 
     const currentIds = new Set(pois.map((p) => p.id))
 
-    // Remove stale markers
     poiMarkersRef.current.forEach((marker, id) => {
       if (!currentIds.has(id)) {
         marker.remove()
@@ -87,23 +82,25 @@ export function MapView({ position, pois, onPoiClick }: MapViewProps) {
       }
     })
 
-    // Add new markers
     pois.forEach((poi) => {
       if (poiMarkersRef.current.has(poi.id)) return
 
-      const el = document.createElement('div')
       const isPermanent = poi.kind === 'permanent'
+      const el = document.createElement('div')
       el.style.cssText = `
-        width: 28px; height: 28px; border-radius: 50%;
-        background: ${isPermanent ? '#f59e0b' : '#a855f7'};
-        border: 2px solid white; cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        width: 36px; height: 36px; border-radius: 50%;
+        background: ${isPermanent ? '#fff7ed' : '#faf5ff'};
+        border: 2px solid ${isPermanent ? '#fb923c' : '#c084fc'};
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
         display: flex; align-items: center; justify-content: center;
-        font-size: 14px;
+        font-size: 16px;
+        transition: transform 0.15s ease;
       `
       el.textContent = isPermanent ? '🏛' : '✨'
       el.title = poi.name
-
+      el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.15)' })
+      el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)' })
       el.addEventListener('click', () => onPoiClick(poi))
 
       const marker = new maplibregl.Marker({ element: el })
@@ -114,5 +111,10 @@ export function MapView({ position, pois, onPoiClick }: MapViewProps) {
     })
   }, [pois, onPoiClick])
 
-  return <div ref={containerRef} className="w-full h-full" />
+  return (
+    <div
+      ref={containerRef}
+      style={{ position: 'absolute', inset: 0 }}
+    />
+  )
 }

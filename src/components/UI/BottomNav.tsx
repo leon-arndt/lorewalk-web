@@ -9,19 +9,32 @@ const tabs = [
 
 export function BottomNav() {
   return (
-    <nav className="flex-shrink-0 flex bg-[#1a0a2e] border-t border-white/10 pb-safe">
+    <nav style={{
+      display: 'flex',
+      background: '#ffffff',
+      borderTop: '1px solid #f1f5f9',
+      boxShadow: '0 -2px 12px rgba(0,0,0,0.06)',
+    }}>
       {tabs.map(({ to, label, icon }) => (
         <NavLink
           key={to}
           to={to}
           end={to === '/'}
-          className={({ isActive }) =>
-            `flex-1 flex flex-col items-center gap-0.5 py-2 text-xs transition-colors ${
-              isActive ? 'text-indigo-400' : 'text-white/40'
-            }`
-          }
+          style={({ isActive }) => ({
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            padding: '10px 0 12px',
+            textDecoration: 'none',
+            fontSize: 11,
+            fontWeight: 500,
+            color: isActive ? '#6366f1' : '#94a3b8',
+            transition: 'color 0.15s ease',
+          })}
         >
-          <span className="text-xl leading-none">{icon}</span>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>{icon}</span>
           <span>{label}</span>
         </NavLink>
       ))}

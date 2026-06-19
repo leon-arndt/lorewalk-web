@@ -15,23 +15,35 @@ export function MapPage() {
   const handleClose = useCallback(() => setSelectedPoi(null), [])
 
   return (
-    <div className="relative flex-1 overflow-hidden">
+    <div style={{ position: 'absolute', inset: 0 }}>
       <MapView position={position} pois={pois} onPoiClick={handlePoiClick} />
 
       {/* Top bar */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-        <div className="pointer-events-auto">
+      <div style={{
+        position: 'absolute', top: 12, left: 12, right: 12,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        pointerEvents: 'none',
+      }}>
+        <div style={{ pointerEvents: 'auto' }}>
           <ModeToggle />
         </div>
 
         {gpsLoading && (
-          <div className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full pointer-events-none">
+          <div style={{
+            background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
+            color: '#64748b', fontSize: 12, padding: '6px 12px',
+            borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+          }}>
             Locating…
           </div>
         )}
 
         {gpsError && !position && (
-          <div className="bg-red-900/80 text-red-200 text-xs px-3 py-1.5 rounded-full pointer-events-none">
+          <div style={{
+            background: '#fff1f2', color: '#e11d48', fontSize: 12,
+            padding: '6px 12px', borderRadius: 20,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+          }}>
             GPS unavailable
           </div>
         )}

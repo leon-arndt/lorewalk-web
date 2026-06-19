@@ -1,8 +1,17 @@
 export function ExpeditionsPage() {
   return (
-    <div className="flex-1 overflow-y-auto bg-[#1a0a2e] p-4 text-white">
-      <h1 className="text-xl font-semibold mb-4">Expeditions</h1>
-      <p className="text-white/40 text-sm">Active expeditions will appear here.</p>
+    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', padding: 20 }}>
+      <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>Expeditions</h1>
+      <p style={{ margin: '0 0 24px', fontSize: 14, color: '#94a3b8' }}>Send creatures out to explore</p>
+      <div style={{
+        background: '#fff', borderRadius: 16, padding: 24,
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🧭</div>
+        <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
+          No active expeditions. Collect creatures first to send them out.
+        </p>
+      </div>
     </div>
   )
 }
