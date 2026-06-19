@@ -1,4 +1,4 @@
-import type { Achievement, PlayerProfile, VisitRecord } from '@/types'
+import type { Achievement, Egg, EggTier, HatchedCreature, PlayerProfile, Poi, VisitRecord } from '@/types'
 
 // XP needed to go from level N to level N+1
 export function xpForNextLevel(level: number): number {
@@ -89,13 +89,82 @@ export function checkAchievements(
   )
 }
 
+// ─── Egg / Creature system ───────────────────────────────────────────────────
+
+export const MAX_EGG_SLOTS = 3
+
+const CREATURE_BY_CATEGORY: Record<string, { species: string; emoji: string; tier: EggTier }> = {
+  heritage:  { species: 'Stonewarden', emoji: '🗿', tier: 'common' },
+  landmark:  { species: 'Pathfinder',  emoji: '🧭', tier: 'common' },
+  arts:      { species: 'Muse',        emoji: '🎨', tier: 'common' },
+  religious: { species: 'Luminary',    emoji: '🌟', tier: 'rare' },
+  museum:    { species: 'Archivist',   emoji: '📜', tier: 'rare' },
+  nature:    { species: 'Fernspark',   emoji: '🌿', tier: 'rare' },
+}
+
+const FALLBACK_CREATURE = { species: 'Wanderer', emoji: '✨', tier: 'common' as EggTier }
+
+const TIER_VISITS: Record<EggTier, number> = { common: 5, rare: 8 }
+
+function creatureForCategory(category: string) {
+  return CREATURE_BY_CATEGORY[category] ?? FALLBACK_CREATURE
+}
+
+export function createEgg(poi: Poi): Egg {
+  const category = poi.category ?? 'landmark'
+  const { tier } = creatureForCategory(category)
+  return {
+    id: `egg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    poiId: poi.id,
+    poiName: poi.name,
+    poiCategory: category,
+    tier,
+    visitsRequired: TIER_VISITS[tier],
+    visitsProgress: 0,
+    acquiredAt: new Date().toISOString(),
+  }
+}
+
+export function hatchEgg(egg: Egg): HatchedCreature {
+  const { species, emoji } = creatureForCategory(egg.poiCategory)
+  return {
+    id: `creature_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    species,
+    emoji,
+    poiOriginId: egg.poiId,
+    poiOriginName: egg.poiName,
+    poiCategory: egg.poiCategory,
+    hatchedAt: new Date().toISOString(),
+    bondLevel: 1,
+  }
+}
+
+// Advance all eggs by 1 visit; split into still-incubating and newly-hatched.
+export function advanceEggs(eggs: Egg[]): { incubating: Egg[]; hatched: Egg[] } {
+  const incubating: Egg[] = []
+  const hatched: Egg[] = []
+  for (const egg of eggs) {
+    const updated = { ...egg, visitsProgress: egg.visitsProgress + 1 }
+    ;(updated.visitsProgress >= updated.visitsRequired ? hatched : incubating).push(updated)
+  }
+  return { incubating, hatched }
+}
+
 // ─── localStorage persistence ────────────────────────────────────────────────
 const STORAGE_KEY = 'lorewalk_profile'
 
 export function loadProfile(): PlayerProfile {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw) as PlayerProfile
+    if (raw) {
+      const parsed = JSON.parse(raw) as PlayerProfile
+      return {
+        ...parsed,
+        eggs: parsed.eggs ?? [],
+        hatchedCreatures: parsed.hatchedCreatures ?? [],
+        maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
+      }
+    }
   } catch { /* ignore */ }
 
   return {
@@ -109,6 +178,9 @@ export function loadProfile(): PlayerProfile {
     createdAt: new Date().toISOString(),
     lastVisitDate: null,
     streakDays: 0,
+    eggs: [],
+    hatchedCreatures: [],
+    maxEggSlots: MAX_EGG_SLOTS,
   }
 }
 

@@ -40,6 +40,30 @@ export interface Expedition {
   status: 'active' | 'returned'
 }
 
+export type EggTier = 'common' | 'rare'
+
+export interface Egg {
+  id: string
+  poiId: string
+  poiName: string
+  poiCategory: string
+  tier: EggTier
+  visitsRequired: number
+  visitsProgress: number
+  acquiredAt: string
+}
+
+export interface HatchedCreature {
+  id: string
+  species: string
+  emoji: string
+  poiOriginId: string
+  poiOriginName: string
+  poiCategory: string
+  hatchedAt: string
+  bondLevel: number
+}
+
 export interface PlayerPosition {
   latitude: number
   longitude: number
@@ -74,4 +98,7 @@ export interface PlayerProfile {
   createdAt: string
   lastVisitDate: string | null  // ISO date of last check-in (for streak)
   streakDays: number
+  eggs: Egg[]
+  hatchedCreatures: HatchedCreature[]
+  maxEggSlots: number
 }

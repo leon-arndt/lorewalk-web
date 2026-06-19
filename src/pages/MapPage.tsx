@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
@@ -10,14 +10,27 @@ import type { Poi } from '@/types'
 export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { pois } = usePois(position)
-  const { visitedPois, addVisit } = useProfile()
+  const { visitedPois, addVisit, justHatched, clearJustHatched } = useProfile()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
 
   const handlePoiClick = useCallback((poi: Poi) => setSelectedPoi(poi), [])
   const handleClose = useCallback(() => setSelectedPoi(null), [])
   const handleCheckIn = useCallback(() => {
     if (selectedPoi) addVisit(selectedPoi)
   }, [selectedPoi, addVisit])
+
+  // Show hatching toast
+  useEffect(() => {
+    if (justHatched.length === 0) return
+    const names = justHatched.map((c) => c.species).join(', ')
+    setToast(`🎉 ${names} hatched! Check Creatures →`)
+    const t = setTimeout(() => {
+      setToast(null)
+      clearJustHatched()
+    }, 4000)
+    return () => clearTimeout(t)
+  }, [justHatched, clearJustHatched])
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
@@ -55,6 +68,21 @@ export function MapPage() {
           </div>
         )}
       </div>
+
+      {/* Hatching toast */}
+      {toast && (
+        <div style={{
+          position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg, #818cf8, #c084fc)',
+          color: 'white', fontSize: 13, fontWeight: 600,
+          padding: '10px 20px', borderRadius: 24,
+          boxShadow: '0 4px 16px rgba(129,140,248,0.45)',
+          whiteSpace: 'nowrap', pointerEvents: 'none',
+          animation: 'fadeInUp 0.3s ease',
+        }}>
+          {toast}
+        </div>
+      )}
 
       {selectedPoi && (
         <PoiDetailPanel

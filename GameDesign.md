@@ -54,14 +54,45 @@ Inspired by geocaching. Players check in at POIs to mark them as visited and ear
 
 ---
 
-## Creature System (from Unity game — to be ported to PWA)
+## Creature System (implemented in PWA)
 
-- **Planter slots**: Points from POI visits grow creature seedlings. Multiple slots allow parallel growth.
-- **Plucking**: Grown creatures are "plucked" from the ground (AR on Android; TBD for web).
-- **Bonding**: Continued play strengthens bond, unlocking evolutions or new behaviours.
-- **Decorating**: Cosmetic items earned through play or the coin shop.
-- **Expedition slots**: Send creatures on timed away missions for rewards.
-- **Storage cap**: Limits how many creatures can be held at once.
+### Core loop
+1. **Check in at a POI** → receive an egg tied to that POI's category.
+2. **Visit more landmarks** → each check-in advances all incubating eggs.
+3. **Egg hatches** when it reaches its visit requirement → creature added to your collection.
+4. **Toast notification** appears on the map when a creature hatches.
+
+### Egg slots
+- Default **3 egg slots** (all incubate simultaneously).
+- A new egg is awarded on each check-in, as long as a slot is free.
+- If all 3 slots are full, the new check-in still advances existing eggs but no new egg is awarded.
+
+### Egg tiers and visit requirements
+| Tier | Visits to hatch | Categories |
+|---|---|---|
+| Common | 5 | Heritage, Landmark, Arts |
+| Rare | 8 | Religious, Museum, Nature |
+
+### Creatures by category
+| Category | Species | Emoji | Tier |
+|---|---|---|---|
+| Heritage | Stonewarden | 🗿 | Common |
+| Landmark | Pathfinder | 🧭 | Common |
+| Arts | Muse | 🎨 | Common |
+| Religious | Luminary | 🌟 | Rare |
+| Museum | Archivist | 📜 | Rare |
+| Nature | Fernspark | 🌿 | Rare |
+| Unknown | Wanderer | ✨ | Common |
+
+### Design rationale
+Pikmin Bloom uses steps (pedometer) to grow seedlings — web has no reliable step counter. We use **POI visits as the progress currency** instead. This fits the exploration theme better: visiting places is always the core action.
+
+### Future creature features
+- **Bonding XP**: visiting more POIs with a creature equipped levels up bond.
+- **Evolution**: bond level unlocks new visual forms.
+- **Expeditions**: send creatures on timed away missions for extra rewards.
+- **Storage cap**: limit collection size to create curation decisions.
+- **Duplicate handling**: same species collected twice could merge bond XP.
 
 ---
 
