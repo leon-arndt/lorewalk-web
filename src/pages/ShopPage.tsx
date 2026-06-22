@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import {
   creatureCap, creatureSlotsCost, eggSlotCost,
   CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
@@ -17,6 +18,7 @@ const COIN_PACKS = [
 
 export function ShopPage() {
   const { profile, buyCreatureSlots, buyEggSlot, addCoins } = useProfile()
+  const { mode } = useConnectionMode()
   const location = useLocation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const coinsRef = useRef<HTMLDivElement>(null)
@@ -50,10 +52,15 @@ export function ShopPage() {
   ]
 
   function buyPack(pack: typeof COIN_PACKS[number]) {
-    // TODO: Google Play Billing via Digital Goods API once wrapped as a TWA.
-    addCoins(pack.coins)
-    setFlash(`+${pack.coins} 🪙 (test)`)
-    setTimeout(() => setFlash(null), 2500)
+    // Offline = sandbox: simulate a successful purchase and grant coins instantly.
+    // Online will route through Google Play Billing (Digital Goods API in a TWA).
+    if (mode === 'offline') {
+      addCoins(pack.coins)
+      setFlash(`✓ +${pack.coins} 🪙 (test purchase)`)
+    } else {
+      setFlash('Real purchases need Google Play Billing — switch to Offline to test')
+    }
+    setTimeout(() => setFlash(null), 2800)
   }
 
   return (
@@ -112,8 +119,10 @@ export function ShopPage() {
       {/* Coins (real-money top-up) */}
       <section ref={coinsRef} id="coins" style={{ padding: '16px 16px 32px', scrollMarginTop: 8 }}>
         <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Coins</h2>
-        <p style={{ margin: '0 0 12px', fontSize: 12, color: '#94a3b8' }}>
-          Top up your coin balance. Buttons are a test stub until Google Play Billing is connected.
+        <p style={{ margin: '0 0 12px', fontSize: 12, color: mode === 'offline' ? '#16a34a' : '#94a3b8' }}>
+          {mode === 'offline'
+            ? 'Offline (test) mode — purchases are simulated and grant coins instantly.'
+            : 'Real purchases require Google Play Billing (not yet connected). Switch to Offline to test.'}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
           {COIN_PACKS.map((pack) => (
