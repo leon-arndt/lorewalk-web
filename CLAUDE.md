@@ -11,7 +11,7 @@ All game design decisions — POI system, check-in mechanic, creature system, UI
 ## Tech Stack
 
 - **Framework**: React 19 + TypeScript (Vite)
-- **Map**: MapLibre GL JS — OSM raster tiles at zoom 16, matching the Unity map exactly
+- **Map**: MapLibre GL JS — OpenFreeMap "Liberty" vector tiles (3D buildings, transit POIs), tilted 45°
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`) — same Supabase project as the Unity client
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite`)
 - **PWA**: `vite-plugin-pwa` + Workbox — `registerType: autoUpdate`
@@ -83,9 +83,9 @@ $$;
 
 ## Map
 
-- **Tile source**: `https://tile.openstreetmap.org/{z}/{x}/{y}.png` — development only. Switch to a self-hosted tile server or commercial provider before any public launch (OSM CDN terms prohibit high-volume use).
+- **Tile source**: OpenFreeMap "Liberty" vector style (`https://tiles.openfreemap.org/styles/liberty`) — free, no API key, includes 3D building extrusions and transit POIs. Community-funded with no SLA: self-host the tiles or use a paid provider before any high-volume public launch. (Previously flat raster OSM; the web map no longer matches the Unity client's 2D look — this was a deliberate aesthetic choice.)
+- **3D / pitch**: map initialises at `pitch: 45` so Liberty's building extrusions read as depth; `maxPitch: 70`.
 - **Default centre**: Singapore (1.3521, 103.8198) when GPS is unavailable.
-- **Zoom**: 16 (street-level, ~150m radius), matching the Unity map.
 - **POI colours**: gold `#f59e0b` = permanent, purple `#a855f7` = temporary — same convention as the Unity uGUI markers.
 
 ## PWA Notes

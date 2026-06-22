@@ -3,19 +3,10 @@ import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import type { Poi, PlayerPosition } from '@/types'
 
-const OSM_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  sources: {
-    osm: {
-      type: 'raster',
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxzoom: 19,
-    },
-  },
-  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
-}
+// OpenFreeMap "Liberty" — free vector tiles, no API key. Gives 3D building
+// extrusions, crisp labels, and transit POIs (bus/rail/MRT) out of the box.
+// Was previously flat raster OSM (https://tile.openstreetmap.org/...).
+const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
 // Bounding box that fits all 100 Singapore POIs with a small margin.
 const SINGAPORE_BOUNDS: maplibregl.LngLatBoundsLike = [
@@ -170,9 +161,11 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: OSM_STYLE,
+      style: MAP_STYLE,
       center: [103.8198, 1.3521],
       zoom: 11,
+      pitch: 45,        // tilt so Liberty's 3D buildings read as depth
+      maxPitch: 70,
     })
 
     map.on('load', () => {

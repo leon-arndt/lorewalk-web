@@ -50,7 +50,7 @@ Inspired by geocaching. Players check in at POIs to mark them as visited and ear
 - **Default zoom**: 14 (wider view to show more POIs at once).
 - **Default centre**: Singapore (1.3521, 103.8198) when GPS is unavailable.
 - **Player marker**: Indigo dot with a soft halo ring.
-- **Tile source**: OSM raster tiles (dev only — switch to self-hosted or commercial for production).
+- **Tile source**: OpenFreeMap "Liberty" vector tiles (free, no key) — 3D buildings, transit POIs, tilted 45° for depth. Community-funded; self-host or use a paid provider for high-volume production.
 
 ---
 
