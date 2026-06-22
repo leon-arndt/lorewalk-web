@@ -25,7 +25,7 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
   return (
     <div style={{
       position: 'absolute',
-      bottom: 0, left: 0, right: 0,
+      bottom: 60, left: 0, right: 0,
       background: 'rgba(255,255,255,0.72)',
       backdropFilter: 'blur(24px) saturate(180%)',
       WebkitBackdropFilter: 'blur(24px) saturate(180%)',
