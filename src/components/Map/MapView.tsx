@@ -85,20 +85,84 @@ function buildMarkerElement(poi: Poi, isVisited: boolean, onClick: () => void) {
   return { outer, inner }
 }
 
+export interface SquadMarker {
+  id: string
+  name: string
+  emojis: string[]
+  lat: number
+  lon: number
+  isActive: boolean
+  ready: boolean
+}
+
+function buildSquadElement(squad: SquadMarker, onClick: () => void) {
+  const outer = document.createElement('div')
+  outer.style.cssText = 'cursor:pointer;'
+
+  const inner = document.createElement('div')
+  inner.style.cssText = `
+    display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
+    width:42px;height:42px;padding:3px;border-radius:12px;
+    background:white;box-sizing:border-box;
+    border:2.5px solid ${squad.isActive ? '#6366f1' : '#cbd5e1'};
+    box-shadow:0 2px 8px rgba(0,0,0,0.18)${squad.isActive ? ',0 0 0 4px rgba(99,102,241,0.2)' : ''};
+    align-items:center;justify-items:center;
+  `
+  const filled = squad.emojis.slice(0, 4)
+  for (let i = 0; i < 4; i++) {
+    const cell = document.createElement('div')
+    cell.textContent = filled[i] ?? ''
+    cell.style.cssText = 'font-size:13px;line-height:1;'
+    inner.appendChild(cell)
+  }
+
+  if (squad.ready) {
+    const badge = document.createElement('div')
+    badge.textContent = '🎁'
+    badge.style.cssText = `
+      position:absolute;top:-8px;right:-8px;font-size:14px;
+      background:white;border-radius:50%;width:20px;height:20px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 1px 4px rgba(0,0,0,0.25);
+    `
+    outer.appendChild(badge)
+  }
+
+  const tooltip = document.createElement('div')
+  tooltip.textContent = squad.name + (squad.ready ? ' · ready!' : squad.isActive ? ' ★' : '')
+  tooltip.style.cssText = `
+    position:absolute;bottom:50px;left:50%;transform:translateX(-50%);
+    background:white;color:#1e293b;font-size:12px;font-weight:600;
+    padding:4px 10px;border-radius:8px;white-space:nowrap;
+    box-shadow:0 2px 10px rgba(0,0,0,0.12);pointer-events:none;
+    opacity:0;transition:opacity 0.12s ease;
+  `
+  outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
+  outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
+  outer.addEventListener('click', onClick)
+
+  outer.appendChild(inner)
+  outer.appendChild(tooltip)
+  return outer
+}
+
 interface MapViewProps {
   position: PlayerPosition | null
   pois: Poi[]
   visitedPois: Set<string>
   onPoiClick: (poi: Poi) => void
+  squadMarkers?: SquadMarker[]
+  onSquadClick?: (squadId: string) => void
 }
 
-export function MapView({ position, pois, visitedPois, onPoiClick }: MapViewProps) {
+export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const playerMarkerRef = useRef<maplibregl.Marker | null>(null)
   const poiMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const poiInnerEls = useRef<Map<string, HTMLElement>>(new Map())
+  const squadMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
 
   // Initialise map once; defer anything that needs map.project() until after 'load'.
   useEffect(() => {
@@ -194,6 +258,29 @@ export function MapView({ position, pois, visitedPois, onPoiClick }: MapViewProp
       if (el) applyMarkerVisual(el, poi, visitedPois.has(poi.id))
     })
   }, [visitedPois, pois])
+
+  // Rebuild stationed-squad markers whenever squads change. Only ever a few, so
+  // full teardown is simpler than diffing.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const sync = () => {
+      squadMarkersRef.current.forEach((m) => m.remove())
+      squadMarkersRef.current.clear()
+
+      squadMarkers.forEach((squad) => {
+        const el = buildSquadElement(squad, () => onSquadClick?.(squad.id))
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([squad.lon, squad.lat])
+          .addTo(map)
+        squadMarkersRef.current.set(squad.id, marker)
+      })
+    }
+
+    if (map.loaded()) sync()
+    else map.once('load', sync)
+  }, [squadMarkers, onSquadClick])
 
   return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
 }

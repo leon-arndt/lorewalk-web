@@ -168,6 +168,59 @@ Each check-in appends a `VisitRecord` (poiId, poiName, category, visitedAt ISO t
 
 ---
 
+## Squad System
+
+### Concept
+Players assemble **squads** — small teams built from creatures they have already hatched — and station them on the map. A squad's value comes from **type affinity**: when its members' types match the kind of place the player visits, the squad amplifies the rewards from that check-in. There is **no combat** — squads never fight, and a player can never "lose" one. The decision the system creates is *"which team fits where I'm exploring today?"*
+
+### Characters = creatures
+A squad slot holds one of the player's existing `HatchedCreature`s. A creature's **type is its `poiCategory`** (Heritage, Landmark, Arts, Religious, Museum, Nature). No separate character entity or type table is introduced — the 6 categories that already drive eggs and creatures *are* the type system.
+
+### Structure
+- **3 squads**, each with **4 slots** (12 slots total).
+- A creature may occupy **at most one slot across all squads** — assigning it elsewhere moves it.
+- Slots may be left empty.
+- One squad is the **active squad** (the equipped party). Only the active squad's affinity applies to check-ins.
+
+### Affinity, and the home/away tradeoff
+A squad's value is type affinity, but it can only be in one of two states at a time:
+
+- **Home (active):** the active squad boosts the player's *live* check-ins. On a check-in at a POI of category `C`, count active-squad members whose type equals `C` → `m` (0–4); the check-in's XP is multiplied by **`1 + 0.25 × m`** (a full 4-of-a-kind squad doubles XP). Non-matching members give no penalty.
+- **Away (on expedition):** the squad is sent to a place and earns an idle reward over time — but while away it gives **no live check-in boost**, even if it's the active squad.
+
+This is the core decision the system creates: *keep the squad home to amplify my own walking, or send it away for hands-off rewards?*
+
+### Expeditions (the "away" loop)
+- A squad is sent to a **visited POI** (the map already knows its coordinates). The expedition stores `startedAt` / `returnsAt`.
+- **Duration scales with distance** from the player's current position to the target (Singapore centre as fallback when GPS is off). `expeditionDurationMs = BASE (20s) + 8s/km`, capped at 6 min. DEV-tuned so nearby trips finish in ~half a minute; raise for production (idle reward over hours). The picker shows each destination's distance and ETA up front.
+- **Reward on collect (all scaled by affinity** to the *target's* category, so a Heritage-heavy squad sent to a Heritage site pays more):
+  - **XP** — `EXPEDITION_BASE_XP` (25) × affinity.
+  - **Coins** — `(10 + random 0–10)` × affinity. Coins are a soft currency (`profile.coins`); the coin shop in monetisation will spend them.
+  - **Egg** — `EXPEDITION_EGG_CHANCE` (40%) to also return an egg of the target's category, but **only if an egg slot is free**.
+- **Lifecycle:** *Send* → live countdown → **Collect** (awards the rewards, squad returns home) once returned, or **Recall** early for nothing. Roster editing is locked while away.
+- The expedition is **not** combat and cannot fail.
+
+### Squad vs. Expedition
+A **squad** is the team (a noun); an **expedition** is what a squad *does* (a verb). They are the same entities in two states — the squad you build is the thing you send. This is why the old standalone "Expeditions" tab was replaced by **Squads**: expeditions are now driven from the squad, not from lone creatures.
+
+### Squads on the map
+- A squad that's on an expedition shows a marker at the target POI: a 2×2 cluster of its member emojis.
+- The **active** squad's marker gets an indigo ring; a **returned** expedition shows a 🎁 badge.
+- Tapping a squad marker opens the Squads tab.
+
+### Persistence
+Squads live on `PlayerProfile` in `localStorage` alongside creatures. Three empty squads are created on first load. Older saved profiles without a `squads` field are migrated to three empty squads (same defensive pattern as `eggs`/`maxEggSlots`). `VisitRecord` now also stores `lat`/`lon` so visited POIs can be used as expedition targets.
+
+### Monetisation hook
+Default 3 squads / 4 slots. Extra squads or slots are a natural **coin-shop** item, consistent with the existing "extra planter/expedition slots" line — never pay-to-win, since affinity only amplifies the rewards the player already earns by walking.
+
+### Phasing
+- **Phase 1 (done, 2D):** squad data model, builder UI, active-squad affinity on check-in, the expedition home/away loop (send → countdown → collect/recall), and expedition markers on the map. Emoji/2D presentation only.
+- **Phase 2 (later):** 3D character viewer — a single Quaternius `.glb` rendered in an isolated `<canvas>` on the squad/creature detail screen (Three.js). Assets are CC0; lazy-loaded and excluded from the PWA precache.
+- **Phase 3 (later, gated on a Phase 2 perf check):** 3D squad models on the map itself via deck.gl `ScenegraphLayer`. Only if it benchmarks acceptably on a mid-range Android.
+
+---
+
 ## Future PWA Features (not yet designed)
 
 - Auth (Supabase) — sync visited POIs, creatures, and points across devices.

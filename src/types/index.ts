@@ -77,6 +77,34 @@ export interface VisitRecord {
   poiCategory: string
   visitedAt: string       // ISO date string
   xpEarned: number
+  lat?: number            // snapshot so visited POIs can be used as squad stations
+  lon?: number
+}
+
+export interface SquadExpedition {
+  poiId: string
+  poiName: string
+  poiCategory: string
+  lat: number
+  lon: number
+  startedAt: string   // ISO
+  returnsAt: string   // ISO
+}
+
+export interface Squad {
+  id: string
+  name: string
+  slots: (string | null)[]   // hatched-creature ids; length === SQUAD_SLOTS
+  expedition: SquadExpedition | null
+}
+
+// Target a squad can be sent to — drawn from a visited POI.
+export interface ExpeditionTarget {
+  poiId: string
+  poiName: string
+  poiCategory: string
+  lat: number
+  lon: number
 }
 
 export interface Achievement {
@@ -101,4 +129,13 @@ export interface PlayerProfile {
   eggs: Egg[]
   hatchedCreatures: HatchedCreature[]
   maxEggSlots: number
+  squads: Squad[]
+  activeSquadId: string | null
+  coins: number
+}
+
+export interface ExpeditionCollectResult {
+  xp: number
+  coins: number
+  egg: boolean   // whether an egg was also awarded
 }

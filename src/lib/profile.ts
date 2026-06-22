@@ -1,4 +1,4 @@
-import type { Achievement, Egg, EggTier, HatchedCreature, PlayerProfile, Poi, VisitRecord } from '@/types'
+import type { Achievement, Egg, EggTier, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
 
 // XP needed to go from level N to level N+1
 export function xpForNextLevel(level: number): number {
@@ -110,19 +110,22 @@ function creatureForCategory(category: string) {
   return CREATURE_BY_CATEGORY[category] ?? FALLBACK_CREATURE
 }
 
-export function createEgg(poi: Poi): Egg {
-  const category = poi.category ?? 'landmark'
+export function createEggFor(poiId: string, poiName: string, category: string): Egg {
   const { tier } = creatureForCategory(category)
   return {
     id: `egg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    poiId: poi.id,
-    poiName: poi.name,
+    poiId,
+    poiName,
     poiCategory: category,
     tier,
     visitsRequired: TIER_VISITS[tier],
     visitsProgress: 0,
     acquiredAt: new Date().toISOString(),
   }
+}
+
+export function createEgg(poi: Poi): Egg {
+  return createEggFor(poi.id, poi.name, poi.category ?? 'landmark')
 }
 
 export function hatchEgg(egg: Egg): HatchedCreature {
@@ -150,6 +153,71 @@ export function advanceEggs(eggs: Egg[]): { incubating: Egg[]; hatched: Egg[] } 
   return { incubating, hatched }
 }
 
+// ─── Squad system ─────────────────────────────────────────────────────────────
+
+export const MAX_SQUADS = 3
+export const SQUAD_SLOTS = 4
+
+export function createEmptySquads(): Squad[] {
+  return Array.from({ length: MAX_SQUADS }, (_, i) => ({
+    id: `squad_${i + 1}`,
+    name: `Squad ${i + 1}`,
+    slots: Array<string | null>(SQUAD_SLOTS).fill(null),
+    expedition: null,
+  }))
+}
+
+// Duration scales with how far the squad has to travel. DEV-tuned so nearby trips
+// finish in ~half a minute and the longest cross-island trip caps at a few minutes;
+// raise these for production (idle reward over hours).
+const EXPEDITION_BASE_MS = 20_000
+const EXPEDITION_MS_PER_KM = 8_000
+const EXPEDITION_MAX_MS = 6 * 60_000
+
+export function expeditionDurationMs(distanceM: number): number {
+  return Math.round(Math.min(EXPEDITION_MAX_MS, EXPEDITION_BASE_MS + (distanceM / 1000) * EXPEDITION_MS_PER_KM))
+}
+
+const EXPEDITION_BASE_XP = 25
+const EXPEDITION_BASE_COINS = 10
+export const EXPEDITION_EGG_CHANCE = 0.4
+
+// Reward multiplier: +25% per matching member whose type equals the category.
+export function affinityMultiplier(
+  squad: Squad | undefined,
+  category: string,
+  creaturesById: Map<string, HatchedCreature>,
+): number {
+  if (!squad) return 1
+  const matches = squad.slots.filter((id) => {
+    const c = id ? creaturesById.get(id) : undefined
+    return c?.poiCategory === category
+  }).length
+  return 1 + 0.25 * matches
+}
+
+export function isAway(squad: Squad): boolean {
+  return squad.expedition !== null
+}
+
+export function hasReturned(exp: SquadExpedition, now: number): boolean {
+  return now >= new Date(exp.returnsAt).getTime()
+}
+
+// XP + coins earned when an expedition is collected, scaled by type affinity to the
+// target. Coins carry a random spread so payouts feel varied. (Egg roll is handled by
+// the caller, which knows whether an egg slot is free.)
+export function rollExpeditionPayout(
+  squad: Squad,
+  creaturesById: Map<string, HatchedCreature>,
+): { xp: number; coins: number } {
+  if (!squad.expedition) return { xp: 0, coins: 0 }
+  const mult = affinityMultiplier(squad, squad.expedition.poiCategory, creaturesById)
+  const xp = Math.round(EXPEDITION_BASE_XP * mult)
+  const coins = Math.round((EXPEDITION_BASE_COINS + Math.random() * EXPEDITION_BASE_COINS) * mult)
+  return { xp, coins }
+}
+
 // ─── localStorage persistence ────────────────────────────────────────────────
 const STORAGE_KEY = 'lorewalk_profile'
 
@@ -158,11 +226,15 @@ export function loadProfile(): PlayerProfile {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as PlayerProfile
+      const squads = parsed.squads ?? createEmptySquads()
       return {
         ...parsed,
         eggs: parsed.eggs ?? [],
         hatchedCreatures: parsed.hatchedCreatures ?? [],
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
+        squads,
+        activeSquadId: parsed.activeSquadId ?? squads[0]?.id ?? null,
+        coins: parsed.coins ?? 0,
       }
     }
   } catch { /* ignore */ }
@@ -181,6 +253,9 @@ export function loadProfile(): PlayerProfile {
     eggs: [],
     hatchedCreatures: [],
     maxEggSlots: MAX_EGG_SLOTS,
+    squads: createEmptySquads(),
+    activeSquadId: 'squad_1',
+    coins: 0,
   }
 }
 

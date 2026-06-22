@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
@@ -13,10 +14,30 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
-  const { visitedPois, addVisit, justHatched, clearJustHatched } = useProfile()
+  const { profile, visitedPois, addVisit, justHatched, clearJustHatched } = useProfile()
+  const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
+  const squadMarkers = useMemo(() => {
+    const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
+    const now = Date.now()
+    return profile.squads
+      .filter((s) => s.expedition)
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        emojis: s.slots
+          .filter((id): id is string => !!id)
+          .map((id) => byId.get(id)?.emoji ?? '❓'),
+        lat: s.expedition!.lat,
+        lon: s.expedition!.lon,
+        isActive: profile.activeSquadId === s.id,
+        ready: now >= new Date(s.expedition!.returnsAt).getTime(),
+      }))
+  }, [profile.squads, profile.hatchedCreatures, profile.activeSquadId])
+
+  const handleSquadClick = useCallback(() => navigate('/squads'), [navigate])
   const handlePoiClick = useCallback((poi: Poi) => setSelectedPoi(poi), [])
   const handleClose = useCallback(() => setSelectedPoi(null), [])
   const handleCheckIn = useCallback(() => {
@@ -42,6 +63,8 @@ export function MapPage() {
         pois={pois}
         visitedPois={visitedPois}
         onPoiClick={handlePoiClick}
+        squadMarkers={squadMarkers}
+        onSquadClick={handleSquadClick}
       />
 
       <div style={{

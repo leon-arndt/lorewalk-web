@@ -4,7 +4,7 @@ import { ProfileProvider } from '@/contexts/ProfileContext'
 import { BottomNav } from '@/components/UI/BottomNav'
 import { MapPage } from '@/pages/MapPage'
 import { CreaturesPage } from '@/pages/CreaturesPage'
-import { ExpeditionsPage } from '@/pages/ExpeditionsPage'
+import { SquadsPage } from '@/pages/SquadsPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 
 export default function App() {
@@ -17,7 +17,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<MapPage />} />
                 <Route path="/creatures" element={<CreaturesPage />} />
-                <Route path="/expeditions" element={<ExpeditionsPage />} />
+                <Route path="/squads" element={<SquadsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Routes>
             </div>
