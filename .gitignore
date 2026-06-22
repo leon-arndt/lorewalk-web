@@ -20,6 +20,14 @@ dist-ssr
 # PWA dev build
 dev-dist/
 
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
+
+# Capacitor Android build artifacts (android/ itself is committed)
+android/.gradle/
+android/app/build/
+android/build/
+
 # Vite temp files
 vite.config.ts.timestamp-*
 
