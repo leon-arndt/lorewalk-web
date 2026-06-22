@@ -65,13 +65,12 @@ export function ShopPage() {
 
   return (
     <div ref={scrollRef} style={{ height: '100%', overflowY: 'auto', background: '#f8fafc' }}>
-      <div style={{ padding: '24px 16px 12px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-        <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>Shop</h1>
-          <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
-            Spend coins on upgrades, or top up your balance.
-          </p>
-        </div>
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 2, background: '#f8fafc',
+        padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+      }}>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1e293b' }}>Shop</h1>
         <button
           onClick={scrollToCoins}
           title="Get more coins"
@@ -83,6 +82,10 @@ export function ShopPage() {
           🪙 {profile.coins} +
         </button>
       </div>
+
+      <p style={{ margin: 0, padding: '12px 16px 0', fontSize: 14, color: '#94a3b8' }}>
+        Spend coins on upgrades, or top up your balance.
+      </p>
 
       {/* Upgrades */}
       <section style={{ padding: '8px 16px 8px' }}>
