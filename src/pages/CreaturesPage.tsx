@@ -78,6 +78,18 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
   )
 }
 
+function EmptyCreatureSlot() {
+  return (
+    <div style={{
+      border: '2px dashed #e2e8f0', borderRadius: 16, minHeight: 132,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+    }}>
+      <span style={{ fontSize: 22, opacity: 0.3 }}>🐾</span>
+      <span style={{ fontSize: 10, fontWeight: 600, color: '#cbd5e1' }}>Empty slot</span>
+    </div>
+  )
+}
+
 function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRelease: () => void }) {
   const isRare = RARE_CATEGORIES.has(creature.poiCategory)
 
@@ -217,21 +229,22 @@ export function CreaturesPage() {
           </div>
         )}
 
-        {hatchedCreatures.length === 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+          {[...hatchedCreatures].reverse().map((creature) => (
+            <CreatureCard key={creature.id} creature={creature} onRelease={() => handleRelease(creature)} />
+          ))}
+          {Array.from({ length: Math.max(0, cap - hatchedCreatures.length) }).map((_, i) => (
+            <EmptyCreatureSlot key={`empty-${i}`} />
+          ))}
+        </div>
+
+        {hatchedCreatures.length === 0 && (
           <div style={{
-            background: 'white', borderRadius: 16, padding: 24, textAlign: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            marginTop: 12, padding: '10px 14px', background: '#eef2ff', borderRadius: 12,
           }}>
-            <div style={{ fontSize: 40, marginBottom: 10 }}>🌱</div>
-            <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
-              Hatch an egg to discover your first creature.
+            <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
+              🌱 Hatch an egg to fill your first slot.
             </p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-            {[...hatchedCreatures].reverse().map((creature) => (
-              <CreatureCard key={creature.id} creature={creature} onRelease={() => handleRelease(creature)} />
-            ))}
           </div>
         )}
       </section>
