@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
+import type { Locale } from '@/contexts/LocaleContext'
 import { xpForNextLevel } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
 
@@ -26,6 +28,7 @@ function formatTime(iso: string) {
 
 export function ProfilePage() {
   const { profile, setDisplayName } = useProfile()
+  const { t, locale, setLocale } = useLocale()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
 
@@ -80,7 +83,7 @@ export function ProfilePage() {
                     fontSize: 13, cursor: 'pointer',
                   }}
                 >
-                  Save
+                  {t('profile_save')}
                 </button>
               </div>
             ) : (
@@ -108,7 +111,7 @@ export function ProfilePage() {
                 Lv {profile.level}
               </span>
               <span style={{ fontSize: 12, color: '#94a3b8' }}>
-                {profile.totalXp} total XP
+                {profile.totalXp} {t('profile_stat_total_xp')}
               </span>
             </div>
 
@@ -123,7 +126,7 @@ export function ProfilePage() {
                 }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: '#94a3b8' }}>
-                <span>{xpNeeded - profile.xp} XP to Level {profile.level + 1}</span>
+                <span>{t('profile_xp_to_level', { xp: xpNeeded - profile.xp, level: profile.level + 1 })}</span>
                 <span>{profile.xp} / {xpNeeded}</span>
               </div>
             </div>
@@ -138,16 +141,16 @@ export function ProfilePage() {
         borderBottom: '1px solid #f1f5f9',
       }}>
         {[
-          { label: 'Visited', value: profile.visitHistory.length, icon: '📍' },
-          { label: 'Day streak', value: profile.streakDays, icon: '🔥' },
-          { label: 'Total XP', value: profile.totalXp, icon: '⭐' },
-        ].map(({ label, value, icon }) => (
-          <div key={label} style={{
+          { labelKey: 'profile_stat_visited' as const, value: profile.visitHistory.length, icon: '📍' },
+          { labelKey: 'profile_stat_streak' as const, value: profile.streakDays, icon: '🔥' },
+          { labelKey: 'profile_stat_total_xp' as const, value: profile.totalXp, icon: '⭐' },
+        ].map(({ labelKey, value, icon }) => (
+          <div key={labelKey} style={{
             background: 'white', padding: '16px 8px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 22 }}>{icon}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{value}</div>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{label}</div>
+            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{t(labelKey)}</div>
           </div>
         ))}
       </div>
@@ -156,10 +159,38 @@ export function ProfilePage() {
 
         <FriendsSection />
 
+        {/* Language picker */}
+        <section>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+            {t('profile_language')}
+          </h2>
+          <div style={{
+            background: 'white', borderRadius: 16, padding: '4px 6px',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            display: 'flex', flexWrap: 'wrap', gap: 6,
+          }}>
+            {(Object.entries(LOCALE_LABELS) as [Locale, string][]).map(([code, label]) => (
+              <button
+                key={code}
+                onClick={() => setLocale(code)}
+                style={{
+                  fontSize: 13, fontWeight: locale === code ? 700 : 500,
+                  padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                  background: locale === code ? '#6366f1' : 'transparent',
+                  color: locale === code ? 'white' : '#475569',
+                  transition: 'background 0.15s, color 0.15s',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* Achievements */}
         <section>
           <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-            Achievements · {unlockedAchievements.length}/{profile.achievements.length}
+            {t('profile_achievements')} · {unlockedAchievements.length}/{profile.achievements.length}
           </h2>
 
           {unlockedAchievements.length > 0 && (
@@ -210,7 +241,7 @@ export function ProfilePage() {
         {/* Visit history */}
         <section>
           <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-            Visit History
+            {t('profile_visit_history')}
           </h2>
 
           {profile.visitHistory.length === 0 ? (
@@ -220,7 +251,7 @@ export function ProfilePage() {
             }}>
               <div style={{ fontSize: 40, marginBottom: 10 }}>🗺️</div>
               <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
-                No visits yet. Check in at a landmark to get started.
+                {t('profile_no_visits')}
               </p>
             </div>
           ) : (
@@ -265,9 +296,13 @@ export function ProfilePage() {
 
         {/* Joined date + app version */}
         <p style={{ margin: 0, textAlign: 'center', fontSize: 12, color: '#cbd5e1' }}>
+<<<<<<< HEAD
           Explorer since {formatDate(profile.createdAt)}
           <br />
           v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
+=======
+          {t('profile_explorer_since', { date: formatDate(profile.createdAt) })}
+>>>>>>> cff657a (Add full app localization with 8-language support)
         </p>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
@@ -69,6 +70,7 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
 
 function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatLon }) {
   const { profile, setActiveSquad, renameSquad, clearSlot, collectExpedition, recallSquad } = useProfile()
+  const { t } = useLocale()
   const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
   const isActive = profile.activeSquadId === squad.id
   const members = squad.slots.map((id) => (id ? byId.get(id) ?? null : null))
@@ -131,7 +133,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             color: isActive ? 'white' : '#6366f1',
           }}
         >
-          {isActive ? '★ Active' : 'Set active'}
+          {isActive ? t('squads_active') : t('squads_set_active')}
         </button>
       </div>
 
@@ -151,7 +153,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             padding: '10px 12px', cursor: 'pointer',
           }}
         >
-          🧭 Send on expedition…
+          {t('squads_send_expedition')}
         </button>
       )}
 
@@ -161,8 +163,8 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
           borderRadius: 12, padding: '12px 14px',
         }}>
           <div style={{ fontSize: 12, color: '#475569', marginBottom: 8 }}>
-            🧭 Exploring <strong>{exp.poiName}</strong>
-            {isActive && <span style={{ color: '#94a3b8' }}> · live boost paused</span>}
+            {t('squads_exploring', { name: exp.poiName })}
+            {isActive && <span style={{ color: '#94a3b8' }}>{t('squads_boost_paused')}</span>}
           </div>
           {ready ? (
             <button
@@ -173,7 +175,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
                 border: 'none', borderRadius: 10, padding: '10px', cursor: 'pointer',
               }}
             >
-              {flash ?? '🎁 Collect reward'}
+              {flash ?? t('squads_collect_reward')}
             </button>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
@@ -188,7 +190,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
                   padding: '5px 12px', cursor: 'pointer',
                 }}
               >
-                Recall (no reward)
+                {t('squads_recall')}
               </button>
             </div>
           )}
@@ -238,6 +240,7 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
 
 function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex: number; onClose: () => void }) {
   const { profile, assignToSlot } = useProfile()
+  const { t } = useLocale()
 
   const assignedIn = new Map<string, string>()
   for (const sq of profile.squads) {
@@ -246,16 +249,16 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
 
   if (profile.hatchedCreatures.length === 0) {
     return (
-      <Sheet title="Add a creature" onClose={onClose}>
+      <Sheet title={t('squads_add_creature')} onClose={onClose}>
         <p style={{ margin: '8px 0', fontSize: 13, color: '#94a3b8' }}>
-          You have no creatures yet — hatch one from the Creatures tab first.
+          {t('squads_no_creatures')}
         </p>
       </Sheet>
     )
   }
 
   return (
-    <Sheet title="Add a creature" onClose={onClose}>
+    <Sheet title={t('squads_add_creature')} onClose={onClose}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
         {profile.hatchedCreatures.map((c) => {
           const col = typeColors(c.poiCategory)
@@ -293,6 +296,7 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
   onClose: () => void
 }) {
   const { profile, startExpedition } = useProfile()
+  const { t } = useLocale()
   const visited = profile.visitHistory.filter((v) => v.lat != null && v.lon != null)
 
   function send(target: ExpeditionTarget, durationMs: number) {
@@ -301,10 +305,10 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
   }
 
   return (
-    <Sheet title="Send on expedition" onClose={onClose}>
+    <Sheet title={t('squads_send_title')} onClose={onClose}>
       {visited.length === 0 ? (
         <p style={{ margin: '8px 0', fontSize: 13, color: '#94a3b8' }}>
-          Check in at a landmark first — squads can only be sent to places you've visited.
+          {t('squads_no_visited')}
         </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -337,7 +341,7 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
                   background: bonus > 0 ? col.bg : '#f1f5f9',
                   color: bonus > 0 ? col.fg : '#94a3b8',
                 }}>
-                  {bonus > 0 ? `+${bonus}%` : 'no match'}
+                  {bonus > 0 ? `+${bonus}%` : t('squads_no_match')}
                 </span>
               </button>
             )
@@ -350,14 +354,15 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
 
 export function SquadsPage() {
   const { profile } = useProfile()
+  const { t } = useLocale()
   const { position } = useGeolocation()
   const navigate = useNavigate()
   const [now, setNow] = useState(() => Date.now())
 
   // Tick once a second so countdowns and the "ready" state stay live.
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(timer)
   }, [])
 
   const from: LatLon = position
@@ -368,7 +373,7 @@ export function SquadsPage() {
     <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 60 }}>
       <div style={{ padding: '24px 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>Squads</h1>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('squads_title')}</h1>
           <button
             onClick={() => navigate('/shop#coins')}
             title="Get more coins"
@@ -381,7 +386,7 @@ export function SquadsPage() {
           </button>
         </div>
         <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
-          Build teams from your creatures. Keep the active squad home to boost your check-ins by 25% per matching member, or send a squad on an expedition for an away reward (further trips take longer).
+          {t('squads_subtitle')}
         </p>
       </div>
 
@@ -398,14 +403,15 @@ export function SquadsPage() {
 
 function Holdings({ now }: { now: number }) {
   const { profile, collectClaim } = useProfile()
+  const { t } = useLocale()
   const [flash, setFlash] = useState<string | null>(null)
 
   if (profile.claims.length === 0) {
     return (
       <div style={{ padding: '8px 16px 32px' }}>
-        <h2 style={{ margin: '4px 0 8px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Holdings</h2>
+        <h2 style={{ margin: '4px 0 8px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('squads_holdings')}</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
-          Finish an expedition to claim that landmark. Held landmarks earn coins over time.
+          {t('squads_holdings_empty')}
         </p>
       </div>
     )
@@ -422,7 +428,7 @@ function Holdings({ now }: { now: number }) {
   return (
     <div style={{ padding: '8px 16px 32px' }}>
       <h2 style={{ margin: '4px 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-        Holdings · {profile.claims.length}
+        {t('squads_holdings_title', { n: profile.claims.length })}
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {profile.claims.map((claim) => {
@@ -450,7 +456,7 @@ function Holdings({ now }: { now: number }) {
                   color: pending > 0 ? '#b45309' : '#cbd5e1',
                 }}
               >
-                {pending > 0 ? `Collect ${pending} 🪙` : 'Earning…'}
+                {pending > 0 ? t('squads_collect', { coins: pending }) : t('squads_earning')}
               </button>
             </div>
           )

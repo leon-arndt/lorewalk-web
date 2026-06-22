@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import type { Translations } from '@/i18n/types'
+
+export interface AddFriendResult {
+  ok: boolean
+  key: keyof Translations
+  vars?: Record<string, string | number>
+}
 
 export interface Friend {
   playerId: string
@@ -131,28 +138,28 @@ export function useFriends(playerId: string, displayName: string) {
   }, [playerId, displayName, offline])
 
   const addFriend = useCallback(
-    async (raw: string): Promise<{ ok: boolean; message: string }> => {
+    async (raw: string): Promise<AddFriendResult> => {
       const code = raw.trim().toUpperCase()
 
       if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) {
-        return { ok: false, message: 'Format should be XXXX-XXXX' }
+        return { ok: false, key: 'friends_format_error' }
       }
 
       if (offline) {
-        if (code === friendCode?.code) return { ok: false, message: "That's your own code!" }
+        if (code === friendCode?.code) return { ok: false, key: 'friends_own_code' }
         setFriends((prev) => [
           ...prev,
           { playerId: `stub-${Date.now()}`, displayName: 'Test Friend', addedAt: new Date().toISOString() },
         ])
-        return { ok: true, message: 'Friend added (test mode)' }
+        return { ok: true, key: 'friends_added_test' }
       }
 
       const { data: codeRows } = await supabase.rpc('lookup_friend_code', { p_code: code })
 
-      if (!codeRows?.length) return { ok: false, message: 'Code not found or expired' }
+      if (!codeRows?.length) return { ok: false, key: 'friends_not_found' }
       const { player_id: friendId, display_name: friendName } = codeRows[0]
 
-      if (friendId === playerId) return { ok: false, message: "That's your own code!" }
+      if (friendId === playerId) return { ok: false, key: 'friends_own_code' }
 
       const [pA, pB] = [playerId, friendId].sort()
       const nameA = pA === playerId ? displayName : friendName
@@ -165,7 +172,7 @@ export function useFriends(playerId: string, displayName: string) {
         .eq('player_b', pB)
         .limit(1)
 
-      if (existing?.length) return { ok: false, message: 'Already friends!' }
+      if (existing?.length) return { ok: false, key: 'friends_already' }
 
       const { error } = await supabase
         .from('friendships')
@@ -174,12 +181,12 @@ export function useFriends(playerId: string, displayName: string) {
       if (error) {
         // Concurrent/duplicate add races past the existence check; the unique
         // index is the real guard, so treat its violation as "already friends".
-        if (error.code === UNIQUE_VIOLATION) return { ok: false, message: 'Already friends!' }
-        return { ok: false, message: 'Failed to add friend' }
+        if (error.code === UNIQUE_VIOLATION) return { ok: false, key: 'friends_already' }
+        return { ok: false, key: 'friends_failed' }
       }
 
       await loadFriends()
-      return { ok: true, message: `Added ${friendName}!` }
+      return { ok: true, key: 'friends_added', vars: { name: friendName } }
     },
     [playerId, displayName, offline, friendCode],
   )

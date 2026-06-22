@@ -1,0 +1,101 @@
+export interface Translations {
+  nav_map: string
+  nav_creatures: string
+  nav_squads: string
+  nav_profile: string
+
+  hud_locating: string
+  hud_gps_unavailable: string
+
+  mode_online: string
+  mode_offline: string
+
+  steps_today: string
+
+  poi_landmark: string
+  poi_event: string
+  poi_pts: string
+  poi_learn_more: string
+  poi_visited: string
+  poi_checkin: string
+  poi_checkin_offline: string
+  poi_get_closer: string
+  poi_currently_away: string
+
+  profile_xp_progress: string
+  profile_xp_to_level: string
+  profile_stat_visited: string
+  profile_stat_streak: string
+  profile_stat_total_xp: string
+  profile_save: string
+  profile_achievements: string
+  profile_visit_history: string
+  profile_no_visits: string
+  profile_explorer_since: string
+  profile_language: string
+
+  friends_title: string
+  friends_loading: string
+  friends_your_code: string
+  friends_add_friend: string
+  friends_refreshes_in: string
+  friends_refreshing_soon: string
+  friends_regenerate: string
+  friends_copied: string
+  friends_placeholder: string
+  friends_add_btn: string
+  friends_format_error: string
+  friends_not_found: string
+  friends_own_code: string
+  friends_already: string
+  friends_failed: string
+  friends_added: string
+  friends_added_test: string
+  friends_empty_text: string
+  friends_added_date: string
+
+  creatures_title: string
+  creatures_subtitle: string
+  creatures_hatching: string
+  creatures_visit_landmark: string
+  creatures_visits_left: string
+  creatures_egg_hint: string
+  creatures_collection: string
+  creatures_storage_full: string
+  creatures_empty_slot: string
+  creatures_hatch_hint: string
+  creatures_bond_level: string
+  creatures_from: string
+  creatures_release_confirm: string
+
+  squads_title: string
+  squads_subtitle: string
+  squads_active: string
+  squads_set_active: string
+  squads_send_expedition: string
+  squads_exploring: string
+  squads_boost_paused: string
+  squads_collect_reward: string
+  squads_recall: string
+  squads_add_creature: string
+  squads_no_creatures: string
+  squads_send_title: string
+  squads_no_visited: string
+  squads_no_match: string
+  squads_holdings: string
+  squads_holdings_empty: string
+  squads_holdings_title: string
+  squads_collect: string
+  squads_earning: string
+
+  shop_title: string
+  shop_subtitle: string
+  shop_upgrades: string
+  shop_coins_title: string
+  shop_coins_offline: string
+  shop_coins_online: string
+  shop_popular: string
+  shop_best_value: string
+  shop_test_purchase: string
+  shop_online_note: string
+}

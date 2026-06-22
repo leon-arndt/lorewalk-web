@@ -1,13 +1,16 @@
 import { NavLink } from 'react-router-dom'
-
-const tabs = [
-  { to: '/', label: 'Map', icon: '🗺️' },
-  { to: '/creatures', label: 'Creatures', icon: '🌿' },
-  { to: '/squads', label: 'Squads', icon: '🛡️' },
-  { to: '/profile', label: 'Profile', icon: '👤' },
-]
+import { useLocale } from '@/contexts/LocaleContext'
 
 export function BottomNav() {
+  const { t } = useLocale()
+
+  const tabs = [
+    { to: '/', icon: '🗺️', label: t('nav_map') },
+    { to: '/creatures', icon: '🌿', label: t('nav_creatures') },
+    { to: '/squads', icon: '🛡️', label: t('nav_squads') },
+    { to: '/profile', icon: '👤', label: t('nav_profile') },
+  ]
+
   return (
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,

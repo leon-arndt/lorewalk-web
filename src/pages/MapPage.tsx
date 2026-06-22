@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLocale } from '@/contexts/LocaleContext'
 import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
@@ -28,6 +29,7 @@ function categoryColor(category?: string): number {
 }
 
 export function MapPage() {
+  const { t } = useLocale()
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
@@ -140,7 +142,7 @@ export function MapPage() {
               color: '#64748b', fontSize: 12, padding: '4px 10px',
               borderRadius: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             }}>
-              Locating…
+              {t('hud_locating')}
             </div>
           )}
           {gpsError && !position && (
@@ -153,7 +155,7 @@ export function MapPage() {
               padding: '4px 10px', borderRadius: 20,
               boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             }}>
-              GPS unavailable
+              {t('hud_gps_unavailable')}
             </div>
           )}
         </div>

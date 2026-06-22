@@ -1,4 +1,5 @@
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi, PlayerPosition } from '@/types'
 
@@ -14,6 +15,7 @@ interface PoiDetailPanelProps {
 
 export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }: PoiDetailPanelProps) {
   const { mode } = useConnectionMode()
+  const { t } = useLocale()
   const isPermanent = poi.kind === 'permanent'
 
   const distanceM = position
@@ -45,14 +47,14 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
             background: isPermanent ? '#fff7ed' : '#faf5ff',
             color: isPermanent ? '#ea580c' : '#9333ea',
           }}>
-            {isPermanent ? 'Landmark' : 'Event'}
+            {isPermanent ? t('poi_landmark') : t('poi_event')}
           </span>
           {poi.points !== undefined && (
             <span style={{
               fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
               background: '#f0fdf4', color: '#16a34a',
             }}>
-              +{poi.points} pts
+              {t('poi_pts', { pts: poi.points })}
             </span>
           )}
           {distanceM !== null && mode === 'online' && (
@@ -97,7 +99,7 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
             color: '#6366f1', textDecoration: 'none',
           }}
         >
-          Learn more →
+          {t('poi_learn_more')}
         </a>
       )}
 
@@ -109,7 +111,7 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
             padding: '12px 16px', borderRadius: 12, background: '#f0fdf4',
           }}>
             <span style={{ fontSize: 20 }}>😊</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#15803d' }}>You visited this place!</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#15803d' }}>{t('poi_visited')}</span>
           </div>
         ) : canCheckIn ? (
           <button
@@ -121,7 +123,7 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
               boxShadow: '0 4px 12px rgba(99,102,241,0.35)',
             }}
           >
-            {mode === 'offline' ? '✓ Check in (offline)' : '✓ Check in'}
+            {mode === 'offline' ? t('poi_checkin_offline') : t('poi_checkin')}
           </button>
         ) : (
           <div style={{
@@ -129,8 +131,8 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
             textAlign: 'center',
           }}>
             <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
-              Get within {CHECKIN_RADIUS_M}m to check in
-              {distanceM !== null && ` (currently ${distanceM}m away)`}
+              {t('poi_get_closer', { radius: CHECKIN_RADIUS_M })}
+              {distanceM !== null && ' ' + t('poi_currently_away', { dist: distanceM })}
             </p>
           </div>
         )}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import {
   creatureCap, creatureSlotsCost, eggSlotCost,
   CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
@@ -10,15 +11,16 @@ import {
 // Real money runs through Google Play Billing (Digital Goods API in a TWA). Until
 // that's wired, the buy buttons credit coins directly — clearly labelled as test.
 const COIN_PACKS = [
-  { coins: 100, price: '€0.99', tag: null },
-  { coins: 600, price: '€4.99', tag: 'Popular' },
-  { coins: 1000, price: '€6.99', tag: null },
-  { coins: 2500, price: '€9.99', tag: 'Best value' },
+  { coins: 100, price: '€0.99', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { coins: 600, price: '€4.99', tagKey: 'shop_popular' as const },
+  { coins: 1000, price: '€6.99', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { coins: 2500, price: '€9.99', tagKey: 'shop_best_value' as const },
 ]
 
 export function ShopPage() {
   const { profile, buyCreatureSlots, buyEggSlot, addCoins } = useProfile()
   const { mode } = useConnectionMode()
+  const { t } = useLocale()
   const location = useLocation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const coinsRef = useRef<HTMLDivElement>(null)
@@ -56,9 +58,9 @@ export function ShopPage() {
     // Online will route through Google Play Billing (Digital Goods API in a TWA).
     if (mode === 'offline') {
       addCoins(pack.coins)
-      setFlash(`✓ +${pack.coins} 🪙 (test purchase)`)
+      setFlash(t('shop_test_purchase', { coins: pack.coins }))
     } else {
-      setFlash('Real purchases need Google Play Billing — switch to Offline to test')
+      setFlash(t('shop_online_note'))
     }
     setTimeout(() => setFlash(null), 2800)
   }
@@ -70,7 +72,7 @@ export function ShopPage() {
         padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
       }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1e293b' }}>Shop</h1>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('shop_title')}</h1>
         <button
           onClick={scrollToCoins}
           title="Get more coins"
@@ -84,12 +86,12 @@ export function ShopPage() {
       </div>
 
       <p style={{ margin: 0, padding: '12px 16px 0', fontSize: 14, color: '#94a3b8' }}>
-        Spend coins on upgrades, or top up your balance.
+        {t('shop_subtitle')}
       </p>
 
       {/* Upgrades */}
       <section style={{ padding: '8px 16px 8px' }}>
-        <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Upgrades</h2>
+        <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('shop_upgrades')}</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {upgrades.map((it) => (
             <div key={it.key} style={{
@@ -121,11 +123,9 @@ export function ShopPage() {
 
       {/* Coins (real-money top-up) */}
       <section ref={coinsRef} id="coins" style={{ padding: '16px 16px 32px', scrollMarginTop: 8 }}>
-        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Coins</h2>
+        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('shop_coins_title')}</h2>
         <p style={{ margin: '0 0 12px', fontSize: 12, color: mode === 'offline' ? '#16a34a' : '#94a3b8' }}>
-          {mode === 'offline'
-            ? 'Offline (test) mode — purchases are simulated and grant coins instantly.'
-            : 'Real purchases require Google Play Billing (not yet connected). Switch to Offline to test.'}
+          {mode === 'offline' ? t('shop_coins_offline') : t('shop_coins_online')}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
           {COIN_PACKS.map((pack) => (
@@ -133,17 +133,17 @@ export function ShopPage() {
               position: 'relative',
               background: 'white', borderRadius: 16, padding: '18px 12px 14px',
               boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-              border: `2px solid ${pack.tag === 'Best value' ? '#fde68a' : '#f1f5f9'}`,
+              border: `2px solid ${pack.tagKey === 'shop_best_value' ? '#fde68a' : '#f1f5f9'}`,
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
             }}>
-              {pack.tag && (
+              {pack.tagKey && (
                 <span style={{
                   position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
                   fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase',
-                  background: pack.tag === 'Best value' ? '#f59e0b' : '#6366f1', color: 'white',
+                  background: pack.tagKey === 'shop_best_value' ? '#f59e0b' : '#6366f1', color: 'white',
                   padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap',
                 }}>
-                  {pack.tag}
+                  {t(pack.tagKey)}
                 </span>
               )}
               <span style={{ fontSize: 28 }}>🪙</span>

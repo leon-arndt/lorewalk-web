@@ -1,11 +1,13 @@
+import { useLocale } from '@/contexts/LocaleContext'
+
 interface StepCounterProps {
   steps: number
   distanceM: number
 }
 
 export function StepCounter({ steps, distanceM }: StepCounterProps) {
-  const distanceLabel =
-    distanceM >= 1000 ? `${(distanceM / 1000).toFixed(2)} km` : `${Math.round(distanceM)} m`
+  const { t } = useLocale()
+  const distance = distanceM >= 1000 ? `${(distanceM / 1000).toFixed(2)} km` : `${Math.round(distanceM)} m`
 
   return (
     <div
@@ -25,7 +27,7 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
         <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
           {steps.toLocaleString()}
         </div>
-        <div style={{ fontSize: 10, color: '#64748b' }}>{distanceLabel} today</div>
+        <div style={{ fontSize: 10, color: '#64748b' }}>{t('steps_today', { distance })}</div>
       </div>
     </div>
   )

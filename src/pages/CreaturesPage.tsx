@@ -1,10 +1,13 @@
 import { useProfile } from '@/contexts/ProfileContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { creatureCap } from '@/lib/profile'
 import type { Egg, HatchedCreature } from '@/types'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
 
 function EggSlotCard({ egg }: { egg: Egg | null }) {
+  const { t } = useLocale()
+
   if (!egg) {
     return (
       <div style={{
@@ -14,7 +17,7 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
       }}>
         <span style={{ fontSize: 30, opacity: 0.25 }}>🥚</span>
         <span style={{ fontSize: 11, color: '#cbd5e1', fontWeight: 500, textAlign: 'center' }}>
-          Visit a landmark
+          {t('creatures_visit_landmark')}
         </span>
       </div>
     )
@@ -71,7 +74,7 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
           }} />
         </div>
         <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, display: 'block', textAlign: 'center' }}>
-          {remaining} visit{remaining !== 1 ? 's' : ''} left
+          {t('creatures_visits_left', { n: remaining })}
         </span>
       </div>
     </div>
@@ -79,18 +82,20 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
 }
 
 function EmptyCreatureSlot() {
+  const { t } = useLocale()
   return (
     <div style={{
       border: '2px dashed #e2e8f0', borderRadius: 16, minHeight: 132,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
     }}>
       <span style={{ fontSize: 22, opacity: 0.3 }}>🐾</span>
-      <span style={{ fontSize: 10, fontWeight: 600, color: '#cbd5e1' }}>Empty slot</span>
+      <span style={{ fontSize: 10, fontWeight: 600, color: '#cbd5e1' }}>{t('creatures_empty_slot')}</span>
     </div>
   )
 }
 
 function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRelease: () => void }) {
+  const { t } = useLocale()
   const isRare = RARE_CATEGORIES.has(creature.poiCategory)
 
   return (
@@ -131,7 +136,7 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
           fontSize: 10, color: '#6366f1', fontWeight: 600, marginTop: 3,
           background: '#eef2ff', padding: '1px 8px', borderRadius: 20, display: 'inline-block',
         }}>
-          Bond Lv {creature.bondLevel}
+          {t('creatures_bond_level', { n: creature.bondLevel })}
         </div>
       </div>
 
@@ -140,7 +145,7 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
         display: '-webkit-box', overflow: 'hidden',
         WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
       }}>
-        From: {creature.poiOriginName}
+        {t('creatures_from', { name: creature.poiOriginName })}
       </div>
     </div>
   )
@@ -148,12 +153,13 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
 
 export function CreaturesPage() {
   const { profile, releaseCreature } = useProfile()
+  const { t } = useLocale()
   const { eggs, hatchedCreatures, maxEggSlots } = profile
   const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
   const full = hatchedCreatures.length >= cap
 
   function handleRelease(creature: HatchedCreature) {
-    if (window.confirm(`Release ${creature.species}? This frees a slot but the creature is gone for good.`)) {
+    if (window.confirm(t('creatures_release_confirm', { name: creature.species }))) {
       releaseCreature(creature.id)
     }
   }
@@ -165,17 +171,17 @@ export function CreaturesPage() {
     <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 60 }}>
       <div style={{ padding: '24px 16px 20px' }}>
         <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>
-          Creatures
+          {t('creatures_title')}
         </h1>
         <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
-          Visit landmarks to collect eggs. Visit more to hatch them.
+          {t('creatures_subtitle')}
         </p>
       </div>
 
       {/* Egg slots */}
       <section style={{ padding: '0 16px 24px' }}>
         <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-          Hatching · {eggs.length}/{maxEggSlots}
+          {t('creatures_hatching', { n: eggs.length, max: maxEggSlots })}
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
           {slots.map((egg, i) => (
@@ -189,7 +195,7 @@ export function CreaturesPage() {
             background: '#eef2ff', borderRadius: 12,
           }}>
             <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
-              💡 Check in at a landmark on the map to get your first egg!
+              {t('creatures_egg_hint')}
             </p>
           </div>
         )}
@@ -219,12 +225,12 @@ export function CreaturesPage() {
       {/* Collection */}
       <section style={{ padding: '0 16px 32px' }}>
         <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-          Your Collection · <span style={{ color: full ? '#e11d48' : '#1e293b' }}>{hatchedCreatures.length} / {cap}</span>
+          {t('creatures_collection')} · <span style={{ color: full ? '#e11d48' : '#1e293b' }}>{hatchedCreatures.length} / {cap}</span>
         </h2>
         {full && (
           <div style={{ marginBottom: 12, padding: '8px 12px', background: '#fff1f2', borderRadius: 10 }}>
             <p style={{ margin: 0, fontSize: 12, color: '#e11d48' }}>
-              Storage full — release a creature or raise the cap (level up / shop) to hatch more.
+              {t('creatures_storage_full')}
             </p>
           </div>
         )}
@@ -243,7 +249,7 @@ export function CreaturesPage() {
             marginTop: 12, padding: '10px 14px', background: '#eef2ff', borderRadius: 12,
           }}>
             <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
-              🌱 Hatch an egg to fill your first slot.
+              {t('creatures_hatch_hint')}
             </p>
           </div>
         )}

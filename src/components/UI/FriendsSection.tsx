@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { useFriends } from '@/hooks/useFriends'
-
-function hoursLeft(iso: string): string {
-  const h = Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 3_600_000))
-  return h === 0 ? 'Refreshing soon' : `Refreshes in ${h}h`
-}
 
 function formatAdded(iso: string): string {
   return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
@@ -14,6 +10,7 @@ function formatAdded(iso: string): string {
 
 export function FriendsSection() {
   const { profile } = useProfile()
+  const { t } = useLocale()
   const { friendCode, friends, loading, addFriend, regenerate } = useFriends(
     profile.id,
     profile.displayName,
@@ -21,7 +18,7 @@ export function FriendsSection() {
 
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [input, setInput] = useState('')
-  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
   const [adding, setAdding] = useState(false)
   const [copied, setCopied] = useState(false)
   const [, setTick] = useState(0)
@@ -47,14 +44,13 @@ export function FriendsSection() {
     if (!input.trim() || adding) return
     setAdding(true)
     const r = await addFriend(input)
-    setResult(r)
+    setResult({ ok: r.ok, text: t(r.key, r.vars) })
     if (r.ok) setInput('')
     setAdding(false)
     setTimeout(() => setResult(null), 3000)
   }
 
   function handleInput(raw: string) {
-    // Auto-insert dash after 4th char
     let val = raw.toUpperCase().replace(/[^A-Z0-9]/g, '')
     if (val.length > 4) val = val.slice(0, 4) + '-' + val.slice(4, 8)
     setInput(val)
@@ -67,10 +63,15 @@ export function FriendsSection() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  function hoursLeft(iso: string): string {
+    const h = Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 3_600_000))
+    return h === 0 ? t('friends_refreshing_soon') : t('friends_refreshes_in', { h })
+  }
+
   return (
     <section>
       <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-        Friends · {loading ? '…' : friends.length}
+        {loading ? '…' : t('friends_title', { n: friends.length })}
       </h2>
 
       {/* My code card */}
@@ -79,10 +80,9 @@ export function FriendsSection() {
         boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 12,
       }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', marginBottom: 14 }}>
-          Your friend code
+          {t('friends_your_code')}
         </div>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          {/* QR */}
           <div style={{
             width: 96, height: 96, borderRadius: 10, flexShrink: 0,
             background: '#f8fafc', border: '1px solid #f1f5f9',
@@ -109,7 +109,7 @@ export function FriendsSection() {
               {friendCode?.code ?? '—'}
             </button>
             <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 5 }}>
-              {copied ? '✓ Copied!' : (friendCode ? hoursLeft(friendCode.expiresAt) : '')}
+              {copied ? t('friends_copied') : (friendCode ? hoursLeft(friendCode.expiresAt) : '')}
             </div>
             <button
               onClick={regenerate}
@@ -120,7 +120,7 @@ export function FriendsSection() {
                 padding: '6px 0', cursor: 'pointer',
               }}
             >
-              Regenerate
+              {t('friends_regenerate')}
             </button>
           </div>
         </div>
@@ -132,14 +132,14 @@ export function FriendsSection() {
         boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 12,
       }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', marginBottom: 10 }}>
-          Add a friend
+          {t('friends_add_friend')}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             value={input}
             onChange={(e) => handleInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            placeholder="XXXX-XXXX"
+            placeholder={t('friends_placeholder')}
             maxLength={9}
             style={{
               flex: 1, fontSize: 16, fontWeight: 700, letterSpacing: 2,
@@ -160,7 +160,7 @@ export function FriendsSection() {
               transition: 'background 0.15s',
             }}
           >
-            Add
+            {t('friends_add_btn')}
           </button>
         </div>
         {result && (
@@ -168,7 +168,7 @@ export function FriendsSection() {
             marginTop: 8, fontSize: 12, fontWeight: 600,
             color: result.ok ? '#16a34a' : '#e11d48',
           }}>
-            {result.message}
+            {result.text}
           </div>
         )}
       </div>
@@ -181,7 +181,7 @@ export function FriendsSection() {
         }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>👥</div>
           <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
-            Share your code with other Lorewalk players to add friends.
+            {t('friends_empty_text')}
           </p>
         </div>
       ) : (
@@ -208,7 +208,7 @@ export function FriendsSection() {
                   {f.displayName}
                 </div>
                 <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                  Added {formatAdded(f.addedAt)}
+                  {t('friends_added_date', { date: formatAdded(f.addedAt) })}
                 </div>
               </div>
             </div>
