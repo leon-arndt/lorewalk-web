@@ -97,7 +97,7 @@ $$;
 ## Dev Commands
 
 ```bash
-npm run dev       # local dev server (localhost:5173)
+npm run dev       # local dev server (localhost:8849)
 npm run build     # production build → dist/
 npm run preview   # preview production build locally
 ```

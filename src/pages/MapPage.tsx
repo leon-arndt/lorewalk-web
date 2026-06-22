@@ -2,13 +2,16 @@ import { useState, useCallback, useEffect } from 'react'
 import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
+import { StepCounter } from '@/components/UI/StepCounter'
 import { useGeolocation } from '@/hooks/useGeolocation'
+import { useStepCounter } from '@/hooks/useStepCounter'
 import { usePois } from '@/hooks/usePois'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { Poi } from '@/types'
 
 export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
+  const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
   const { visitedPois, addVisit, justHatched, clearJustHatched } = useProfile()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
@@ -49,24 +52,27 @@ export function MapPage() {
         <div style={{ pointerEvents: 'auto' }}>
           <ModeToggle />
         </div>
-        {gpsLoading && (
-          <div style={{
-            background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
-            color: '#64748b', fontSize: 12, padding: '6px 12px',
-            borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-          }}>
-            Locating…
-          </div>
-        )}
-        {gpsError && !position && (
-          <div style={{
-            background: '#fff1f2', color: '#e11d48', fontSize: 12,
-            padding: '6px 12px', borderRadius: 20,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-          }}>
-            GPS unavailable
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {gpsLoading && (
+            <div style={{
+              background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
+              color: '#64748b', fontSize: 12, padding: '6px 12px',
+              borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            }}>
+              Locating…
+            </div>
+          )}
+          {gpsError && !position && (
+            <div style={{
+              background: '#fff1f2', color: '#e11d48', fontSize: 12,
+              padding: '6px 12px', borderRadius: 20,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            }}>
+              GPS unavailable
+            </div>
+          )}
+          <StepCounter steps={steps} distanceM={distanceM} />
+        </div>
       </div>
 
       {/* Hatching toast */}

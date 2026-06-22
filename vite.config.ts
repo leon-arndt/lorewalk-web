@@ -5,6 +5,14 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
+  server: {
+    port: 8849,
+    strictPort: true,
+  },
+  preview: {
+    port: 8849,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
