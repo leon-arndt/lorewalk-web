@@ -28,6 +28,7 @@ interface ProfileContextValue {
   releaseCreature: (creatureId: string) => void
   buyCreatureSlots: () => boolean
   buyEggSlot: () => boolean
+  addCoins: (amount: number) => void
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
@@ -257,6 +258,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return true
   }
 
+  // Credit purchased coins. NOTE: real money flows through Google Play Billing
+  // (Digital Goods API in a TWA); this just applies the granted amount.
+  function addCoins(amount: number) {
+    persist({ ...profile, coins: profile.coins + amount })
+  }
+
   function recallSquad(squadId: string) {
     const squads = profile.squads.map((sq) =>
       sq.id === squadId ? { ...sq, expedition: null } : sq,
@@ -269,7 +276,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       profile, visitedPois, addVisit, setDisplayName, justHatched, clearJustHatched,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       startExpedition, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins,
     }}>
       {children}
     </ProfileContext.Provider>

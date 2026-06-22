@@ -363,8 +363,8 @@ export function SquadsPage() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>Squads</h1>
           <button
-            onClick={() => navigate('/shop')}
-            title="Open shop"
+            onClick={() => navigate('/shop#coins')}
+            title="Get more coins"
             style={{
               flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#b45309', cursor: 'pointer',
               background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20,
