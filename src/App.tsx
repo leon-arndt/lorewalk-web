@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ConnectionModeProvider } from '@/contexts/ConnectionModeContext'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { BottomNav } from '@/components/UI/BottomNav'
+import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import { MapPage } from '@/pages/MapPage'
 import { CreaturesPage } from '@/pages/CreaturesPage'
 import { SquadsPage } from '@/pages/SquadsPage'
@@ -23,6 +24,7 @@ export default function App() {
                 <Route path="/profile" element={<ProfilePage />} />
               </Routes>
             </div>
+            <CoinCapsule />
             <BottomNav />
           </div>
         </BrowserRouter>

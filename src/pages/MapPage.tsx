@@ -108,17 +108,19 @@ export function MapPage() {
 
       <div style={{
         position: 'absolute', top: 12, left: 12, right: 12,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'grid', gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
         pointerEvents: 'none',
       }}>
-        <div style={{ pointerEvents: 'auto' }}>
+        <div style={{ pointerEvents: 'auto', justifySelf: 'start' }}>
           <ModeToggle />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <StepCounter steps={steps} distanceM={distanceM} />
           {gpsLoading && (
             <div style={{
               background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
-              color: '#64748b', fontSize: 12, padding: '6px 12px',
+              color: '#64748b', fontSize: 12, padding: '4px 10px',
               borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
             }}>
               Locating…
@@ -127,14 +129,14 @@ export function MapPage() {
           {gpsError && !position && (
             <div style={{
               background: '#fff1f2', color: '#e11d48', fontSize: 12,
-              padding: '6px 12px', borderRadius: 20,
+              padding: '4px 10px', borderRadius: 20,
               boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
             }}>
               GPS unavailable
             </div>
           )}
-          <StepCounter steps={steps} distanceM={distanceM} />
         </div>
+        <div />
       </div>
 
       {/* Hatching toast */}
