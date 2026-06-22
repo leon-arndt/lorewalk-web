@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
@@ -343,6 +344,7 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
 export function SquadsPage() {
   const { profile } = useProfile()
   const { position } = useGeolocation()
+  const navigate = useNavigate()
   const [now, setNow] = useState(() => Date.now())
 
   // Tick once a second so countdowns and the "ready" state stay live.
@@ -360,13 +362,16 @@ export function SquadsPage() {
       <div style={{ padding: '24px 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>Squads</h1>
-          <span style={{
-            flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#b45309',
-            background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20,
-            padding: '4px 12px',
-          }}>
+          <button
+            onClick={() => navigate('/shop')}
+            title="Open shop"
+            style={{
+              flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#b45309', cursor: 'pointer',
+              background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20,
+              padding: '4px 12px',
+            }}>
             🪙 {profile.coins}
-          </span>
+          </button>
         </div>
         <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
           Build teams from your creatures. Keep the active squad home to boost your check-ins by 25% per matching member, or send a squad on an expedition for an away reward (further trips take longer).

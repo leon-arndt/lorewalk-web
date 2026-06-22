@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
-import {
-  xpForNextLevel, creatureCap, creatureSlotsCost, eggSlotCost,
-  CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
-} from '@/lib/profile'
+import { xpForNextLevel } from '@/lib/profile'
 
 const CATEGORY_ICONS: Record<string, string> = {
   heritage: '🏛', nature: '🌿', religious: '🕌',
@@ -20,76 +17,6 @@ function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString('en-SG', {
     hour: '2-digit', minute: '2-digit',
   })
-}
-
-function Shop() {
-  const { profile, buyCreatureSlots, buyEggSlot } = useProfile()
-  const creatureCost = creatureSlotsCost(profile.bonusCreatureSlots)
-  const eggCost = eggSlotCost(profile.maxEggSlots)
-  const eggMaxed = profile.maxEggSlots >= MAX_EGG_SLOTS_CAP
-  const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
-
-  const items = [
-    {
-      key: 'creatures',
-      icon: '🧬',
-      title: `+${CREATURE_SLOT_CHUNK} creature slots`,
-      sub: `Storage cap → ${cap + CREATURE_SLOT_CHUNK}`,
-      cost: creatureCost,
-      disabled: profile.coins < creatureCost,
-      buy: buyCreatureSlots,
-    },
-    {
-      key: 'egg',
-      icon: '🥚',
-      title: '+1 egg slot',
-      sub: eggMaxed ? `Maxed (${MAX_EGG_SLOTS_CAP})` : `Incubate ${profile.maxEggSlots + 1} at once`,
-      cost: eggCost,
-      disabled: eggMaxed || profile.coins < eggCost,
-      buy: buyEggSlot,
-    },
-  ]
-
-  return (
-    <section>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Shop</h2>
-        <span style={{
-          fontSize: 13, fontWeight: 700, color: '#b45309',
-          background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20, padding: '4px 12px',
-        }}>
-          🪙 {profile.coins}
-        </span>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {items.map((it) => (
-          <div key={it.key} style={{
-            display: 'flex', alignItems: 'center', gap: 12,
-            background: 'white', borderRadius: 14, padding: '12px 14px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-          }}>
-            <span style={{ fontSize: 24 }}>{it.icon}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{it.title}</div>
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>{it.sub}</div>
-            </div>
-            <button
-              onClick={it.buy}
-              disabled={it.disabled}
-              style={{
-                flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 20,
-                border: 'none', cursor: it.disabled ? 'default' : 'pointer',
-                background: it.disabled ? '#f1f5f9' : '#fffbeb',
-                color: it.disabled ? '#cbd5e1' : '#b45309',
-              }}
-            >
-              {it.cost} 🪙
-            </button>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
 }
 
 export function ProfilePage() {
@@ -224,8 +151,6 @@ export function ProfilePage() {
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-        <Shop />
 
         {/* Achievements */}
         <section>

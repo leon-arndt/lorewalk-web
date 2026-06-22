@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/UI/BottomNav'
 import { MapPage } from '@/pages/MapPage'
 import { CreaturesPage } from '@/pages/CreaturesPage'
 import { SquadsPage } from '@/pages/SquadsPage'
+import { ShopPage } from '@/pages/ShopPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
                 <Route path="/" element={<MapPage />} />
                 <Route path="/creatures" element={<CreaturesPage />} />
                 <Route path="/squads" element={<SquadsPage />} />
+                <Route path="/shop" element={<ShopPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Routes>
             </div>

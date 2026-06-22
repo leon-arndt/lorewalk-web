@@ -41,7 +41,7 @@ src/
     Map/
       MapView.tsx          # MapLibre map, player dot, POI markers
     UI/
-      BottomNav.tsx        # 4-tab bottom navigation (Map/Creatures/Expeditions/Profile)
+      BottomNav.tsx        # 5-tab bottom navigation (Map/Creatures/Squads/Shop/Profile)
       PoiDetailPanel.tsx   # Slide-up panel shown when a POI marker is tapped
   hooks/
     useGeolocation.ts      # watchPosition wrapper → PlayerPosition state
