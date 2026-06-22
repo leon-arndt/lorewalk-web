@@ -15,6 +15,7 @@
     "@capacitor/core": "^7.0.0",
     "@supabase/supabase-js": "^2.108.2",
     "@devmaxime/capacitor-health-connect": "^1.1.0",
+    "qrcode": "^1.5.4",
     "maplibre-gl": "^5.24.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { xpForNextLevel } from '@/lib/profile'
+import { FriendsSection } from '@/components/UI/FriendsSection'
 
 const CATEGORY_ICONS: Record<string, string> = {
   heritage: '🏛', nature: '🌿', religious: '🕌',
@@ -151,6 +152,8 @@ export function ProfilePage() {
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        <FriendsSection />
 
         {/* Achievements */}
         <section>
