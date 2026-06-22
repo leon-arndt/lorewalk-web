@@ -129,13 +129,28 @@ export interface PlayerProfile {
   eggs: Egg[]
   hatchedCreatures: HatchedCreature[]
   maxEggSlots: number
+  bonusCreatureSlots: number   // extra creature storage bought in the shop
   squads: Squad[]
   activeSquadId: string | null
   coins: number
+  claims: Claim[]
 }
 
 export interface ExpeditionCollectResult {
   xp: number
   coins: number
   egg: boolean   // whether an egg was also awarded
+}
+
+// A landmark the player holds (claimed by finishing an expedition there). Held
+// landmarks passively generate coins over time, scaled by the snapshot affinity.
+export interface Claim {
+  poiId: string
+  poiName: string
+  poiCategory: string
+  lat: number
+  lon: number
+  affinity: number         // reward multiplier captured when claimed
+  claimedAt: string        // ISO
+  lastCollectedAt: string  // ISO
 }

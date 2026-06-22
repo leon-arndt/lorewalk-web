@@ -24,6 +24,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
+      workbox: {
+        // Three.js is only needed once the map mounts — keep it out of the
+        // install-time precache and let it load on demand.
+        globIgnores: ['**/three.module-*.js', '**/GLTFLoader-*.js', '**/SkeletonUtils-*.js'],
+      },
       manifest: {
         name: 'Lorewalk',
         short_name: 'Lorewalk',

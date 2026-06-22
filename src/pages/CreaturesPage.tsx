@@ -1,4 +1,5 @@
 import { useProfile } from '@/contexts/ProfileContext'
+import { creatureCap } from '@/lib/profile'
 import type { Egg, HatchedCreature } from '@/types'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
@@ -77,16 +78,29 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
   )
 }
 
-function CreatureCard({ creature }: { creature: HatchedCreature }) {
+function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRelease: () => void }) {
   const isRare = RARE_CATEGORIES.has(creature.poiCategory)
 
   return (
     <div style={{
+      position: 'relative',
       background: 'white', borderRadius: 16, padding: '16px 12px',
       boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
       border: `2px solid ${isRare ? '#fde68a' : '#e0e7ff'}`,
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
     }}>
+      <button
+        onClick={onRelease}
+        title="Release this creature"
+        style={{
+          position: 'absolute', top: 6, right: 6, width: 20, height: 20,
+          borderRadius: '50%', border: 'none', cursor: 'pointer',
+          background: '#f1f5f9', color: '#94a3b8', fontSize: 12, lineHeight: 1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        ✕
+      </button>
       <div style={{
         width: 56, height: 56, borderRadius: '50%',
         background: isRare ? '#fffbeb' : '#f5f3ff',
@@ -121,8 +135,16 @@ function CreatureCard({ creature }: { creature: HatchedCreature }) {
 }
 
 export function CreaturesPage() {
-  const { profile } = useProfile()
+  const { profile, releaseCreature } = useProfile()
   const { eggs, hatchedCreatures, maxEggSlots } = profile
+  const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
+  const full = hatchedCreatures.length >= cap
+
+  function handleRelease(creature: HatchedCreature) {
+    if (window.confirm(`Release ${creature.species}? This frees a slot but the creature is gone for good.`)) {
+      releaseCreature(creature.id)
+    }
+  }
 
   const emptySlots = Math.max(0, maxEggSlots - eggs.length)
   const slots: (Egg | null)[] = [...eggs, ...Array<null>(emptySlots).fill(null)]
@@ -185,8 +207,15 @@ export function CreaturesPage() {
       {/* Collection */}
       <section style={{ padding: '0 16px 32px' }}>
         <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-          Your Collection · {hatchedCreatures.length}
+          Your Collection · <span style={{ color: full ? '#e11d48' : '#1e293b' }}>{hatchedCreatures.length} / {cap}</span>
         </h2>
+        {full && (
+          <div style={{ marginBottom: 12, padding: '8px 12px', background: '#fff1f2', borderRadius: 10 }}>
+            <p style={{ margin: 0, fontSize: 12, color: '#e11d48' }}>
+              Storage full — release a creature or raise the cap (level up / shop) to hatch more.
+            </p>
+          </div>
+        )}
 
         {hatchedCreatures.length === 0 ? (
           <div style={{
@@ -201,7 +230,7 @@ export function CreaturesPage() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {[...hatchedCreatures].reverse().map((creature) => (
-              <CreatureCard key={creature.id} creature={creature} />
+              <CreatureCard key={creature.id} creature={creature} onRelease={() => handleRelease(creature)} />
             ))}
           </div>
         )}

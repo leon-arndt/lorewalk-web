@@ -84,6 +84,11 @@ Inspired by geocaching. Players check in at POIs to mark them as visited and ear
 | Nature | Fernspark | 🌿 | Rare |
 | Unknown | Wanderer | ✨ | Common |
 
+### Creature storage cap (Pikmin Bloom)
+- Collection size is capped: `creatureCap = 6 + (level − 1) × 2 + shopBonus`. Shown as **"Collection X / Y"** in the Creatures tab.
+- When an egg reaches its hatch threshold but storage is full, it **stays as a ready egg** (occupying an egg slot) and hatches once you make room.
+- **Release** a creature (✕ on its card, with confirm) to free a slot, or raise the cap by levelling up / buying storage in the shop. Creates curation decisions and a coin sink.
+
 ### Design rationale
 Pikmin Bloom uses steps (pedometer) to grow seedlings — web has no reliable step counter. We use **POI visits as the progress currency** instead. This fits the exploration theme better: visiting places is always the core action.
 
@@ -111,6 +116,13 @@ Pikmin Bloom uses steps (pedometer) to grow seedlings — web has no reliable st
 - **Free tier**: Limited POI set, starter creatures only, basic evolution.
 - **Premium (15 SGD/year)**: All POIs, unlimited creatures, full evolution tree, exclusive landmark creatures.
 - **Coin shop (IAP)**: Cosmetics, extra planter/expedition slots, convenience items. Never pay-to-win.
+
+### Shop (implemented — coins only so far)
+Lives on the **Profile** tab. Spends the soft **coin** currency (earned from expeditions + held landmarks):
+- **+3 creature slots** — cost `60 + 60 × (bonus / 3)` (escalates per purchase).
+- **+1 egg slot** — cost `120 × (slotsBought + 1)`, capped at `MAX_EGG_SLOTS_CAP` (6).
+
+Real-money IAP is deferred; coins-only already closes the earn → spend loop. Costs are dev-tuned — rebalance with the duration/rate constants before launch.
 
 ---
 
@@ -203,10 +215,24 @@ This is the core decision the system creates: *keep the squad home to amplify my
 ### Squad vs. Expedition
 A **squad** is the team (a noun); an **expedition** is what a squad *does* (a verb). They are the same entities in two states — the squad you build is the thing you send. This is why the old standalone "Expeditions" tab was replaced by **Squads**: expeditions are now driven from the squad, not from lone creatures.
 
+### Companions on the map (Pikmin Bloom)
+- The **active squad's creatures** are rendered as 3D characters that idle and wander around the player's position — your party, made physical. Empty slots = fewer companions.
+- While the active squad is **away on an expedition**, no companions follow (they're at the landmark).
+- When the active squad is **empty**, a few neutral grey "ambient" wanderers show so the map is never lifeless; they're replaced by real members once you assign creatures.
+- Each companion's body colour reflects its creature's type/category. Currently a procedural placeholder; a Quaternius `.glb` at `public/models/character.glb` replaces it.
+- **Sizing**: characters keep a roughly constant on-screen size (Pikmin-Bloom style) rather than true-to-life metres, so they're visible at normal play zoom (~15+). At the whole-island offline view they're still tiny — zoom in to street level to see them.
+
 ### Squads on the map
 - A squad that's on an expedition shows a marker at the target POI: a 2×2 cluster of its member emojis.
 - The **active** squad's marker gets an indigo ring; a **returned** expedition shows a 🎁 badge.
 - Tapping a squad marker opens the Squads tab.
+
+### Claimed landmarks — light "areas of control" (Pokémon-gym, solo)
+Finishing an expedition **claims** that landmark for the player (held landmarks are listed under **Holdings** and flagged 🚩 on the map). The hook is *collect & hold the map*, not combat:
+- A held landmark **passively accrues coins over time**, scaled by the affinity captured when it was claimed (`CLAIM_COINS_PER_MIN`, currently 3/min for testing, capped at 150; raise for production).
+- Re-running an expedition to the same landmark refreshes its claim (and affinity snapshot).
+- **No PvP, no defending, no losing** — purely solo accumulation. Competitive territory (taking others' landmarks, leaderboards) is deferred; it needs auth + a real backend.
+- Coins are the soft currency (`profile.coins`) the future coin shop will spend.
 
 ### Persistence
 Squads live on `PlayerProfile` in `localStorage` alongside creatures. Three empty squads are created on first load. Older saved profiles without a `squads` field are migrated to three empty squads (same defensive pattern as `eggs`/`maxEggSlots`). `VisitRecord` now also stores `lat`/`lon` so visited POIs can be used as expedition targets.

@@ -10,6 +10,19 @@ import { usePois } from '@/hooks/usePois'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { Poi } from '@/types'
 
+// Map a creature's type (POI category) to a 3D companion body colour.
+const CATEGORY_COLORS: Record<string, number> = {
+  heritage: 0xf59e0b,
+  landmark: 0x6366f1,
+  arts: 0xa855f7,
+  religious: 0xfacc15,
+  museum: 0xf472b6,
+  nature: 0x22c55e,
+}
+function categoryColor(category?: string): number {
+  return (category && CATEGORY_COLORS[category]) || 0x94a3b8
+}
+
 export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
@@ -18,6 +31,29 @@ export function MapPage() {
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+
+  // The active squad's creatures become the 3D companions that walk with you —
+  // unless that squad is away on an expedition, in which case nobody follows.
+  // When the active squad is empty, show a few neutral "ambient" wanderers so the
+  // map is never lifeless (they're replaced by real members once you assign any).
+  const companions = useMemo(() => {
+    const active = profile.squads.find((s) => s.id === profile.activeSquadId)
+    if (active?.expedition) return []
+    const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
+    const members = (active?.slots ?? [])
+      .filter((id): id is string => !!id)
+      .map((id) => ({ id, color: categoryColor(byId.get(id)?.poiCategory) }))
+    if (members.length > 0) return members
+    return [0, 1, 2].map((i) => ({ id: `ambient-${i}`, color: 0x94a3b8 }))
+  }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures])
+
+  const claimMarkers = useMemo(
+    () => profile.claims.map((c) => ({
+      id: c.poiId, name: c.poiName, lat: c.lat, lon: c.lon,
+      color: `#${categoryColor(c.poiCategory).toString(16).padStart(6, '0')}`,
+    })),
+    [profile.claims],
+  )
 
   const squadMarkers = useMemo(() => {
     const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
@@ -65,6 +101,9 @@ export function MapPage() {
         onPoiClick={handlePoiClick}
         squadMarkers={squadMarkers}
         onSquadClick={handleSquadClick}
+        companions={companions}
+        claimMarkers={claimMarkers}
+        onClaimClick={handleSquadClick}
       />
 
       <div style={{

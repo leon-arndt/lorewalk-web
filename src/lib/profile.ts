@@ -1,4 +1,4 @@
-import type { Achievement, Egg, EggTier, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
+import type { Achievement, Claim, Egg, EggTier, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
 
 // XP needed to go from level N to level N+1
 export function xpForNextLevel(level: number): number {
@@ -92,6 +92,24 @@ export function checkAchievements(
 // ─── Egg / Creature system ───────────────────────────────────────────────────
 
 export const MAX_EGG_SLOTS = 3
+
+// ── Creature storage cap (Pikmin-Bloom-style) ───────────────────────────────
+// Cap grows with level; the shop adds a stored bonus on top.
+export const CREATURE_SLOTS_BASE = 6
+export const CREATURE_SLOTS_PER_LEVEL = 2
+export function creatureCap(level: number, bonus: number): number {
+  return CREATURE_SLOTS_BASE + Math.max(0, level - 1) * CREATURE_SLOTS_PER_LEVEL + bonus
+}
+
+// ── Shop ─────────────────────────────────────────────────────────────────────
+export const MAX_EGG_SLOTS_CAP = 6
+export const CREATURE_SLOT_CHUNK = 3
+export function creatureSlotsCost(bonus: number): number {
+  return 60 + 60 * (bonus / CREATURE_SLOT_CHUNK) // 60, 120, 180, …
+}
+export function eggSlotCost(currentMax: number): number {
+  return 120 * (currentMax - MAX_EGG_SLOTS + 1) // 120, 240, 360, …
+}
 
 const CREATURE_BY_CATEGORY: Record<string, { species: string; emoji: string; tier: EggTier }> = {
   heritage:  { species: 'Stonewarden', emoji: '🗿', tier: 'common' },
@@ -200,6 +218,17 @@ export function isAway(squad: Squad): boolean {
   return squad.expedition !== null
 }
 
+// ── Claimed landmarks (light, solo "areas of control") ───────────────────────
+// DEV-tuned rate so holdings are testable in a minute or two; lower for production.
+const CLAIM_COINS_PER_MIN = 3
+const CLAIM_MAX_COINS = 150
+
+// Coins accrued since last collection, scaled by the claim's affinity, capped.
+export function claimPendingCoins(claim: Claim, now: number): number {
+  const minutes = (now - new Date(claim.lastCollectedAt).getTime()) / 60_000
+  return Math.floor(Math.min(CLAIM_MAX_COINS, minutes * CLAIM_COINS_PER_MIN * claim.affinity))
+}
+
 export function hasReturned(exp: SquadExpedition, now: number): boolean {
   return now >= new Date(exp.returnsAt).getTime()
 }
@@ -232,9 +261,11 @@ export function loadProfile(): PlayerProfile {
         eggs: parsed.eggs ?? [],
         hatchedCreatures: parsed.hatchedCreatures ?? [],
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
+        bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
         squads,
         activeSquadId: parsed.activeSquadId ?? squads[0]?.id ?? null,
         coins: parsed.coins ?? 0,
+        claims: parsed.claims ?? [],
       }
     }
   } catch { /* ignore */ }
@@ -253,9 +284,11 @@ export function loadProfile(): PlayerProfile {
     eggs: [],
     hatchedCreatures: [],
     maxEggSlots: MAX_EGG_SLOTS,
+    bonusCreatureSlots: 0,
     squads: createEmptySquads(),
     activeSquadId: 'squad_1',
     coins: 0,
+    claims: [],
   }
 }
 

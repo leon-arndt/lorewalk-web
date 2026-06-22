@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
 import type { Poi, PlayerPosition } from '@/types'
 
 // OpenFreeMap "Liberty" — free vector tiles, no API key. Gives 3D building
@@ -137,6 +138,42 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   return outer
 }
 
+export interface ClaimMarker {
+  id: string
+  name: string
+  lat: number
+  lon: number
+  color: string
+}
+
+function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
+  const outer = document.createElement('div')
+  outer.style.cssText = 'cursor:pointer;'
+  const inner = document.createElement('div')
+  inner.style.cssText = `
+    width:26px;height:26px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:15px;
+    background:white;border:2px solid ${claim.color};
+    box-shadow:0 2px 6px rgba(0,0,0,0.18);
+  `
+  inner.textContent = '🚩'
+  const tooltip = document.createElement('div')
+  tooltip.textContent = claim.name + ' · yours'
+  tooltip.style.cssText = `
+    position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+    background:white;color:#1e293b;font-size:12px;font-weight:600;
+    padding:4px 10px;border-radius:8px;white-space:nowrap;
+    box-shadow:0 2px 10px rgba(0,0,0,0.12);pointer-events:none;
+    opacity:0;transition:opacity 0.12s ease;
+  `
+  outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
+  outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
+  outer.addEventListener('click', onClick)
+  outer.appendChild(inner)
+  outer.appendChild(tooltip)
+  return outer
+}
+
 interface MapViewProps {
   position: PlayerPosition | null
   pois: Poi[]
@@ -144,9 +181,12 @@ interface MapViewProps {
   onPoiClick: (poi: Poi) => void
   squadMarkers?: SquadMarker[]
   onSquadClick?: (squadId: string) => void
+  companions?: CharacterSpec[]
+  claimMarkers?: ClaimMarker[]
+  onClaimClick?: (poiId: string) => void
 }
 
-export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick }: MapViewProps) {
+export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -154,6 +194,10 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
   const poiMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const poiInnerEls = useRef<Map<string, HTMLElement>>(new Map())
   const squadMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const claimMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const charLayerRef = useRef<CharacterLayerHandle | null>(null)
+  const companionsRef = useRef<CharacterSpec[]>(companions)
+  companionsRef.current = companions
 
   // Initialise map once; defer anything that needs map.project() until after 'load'.
   useEffect(() => {
@@ -164,8 +208,8 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
       style: MAP_STYLE,
       center: [103.8198, 1.3521],
       zoom: 11,
-      pitch: 45,        // tilt so Liberty's 3D buildings read as depth
-      maxPitch: 70,
+      pitch: 60,        // strong tilt so Singapore's tall buildings read as a skyline
+      maxPitch: 80,
     })
 
     map.on('load', () => {
@@ -178,8 +222,51 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     })
 
     mapRef.current = map
+    if (import.meta.env.DEV) (window as unknown as { _map?: maplibregl.Map })._map = map
     return () => { map.remove(); mapRef.current = null }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Add the 3D wandering characters once the map (and its style) is ready.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    let cancelled = false
+
+    const add = async () => {
+      const c: [number, number] = position
+        ? [position.longitude, position.latitude]
+        : [103.8198, 1.3521]
+      const handle = await addCharacterLayer(map, {
+        center: c,
+        characters: companionsRef.current,
+        modelUrl: '/models/character.glb',
+        wanderRadiusM: 30,
+        modelScale: 4, // exaggerated (~6m) so characters read on a city-scale map
+      })
+      if (cancelled) { handle.remove(); return }
+      charLayerRef.current = handle
+      handle.setCharacters(companionsRef.current) // sync any change during the await
+    }
+
+    if (map.loaded()) add()
+    else map.once('load', add)
+
+    return () => {
+      cancelled = true
+      charLayerRef.current?.remove()
+      charLayerRef.current = null
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The on-map characters are the active squad's members; update when it changes.
+  useEffect(() => {
+    charLayerRef.current?.setCharacters(companions)
+  }, [companions])
+
+  // Keep the wander origin on the player as they move.
+  useEffect(() => {
+    if (position) charLayerRef.current?.setCenter(position.longitude, position.latitude)
+  }, [position])
 
   // Follow player position in online mode.
   useEffect(() => {
@@ -274,6 +361,27 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     if (map.loaded()) sync()
     else map.once('load', sync)
   }, [squadMarkers, onSquadClick])
+
+  // Rebuild claimed-landmark flag markers when claims change.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const sync = () => {
+      claimMarkersRef.current.forEach((m) => m.remove())
+      claimMarkersRef.current.clear()
+      claimMarkers.forEach((claim) => {
+        const el = buildClaimElement(claim, () => onClaimClick?.(claim.id))
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([claim.lon, claim.lat])
+          .addTo(map)
+        claimMarkersRef.current.set(claim.id, marker)
+      })
+    }
+
+    if (map.loaded()) sync()
+    else map.once('load', sync)
+  }, [claimMarkers, onClaimClick])
 
   return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
 }

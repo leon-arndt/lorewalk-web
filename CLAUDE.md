@@ -8,6 +8,22 @@ The primary Lorewalk game and its design documents live in `../Lorewalk` (Unity/
 
 All game design decisions — POI system, check-in mechanic, creature system, UI/UX choices, and monetisation — are documented in [GameDesign.md](GameDesign.md). Read it before making changes to game mechanics or UI flows.
 
+### Core gameplay loop
+
+One sentence: **walk to real places → collect & hatch creatures → build typed squads → deploy them to boost or claim places → grow your collection and holdings.**
+
+1. **Walk** to a real-world landmark (POI). Steps are tracked as a flavour stat (the HUD step counter); **visits are the real progress currency** — web step counting is too unreliable to gate progression on.
+2. **Check in** at the landmark (within 50 m) → earn XP + an egg.
+3. **Visit more landmarks** → eggs hatch into **typed** creatures (type = POI category: Heritage/Nature/Arts/…); you gain XP and level up.
+4. **Build a squad** (3 squads × 4 slots) from your creatures. Type matters.
+5. Keep the **active squad with you** (its creatures are the 3D companions on the map) to boost check-ins by **type affinity**, **or** send it on an **expedition** to a landmark you've visited.
+6. **Expeditions** return XP + coins + sometimes an egg, and **claim** that landmark.
+7. **Held landmarks** passively earn coins over time; **spend coins** (shop) on slots/cosmetics.
+
+Inspirations and how they map: **Geocaching** (physically visit real places) · **Pikmin Bloom** (companions follow you, timed expeditions, level-gated collection cap) · **Pokémon** (typed creatures, type-vs-place affinity).
+
+Design tensions kept deliberately simple: no combat, no PvP, no losing — claims are solo "collect & hold". See GameDesign.md for the full rationale.
+
 ## Tech Stack
 
 - **Framework**: React 19 + TypeScript (Vite)

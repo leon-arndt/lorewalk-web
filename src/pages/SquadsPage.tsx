@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useGeolocation } from '@/hooks/useGeolocation'
-import { hasReturned, expeditionDurationMs } from '@/lib/profile'
+import { hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
 import type { ExpeditionTarget, HatchedCreature, Squad } from '@/types'
 
@@ -373,11 +373,80 @@ export function SquadsPage() {
         </p>
       </div>
 
-      <div style={{ padding: '8px 16px 32px' }}>
+      <div style={{ padding: '8px 16px 0' }}>
         {profile.squads.map((squad) => (
           <SquadCard key={squad.id} squad={squad} now={now} from={from} />
         ))}
       </div>
+
+      <Holdings now={now} />
+    </div>
+  )
+}
+
+function Holdings({ now }: { now: number }) {
+  const { profile, collectClaim } = useProfile()
+  const [flash, setFlash] = useState<string | null>(null)
+
+  if (profile.claims.length === 0) {
+    return (
+      <div style={{ padding: '8px 16px 32px' }}>
+        <h2 style={{ margin: '4px 0 8px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>Holdings</h2>
+        <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+          Finish an expedition to claim that landmark. Held landmarks earn coins over time.
+        </p>
+      </div>
+    )
+  }
+
+  function collect(poiId: string) {
+    const coins = collectClaim(poiId)
+    if (coins > 0) {
+      setFlash(`+${coins} 🪙`)
+      setTimeout(() => setFlash(null), 2200)
+    }
+  }
+
+  return (
+    <div style={{ padding: '8px 16px 32px' }}>
+      <h2 style={{ margin: '4px 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+        Holdings · {profile.claims.length}
+      </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {profile.claims.map((claim) => {
+          const pending = claimPendingCoins(claim, now)
+          const col = typeColors(claim.poiCategory)
+          return (
+            <div key={claim.poiId} style={{
+              background: 'white', borderRadius: 14, padding: '12px 14px',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+            }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>🚩 {claim.poiName}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: col.fg, textTransform: 'capitalize' }}>
+                  {claim.poiCategory} · ×{claim.affinity.toFixed(2)} rate
+                </div>
+              </div>
+              <button
+                onClick={() => collect(claim.poiId)}
+                disabled={pending <= 0}
+                style={{
+                  flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 20,
+                  border: 'none', cursor: pending > 0 ? 'pointer' : 'default',
+                  background: pending > 0 ? '#fffbeb' : '#f1f5f9',
+                  color: pending > 0 ? '#b45309' : '#cbd5e1',
+                }}
+              >
+                {pending > 0 ? `Collect ${pending} 🪙` : 'Earning…'}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+      {flash && (
+        <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: '#b45309', textAlign: 'center' }}>{flash}</div>
+      )}
     </div>
   )
 }
