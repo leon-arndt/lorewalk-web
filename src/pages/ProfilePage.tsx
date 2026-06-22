@@ -37,7 +37,7 @@ export function ProfilePage() {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc' }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 60 }}>
 
       {/* Header card */}
       <div style={{ background: 'white', padding: '28px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>

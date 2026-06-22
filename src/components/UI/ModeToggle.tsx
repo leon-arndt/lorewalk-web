@@ -17,10 +17,12 @@ export function ModeToggle() {
         cursor: 'pointer',
         fontSize: 12,
         fontWeight: 600,
-        background: 'rgba(255,255,255,0.92)',
-        backdropFilter: 'blur(8px)',
+        background: 'rgba(255,255,255,0.50)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+        border: '1px solid rgba(255,255,255,0.55)',
         color: isOnline ? '#6366f1' : '#94a3b8',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         transition: 'all 0.15s ease',
       }}
     >

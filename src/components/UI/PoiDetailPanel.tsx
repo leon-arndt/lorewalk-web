@@ -26,14 +26,17 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
     <div style={{
       position: 'absolute',
       bottom: 0, left: 0, right: 0,
-      background: '#ffffff',
+      background: 'rgba(255,255,255,0.72)',
+      backdropFilter: 'blur(24px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
       borderRadius: '20px 20px 0 0',
+      borderTop: '1px solid rgba(255,255,255,0.6)',
       padding: '20px 20px 36px',
-      boxShadow: '0 -4px 32px rgba(0,0,0,0.12)',
+      boxShadow: '0 -8px 32px rgba(0,0,0,0.1)',
       zIndex: 10,
     }}>
       {/* Handle bar */}
-      <div style={{ width: 36, height: 4, borderRadius: 2, background: '#e2e8f0', margin: '0 auto 16px' }} />
+      <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)', margin: '0 auto 16px' }} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -61,7 +64,11 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
         <button
           onClick={onClose}
           style={{
-            background: '#f1f5f9', border: 'none', cursor: 'pointer',
+            background: 'rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.5)',
+            cursor: 'pointer',
             width: 28, height: 28, borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 16, color: '#64748b',

@@ -119,18 +119,25 @@ export function MapPage() {
           <StepCounter steps={steps} distanceM={distanceM} />
           {gpsLoading && (
             <div style={{
-              background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
+              background: 'rgba(255,255,255,0.50)',
+              backdropFilter: 'blur(16px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.55)',
               color: '#64748b', fontSize: 12, padding: '4px 10px',
-              borderRadius: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+              borderRadius: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             }}>
               Locating…
             </div>
           )}
           {gpsError && !position && (
             <div style={{
-              background: '#fff1f2', color: '#e11d48', fontSize: 12,
+              background: 'rgba(255,241,242,0.65)',
+              backdropFilter: 'blur(16px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.5)',
+              color: '#e11d48', fontSize: 12,
               padding: '4px 10px', borderRadius: 20,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             }}>
               GPS unavailable
             </div>

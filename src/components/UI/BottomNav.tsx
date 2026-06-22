@@ -10,10 +10,13 @@ const tabs = [
 export function BottomNav() {
   return (
     <nav style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
       display: 'flex',
-      background: '#ffffff',
-      borderTop: '1px solid #f1f5f9',
-      boxShadow: '0 -2px 12px rgba(0,0,0,0.06)',
+      background: 'rgba(255,255,255,0.55)',
+      backdropFilter: 'blur(20px) saturate(160%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+      borderTop: '1px solid rgba(255,255,255,0.6)',
+      boxShadow: '0 -2px 16px rgba(0,0,0,0.08)',
     }}>
       {tabs.map(({ to, label, icon }) => (
         <NavLink

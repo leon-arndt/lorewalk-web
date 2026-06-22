@@ -11,9 +11,12 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
     <div
       style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
+        background: 'rgba(255,255,255,0.50)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+        border: '1px solid rgba(255,255,255,0.55)',
         padding: '6px 12px', borderRadius: 20,
-        boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         pointerEvents: 'none', userSelect: 'none',
       }}
     >

@@ -38,17 +38,21 @@ export function CoinCapsule() {
             style={{
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 70,
               maxHeight: '88dvh',
-              background: '#f8fafc', borderRadius: '20px 20px 0 0',
+              background: 'rgba(248,250,252,0.82)',
+              backdropFilter: 'blur(24px) saturate(160%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+              borderRadius: '20px 20px 0 0',
+              borderTop: '1px solid rgba(255,255,255,0.6)',
               overflow: 'hidden',
               display: 'flex', flexDirection: 'column',
-              boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+              boxShadow: '0 -8px 32px rgba(0,0,0,0.12)',
             }}
           >
             <div style={{
               flexShrink: 0, display: 'flex', justifyContent: 'center',
               padding: '10px 0 4px', position: 'relative',
             }}>
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
               <button
                 onClick={() => setOpen(false)}
                 style={{

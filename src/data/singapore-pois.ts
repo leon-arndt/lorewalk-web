@@ -1,6 +1,6 @@
 import type { Poi } from '@/types'
 
-// 100 permanent POIs across Singapore for offline mode and Supabase seeding.
+// 117 permanent POIs across Singapore for offline mode and Supabase seeding.
 // Coordinates are decimal degrees (WGS84). PostGIS insert order: ST_MakePoint(lon, lat).
 export const SINGAPORE_POIS: Poi[] = [
   // --- Marina Bay / Downtown Core ---

@@ -25,8 +25,8 @@ export default function App() {
               </Routes>
             </div>
             <CoinCapsule />
-            <BottomNav />
           </div>
+          <BottomNav />
         </BrowserRouter>
       </ProfileProvider>
     </ConnectionModeProvider>
