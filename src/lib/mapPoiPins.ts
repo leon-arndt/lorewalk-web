@@ -124,6 +124,7 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
     color: CONE_COLOR, shininess: 80, transparent: true, opacity: 0.62,
   })
   const cone = new THREE.Mesh(coneGeo, coneMat)
+  cone.rotation.x = Math.PI  // tip down, wide base up
   cone.position.y = CONE_HEIGHT / 2
   group.add(cone)
 
