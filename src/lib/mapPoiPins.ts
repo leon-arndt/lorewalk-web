@@ -76,13 +76,12 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   ring.position.y = 0.05
   group.add(ring)
 
-  // Vertical cylinder — radius kept under the ring's inner radius (0.35) so it
-  // sits cleanly inside the pulsing halo.
-  const CONE_COLOR = 0xf97316
+  // Vertical cylinder — unvisited = orange, visited = green (VISITED_COLOR).
   const CONE_HEIGHT = 1.1
+  const cylColor = spec.visited ? VISITED_COLOR : 0xf97316
   const cylGeo = new THREE.CylinderGeometry(0.22, 0.22, CONE_HEIGHT, 24)
   const cylMat = new THREE.MeshPhongMaterial({
-    color: CONE_COLOR, shininess: 80, transparent: true, opacity: 0.62,
+    color: cylColor, shininess: 80, transparent: true, opacity: 0.62,
   })
   const cone = new THREE.Mesh(cylGeo, cylMat)
   cone.position.y = CONE_HEIGHT / 2
