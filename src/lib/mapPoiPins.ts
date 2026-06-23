@@ -115,16 +115,15 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   ring.position.y = 0.05
   group.add(ring)
 
-  // Cone — 24 segments for a smooth round silhouette, tip pointing up.
-  // ConeGeometry is centred at y=0, so offset by half-height to sit base-on-ground.
+  // Vertical cylinder — radius kept under the ring's inner radius (0.35) so it
+  // sits cleanly inside the pulsing halo.
   const CONE_COLOR = 0xf97316
   const CONE_HEIGHT = 1.1
-  const coneGeo = new THREE.ConeGeometry(0.65, CONE_HEIGHT, 24)
-  const coneMat = new THREE.MeshPhongMaterial({
+  const cylGeo = new THREE.CylinderGeometry(0.22, 0.22, CONE_HEIGHT, 24)
+  const cylMat = new THREE.MeshPhongMaterial({
     color: CONE_COLOR, shininess: 80, transparent: true, opacity: 0.62,
   })
-  const cone = new THREE.Mesh(coneGeo, coneMat)
-  cone.rotation.x = Math.PI  // tip down, wide base up
+  const cone = new THREE.Mesh(cylGeo, cylMat)
   cone.position.y = CONE_HEIGHT / 2
   group.add(cone)
 
