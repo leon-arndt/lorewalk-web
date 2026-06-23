@@ -118,17 +118,17 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   // Triangular-prism pillar — 3 radial segments give the faceted look while
   // MeshPhongMaterial + directional light shade each face differently.
   const PILLAR_COLOR = 0xf97316  // orange, independent of category
-  const pillarGeo = new THREE.CylinderGeometry(0.45, 0.55, 2.2, 3)
+  const pillarGeo = new THREE.CylinderGeometry(0.45, 0.55, 1.1, 3)
   const pillarMat = new THREE.MeshPhongMaterial({
     color: PILLAR_COLOR, shininess: 80, transparent: true, opacity: 0.62,
   })
   const pillar = new THREE.Mesh(pillarGeo, pillarMat)
-  pillar.position.y = 1.1
+  pillar.position.y = 0.55
   group.add(pillar)
 
   // Head group (cap disc + emoji sprite) bobs together.
   const head = new THREE.Group()
-  head.position.y = 2.2  // sits atop the shorter pillar
+  head.position.y = 1.1  // sits atop the pillar
 
   // Flat disc cap — also orange and translucent.
   const capGeo = new THREE.CylinderGeometry(1.1, 1.1, 0.35, 32)
@@ -196,7 +196,7 @@ export async function addPoiPinsLayer(
 
       // Bob the whole head (cap + orb) + pulse the ground ring.
       for (const { head, ring, phase } of pinsMap.values()) {
-        head.position.y = 2.2 + Math.sin(t * 1.8 + phase) * 0.3
+        head.position.y = 1.1 + Math.sin(t * 0.7 + phase) * 0.1
         ;(ring.material as T3.MeshBasicMaterial).opacity = 0.22 + Math.abs(Math.sin(t * 1.4 + phase)) * 0.22
         ring.scale.setScalar(1 + Math.sin(t * 1.4 + phase) * 0.12)
       }
