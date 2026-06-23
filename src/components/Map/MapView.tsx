@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
+import { addMrtLayers } from '@/lib/mapMrt'
 import type { Poi, PlayerPosition } from '@/types'
 
 // OpenFreeMap "Liberty" — free vector tiles, no API key. Gives 3D building
@@ -171,6 +172,7 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
           map.setLayerZoomRange(layer.id, 12, 24)
         }
       }
+      addMrtLayers(map)
     })
 
     // Proximity click: find the closest POI to the tap within TAP_RADIUS_PX.
