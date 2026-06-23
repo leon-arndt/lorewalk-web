@@ -104,11 +104,11 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   const { x, z } = toLocalXZ(spec.lat, spec.lon)
   group.position.set(x, 0, z)
 
-  // Pulsing ground ring (lies flat in XZ)
-  const ringGeo = new THREE.RingGeometry(1.2, 2.2, 48)
+  // Pulsing ground ring (lies flat in XZ) — kept small, just a subtle halo.
+  const ringGeo = new THREE.RingGeometry(0.35, 0.55, 48)
   ringGeo.rotateX(-Math.PI / 2)
   const ringMat = new THREE.MeshBasicMaterial({
-    color, transparent: true, opacity: 0.35,
+    color, transparent: true, opacity: 0.55,
     side: THREE.DoubleSide, depthWrite: false,
   })
   const ring = new THREE.Mesh(ringGeo, ringMat)
@@ -128,18 +128,13 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   cone.position.y = CONE_HEIGHT / 2
   group.add(cone)
 
-  // Head group: just the emoji sprite, bobs above the cone tip.
+  // Head group: empty anchor for the bob animation (sprite removed).
   const head = new THREE.Group()
   head.position.y = CONE_HEIGHT
-
-  const texture = makeOrbTexture(THREE, emoji, color)
-  const orbMat = new THREE.SpriteMaterial({ map: texture, depthWrite: false })
-  const orb = new THREE.Sprite(orbMat)
-  orb.scale.set(1.6, 1.6, 1)
-  orb.position.y = 0.9
-  head.add(orb)
-
   group.add(head)
+
+  // orb is null but kept in the interface for type compat — nothing added to head.
+  const orb = null as unknown as T3.Sprite
 
   return { group, ring, head, orb, phase: Math.random() * Math.PI * 2 }
 }
@@ -189,7 +184,7 @@ export async function addPoiPinsLayer(
       // Bob the whole head (cap + orb) + pulse the ground ring.
       for (const { head, ring, phase } of pinsMap.values()) {
         head.position.y = 1.1 + Math.sin(t * 0.7 + phase) * 0.08
-        ;(ring.material as T3.MeshBasicMaterial).opacity = 0.22 + Math.abs(Math.sin(t * 1.4 + phase)) * 0.22
+        ;(ring.material as T3.MeshBasicMaterial).opacity = 0.3 + Math.abs(Math.sin(t * 1.4 + phase)) * 0.25
         ring.scale.setScalar(1 + Math.sin(t * 1.4 + phase) * 0.12)
       }
 
