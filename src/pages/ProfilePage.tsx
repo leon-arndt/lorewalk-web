@@ -41,7 +41,7 @@ export function ProfilePage() {
 
       {/* Header card */}
       <div style={{ background: 'white', padding: '28px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {/* Avatar */}
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
@@ -107,25 +107,22 @@ export function ProfilePage() {
                 {profile.totalXp} total XP
               </span>
             </div>
-          </div>
-        </div>
 
-        {/* XP bar */}
-        <div style={{ marginBottom: 6 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>XP Progress</span>
-            <span style={{ fontSize: 12, color: '#94a3b8' }}>{profile.xp} / {xpNeeded}</span>
-          </div>
-          <div style={{ height: 8, borderRadius: 4, background: '#f1f5f9', overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', borderRadius: 4,
-              background: 'linear-gradient(90deg, #818cf8, #c084fc)',
-              width: `${xpPct}%`,
-              transition: 'width 0.4s ease',
-            }} />
-          </div>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
-            {xpForNextLevel(profile.level) - profile.xp} XP to Level {profile.level + 1}
+            {/* XP bar — grouped under the level, constrained to the name column */}
+            <div style={{ marginTop: 10 }}>
+              <div style={{ height: 6, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', borderRadius: 3,
+                  background: 'linear-gradient(90deg, #818cf8, #c084fc)',
+                  width: `${xpPct}%`,
+                  transition: 'width 0.4s ease',
+                }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: '#94a3b8' }}>
+                <span>{xpNeeded - profile.xp} XP to Level {profile.level + 1}</span>
+                <span>{profile.xp} / {xpNeeded}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
