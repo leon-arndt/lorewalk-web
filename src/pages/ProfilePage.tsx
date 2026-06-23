@@ -3,6 +3,10 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { xpForNextLevel } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
 
+declare const __APP_VERSION__: string
+declare const __GIT_COMMIT__: string
+declare const __BUILD_DATE__: string
+
 const CATEGORY_ICONS: Record<string, string> = {
   heritage: '🏛', nature: '🌿', religious: '🕌',
   museum: '🎨', landmark: '📍', arts: '🎭',
@@ -259,9 +263,11 @@ export function ProfilePage() {
           )}
         </section>
 
-        {/* Joined date */}
+        {/* Joined date + app version */}
         <p style={{ margin: 0, textAlign: 'center', fontSize: 12, color: '#cbd5e1' }}>
           Explorer since {formatDate(profile.createdAt)}
+          <br />
+          v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
         </p>
       </div>
     </div>
