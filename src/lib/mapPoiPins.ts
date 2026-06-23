@@ -115,22 +115,28 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   ring.position.y = 0.05
   group.add(ring)
 
-  // Round pillar — 20-sided + MeshPhongMaterial so it shades under the directional light.
-  const pillarGeo = new THREE.CylinderGeometry(0.3, 0.38, 3.8, 20)
-  const pillarMat = new THREE.MeshPhongMaterial({ color, shininess: 90 })
+  // Triangular-prism pillar — 3 radial segments give the faceted look while
+  // MeshPhongMaterial + directional light shade each face differently.
+  const PILLAR_COLOR = 0xf97316  // orange, independent of category
+  const pillarGeo = new THREE.CylinderGeometry(0.45, 0.55, 2.2, 3)
+  const pillarMat = new THREE.MeshPhongMaterial({
+    color: PILLAR_COLOR, shininess: 80, transparent: true, opacity: 0.62,
+  })
   const pillar = new THREE.Mesh(pillarGeo, pillarMat)
-  pillar.position.y = 1.9
+  pillar.position.y = 1.1
   group.add(pillar)
 
   // Head group (cap disc + emoji sprite) bobs together.
   const head = new THREE.Group()
-  head.position.y = 3.8  // sits atop the pillar
+  head.position.y = 2.2  // sits atop the shorter pillar
 
-  // Flat disc cap — same colour as pillar, reads as a platform.
-  const capGeo = new THREE.CylinderGeometry(1.25, 1.25, 0.45, 32)
-  const capMat = new THREE.MeshPhongMaterial({ color, shininess: 90 })
+  // Flat disc cap — also orange and translucent.
+  const capGeo = new THREE.CylinderGeometry(1.1, 1.1, 0.35, 32)
+  const capMat = new THREE.MeshPhongMaterial({
+    color: PILLAR_COLOR, shininess: 80, transparent: true, opacity: 0.72,
+  })
   const cap = new THREE.Mesh(capGeo, capMat)
-  cap.position.y = 0.225  // half of cap height
+  cap.position.y = 0.175
   head.add(cap)
 
   // Emoji sprite billboard on top of the cap.
@@ -190,7 +196,7 @@ export async function addPoiPinsLayer(
 
       // Bob the whole head (cap + orb) + pulse the ground ring.
       for (const { head, ring, phase } of pinsMap.values()) {
-        head.position.y = 3.8 + Math.sin(t * 1.8 + phase) * 0.3
+        head.position.y = 2.2 + Math.sin(t * 1.8 + phase) * 0.3
         ;(ring.material as T3.MeshBasicMaterial).opacity = 0.22 + Math.abs(Math.sin(t * 1.4 + phase)) * 0.22
         ring.scale.setScalar(1 + Math.sin(t * 1.4 + phase) * 0.12)
       }
