@@ -17,6 +17,7 @@ export function BottomNav() {
       WebkitBackdropFilter: 'blur(20px) saturate(160%)',
       borderTop: '1px solid rgba(255,255,255,0.6)',
       boxShadow: '0 -2px 16px rgba(0,0,0,0.08)',
+      paddingBottom: 'env(safe-area-inset-bottom)',
     }}>
       {tabs.map(({ to, label, icon }) => (
         <NavLink

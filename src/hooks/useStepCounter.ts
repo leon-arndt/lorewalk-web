@@ -57,7 +57,13 @@ export function useStepCounter(position: PlayerPosition | null): StepState {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       const stored = raw ? (JSON.parse(raw) as StoredState) : null
-      if (stored && stored.date !== day) base = { steps: 0, distanceM: 0 }
+      if (stored && stored.date !== day) {
+        // New day: zero the visible count and forget the prior fix so the first
+        // post-midnight move measures from here, not across the day boundary.
+        base = { steps: 0, distanceM: 0 }
+        setState(base)
+        lastRef.current = null
+      }
     } catch {
       // ignore
     }
@@ -68,8 +74,11 @@ export function useStepCounter(position: PlayerPosition | null): StepState {
     if (!last) return
     if (position.accuracy > MAX_ACCURACY_M) return
 
+    // Both fixes carry error; a leg is real only if it clears the combined
+    // jitter of the two, not just the newer fix's accuracy.
+    const driftFloor = Math.max(MIN_MOVE_M, last.accuracy + position.accuracy)
     const d = haversineDistance(last.latitude, last.longitude, position.latitude, position.longitude)
-    if (d < Math.max(MIN_MOVE_M, position.accuracy) || d > MAX_JUMP_M) return
+    if (d < driftFloor || d > MAX_JUMP_M) return
 
     const distanceM = base.distanceM + d
     const next = { steps: Math.round(distanceM / STRIDE_M), distanceM }

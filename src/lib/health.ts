@@ -52,7 +52,7 @@ export async function getStepsForDays(days: number): Promise<StepRecord[]> {
 
   const { HealthConnect } = await import('@devmaxime/capacitor-health-connect')
   const start = new Date()
-  start.setDate(start.getDate() - days)
+  start.setDate(start.getDate() - (days - 1))
   start.setHours(0, 0, 0, 0)
 
   const { aggregates } = await HealthConnect.aggregateRecords({

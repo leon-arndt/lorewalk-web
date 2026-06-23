@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SINGAPORE_POIS } from '@/data/singapore-pois'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi, PlayerPosition } from '@/types'
 
 const POI_RADIUS_M = 1_000
+const REFETCH_MOVE_M = 50
 
 export function usePois(position: PlayerPosition | null) {
   const { mode } = useConnectionMode()
   const [pois, setPois] = useState<Poi[]>([])
   const [error, setError] = useState<string | null>(null)
+  const lastFetchRef = useRef<{ lat: number; lon: number } | null>(null)
 
   useEffect(() => {
     // Offline: show all POIs immediately — no GPS needed, no proximity filter.
@@ -20,6 +23,13 @@ export function usePois(position: PlayerPosition | null) {
     }
 
     if (!position) return
+
+    // Re-fetch on true displacement, not on quantized grid cells: skip the RPC
+    // until the player has actually moved REFETCH_MOVE_M since the last fetch.
+    const last = lastFetchRef.current
+    if (last && haversineDistance(last.lat, last.lon, position.latitude, position.longitude) < REFETCH_MOVE_M) {
+      return
+    }
 
     let cancelled = false
 
@@ -33,16 +43,13 @@ export function usePois(position: PlayerPosition | null) {
       if (cancelled) return
       if (error) { setError(error.message); return }
 
+      lastFetchRef.current = { lat: position!.latitude, lon: position!.longitude }
       setPois((data as Poi[]) ?? [])
     }
 
     fetchPois()
     return () => { cancelled = true }
-  }, [
-    mode,
-    position ? Math.round(position.latitude * 1000) : null,
-    position ? Math.round(position.longitude * 1000) : null,
-  ])
+  }, [mode, position])
 
   return { pois, error }
 }

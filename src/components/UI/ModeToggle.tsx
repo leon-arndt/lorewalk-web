@@ -13,7 +13,6 @@ export function ModeToggle() {
         gap: 6,
         padding: '6px 14px',
         borderRadius: 20,
-        border: 'none',
         cursor: 'pointer',
         fontSize: 12,
         fontWeight: 600,

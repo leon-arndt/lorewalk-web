@@ -260,7 +260,10 @@ export async function addCharacterLayer(
 
       renderer.resetState()
       renderer.render(scene, camera)
-      map.triggerRepaint()
+      // Characters animate continuously (idle bob + idle clip), so keep the frame
+      // loop alive while any exist — but let the map go idle when the roster is
+      // empty instead of pinning the GPU at full FPS for nothing.
+      if (characters.length > 0) map.triggerRepaint()
     },
     onRemove() {
       renderer?.dispose()

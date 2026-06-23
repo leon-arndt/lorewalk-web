@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import type { Claim, ExpeditionCollectResult, ExpeditionTarget, HatchedCreature, PlayerProfile, Poi, SquadExpedition } from '@/types'
 import {
@@ -117,9 +117,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     saveProfile(updated)
   }
 
-  function clearJustHatched() {
+  // Stable identity: consumers list this in effect deps (MapPage's hatch toast),
+  // so recreating it each render would reset their timers on any profile change.
+  const clearJustHatched = useCallback(() => {
     setJustHatched([])
-  }
+  }, [])
 
   function persist(updated: PlayerProfile) {
     setProfile(updated)

@@ -24,9 +24,17 @@ export function FriendsSection() {
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
   const [adding, setAdding] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [, setTick] = useState(0)
+
+  // The "Refreshes in Xh" label is computed at render; tick once a minute so it
+  // counts down on its own instead of freezing until the next unrelated re-render.
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 60_000)
+    return () => clearInterval(t)
+  }, [])
 
   useEffect(() => {
-    if (!friendCode) return
+    if (!friendCode) { setQrUrl(null); return }
     QRCode.toDataURL(friendCode.code, {
       width: 200, margin: 2,
       color: { dark: '#1e293b', light: '#ffffff' },

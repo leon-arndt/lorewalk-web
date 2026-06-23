@@ -212,15 +212,6 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
       maxPitch: 80,
     })
 
-    map.on('load', () => {
-      if (mode === 'offline') {
-        // Show all of Singapore so every POI is visible at its real position.
-        map.fitBounds(SINGAPORE_BOUNDS, { padding: 24, duration: 0 })
-      } else if (position) {
-        map.jumpTo({ center: [position.longitude, position.latitude], zoom: 15 })
-      }
-    })
-
     mapRef.current = map
     if (import.meta.env.DEV) (window as unknown as { _map?: maplibregl.Map })._map = map
     return () => { map.remove(); mapRef.current = null }
@@ -267,6 +258,17 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
   useEffect(() => {
     if (position) charLayerRef.current?.setCenter(position.longitude, position.latitude)
   }, [position])
+
+  // Fit the whole island in offline mode — re-runs on every toggle to offline, not
+  // just at mount, so the online→offline switch always re-frames Singapore. Online
+  // framing is owned by the follow-player effect below.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || mode !== 'offline') return
+    const fit = () => map.fitBounds(SINGAPORE_BOUNDS, { padding: 24, duration: 0 })
+    if (map.loaded()) fit()
+    else map.once('load', fit)
+  }, [mode])
 
   // Follow player position in online mode.
   useEffect(() => {

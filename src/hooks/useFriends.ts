@@ -52,6 +52,13 @@ export function useFriends(playerId: string, displayName: string) {
     void loadAll()
   }, [playerId, offline])
 
+  // Keep the stored display_name current: an existing code snapshots the name at
+  // insert time, so a later rename would otherwise show stale to anyone adding you.
+  useEffect(() => {
+    if (offline || !playerId) return
+    void supabase.from('friend_codes').update({ display_name: displayName }).eq('player_id', playerId)
+  }, [playerId, displayName, offline])
+
   async function loadAll() {
     setLoading(true)
     await Promise.all([loadCode(), loadFriends()])
@@ -59,14 +66,12 @@ export function useFriends(playerId: string, displayName: string) {
   }
 
   async function loadCode() {
-    const { data } = await supabase
-      .from('friend_codes')
-      .select('code, expires_at')
-      .eq('player_id', playerId)
-      .gt('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
+    // Server-time filter (RPC compares against now()) so a skewed client clock
+    // can't mislabel a code as expired or valid.
+    const { data, error } = await supabase.rpc('get_active_friend_code', { p_player_id: playerId })
 
+    // A read failure is not "no code" — bailing avoids inserting a duplicate row.
+    if (error) return
     if (data?.[0]) {
       setFriendCode({ code: data[0].code, expiresAt: data[0].expires_at })
     } else {
@@ -74,16 +79,27 @@ export function useFriends(playerId: string, displayName: string) {
     }
   }
 
+  // Postgres unique-violation — collides on the UNIQUE(code) constraint.
+  const UNIQUE_VIOLATION = '23505'
+
   async function insertCode(): Promise<FriendCode | null> {
-    const code = makeCode()
-    const expiresAt = new Date(Date.now() + TTL_MS).toISOString()
-    const { error } = await supabase
-      .from('friend_codes')
-      .insert({ player_id: playerId, display_name: displayName, code, expires_at: expiresAt })
-    if (error) return null
-    const fc = { code, expiresAt }
-    setFriendCode(fc)
-    return fc
+    // Let the table default (now() + 72h) stamp expires_at server-side; read it
+    // back rather than trusting the client clock.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const code = makeCode()
+      const { data, error } = await supabase
+        .from('friend_codes')
+        .insert({ player_id: playerId, display_name: displayName, code })
+        .select('expires_at')
+        .single()
+      if (!error && data) {
+        const fc = { code, expiresAt: data.expires_at }
+        setFriendCode(fc)
+        return fc
+      }
+      if (error?.code !== UNIQUE_VIOLATION) break
+    }
+    return null
   }
 
   async function loadFriends() {
@@ -107,8 +123,11 @@ export function useFriends(playerId: string, displayName: string) {
       setFriendCode({ code: makeCode(), expiresAt: new Date(Date.now() + TTL_MS).toISOString() })
       return
     }
-    await supabase.from('friend_codes').delete().eq('player_id', playerId)
-    await insertCode()
+    // Insert first; only drop the old codes once the new one is live, so a failed
+    // insert never leaves the user pointing at a deleted code.
+    const fc = await insertCode()
+    if (!fc) return
+    await supabase.from('friend_codes').delete().eq('player_id', playerId).neq('code', fc.code)
   }, [playerId, displayName, offline])
 
   const addFriend = useCallback(
@@ -128,12 +147,7 @@ export function useFriends(playerId: string, displayName: string) {
         return { ok: true, message: 'Friend added (test mode)' }
       }
 
-      const { data: codeRows } = await supabase
-        .from('friend_codes')
-        .select('player_id, display_name')
-        .eq('code', code)
-        .gt('expires_at', new Date().toISOString())
-        .limit(1)
+      const { data: codeRows } = await supabase.rpc('lookup_friend_code', { p_code: code })
 
       if (!codeRows?.length) return { ok: false, message: 'Code not found or expired' }
       const { player_id: friendId, display_name: friendName } = codeRows[0]
@@ -157,7 +171,12 @@ export function useFriends(playerId: string, displayName: string) {
         .from('friendships')
         .insert({ player_a: pA, player_b: pB, name_a: nameA, name_b: nameB })
 
-      if (error) return { ok: false, message: 'Failed to add friend' }
+      if (error) {
+        // Concurrent/duplicate add races past the existence check; the unique
+        // index is the real guard, so treat its violation as "already friends".
+        if (error.code === UNIQUE_VIOLATION) return { ok: false, message: 'Already friends!' }
+        return { ok: false, message: 'Failed to add friend' }
+      }
 
       await loadFriends()
       return { ok: true, message: `Added ${friendName}!` }

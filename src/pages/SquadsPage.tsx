@@ -79,6 +79,9 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
   const [picker, setPicker] = useState<number | null>(null)
   const [expeditionOpen, setExpeditionOpen] = useState(false)
   const [flash, setFlash] = useState<string | null>(null)
+  const [nameDraft, setNameDraft] = useState(squad.name)
+  // Mirror external renames/resets into the controlled input.
+  useEffect(() => { setNameDraft(squad.name) }, [squad.name])
 
   function handleSlotTap(i: number) {
     if (away) return
@@ -104,9 +107,13 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <input
-          key={squad.id}
-          defaultValue={squad.name}
-          onBlur={(e) => renameSquad(squad.id, e.target.value)}
+          value={nameDraft}
+          onChange={(e) => setNameDraft(e.target.value)}
+          onBlur={() => {
+            const trimmed = nameDraft.trim()
+            if (trimmed) renameSquad(squad.id, trimmed)
+            else setNameDraft(squad.name)
+          }}
           style={{
             flex: 1, fontSize: 16, fontWeight: 700, color: '#1e293b',
             border: 'none', borderBottom: '1px solid transparent', outline: 'none',

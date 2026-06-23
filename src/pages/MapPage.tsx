@@ -8,7 +8,11 @@ import { useGeolocation } from '@/hooks/useGeolocation'
 import { useStepCounter } from '@/hooks/useStepCounter'
 import { usePois } from '@/hooks/usePois'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi } from '@/types'
+
+const CHECKIN_RADIUS_M = 50
 
 // Map a creature's type (POI category) to a 3D companion body colour.
 const CATEGORY_COLORS: Record<string, number> = {
@@ -28,6 +32,7 @@ export function MapPage() {
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
   const { profile, visitedPois, addVisit, justHatched, clearJustHatched } = useProfile()
+  const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -77,8 +82,17 @@ export function MapPage() {
   const handlePoiClick = useCallback((poi: Poi) => setSelectedPoi(poi), [])
   const handleClose = useCallback(() => setSelectedPoi(null), [])
   const handleCheckIn = useCallback(() => {
-    if (selectedPoi) addVisit(selectedPoi)
-  }, [selectedPoi, addVisit])
+    if (!selectedPoi) return
+    // Re-verify proximity here too — visits are the core progression currency, so
+    // don't trust only the render-time button gate. Offline mode is a deliberate
+    // GPS-free test path and is exempt.
+    if (mode === 'online') {
+      if (!position) return
+      const d = haversineDistance(position.latitude, position.longitude, selectedPoi.lat, selectedPoi.lon)
+      if (d > CHECKIN_RADIUS_M) return
+    }
+    addVisit(selectedPoi)
+  }, [selectedPoi, addVisit, mode, position])
 
   // Show hatching toast
   useEffect(() => {

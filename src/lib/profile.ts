@@ -19,13 +19,17 @@ export function applyXp(currentLevel: number, currentXp: number, gained: number)
 }
 
 // Streak: did the player also visit yesterday?
+// Calendar days are anchored to Singapore time (UTC+8) — the game's home zone —
+// so a check-in just before local midnight isn't bucketed into the wrong UTC day.
+const SGT_OFFSET_MS = 8 * 3_600_000
+function sgtDayStr(epochMs: number) {
+  return new Date(epochMs + SGT_OFFSET_MS).toISOString().slice(0, 10)
+}
 function todayStr() {
-  return new Date().toISOString().slice(0, 10)
+  return sgtDayStr(Date.now())
 }
 function yesterdayStr() {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toISOString().slice(0, 10)
+  return sgtDayStr(Date.now() - 24 * 3_600_000)
 }
 
 export function updateStreak(lastVisitDate: string | null, currentStreak: number): { streakDays: number; lastVisitDate: string } {
