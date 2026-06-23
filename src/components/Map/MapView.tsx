@@ -2,90 +2,22 @@ import { useEffect, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
+import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import type { Poi, PlayerPosition } from '@/types'
 
 // OpenFreeMap "Liberty" — free vector tiles, no API key. Gives 3D building
 // extrusions, crisp labels, and transit POIs (bus/rail/MRT) out of the box.
-// Was previously flat raster OSM (https://tile.openstreetmap.org/...).
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
-// Bounding box that fits all 100 Singapore POIs with a small margin.
+// Bounding box that fits all Singapore POIs with a small margin.
 const SINGAPORE_BOUNDS: maplibregl.LngLatBoundsLike = [
   [103.62, 1.15],  // SW
   [104.02, 1.48],  // NE
 ]
 
-function applyMarkerVisual(el: HTMLElement, poi: Poi, isVisited: boolean) {
-  const isPermanent = poi.kind === 'permanent'
-  if (isVisited) {
-    el.textContent = '😊'
-    el.style.background = '#f0fdf4'
-    el.style.border = '2.5px solid #22c55e'
-    el.style.boxShadow = '0 2px 8px rgba(34,197,94,0.25)'
-  } else {
-    el.textContent = isPermanent ? '🏛' : '✨'
-    el.style.background = isPermanent ? '#fff7ed' : '#faf5ff'
-    el.style.border = `2.5px solid ${isPermanent ? '#fb923c' : '#c084fc'}`
-    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.12)'
-  }
-}
-
-function buildMarkerElement(poi: Poi, isVisited: boolean, onClick: () => void) {
-  // MapLibre sets position:absolute and transform on whichever element you pass to
-  // Marker({ element }). Applying our own transform there would overwrite MapLibre's
-  // coordinate projection. The fix: a nested inner element carries all visuals and
-  // animation — the outer element belongs entirely to MapLibre.
-  const outer = document.createElement('div')
-  outer.style.cssText = 'width:40px;height:40px;cursor:pointer;'
-
-  const inner = document.createElement('div')
-  inner.style.cssText = `
-    width:40px;height:40px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:18px;
-    transition:transform 0.15s ease,box-shadow 0.15s ease;
-    user-select:none;
-  `
-  applyMarkerVisual(inner, poi, isVisited)
-
-  const tooltip = document.createElement('div')
-  tooltip.textContent = poi.name
-  tooltip.style.cssText = `
-    position:absolute;bottom:48px;left:50%;
-    transform:translateX(-50%);
-    background:white;color:#1e293b;
-    font-size:12px;font-weight:600;
-    padding:4px 10px;border-radius:8px;white-space:nowrap;
-    box-shadow:0 2px 10px rgba(0,0,0,0.12);
-    pointer-events:none;
-    opacity:0;transition:opacity 0.12s ease;
-  `
-
-  outer.addEventListener('mouseenter', () => {
-    inner.style.transform = 'scale(1.2)'
-    tooltip.style.opacity = '1'
-  })
-  outer.addEventListener('mouseleave', () => {
-    inner.style.transform = 'scale(1)'
-    tooltip.style.opacity = '0'
-  })
-  outer.addEventListener('click', onClick)
-
-  outer.appendChild(inner)
-  outer.appendChild(tooltip)
-
-  return { outer, inner }
-}
-
-export interface SquadMarker {
-  id: string
-  name: string
-  emojis: string[]
-  lat: number
-  lon: number
-  isActive: boolean
-  ready: boolean
-}
+// Tap radius in screen pixels: at 60° pitch a tapped POI pin won't project to
+// exactly its coordinate, so we find the closest POI within this threshold.
+const TAP_RADIUS_PX = 48
 
 function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   const outer = document.createElement('div')
@@ -136,6 +68,16 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   outer.appendChild(inner)
   outer.appendChild(tooltip)
   return outer
+}
+
+export interface SquadMarker {
+  id: string
+  name: string
+  emojis: string[]
+  lat: number
+  lon: number
+  isActive: boolean
+  ready: boolean
 }
 
 export interface ClaimMarker {
@@ -191,15 +133,22 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const playerMarkerRef = useRef<maplibregl.Marker | null>(null)
-  const poiMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
-  const poiInnerEls = useRef<Map<string, HTMLElement>>(new Map())
   const squadMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const claimMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const charLayerRef = useRef<CharacterLayerHandle | null>(null)
+  const poiPinsRef = useRef<PoiPinsHandle | null>(null)
   const companionsRef = useRef<CharacterSpec[]>(companions)
   companionsRef.current = companions
 
-  // Initialise map once; defer anything that needs map.project() until after 'load'.
+  // Kept in refs so map event handlers never capture stale closures.
+  const poisRef = useRef<Poi[]>(pois)
+  poisRef.current = pois
+  const visitedPoisRef = useRef<Set<string>>(visitedPois)
+  visitedPoisRef.current = visitedPois
+  const onPoiClickRef = useRef(onPoiClick)
+  onPoiClickRef.current = onPoiClick
+
+  // Initialise map once.
   useEffect(() => {
     if (!containerRef.current) return
 
@@ -208,7 +157,7 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
       style: MAP_STYLE,
       center: [103.8198, 1.3521],
       zoom: 11,
-      pitch: 60,        // strong tilt so Singapore's tall buildings read as a skyline
+      pitch: 60,
       maxPitch: 80,
     })
 
@@ -216,6 +165,7 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     if (import.meta.env.DEV) (window as unknown as { _map?: maplibregl.Map })._map = map
 
     map.on('load', () => {
+      // Lower 3D buildings to neighbourhood zoom.
       for (const layer of map.getStyle().layers) {
         if (layer.type === 'fill-extrusion') {
           map.setLayerZoomRange(layer.id, 12, 24)
@@ -223,10 +173,61 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
       }
     })
 
+    // Proximity click: find the closest POI to the tap within TAP_RADIUS_PX.
+    // Used instead of a hitbox layer so the Three.js pins don't need raycasting.
+    map.on('click', (e) => {
+      const pt = e.point
+      let best: Poi | null = null
+      let bestDist = TAP_RADIUS_PX * TAP_RADIUS_PX
+
+      for (const poi of poisRef.current) {
+        const proj = map.project([poi.lon, poi.lat])
+        const d = (proj.x - pt.x) ** 2 + (proj.y - pt.y) ** 2
+        if (d < bestDist) { bestDist = d; best = poi }
+      }
+      if (best) onPoiClickRef.current(best)
+    })
+
     return () => { map.remove(); mapRef.current = null }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Add the 3D wandering characters once the map (and its style) is ready.
+  // Launch the 3D POI pins layer once the map (and style) is ready.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    let cancelled = false
+
+    const add = async () => {
+      const specs = poisRef.current.map((p) => ({
+        id: p.id, lat: p.lat, lon: p.lon,
+        kind: p.kind, category: p.category ?? '', visited: visitedPoisRef.current.has(p.id),
+      }))
+      const handle = await addPoiPinsLayer(map, specs)
+      if (cancelled) { handle.remove(); return }
+      poiPinsRef.current = handle
+    }
+
+    if (map.loaded()) add()
+    else map.once('load', add)
+
+    return () => {
+      cancelled = true
+      poiPinsRef.current?.remove()
+      poiPinsRef.current = null
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Push POI + visited state updates into the pins layer.
+  useEffect(() => {
+    poiPinsRef.current?.updatePins(
+      pois.map((p) => ({
+        id: p.id, lat: p.lat, lon: p.lon,
+        kind: p.kind, category: p.category ?? '', visited: visitedPois.has(p.id),
+      })),
+    )
+  }, [pois, visitedPois])
+
+  // Launch companion characters once the style is ready.
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
@@ -241,11 +242,11 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
         characters: companionsRef.current,
         modelUrl: '/models/character.glb',
         wanderRadiusM: 30,
-        modelScale: 4, // exaggerated (~6m) so characters read on a city-scale map
+        modelScale: 4,
       })
       if (cancelled) { handle.remove(); return }
       charLayerRef.current = handle
-      handle.setCharacters(companionsRef.current) // sync any change during the await
+      handle.setCharacters(companionsRef.current)
     }
 
     if (map.loaded()) add()
@@ -258,19 +259,14 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The on-map characters are the active squad's members; update when it changes.
   useEffect(() => {
     charLayerRef.current?.setCharacters(companions)
   }, [companions])
 
-  // Keep the wander origin on the player as they move.
   useEffect(() => {
     if (position) charLayerRef.current?.setCenter(position.longitude, position.latitude)
   }, [position])
 
-  // Fit the whole island in offline mode — re-runs on every toggle to offline, not
-  // just at mount, so the online→offline switch always re-frames Singapore. Online
-  // framing is owned by the follow-player effect below.
   useEffect(() => {
     const map = mapRef.current
     if (!map || mode !== 'offline') return
@@ -279,7 +275,6 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     else map.once('load', fit)
   }, [mode])
 
-  // Follow player position in online mode.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !position || mode !== 'online') return
@@ -303,55 +298,6 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     map.easeTo({ center: lngLat, duration: 500 })
   }, [position, mode])
 
-  // Add / remove POI markers. We wait for map 'load' before projecting coordinates.
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
-
-    const sync = () => {
-      const currentIds = new Set(pois.map((p) => p.id))
-
-      poiMarkersRef.current.forEach((marker, id) => {
-        if (!currentIds.has(id)) {
-          marker.remove()
-          poiMarkersRef.current.delete(id)
-          poiInnerEls.current.delete(id)
-        }
-      })
-
-      pois.forEach((poi) => {
-        if (poiMarkersRef.current.has(poi.id)) return
-
-        const isVisited = visitedPois.has(poi.id)
-        const { outer, inner } = buildMarkerElement(poi, isVisited, () => onPoiClick(poi))
-
-        poiInnerEls.current.set(poi.id, inner)
-
-        const marker = new maplibregl.Marker({ element: outer })
-          .setLngLat([poi.lon, poi.lat])
-          .addTo(map)
-
-        poiMarkersRef.current.set(poi.id, marker)
-      })
-    }
-
-    if (map.loaded()) {
-      sync()
-    } else {
-      map.once('load', sync)
-    }
-  }, [pois, onPoiClick]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Update marker visuals when visited state changes — no map projection needed.
-  useEffect(() => {
-    pois.forEach((poi) => {
-      const el = poiInnerEls.current.get(poi.id)
-      if (el) applyMarkerVisual(el, poi, visitedPois.has(poi.id))
-    })
-  }, [visitedPois, pois])
-
-  // Rebuild stationed-squad markers whenever squads change. Only ever a few, so
-  // full teardown is simpler than diffing.
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
@@ -359,7 +305,6 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     const sync = () => {
       squadMarkersRef.current.forEach((m) => m.remove())
       squadMarkersRef.current.clear()
-
       squadMarkers.forEach((squad) => {
         const el = buildSquadElement(squad, () => onSquadClick?.(squad.id))
         const marker = new maplibregl.Marker({ element: el })
@@ -373,7 +318,6 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     else map.once('load', sync)
   }, [squadMarkers, onSquadClick])
 
-  // Rebuild claimed-landmark flag markers when claims change.
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
