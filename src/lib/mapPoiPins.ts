@@ -115,36 +115,27 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   ring.position.y = 0.05
   group.add(ring)
 
-  // Triangular-prism pillar — 3 radial segments give the faceted look while
-  // MeshPhongMaterial + directional light shade each face differently.
-  const PILLAR_COLOR = 0xf97316  // orange, independent of category
-  const pillarGeo = new THREE.CylinderGeometry(0.45, 0.55, 1.1, 3)
-  const pillarMat = new THREE.MeshPhongMaterial({
-    color: PILLAR_COLOR, shininess: 80, transparent: true, opacity: 0.62,
+  // Cone — 24 segments for a smooth round silhouette, tip pointing up.
+  // ConeGeometry is centred at y=0, so offset by half-height to sit base-on-ground.
+  const CONE_COLOR = 0xf97316
+  const CONE_HEIGHT = 1.1
+  const coneGeo = new THREE.ConeGeometry(0.65, CONE_HEIGHT, 24)
+  const coneMat = new THREE.MeshPhongMaterial({
+    color: CONE_COLOR, shininess: 80, transparent: true, opacity: 0.62,
   })
-  const pillar = new THREE.Mesh(pillarGeo, pillarMat)
-  pillar.position.y = 0.55
-  group.add(pillar)
+  const cone = new THREE.Mesh(coneGeo, coneMat)
+  cone.position.y = CONE_HEIGHT / 2
+  group.add(cone)
 
-  // Head group (cap disc + emoji sprite) bobs together.
+  // Head group: just the emoji sprite, bobs above the cone tip.
   const head = new THREE.Group()
-  head.position.y = 1.1  // sits atop the pillar
+  head.position.y = CONE_HEIGHT
 
-  // Flat disc cap — also orange and translucent.
-  const capGeo = new THREE.CylinderGeometry(1.1, 1.1, 0.35, 32)
-  const capMat = new THREE.MeshPhongMaterial({
-    color: PILLAR_COLOR, shininess: 80, transparent: true, opacity: 0.72,
-  })
-  const cap = new THREE.Mesh(capGeo, capMat)
-  cap.position.y = 0.175
-  head.add(cap)
-
-  // Emoji sprite billboard on top of the cap.
   const texture = makeOrbTexture(THREE, emoji, color)
   const orbMat = new THREE.SpriteMaterial({ map: texture, depthWrite: false })
   const orb = new THREE.Sprite(orbMat)
-  orb.scale.set(1.8, 1.8, 1)
-  orb.position.y = 0.45 + 0.9  // above the cap surface
+  orb.scale.set(1.6, 1.6, 1)
+  orb.position.y = 0.9
   head.add(orb)
 
   group.add(head)
@@ -196,7 +187,7 @@ export async function addPoiPinsLayer(
 
       // Bob the whole head (cap + orb) + pulse the ground ring.
       for (const { head, ring, phase } of pinsMap.values()) {
-        head.position.y = 1.1 + Math.sin(t * 0.7 + phase) * 0.1
+        head.position.y = 1.1 + Math.sin(t * 0.7 + phase) * 0.08
         ;(ring.material as T3.MeshBasicMaterial).opacity = 0.22 + Math.abs(Math.sin(t * 1.4 + phase)) * 0.22
         ring.scale.setScalar(1 + Math.sin(t * 1.4 + phase) * 0.12)
       }
