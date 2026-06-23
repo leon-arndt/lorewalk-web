@@ -91,6 +91,7 @@ function makeOrbTexture(THREE: typeof T3, emoji: string, hex: number): T3.Canvas
 interface PinObjects {
   group: T3.Group
   ring: T3.Mesh
+  head: T3.Group   // cap + orb together, bobbed as a unit
   orb: T3.Sprite
   phase: number
 }
@@ -104,39 +105,45 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   group.position.set(x, 0, z)
 
   // Pulsing ground ring (lies flat in XZ)
-  const ringGeo = new THREE.RingGeometry(1.1, 2.0, 48)
+  const ringGeo = new THREE.RingGeometry(1.2, 2.2, 48)
   ringGeo.rotateX(-Math.PI / 2)
   const ringMat = new THREE.MeshBasicMaterial({
-    color,
-    transparent: true,
-    opacity: 0.35,
-    side: THREE.DoubleSide,
-    depthWrite: false,
+    color, transparent: true, opacity: 0.35,
+    side: THREE.DoubleSide, depthWrite: false,
   })
   const ring = new THREE.Mesh(ringGeo, ringMat)
   ring.position.y = 0.05
   group.add(ring)
 
-  // Thin stem
-  const stemGeo = new THREE.CylinderGeometry(0.07, 0.07, 3.0, 6)
-  const stemMat = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.65,
-  })
-  const stem = new THREE.Mesh(stemGeo, stemMat)
-  stem.position.y = 1.5
-  group.add(stem)
+  // Round pillar — 20-sided + MeshPhongMaterial so it shades under the directional light.
+  const pillarGeo = new THREE.CylinderGeometry(0.3, 0.38, 3.8, 20)
+  const pillarMat = new THREE.MeshPhongMaterial({ color, shininess: 90 })
+  const pillar = new THREE.Mesh(pillarGeo, pillarMat)
+  pillar.position.y = 1.9
+  group.add(pillar)
 
-  // Floating emoji orb (Sprite — always faces camera, no manual billboarding needed)
+  // Head group (cap disc + emoji sprite) bobs together.
+  const head = new THREE.Group()
+  head.position.y = 3.8  // sits atop the pillar
+
+  // Flat disc cap — same colour as pillar, reads as a platform.
+  const capGeo = new THREE.CylinderGeometry(1.25, 1.25, 0.45, 32)
+  const capMat = new THREE.MeshPhongMaterial({ color, shininess: 90 })
+  const cap = new THREE.Mesh(capGeo, capMat)
+  cap.position.y = 0.225  // half of cap height
+  head.add(cap)
+
+  // Emoji sprite billboard on top of the cap.
   const texture = makeOrbTexture(THREE, emoji, color)
   const orbMat = new THREE.SpriteMaterial({ map: texture, depthWrite: false })
   const orb = new THREE.Sprite(orbMat)
-  orb.scale.set(2.0, 2.0, 1)
-  orb.position.y = 3.4
-  group.add(orb)
+  orb.scale.set(1.8, 1.8, 1)
+  orb.position.y = 0.45 + 0.9  // above the cap surface
+  head.add(orb)
 
-  return { group, ring, orb, phase: Math.random() * Math.PI * 2 }
+  group.add(head)
+
+  return { group, ring, head, orb, phase: Math.random() * Math.PI * 2 }
 }
 
 export async function addPoiPinsLayer(
@@ -147,7 +154,10 @@ export async function addPoiPinsLayer(
 
   const scene = new THREE.Scene()
   const camera = new THREE.Camera()
-  scene.add(new THREE.AmbientLight(0xffffff, 2))
+  scene.add(new THREE.AmbientLight(0xffffff, 1.0))
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.8)
+  dirLight.position.set(2, 5, 3)
+  scene.add(dirLight)
 
   const pinsMap = new Map<string, PinObjects>()
 
@@ -178,9 +188,9 @@ export async function addPoiPinsLayer(
 
       const t = performance.now() / 1000
 
-      // Bob orb + pulse ring
-      for (const { orb, ring, phase } of pinsMap.values()) {
-        orb.position.y = 3.4 + Math.sin(t * 1.8 + phase) * 0.28
+      // Bob the whole head (cap + orb) + pulse the ground ring.
+      for (const { head, ring, phase } of pinsMap.values()) {
+        head.position.y = 3.8 + Math.sin(t * 1.8 + phase) * 0.3
         ;(ring.material as T3.MeshBasicMaterial).opacity = 0.22 + Math.abs(Math.sin(t * 1.4 + phase)) * 0.22
         ring.scale.setScalar(1 + Math.sin(t * 1.4 + phase) * 0.12)
       }
