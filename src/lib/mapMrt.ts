@@ -268,8 +268,8 @@ function buildLabelImage(lineInfos: LabelSpec[], name: string): {
   const PFZ  = 9  * SC     // pill font size
   const NFZ  = 10 * SC     // name font size
   const PADX = 5  * SC     // horizontal padding inside pill
-  const GAP  = 3  * SC     // gap between pills
-  const SEP  = 7  * SC     // gap between last pill and station name
+  const GAP  = 0           // pills touch — matches SMRT signage style
+  const SEP  = 6  * SC     // gap between last pill and station name
   const H    = 20 * SC     // total canvas height
 
   const canvas = document.createElement('canvas')
