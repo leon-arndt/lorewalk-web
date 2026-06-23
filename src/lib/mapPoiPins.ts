@@ -33,10 +33,6 @@ const CATEGORY_COLORS: Record<string, number> = {
   museum:   0xf472b6,
   nature:   0x22c55e,
 }
-const CATEGORY_EMOJIS: Record<string, string> = {
-  heritage: '🏛', landmark: '📍', arts: '🎭',
-  religious: '🕌', museum: '🎨', nature: '🌿',
-}
 const VISITED_COLOR = 0x4ade80
 
 // Constant apparent size across zoom levels (same trick as companion characters).
@@ -53,40 +49,6 @@ function toLocalXZ(lat: number, lon: number) {
   }
 }
 
-function makeOrbTexture(THREE: typeof T3, emoji: string, hex: number): T3.CanvasTexture {
-  const S = 128
-  const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = S
-  const ctx = canvas.getContext('2d')!
-  const r = (hex >> 16) & 0xff
-  const g = (hex >> 8) & 0xff
-  const b = hex & 0xff
-
-  // Outer coloured circle
-  ctx.beginPath()
-  ctx.arc(S / 2, S / 2, S / 2 - 2, 0, Math.PI * 2)
-  ctx.fillStyle = `rgb(${r},${g},${b})`
-  ctx.fill()
-
-  // White ring
-  ctx.strokeStyle = 'rgba(255,255,255,0.9)'
-  ctx.lineWidth = 6
-  ctx.stroke()
-
-  // White inner circle
-  ctx.beginPath()
-  ctx.arc(S / 2, S / 2, S / 2 - 14, 0, Math.PI * 2)
-  ctx.fillStyle = 'rgba(255,255,255,0.88)'
-  ctx.fill()
-
-  // Emoji
-  ctx.font = `${Math.round(S * 0.44)}px serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(emoji, S / 2, S / 2)
-
-  return new THREE.CanvasTexture(canvas)
-}
 
 interface PinObjects {
   group: T3.Group
@@ -98,7 +60,6 @@ interface PinObjects {
 
 function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   const color = spec.visited ? VISITED_COLOR : (CATEGORY_COLORS[spec.category] ?? 0x94a3b8)
-  const emoji = spec.visited ? '😊' : (CATEGORY_EMOJIS[spec.category] ?? '📍')
 
   const group = new THREE.Group()
   const { x, z } = toLocalXZ(spec.lat, spec.lon)

@@ -312,8 +312,16 @@ function buildLabelImage(lineInfos: LabelSpec[], name: string): {
 
 // ─── GeoJSON builders ────────────────────────────────────────────────────────
 
-type LineFeature    = GeoJSON.Feature<GeoJSON.LineString, { color: string }>
-type StationFeature = GeoJSON.Feature<GeoJSON.Point,      { name: string; color: string; labelKey: string }>
+interface LineFeature {
+  type: 'Feature'
+  properties: { color: string }
+  geometry: { type: 'LineString'; coordinates: Coord[] }
+}
+interface StationFeature {
+  type: 'Feature'
+  properties: { name: string; color: string; labelKey: string }
+  geometry: { type: 'Point'; coordinates: Coord }
+}
 
 function buildGeoJson(labelKeys: Map<string, string>) {
   const lineFeatures: LineFeature[]       = []
