@@ -214,6 +214,15 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
 
     mapRef.current = map
     if (import.meta.env.DEV) (window as unknown as { _map?: maplibregl.Map })._map = map
+
+    map.on('load', () => {
+      for (const layer of map.getStyle().layers) {
+        if (layer.type === 'fill-extrusion') {
+          map.setLayerZoomRange(layer.id, 12, 24)
+        }
+      }
+    })
+
     return () => { map.remove(); mapRef.current = null }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 

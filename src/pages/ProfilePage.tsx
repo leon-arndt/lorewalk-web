@@ -296,13 +296,9 @@ export function ProfilePage() {
 
         {/* Joined date + app version */}
         <p style={{ margin: 0, textAlign: 'center', fontSize: 12, color: '#cbd5e1' }}>
-<<<<<<< HEAD
-          Explorer since {formatDate(profile.createdAt)}
+          {t('profile_explorer_since', { date: formatDate(profile.createdAt) })}
           <br />
           v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
-=======
-          {t('profile_explorer_since', { date: formatDate(profile.createdAt) })}
->>>>>>> cff657a (Add full app localization with 8-language support)
         </p>
       </div>
     </div>
