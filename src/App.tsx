@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ConnectionModeProvider } from '@/contexts/ConnectionModeContext'
 import { ProfileProvider } from '@/contexts/ProfileContext'
 import { LocaleProvider } from '@/contexts/LocaleContext'
+import { MusicProvider } from '@/contexts/MusicContext'
 import { BottomNav } from '@/components/UI/BottomNav'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import { MapPage } from '@/pages/MapPage'
@@ -13,6 +14,7 @@ import { ProfilePage } from '@/pages/ProfilePage'
 export default function App() {
   return (
     <LocaleProvider>
+    <MusicProvider>
     <ConnectionModeProvider>
       <ProfileProvider>
         <BrowserRouter>
@@ -32,6 +34,7 @@ export default function App() {
         </BrowserRouter>
       </ProfileProvider>
     </ConnectionModeProvider>
+    </MusicProvider>
     </LocaleProvider>
   )
 }

@@ -10,7 +10,7 @@ import { useStepCounter } from '@/hooks/useStepCounter'
 import { usePois } from '@/hooks/usePois'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
-import { useBackgroundMusic } from '@/hooks/useBackgroundMusic'
+import { useMusic } from '@/contexts/MusicContext'
 import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi } from '@/types'
 
@@ -41,7 +41,7 @@ export function MapPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
-  const { muted, toggle: toggleMusic } = useBackgroundMusic('/music/town-theme.mp3')
+  const { muted, toggle: toggleMusic } = useMusic()
 
   // The active squad's creatures become the 3D companions that walk with you —
   // unless that squad is away on an expedition, in which case nobody follows.
