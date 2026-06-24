@@ -39,6 +39,8 @@ export function MapPage() {
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
+  const [isPanelClosing, setIsPanelClosing] = useState(false)
+  const panelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
@@ -90,8 +92,23 @@ export function MapPage() {
   }, [profile.squads, profile.hatchedCreatures, profile.activeSquadId])
 
   const handleSquadClick = useCallback(() => navigate('/squads'), [navigate])
-  const handlePoiClick = useCallback((poi: Poi) => setSelectedPoi(poi), [])
-  const handleClose = useCallback(() => setSelectedPoi(null), [])
+  const handlePoiClick = useCallback((poi: Poi) => {
+    if (panelCloseTimer.current) {
+      clearTimeout(panelCloseTimer.current)
+      panelCloseTimer.current = null
+    }
+    setIsPanelClosing(false)
+    setSelectedPoi(poi)
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setIsPanelClosing(true)
+    panelCloseTimer.current = setTimeout(() => {
+      setSelectedPoi(null)
+      setIsPanelClosing(false)
+      panelCloseTimer.current = null
+    }, 300)
+  }, [])
   const handleCheckIn = useCallback(() => {
     if (!selectedPoi) return
     // Re-verify proximity here too — visits are the core progression currency, so
@@ -246,6 +263,7 @@ export function MapPage() {
           position={position}
           onCheckIn={handleCheckIn}
           onClose={handleClose}
+          isClosing={isPanelClosing}
         />
       )}
     </div>

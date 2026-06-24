@@ -12,9 +12,10 @@ interface PoiDetailPanelProps {
   position: PlayerPosition | null
   onCheckIn: () => void
   onClose: () => void
+  isClosing?: boolean
 }
 
-export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }: PoiDetailPanelProps) {
+export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose, isClosing = false }: PoiDetailPanelProps) {
   const { mode } = useConnectionMode()
   const { t } = useLocale()
   const isPermanent = poi.kind === 'permanent'
@@ -35,6 +36,9 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
       padding: '20px 20px',
       paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
       zIndex: 10,
+      animation: isClosing
+        ? 'panelSlideDown 0.28s cubic-bezier(0.36,0,0.66,0) forwards'
+        : 'panelSlideUp 0.38s cubic-bezier(0.16,1,0.3,1)',
     }}>
       <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
 
