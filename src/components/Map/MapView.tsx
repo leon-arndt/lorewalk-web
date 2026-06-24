@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type MutableRefObject } from 'react'
 import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
@@ -127,9 +127,11 @@ interface MapViewProps {
   companions?: CharacterSpec[]
   claimMarkers?: ClaimMarker[]
   onClaimClick?: (poiId: string) => void
+  onBearingChange?: (bearing: number) => void
+  compassResetRef?: MutableRefObject<(() => void) | null>
 }
 
-export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick }: MapViewProps) {
+export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, onBearingChange, compassResetRef }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -148,6 +150,8 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
   visitedPoisRef.current = visitedPois
   const onPoiClickRef = useRef(onPoiClick)
   onPoiClickRef.current = onPoiClick
+  const onBearingChangeRef = useRef(onBearingChange)
+  onBearingChangeRef.current = onBearingChange
 
   // Initialise map once.
   useEffect(() => {
@@ -175,6 +179,12 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
       addMrtLayers(map)
     })
 
+    map.on('rotate', () => onBearingChangeRef.current?.(map.getBearing()))
+
+    if (compassResetRef) {
+      compassResetRef.current = () => map.easeTo({ bearing: 0, duration: 300 })
+    }
+
     // Proximity click: find the closest POI to the tap within TAP_RADIUS_PX.
     // Used instead of a hitbox layer so the Three.js pins don't need raycasting.
     map.on('click', (e) => {
@@ -190,7 +200,11 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
       if (best) onPoiClickRef.current(best)
     })
 
-    return () => { map.remove(); mapRef.current = null }
+    return () => {
+      if (compassResetRef) compassResetRef.current = null
+      map.remove()
+      mapRef.current = null
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Launch the 3D POI pins layer once the map (and style) is ready.
