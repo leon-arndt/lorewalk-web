@@ -75,6 +75,7 @@ export const ja: Translations = {
   squads_active: '★ アクティブ',
   squads_set_active: 'アクティブに設定',
   squads_send_expedition: '🧭 遠征に送る…',
+  squads_add_member_first: 'まずメンバーを追加してください',
   squads_exploring: '🧭 {name}を探索中',
   squads_boost_paused: ' · ライブブースト停止中',
   squads_collect_reward: '🎁 報酬を受け取る',

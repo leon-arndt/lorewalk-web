@@ -1,5 +1,6 @@
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { glassChrome, glassPanel } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi, PlayerPosition } from '@/types'
 
@@ -27,32 +28,34 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
   return (
     <div style={{
       position: 'absolute',
-      bottom: 60, left: 0, right: 0,
-      background: 'rgba(255,255,255,0.72)',
-      backdropFilter: 'blur(24px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-      borderRadius: '20px 20px 0 0',
-      borderTop: '1px solid rgba(255,255,255,0.6)',
-      padding: '20px 20px 36px',
-      boxShadow: '0 -8px 32px rgba(0,0,0,0.1)',
+      bottom: 0, left: 0, right: 0,
+      ...glassPanel,
+      border: 'none',
+      borderRadius: '24px 24px 0 0',
+      padding: '20px 20px',
+      paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
       zIndex: 10,
     }}>
-      {/* Handle bar */}
-      <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)', margin: '0 auto 16px' }} />
+      <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           <span style={{
-            fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
-            background: isPermanent ? '#fff7ed' : '#faf5ff',
+            fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+            background: isPermanent ? 'rgba(255,237,213,0.80)' : 'rgba(250,245,255,0.80)',
             color: isPermanent ? '#ea580c' : '#9333ea',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
           }}>
             {isPermanent ? t('poi_landmark') : t('poi_event')}
           </span>
           {poi.points !== undefined && (
             <span style={{
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
-              background: '#f0fdf4', color: '#16a34a',
+              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              background: 'rgba(240,253,244,0.80)',
+              color: '#16a34a',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
             }}>
               {t('poi_pts', { pts: poi.points })}
             </span>
@@ -66,14 +69,12 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
         <button
           onClick={onClose}
           style={{
-            background: 'rgba(255,255,255,0.6)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.5)',
+            ...glassChrome,
             cursor: 'pointer',
-            width: 28, height: 28, borderRadius: '50%',
+            width: 28, height: 28, borderRadius: '50%', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 16, color: '#64748b',
+            WebkitTapHighlightColor: 'transparent',
           }}
           aria-label="Close"
         >
@@ -103,12 +104,13 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
         </a>
       )}
 
-      {/* Check-in button */}
       <div style={{ marginTop: 20 }}>
         {isVisited ? (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
-            padding: '12px 16px', borderRadius: 12, background: '#f0fdf4',
+            padding: '12px 16px', borderRadius: 16,
+            background: 'rgba(240,253,244,0.80)',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           }}>
             <span style={{ fontSize: 20 }}>😊</span>
             <span style={{ fontSize: 14, fontWeight: 600, color: '#15803d' }}>{t('poi_visited')}</span>
@@ -117,18 +119,20 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose }:
           <button
             onClick={onCheckIn}
             style={{
-              width: '100%', padding: '14px', borderRadius: 14, border: 'none',
-              background: '#6366f1', color: 'white',
-              fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(99,102,241,0.35)',
+              width: '100%', padding: '14px', borderRadius: 16, border: 'none',
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.20), 0 4px 16px rgba(99,102,241,0.40)',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
             {mode === 'offline' ? t('poi_checkin_offline') : t('poi_checkin')}
           </button>
         ) : (
           <div style={{
-            padding: '12px 16px', borderRadius: 12, background: '#f8fafc',
-            textAlign: 'center',
+            padding: '12px 16px', borderRadius: 16, textAlign: 'center',
+            background: 'rgba(248,250,252,0.70)',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           }}>
             <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
               {t('poi_get_closer', { radius: CHECKIN_RADIUS_M })}

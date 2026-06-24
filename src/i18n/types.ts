@@ -73,6 +73,7 @@ export interface Translations {
   squads_active: string
   squads_set_active: string
   squads_send_expedition: string
+  squads_add_member_first: string
   squads_exploring: string
   squads_boost_paused: string
   squads_collect_reward: string

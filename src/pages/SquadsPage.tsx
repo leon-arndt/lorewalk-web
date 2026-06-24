@@ -5,6 +5,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
+import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { ExpeditionTarget, HatchedCreature, Squad } from '@/types'
 
 // Where a squad sets out from when sending it on an expedition: the player's live
@@ -60,7 +61,7 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', gap: 2, padding: 4,
     }}>
-      <span style={{ fontSize: 24, lineHeight: 1 }}>{creature.emoji}</span>
+      <CreaturePreview category={creature.poiCategory} size={40} />
       <span style={{ fontSize: 8, fontWeight: 700, color: c.fg, textTransform: 'capitalize' }}>
         {creature.poiCategory}
       </span>
@@ -143,19 +144,27 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
         ))}
       </div>
 
-      {!away && (
-        <button
-          onClick={() => setExpeditionOpen(true)}
-          style={{
-            marginTop: 12, width: '100%', textAlign: 'center',
-            fontSize: 13, fontWeight: 600, color: '#6366f1',
-            background: '#eef2ff', border: 'none', borderRadius: 10,
-            padding: '10px 12px', cursor: 'pointer',
-          }}
-        >
-          {t('squads_send_expedition')}
-        </button>
-      )}
+      {!away && (() => {
+        const hasMembers = members.some(Boolean)
+        return (
+          <button
+            onClick={() => hasMembers && setExpeditionOpen(true)}
+            disabled={!hasMembers}
+            style={{
+              marginTop: 12, width: '100%', textAlign: 'center',
+              fontSize: 13, fontWeight: 600,
+              color: hasMembers ? '#6366f1' : '#94a3b8',
+              background: hasMembers ? '#eef2ff' : '#f1f5f9',
+              border: 'none', borderRadius: 10,
+              padding: '10px 12px',
+              cursor: hasMembers ? 'pointer' : 'not-allowed',
+              opacity: hasMembers ? 1 : 0.7,
+            }}
+          >
+            {hasMembers ? t('squads_send_expedition') : t('squads_add_member_first')}
+          </button>
+        )
+      })()}
 
       {away && exp && (
         <div style={{
@@ -370,7 +379,7 @@ export function SquadsPage() {
     : SG_CENTRE
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 60 }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 55%, #fdf6ff 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('squads_title')}</h1>

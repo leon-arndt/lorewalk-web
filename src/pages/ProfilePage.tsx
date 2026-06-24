@@ -44,7 +44,7 @@ export function ProfilePage() {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 60 }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 55%, #fdf6ff 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
 
       {/* Header card */}
       <div style={{ background: 'white', padding: '28px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>

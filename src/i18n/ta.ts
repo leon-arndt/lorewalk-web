@@ -75,6 +75,7 @@ export const ta: Translations = {
   squads_active: '★ செயல்பாட்டில்',
   squads_set_active: 'செயல்படுத்து',
   squads_send_expedition: '🧭 பயணம் அனுப்பு…',
+  squads_add_member_first: 'முதலில் உறுப்பினரைச் சேர்க்கவும்',
   squads_exploring: '🧭 {name} தேடுகிறது',
   squads_boost_paused: ' · நேரடி மேம்படுத்தல் இடைநிறுத்தப்பட்டது',
   squads_collect_reward: '🎁 பரிசு சேகரி',

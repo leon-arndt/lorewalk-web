@@ -75,6 +75,7 @@ export const ko: Translations = {
   squads_active: '★ 활성',
   squads_set_active: '활성화',
   squads_send_expedition: '🧭 탐험 보내기…',
+  squads_add_member_first: '먼저 멤버를 추가하세요',
   squads_exploring: '🧭 {name} 탐험 중',
   squads_boost_paused: ' · 라이브 부스트 일시 중지',
   squads_collect_reward: '🎁 보상 받기',

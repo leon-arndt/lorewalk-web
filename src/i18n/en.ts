@@ -75,6 +75,7 @@ export const en: Translations = {
   squads_active: '★ Active',
   squads_set_active: 'Set active',
   squads_send_expedition: '🧭 Send on expedition…',
+  squads_add_member_first: 'Add a member first',
   squads_exploring: '🧭 Exploring {name}',
   squads_boost_paused: ' · live boost paused',
   squads_collect_reward: '🎁 Collect reward',

@@ -161,6 +161,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   function startExpedition(squadId: string, target: ExpeditionTarget, durationMs: number) {
+    const squad = profile.squads.find((sq) => sq.id === squadId)
+    if (!squad || !squad.slots.some(Boolean)) return
     const now = Date.now()
     const expedition: SquadExpedition = {
       ...target,

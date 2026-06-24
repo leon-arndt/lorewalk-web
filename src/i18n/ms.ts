@@ -75,6 +75,7 @@ export const ms: Translations = {
   squads_active: '★ Aktif',
   squads_set_active: 'Jadikan aktif',
   squads_send_expedition: '🧭 Hantar ekspedisi…',
+  squads_add_member_first: 'Tambah ahli dahulu',
   squads_exploring: '🧭 Menjelajah {name}',
   squads_boost_paused: ' · rangsangan langsung dijeda',
   squads_collect_reward: '🎁 Kumpul ganjaran',

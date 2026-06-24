@@ -1,6 +1,7 @@
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { creatureCap } from '@/lib/profile'
+import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { Egg, HatchedCreature } from '@/types'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
@@ -119,13 +120,12 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
         ✕
       </button>
       <div style={{
-        width: 56, height: 56, borderRadius: '50%',
+        width: 72, height: 72, borderRadius: 12, overflow: 'hidden',
         background: isRare ? '#fffbeb' : '#f5f3ff',
         border: `2px solid ${isRare ? '#fbbf24' : '#c4b5fd'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 28,
       }}>
-        {creature.emoji}
+        <CreaturePreview category={creature.poiCategory} />
       </div>
 
       <div style={{ textAlign: 'center' }}>
@@ -168,7 +168,7 @@ export function CreaturesPage() {
   const slots: (Egg | null)[] = [...eggs, ...Array<null>(emptySlots).fill(null)]
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 60 }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 55%, #fdf6ff 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 20px' }}>
         <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>
           {t('creatures_title')}

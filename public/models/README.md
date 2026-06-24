@@ -1,23 +1,42 @@
 # Map character models
 
-Drop a Quaternius (or any) animated glTF here as **`character.glb`** and the map's
-3D wandering characters will use it. Without it, the map falls back to a procedural
-capsule character so the feature still works.
+Each creature category renders a distinct procedural 3D shape by default (no file
+needed). Drop a CC0 `.glb` here as `character.glb` to override all shapes with a
+shared animated model, or extend `mapCharacters.ts` to load per-category GLBs.
 
-## Getting a model
+## Procedural creature shapes (built-in placeholders)
 
-1. Go to https://quaternius.com/ (assets are CC0 — free, no attribution required).
-2. A good pick: the **Ultimate Animated Character Pack** — rigged humanoids that ship
-   with named clips like `Idle`, `Walk`, `Run`.
-3. Export/download a single character as **`.glb`** (binary glTF) and save it here as
-   `public/models/character.glb`.
+| Category  | Shape              | Inspiration        |
+|-----------|--------------------|--------------------|
+| nature    | Leafling           | Pikmin leaf-sprout |
+| heritage  | Stonekin           | Dome-shell turtle  |
+| arts      | Drifter            | Jellyfish          |
+| religious | Glowick            | Lantern spirit     |
+| museum    | Hooter             | Owl                |
+| landmark  | Warden             | Horned guardian    |
+| (default) | Blob               | Friendly round blob|
 
-## Notes
+## Replacing with real CC0 models
 
-- The loader matches animation clips by name: it looks for a clip containing `idle`
-  and one containing `walk` (falling back to `run`, then the first clip).
-- If characters face backwards while walking, flip the facing angle by `Math.PI`
-  in `src/lib/mapCharacters.ts` (`tick()` → `c.root.rotation.y`).
-- Scale: the model is assumed to be roughly in metres (a ~1.8-unit-tall character
-  reads as ~1.8 m). Adjust `modelScale` in the `addCharacterLayer` call if needed.
-- Keep models small — they are lazy-loaded, but big files slow the first map view.
+Good sources (all CC0 / public domain):
+
+- **Kenney** — https://kenney.nl/assets — search "creature" or "animal".
+  Download a `.glb` pack and drop individual files here.
+- **Quaternius** — https://quaternius.com — Ultimate Animated Character Pack
+  ships rigged humanoids with `Idle` / `Walk` / `Run` clips.
+- **Poly Pizza** — https://poly.pizza — filter by CC0.
+
+### To use a shared animated model (all categories same mesh):
+1. Save as `public/models/character.glb`
+2. Pass `modelUrl: '/models/character.glb'` in the `addCharacterLayer` call in `MapView.tsx`
+
+### To use per-category models (recommended long-term):
+Extend `mapCharacters.ts` → add a `categoryModelUrl` map, load each via `GLTFLoader`,
+cache by category, and fall back to the procedural builder when absent.
+
+## Animation clip naming
+
+The loader looks for clips whose name contains `idle` or `walk` (case-insensitive),
+falling back to `run`, then the first available clip.
+
+If models moonwalk, flip `c.root.rotation.y` by `+ Math.PI` in `tick()`.

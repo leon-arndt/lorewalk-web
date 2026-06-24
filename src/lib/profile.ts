@@ -147,7 +147,7 @@ export function createEggFor(poiId: string, poiName: string, category: string): 
 }
 
 export function createEgg(poi: Poi): Egg {
-  return createEggFor(poi.id, poi.name, poi.category ?? 'landmark')
+  return createEggFor(poi.id, poi.name, poi.category ?? '')
 }
 
 export function hatchEgg(egg: Egg): HatchedCreature {

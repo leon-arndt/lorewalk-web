@@ -11,6 +11,7 @@ import { usePois } from '@/hooks/usePois'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useMusic } from '@/contexts/MusicContext'
+import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi } from '@/types'
 
@@ -53,9 +54,13 @@ export function MapPage() {
     const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
     const members = (active?.slots ?? [])
       .filter((id): id is string => !!id)
-      .map((id) => ({ id, color: categoryColor(byId.get(id)?.poiCategory) }))
+      .map((id) => ({
+        id,
+        color: categoryColor(byId.get(id)?.poiCategory),
+        category: byId.get(id)?.poiCategory,
+      }))
     if (members.length > 0) return members
-    return [0, 1, 2].map((i) => ({ id: `ambient-${i}`, color: 0x94a3b8 }))
+    return [0, 1, 2].map((i) => ({ id: `ambient-${i}`, color: 0x94a3b8, category: undefined }))
   }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures])
 
   const claimMarkers = useMemo(
@@ -141,25 +146,18 @@ export function MapPage() {
           <StepCounter steps={steps} distanceM={distanceM} />
           {gpsLoading && (
             <div style={{
-              background: 'rgba(255,255,255,0.50)',
-              backdropFilter: 'blur(16px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-              border: '1px solid rgba(255,255,255,0.55)',
-              color: '#64748b', fontSize: 12, padding: '4px 10px',
-              borderRadius: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              ...glassChrome, color: '#64748b', fontSize: 12,
+              padding: '4px 10px', borderRadius: 999,
             }}>
               {t('hud_locating')}
             </div>
           )}
           {gpsError && !position && (
             <div style={{
-              background: 'rgba(255,241,242,0.65)',
-              backdropFilter: 'blur(16px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-              border: '1px solid rgba(255,255,255,0.5)',
+              ...glassChrome,
+              background: 'rgba(255,241,242,0.72)',
               color: '#e11d48', fontSize: 12,
-              padding: '4px 10px', borderRadius: 20,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              padding: '4px 10px', borderRadius: 999,
             }}>
               {t('hud_gps_unavailable')}
             </div>
@@ -178,16 +176,11 @@ export function MapPage() {
           onClick={() => compassResetRef.current?.()}
           title="Reset to north"
           style={{
-            width: 44, height: 44,
-            borderRadius: 12,
-            background: 'rgba(255,255,255,0.55)',
-            backdropFilter: 'blur(16px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-            border: '1px solid rgba(255,255,255,0.6)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            width: 44, height: 44, borderRadius: 14, padding: 0,
+            ...glassChrome,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 0,
+            WebkitTapHighlightColor: 'transparent',
           }}
         >
           <svg
@@ -208,16 +201,11 @@ export function MapPage() {
           onClick={toggleMusic}
           title={muted ? 'Unmute music' : 'Mute music'}
           style={{
-            width: 44, height: 44,
-            borderRadius: 12,
-            background: 'rgba(255,255,255,0.55)',
-            backdropFilter: 'blur(16px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-            border: '1px solid rgba(255,255,255,0.6)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            width: 44, height: 44, borderRadius: 14, padding: 0,
+            ...glassChrome,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 0,
+            WebkitTapHighlightColor: 'transparent',
           }}
         >
           {muted ? (

@@ -1,5 +1,6 @@
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { glassChrome } from '@/lib/glass'
 
 export function ModeToggle() {
   const { mode, setMode } = useConnectionMode()
@@ -14,23 +15,22 @@ export function ModeToggle() {
         alignItems: 'center',
         gap: 6,
         padding: '6px 14px',
-        borderRadius: 20,
-        border: '1px solid rgba(255,255,255,0.55)',
+        borderRadius: 999,
         cursor: 'pointer',
         fontSize: 12,
         fontWeight: 600,
-        background: 'rgba(255,255,255,0.50)',
-        backdropFilter: 'blur(16px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+        ...glassChrome,
         color: isOnline ? '#6366f1' : '#94a3b8',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        transition: 'all 0.15s ease',
+        transition: 'color 0.15s ease',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <span style={{
         width: 7, height: 7, borderRadius: '50%',
         background: isOnline ? '#4ade80' : '#cbd5e1',
         flexShrink: 0,
+        boxShadow: isOnline ? '0 0 6px rgba(74,222,128,0.6)' : 'none',
+        transition: 'background 0.2s ease, box-shadow 0.2s ease',
       }} />
       {isOnline ? t('mode_online') : t('mode_offline')}
     </button>

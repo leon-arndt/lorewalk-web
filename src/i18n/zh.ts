@@ -75,6 +75,7 @@ export const zh: Translations = {
   squads_active: '★ 激活中',
   squads_set_active: '设为激活',
   squads_send_expedition: '🧭 派去探险…',
+  squads_add_member_first: '先添加成员',
   squads_exploring: '🧭 正在探索 {name}',
   squads_boost_paused: ' · 实时加成暂停',
   squads_collect_reward: '🎁 领取奖励',

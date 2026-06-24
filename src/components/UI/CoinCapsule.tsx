@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { ShopPage } from '@/pages/ShopPage'
+import { glassPanel } from '@/lib/glass'
 
 export function CoinCapsule() {
   const { profile } = useProfile()
@@ -13,11 +14,14 @@ export function CoinCapsule() {
         style={{
           position: 'fixed', top: 16, right: 16, zIndex: 50,
           display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(255,251,235,0.92)', backdropFilter: 'blur(8px)',
-          border: '1.5px solid #fde68a', borderRadius: 999,
+          background: 'rgba(255,251,235,0.80)',
+          backdropFilter: 'blur(40px) saturate(200%) brightness(1.04)',
+          WebkitBackdropFilter: 'blur(40px) saturate(200%) brightness(1.04)',
+          border: '1px solid rgba(253,230,138,0.70)',
+          borderRadius: 999,
           padding: '7px 14px',
           fontSize: 14, fontWeight: 700, color: '#b45309',
-          boxShadow: '0 2px 10px rgba(180,83,9,0.15)',
+          boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -0.5px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(180,83,9,0.12), 0 1px 4px rgba(180,83,9,0.06)',
           cursor: 'pointer',
           WebkitTapHighlightColor: 'transparent',
         }}
@@ -38,14 +42,10 @@ export function CoinCapsule() {
             style={{
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 70,
               maxHeight: '88dvh',
-              background: 'rgba(248,250,252,0.82)',
-              backdropFilter: 'blur(24px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(24px) saturate(160%)',
-              borderRadius: '20px 20px 0 0',
-              borderTop: '1px solid rgba(255,255,255,0.6)',
+              ...glassPanel,
+              borderRadius: '24px 24px 0 0',
               overflow: 'hidden',
               display: 'flex', flexDirection: 'column',
-              boxShadow: '0 -8px 32px rgba(0,0,0,0.12)',
             }}
           >
             <div style={{
