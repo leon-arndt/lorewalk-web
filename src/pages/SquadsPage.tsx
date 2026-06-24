@@ -282,7 +282,7 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
                 padding: 10, cursor: 'pointer',
               }}
             >
-              <span style={{ fontSize: 26 }}>{c.emoji}</span>
+              <CreaturePreview category={c.poiCategory} size={48} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{c.species}</div>
                 <div style={{ fontSize: 10, color: col.fg, textTransform: 'capitalize', fontWeight: 600 }}>

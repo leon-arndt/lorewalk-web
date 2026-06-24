@@ -61,6 +61,56 @@ async function loadModel(category: string): Promise<import('three').Object3D> {
   }
 }
 
+const eggCache = new Map<string, string>()
+const eggPending = new Map<string, Promise<string>>()
+
+export async function getEggPreviewURL(tier: string): Promise<string> {
+  if (eggCache.has(tier)) return eggCache.get(tier)!
+  if (eggPending.has(tier)) return eggPending.get(tier)!
+
+  const p = (async () => {
+    await initRenderer()
+    const THREE = await import('three')
+
+    const isRare = tier === 'rare'
+
+    // Egg profile rotated around y-axis — wider at base, tapered toward top
+    const pts: import('three').Vector2[] = []
+    const N = 24
+    for (let i = 0; i <= N; i++) {
+      const t = i / N
+      const angle = t * Math.PI
+      const r = 0.46 * Math.sin(angle) * (1 - 0.22 * t)
+      const y = 0.70 * Math.cos(angle)
+      pts.push(new THREE.Vector2(Math.max(0, r), y))
+    }
+
+    const geo = new THREE.LatheGeometry(pts, 40)
+    const mat = new THREE.MeshStandardMaterial({
+      color: isRare ? 0xfbbf24 : 0xa5b4fc,
+      roughness: isRare ? 0.18 : 0.24,
+      metalness: isRare ? 0.10 : 0.02,
+    })
+    const mesh = new THREE.Mesh(geo, mat)
+    mesh.position.y = 0.70
+    mesh.rotation.y = Math.PI / 5
+
+    scene!.add(mesh)
+    renderer!.render(scene!, camera!)
+    const dataURL = renderer!.domElement.toDataURL('image/png')
+    scene!.remove(mesh)
+    geo.dispose()
+    mat.dispose()
+
+    eggCache.set(tier, dataURL)
+    eggPending.delete(tier)
+    return dataURL
+  })()
+
+  eggPending.set(tier, p)
+  return p
+}
+
 export async function getCreaturePreviewURL(category: string): Promise<string> {
   if (cache.has(category)) return cache.get(category)!
   if (pending.has(category)) return pending.get(category)!

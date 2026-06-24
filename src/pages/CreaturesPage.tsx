@@ -2,6 +2,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { creatureCap } from '@/lib/profile'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
+import { EggPreview } from '@/components/UI/EggPreview'
 import type { Egg, HatchedCreature } from '@/types'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
@@ -36,15 +37,7 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: 7, minHeight: 144,
     }}>
-      <div style={{
-        width: 46, height: 46, borderRadius: '50%',
-        background: isRare ? '#fffbeb' : '#eef2ff',
-        border: `2px solid ${isRare ? '#fbbf24' : '#a5b4fc'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 24,
-      }}>
-        🥚
-      </div>
+      <EggPreview tier={egg.tier} size={52} />
 
       <span style={{
         fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 20,
