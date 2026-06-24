@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { MapView } from '@/components/Map/MapView'
@@ -10,6 +10,7 @@ import { useStepCounter } from '@/hooks/useStepCounter'
 import { usePois } from '@/hooks/usePois'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { useBackgroundMusic } from '@/hooks/useBackgroundMusic'
 import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi } from '@/types'
 
@@ -38,6 +39,9 @@ export function MapPage() {
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [bearing, setBearing] = useState(0)
+  const compassResetRef = useRef<(() => void) | null>(null)
+  const { muted, toggle: toggleMusic } = useBackgroundMusic('/music/town-theme.mp3')
 
   // The active squad's creatures become the 3D companions that walk with you —
   // unless that squad is away on an expedition, in which case nobody follows.
@@ -120,6 +124,8 @@ export function MapPage() {
         companions={companions}
         claimMarkers={claimMarkers}
         onClaimClick={handleSquadClick}
+        onBearingChange={setBearing}
+        compassResetRef={compassResetRef}
       />
 
       <div style={{
@@ -159,7 +165,71 @@ export function MapPage() {
             </div>
           )}
         </div>
-        <div />
+        <div style={{ pointerEvents: 'auto', justifySelf: 'end', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <button
+            onClick={() => compassResetRef.current?.()}
+            title="Reset to north"
+            style={{
+              width: 44, height: 44,
+              borderRadius: 12,
+              background: 'rgba(255,255,255,0.55)',
+              backdropFilter: 'blur(16px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.6)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            <svg
+              width="28" height="28"
+              viewBox="-14 -14 28 28"
+              style={{
+                transform: `rotate(${-bearing}deg)`,
+                transition: 'transform 0.1s linear',
+                display: 'block',
+              }}
+            >
+              {/* North triangle — red */}
+              <polygon points="0,-11 -5.5,0 5.5,0" fill="#ef4444" />
+              {/* South triangle — white with subtle stroke */}
+              <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
+              {/* Centre pivot */}
+              <circle r="2" fill="#334155" />
+            </svg>
+          </button>
+          <button
+            onClick={toggleMusic}
+            title={muted ? 'Unmute music' : 'Mute music'}
+            style={{
+              width: 44, height: 44,
+              borderRadius: 12,
+              background: 'rgba(255,255,255,0.55)',
+              backdropFilter: 'blur(16px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+              border: '1px solid rgba(255,255,255,0.6)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            {muted ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Hatching toast */}
