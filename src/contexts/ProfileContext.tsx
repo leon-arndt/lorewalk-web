@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, ExpeditionCollectResult, ExpeditionTarget, HatchedCreature, PlayerProfile, Poi, SquadExpedition } from '@/types'
+import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodNode, HatchedCreature, PlayerProfile, Poi, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile,
@@ -10,6 +10,7 @@ import {
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp,
   levelRewardsFor, applyLevelRewards, type LevelReward,
+  spawnFoodNodes, makeFoodItem,
 } from '@/lib/profile'
 
 interface ProfileContextValue {
@@ -26,7 +27,9 @@ interface ProfileContextValue {
   clearSlot: (squadId: string, slotIndex: number) => void
   setActiveSquad: (squadId: string) => void
   renameSquad: (squadId: string, name: string) => void
+  syncFoodNodes: (pois: Poi[]) => void
   startExpedition: (squadId: string, target: ExpeditionTarget, durationMs: number) => void
+  startFoodExpedition: (squadId: string, node: FoodNode, durationMs: number) => void
   collectExpedition: (squadId: string) => ExpeditionCollectResult | null
   recallSquad: (squadId: string) => void
   collectClaim: (poiId: string) => number
@@ -35,6 +38,7 @@ interface ProfileContextValue {
   buyEggSlot: () => boolean
   addCoins: (amount: number) => void
   feedCreature: (creatureId: string, foodItemId: string) => void
+  addXp: (amount: number) => void
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
@@ -193,6 +197,26 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, squads })
   }
 
+  function syncFoodNodes(pois: Poi[]) {
+    const updated = spawnFoodNodes(pois, profile.foodNodes)
+    if (updated.length !== profile.foodNodes.length) persist({ ...profile, foodNodes: updated })
+  }
+
+  function startFoodExpedition(squadId: string, node: FoodNode, durationMs: number) {
+    const squad = profile.squads.find((sq) => sq.id === squadId)
+    if (!squad || !squad.slots.some(Boolean)) return
+    const now = Date.now()
+    const expedition: SquadExpedition = {
+      poiId: node.poiId, poiName: node.poiName, poiCategory: node.poiCategory,
+      lat: node.lat, lon: node.lon,
+      startedAt: new Date(now).toISOString(),
+      returnsAt: new Date(now + durationMs).toISOString(),
+      foodNodeId: node.id, foodId: node.foodId,
+    }
+    const squads = profile.squads.map((sq) => sq.id === squadId ? { ...sq, expedition } : sq)
+    persist({ ...profile, squads })
+  }
+
   function startExpedition(squadId: string, target: ExpeditionTarget, durationMs: number) {
     const squad = profile.squads.find((sq) => sq.id === squadId)
     if (!squad || !squad.slots.some(Boolean)) return
@@ -208,8 +232,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, squads })
   }
 
-  // Collect a returned expedition: award affinity-scaled XP + coins, level up squad
-  // creatures, roll for a bonus egg (only if a slot is free), and bring the squad home.
+  // Collect a returned expedition. Food-marker expeditions award their specific food
+  // and remove the node; regular POI expeditions award XP/coins/egg and claim the landmark.
   function collectExpedition(squadId: string): ExpeditionCollectResult | null {
     const squad = profile.squads.find((s) => s.id === squadId)
     if (!squad?.expedition || !hasReturned(squad.expedition, Date.now())) return null
@@ -217,10 +241,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const exp = squad.expedition
     const creaturesById = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
     const mult = affinityMultiplier(squad, exp.poiCategory, creaturesById)
-    const { xp, coins, food: foodItem } = rollExpeditionPayout(squad, creaturesById)
+    const { xp, coins } = rollExpeditionPayout(squad, creaturesById)
     const { level, xp: newXp } = applyXp(profile.level, profile.xp, xp)
 
-    // Award creature XP to every squad member, scaled by the same affinity multiplier.
     const creatureXp = Math.round(CREATURE_BASE_XP * mult)
     const squadMemberIds = new Set(squad.slots.filter(Boolean) as string[])
     const levelUps: Array<{ species: string; newLevel: number }> = []
@@ -231,42 +254,37 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return updated
     })
 
+    const squads = profile.squads.map((sq) => sq.id === squadId ? { ...sq, expedition: null } : sq)
+
+    if (exp.foodNodeId && exp.foodId) {
+      // Food expedition: award the specific food, remove the node, no egg/claim.
+      const foodDef = getFoodDef(exp.foodId)
+      const foodInventory = [...profile.foodInventory, makeFoodItem(exp.foodId)]
+      const foodNodes = profile.foodNodes.filter((n) => n.id !== exp.foodNodeId)
+      const built: PlayerProfile = {
+        ...profile, squads, hatchedCreatures, foodInventory, foodNodes,
+        level, xp: newXp, totalXp: profile.totalXp + xp, coins: profile.coins + coins,
+      }
+      persist(withLevelUpRewards(profile, built))
+      return { xp, coins, egg: false, food: foodDef ? { name: foodDef.name, emoji: foodDef.emoji } : null, levelUps }
+    }
+
+    // Regular POI expedition: egg chance + claim landmark.
     const slotFree = profile.eggs.length < profile.maxEggSlots
     const gotEgg = slotFree && Math.random() < EXPEDITION_EGG_CHANCE
-    const eggs = gotEgg
-      ? [...profile.eggs, createEggFor(exp.poiId, exp.poiName, exp.poiCategory)]
-      : profile.eggs
-
-    const foodInventory = [...profile.foodInventory, foodItem]
-    const foodDef = getFoodDef(foodItem.foodId)
-
-    // Finishing the expedition claims (or refreshes) that landmark for the player.
+    const eggs = gotEgg ? [...profile.eggs, createEggFor(exp.poiId, exp.poiName, exp.poiCategory)] : profile.eggs
     const nowIso = new Date().toISOString()
     const newClaim: Claim = {
       poiId: exp.poiId, poiName: exp.poiName, poiCategory: exp.poiCategory,
-      lat: exp.lat, lon: exp.lon,
-      affinity: mult,
-      claimedAt: nowIso, lastCollectedAt: nowIso,
+      lat: exp.lat, lon: exp.lon, affinity: mult, claimedAt: nowIso, lastCollectedAt: nowIso,
     }
     const claims = [...profile.claims.filter((c) => c.poiId !== exp.poiId), newClaim]
-
-    const squads = profile.squads.map((sq) =>
-      sq.id === squadId ? { ...sq, expedition: null } : sq,
-    )
     const built: PlayerProfile = {
-      ...profile,
-      squads,
-      eggs,
-      claims,
-      hatchedCreatures,
-      foodInventory,
-      level,
-      xp: newXp,
-      totalXp: profile.totalXp + xp,
-      coins: profile.coins + coins,
+      ...profile, squads, eggs, claims, hatchedCreatures,
+      level, xp: newXp, totalXp: profile.totalXp + xp, coins: profile.coins + coins,
     }
     persist(withLevelUpRewards(profile, built))
-    return { xp, coins, egg: gotEgg, food: foodDef ? { name: foodDef.name, emoji: foodDef.emoji } : null, levelUps }
+    return { xp, coins, egg: gotEgg, food: null, levelUps }
   }
 
   // Collect coins a held landmark has accrued since its last collection.
@@ -327,7 +345,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       c.id === creatureId ? applyCreatureXp(c, def.xp) : c,
     )
     const foodInventory = profile.foodInventory.filter((f) => f.id !== foodItemId)
-    persist({ ...profile, hatchedCreatures, foodInventory })
+    const FEED_PLAYER_XP = 5
+    const { level, xp } = applyXp(profile.level, profile.xp, FEED_PLAYER_XP)
+    const before = profile
+    const built: PlayerProfile = {
+      ...profile, hatchedCreatures, foodInventory,
+      level, xp, totalXp: profile.totalXp + FEED_PLAYER_XP,
+    }
+    persist(withLevelUpRewards(before, built))
   }
 
   function recallSquad(squadId: string) {
@@ -339,13 +364,19 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const dismissLevelUp = useCallback(() => setPendingLevelUp(null), [])
 
+  function addXp(amount: number) {
+    const { level, xp } = applyXp(profile.level, profile.xp, amount)
+    const updated = { ...profile, level, xp, totalXp: profile.totalXp + amount }
+    persist(withLevelUpRewards(profile, updated))
+  }
+
   return (
     <ProfileContext.Provider value={{
       profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
-      startExpedition, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature,
+      syncFoodNodes, startExpedition, startFoodExpedition, collectExpedition, recallSquad, collectClaim,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp,
     }}>
       {children}
     </ProfileContext.Provider>
