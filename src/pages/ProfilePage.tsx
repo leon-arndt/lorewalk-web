@@ -4,6 +4,7 @@ import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
 import type { Locale } from '@/contexts/LocaleContext'
 import { xpForNextLevel } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
+import { PostcardsSection } from '@/components/UI/PostcardsSection'
 
 declare const __APP_VERSION__: string
 declare const __GIT_COMMIT__: string
@@ -115,7 +116,7 @@ export function ProfilePage() {
               </span>
             </div>
 
-            {/* XP bar — grouped under the level, constrained to the name column */}
+            {/* XP bar - grouped under the level, constrained to the name column */}
             <div style={{ marginTop: 10 }}>
               <div style={{ height: 6, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
                 <div style={{
@@ -156,6 +157,8 @@ export function ProfilePage() {
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        <PostcardsSection />
 
         <FriendsSection />
 
@@ -335,6 +338,18 @@ export function ProfilePage() {
                   +{n.toLocaleString()} XP
                 </button>
               ))}
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <button
+                onClick={() => { localStorage.removeItem('lorewalk_profile'); window.location.reload() }}
+                style={{
+                  width: '100%', padding: '8px 0', borderRadius: 10, border: 'none',
+                  background: '#450a0a', color: '#fca5a5', fontWeight: 700, fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                🗑 Reset save data
+              </button>
             </div>
           </section>
         )}

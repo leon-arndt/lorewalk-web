@@ -68,7 +68,7 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
       }}>
         Lv.{creature.level}
       </span>
-      <CreaturePreview category={creature.poiCategory} size={40} />
+      <CreaturePreview emoji={creature.emoji} size={40} />
       <span style={{ fontSize: 8, fontWeight: 700, color: c.fg, textTransform: 'capitalize' }}>
         {creature.poiCategory}
       </span>
@@ -295,7 +295,7 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
                 opacity: used ? 0.55 : 1,
               }}
             >
-              <CreaturePreview category={c.poiCategory} size={48} />
+              <CreaturePreview emoji={c.emoji} size={48} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: used ? '#94a3b8' : '#1e293b' }}>{c.species}</div>
                 <div style={{ fontSize: 10, color: used ? '#94a3b8' : col.fg, textTransform: 'capitalize', fontWeight: 600 }}>

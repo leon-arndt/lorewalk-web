@@ -9,7 +9,7 @@ import {
 } from '@/lib/profile'
 
 // Real money runs through Google Play Billing (Digital Goods API in a TWA). Until
-// that's wired, the buy buttons credit coins directly — clearly labelled as test.
+// that's wired, the buy buttons credit coins directly - clearly labelled as test.
 const COIN_PACKS = [
   { coins: 100, price: '€0.99', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
   { coins: 600, price: '€4.99', tagKey: 'shop_popular' as const },

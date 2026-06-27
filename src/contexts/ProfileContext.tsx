@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodNode, HatchedCreature, PlayerProfile, Poi, SquadExpedition } from '@/types'
+import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodNode, HatchedCreature, Postcard, PlayerProfile, Poi, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile,
@@ -10,7 +10,7 @@ import {
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp,
   levelRewardsFor, applyLevelRewards, type LevelReward,
-  spawnFoodNodes, makeFoodItem,
+  spawnFoodNodes, makeFoodItem, POSTCARD_DELIVERY_MS,
 } from '@/lib/profile'
 
 interface ProfileContextValue {
@@ -39,6 +39,9 @@ interface ProfileContextValue {
   addCoins: (amount: number) => void
   feedCreature: (creatureId: string, foodItemId: string) => void
   addXp: (amount: number) => void
+  sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
+  openPostcard: (postcardId: string) => void
+  seedMockPostcard: () => void
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
@@ -198,8 +201,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   function syncFoodNodes(pois: Poi[]) {
-    const updated = spawnFoodNodes(pois, profile.foodNodes)
-    if (updated.length !== profile.foodNodes.length) persist({ ...profile, foodNodes: updated })
+    const activeNodeIds = new Set(
+      profile.squads
+        .filter((s) => s.expedition?.foodNodeId)
+        .map((s) => s.expedition!.foodNodeId!),
+    )
+    const updated = spawnFoodNodes(pois, profile.foodNodes, activeNodeIds)
+    const changed =
+      updated.length !== profile.foodNodes.length ||
+      updated.some((n, i) => n.id !== profile.foodNodes[i]?.id)
+    if (changed) persist({ ...profile, foodNodes: updated })
   }
 
   function startFoodExpedition(squadId: string, node: FoodNode, durationMs: number) {
@@ -370,6 +381,62 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist(withLevelUpRewards(profile, updated))
   }
 
+  function sendPostcard(toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) {
+    const activeSquad = profile.squads.find((s) => s.id === profile.activeSquadId)
+    const firstCreatureId = activeSquad?.slots.find(Boolean)
+    const creature = firstCreatureId ? profile.hatchedCreatures.find((c) => c.id === firstCreatureId) : null
+    const now = Date.now()
+    const card: Postcard = {
+      id: `pc_${now}_${Math.random().toString(36).slice(2, 6)}`,
+      fromPlayerId: profile.id,
+      fromName: profile.displayName,
+      toPlayerId,
+      toName,
+      poiId: poi.id,
+      poiName: poi.name,
+      poiCategory: poi.category,
+      creatureEmoji: creature?.emoji ?? '✨',
+      sentAt: new Date(now).toISOString(),
+      deliverAt: new Date(now + POSTCARD_DELIVERY_MS).toISOString(),
+      openedAt: null,
+    }
+    persist({ ...profile, outbox: [...profile.outbox, card] })
+  }
+
+  function openPostcard(postcardId: string) {
+    const card = profile.postcards.find((p) => p.id === postcardId)
+    if (!card || card.openedAt) return
+    const { level, xp } = applyXp(profile.level, profile.xp, 10)
+    const postcards = profile.postcards.map((p) =>
+      p.id === postcardId ? { ...p, openedAt: new Date().toISOString() } : p,
+    )
+    const built: PlayerProfile = { ...profile, postcards, level, xp, totalXp: profile.totalXp + 10 }
+    persist(withLevelUpRewards(profile, built))
+  }
+
+  function seedMockPostcard() {
+    const mockSenders = ['Aisha', 'Rajan', 'Wei Ling']
+    const mockPois = ['Merlion Park', 'Gardens by the Bay', 'Raffles Hotel']
+    const mockEmojis = ['🗿', '🌿', '🧭']
+    const i = profile.postcards.length % 3
+    const now = Date.now()
+    const card: Postcard = {
+      id: `pc_mock_${now}`,
+      fromPlayerId: `mock_${i}`,
+      fromName: mockSenders[i],
+      toPlayerId: profile.id,
+      toName: profile.displayName,
+      poiId: `sg-00${i + 1}`,
+      poiName: mockPois[i],
+      poiCategory: 'landmark',
+      creatureEmoji: mockEmojis[i],
+      sentAt: new Date(now - POSTCARD_DELIVERY_MS - 1000).toISOString(),
+      deliverAt: new Date(now + (import.meta.env.DEV ? 30_000 : POSTCARD_DELIVERY_MS)).toISOString(),
+      openedAt: null,
+    }
+    persist({ ...profile, postcards: [...profile.postcards, card] })
+  }
+
   return (
     <ProfileContext.Provider value={{
       profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
@@ -377,6 +444,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectExpedition, recallSquad, collectClaim,
       releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp,
+      sendPostcard, openPostcard, seedMockPostcard,
     }}>
       {children}
     </ProfileContext.Provider>

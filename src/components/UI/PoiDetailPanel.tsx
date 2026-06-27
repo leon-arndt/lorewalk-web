@@ -1,8 +1,16 @@
+import { useState } from 'react'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useProfile } from '@/contexts/ProfileContext'
 import { glassChrome, glassPanel } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
 import type { Poi, PlayerPosition } from '@/types'
+
+const MOCK_FRIENDS = [
+  { id: 'mock-1', name: 'Aisha' },
+  { id: 'mock-2', name: 'Rajan' },
+  { id: 'mock-3', name: 'Wei Ling' },
+]
 
 const CHECKIN_RADIUS_M = 50
 
@@ -10,21 +18,27 @@ interface PoiDetailPanelProps {
   poi: Poi
   isVisited: boolean
   position: PlayerPosition | null
-  onCheckIn: () => void
   onClose: () => void
   isClosing?: boolean
 }
 
-export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose, isClosing = false }: PoiDetailPanelProps) {
+export function PoiDetailPanel({ poi, isVisited, position, onClose, isClosing = false }: PoiDetailPanelProps) {
   const { mode } = useConnectionMode()
   const { t } = useLocale()
+  const { sendPostcard } = useProfile()
+  const [pickingFriend, setPickingFriend] = useState(false)
+  const [sent, setSent] = useState<string | null>(null)
+
+  function handleSend(friendId: string, friendName: string) {
+    sendPostcard(friendId, friendName, { id: poi.id, name: poi.name, category: poi.category ?? 'landmark' })
+    setSent(friendName)
+    setPickingFriend(false)
+  }
   const isPermanent = poi.kind === 'permanent'
 
   const distanceM = position
     ? Math.round(haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon))
     : null
-
-  const canCheckIn = mode === 'offline' || (distanceM !== null && distanceM <= CHECKIN_RADIUS_M)
 
   return (
     <div style={{
@@ -110,29 +124,72 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose, i
 
       <div style={{ marginTop: 20 }}>
         {isVisited ? (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '12px 16px', borderRadius: 16,
-            background: 'rgba(240,253,244,0.80)',
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          }}>
-            <span style={{ fontSize: 20 }}>😊</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#15803d' }}>{t('poi_visited')}</span>
+          <div>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px', borderRadius: 16,
+              background: 'rgba(240,253,244,0.80)',
+              backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+              marginBottom: pickingFriend || sent ? 10 : 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 20 }}>😊</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#15803d' }}>{t('poi_visited')}</span>
+              </div>
+              {!sent && (
+                <button
+                  onClick={() => setPickingFriend((v) => !v)}
+                  style={{
+                    fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 10,
+                    border: 'none', cursor: 'pointer',
+                    background: pickingFriend ? '#f1f5f9' : '#6366f1',
+                    color: pickingFriend ? '#64748b' : 'white',
+                  }}
+                >
+                  {pickingFriend ? 'Cancel' : '📮 Send postcard'}
+                </button>
+              )}
+            </div>
+
+            {sent && (
+              <div style={{
+                padding: '10px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600,
+                background: '#fef3c7', color: '#b45309', textAlign: 'center',
+              }}>
+                Postcard to {sent} - arrives in {import.meta.env.DEV ? '30s' : '48h'} ✉️
+              </div>
+            )}
+
+            {pickingFriend && !sent && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 2 }}>
+                  Send to:
+                </div>
+                {MOCK_FRIENDS.map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => handleSend(f.id, f.name)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px', borderRadius: 12, border: '1.5px solid #e2e8f0',
+                      background: 'white', cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                      background: 'linear-gradient(135deg,#818cf8,#c084fc)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, fontWeight: 700, color: 'white',
+                    }}>
+                      {f.name[0]}
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>{f.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        ) : canCheckIn ? (
-          <button
-            onClick={onCheckIn}
-            style={{
-              width: '100%', padding: '14px', borderRadius: 16, border: 'none',
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.20), 0 4px 16px rgba(99,102,241,0.40)',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            {mode === 'offline' ? t('poi_checkin_offline') : t('poi_checkin')}
-          </button>
-        ) : (
+        ) : mode === 'online' ? (
           <div style={{
             padding: '12px 16px', borderRadius: 16, textAlign: 'center',
             background: 'rgba(248,250,252,0.70)',
@@ -143,7 +200,7 @@ export function PoiDetailPanel({ poi, isVisited, position, onCheckIn, onClose, i
               {distanceM !== null && ' ' + t('poi_currently_away', { dist: distanceM })}
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

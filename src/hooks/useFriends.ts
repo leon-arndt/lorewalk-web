@@ -77,7 +77,7 @@ export function useFriends(playerId: string, displayName: string) {
     // can't mislabel a code as expired or valid.
     const { data, error } = await supabase.rpc('get_active_friend_code', { p_player_id: playerId })
 
-    // A read failure is not "no code" — bailing avoids inserting a duplicate row.
+    // A read failure is not "no code" - bailing avoids inserting a duplicate row.
     if (error) return
     if (data?.[0]) {
       setFriendCode({ code: data[0].code, expiresAt: data[0].expires_at })
@@ -86,7 +86,7 @@ export function useFriends(playerId: string, displayName: string) {
     }
   }
 
-  // Postgres unique-violation — collides on the UNIQUE(code) constraint.
+  // Postgres unique-violation - collides on the UNIQUE(code) constraint.
   const UNIQUE_VIOLATION = '23505'
 
   async function insertCode(): Promise<FriendCode | null> {

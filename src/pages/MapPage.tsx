@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
+import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { StepCounter } from '@/components/UI/StepCounter'
 import { useGeolocation } from '@/hooks/useGeolocation'
@@ -13,7 +14,8 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
-import type { Poi } from '@/types'
+import { getFoodDef } from '@/data/foods'
+import type { FoodNode, Poi } from '@/types'
 
 const CHECKIN_RADIUS_M = 50
 
@@ -35,18 +37,21 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
-  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched } = useProfile()
+  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched, syncFoodNodes, startFoodExpedition } = useProfile()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
   const [isPanelClosing, setIsPanelClosing] = useState(false)
   const panelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [selectedFoodNode, setSelectedFoodNode] = useState<FoodNode | null>(null)
+  const [isFoodPanelClosing, setIsFoodPanelClosing] = useState(false)
+  const foodPanelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
   const { muted, toggle: toggleMusic } = useMusic()
 
-  // The active squad's creatures become the 3D companions that walk with you —
+  // The active squad's creatures become the 3D companions that walk with you -
   // unless that squad is away on an expedition, in which case nobody follows.
   // When the active squad is empty, show a few neutral "ambient" wanderers so the
   // map is never lifeless (they're replaced by real members once you assign any).
@@ -64,6 +69,19 @@ export function MapPage() {
     if (members.length > 0) return members
     return [0, 1, 2].map((i) => ({ id: `ambient-${i}`, color: 0x94a3b8, category: undefined }))
   }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures])
+
+  const foodNodeMarkers = useMemo(
+    () => profile.foodNodes.map((n) => {
+      const def = getFoodDef(n.foodId)
+      return { id: n.id, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon }
+    }),
+    [profile.foodNodes],
+  )
+
+  // Spawn food nodes near visible POIs; runs whenever the nearby POI list changes.
+  useEffect(() => {
+    if (pois.length > 0) syncFoodNodes(pois)
+  }, [pois]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const claimMarkers = useMemo(
     () => profile.claims.map((c) => ({
@@ -91,15 +109,37 @@ export function MapPage() {
       }))
   }, [profile.squads, profile.hatchedCreatures, profile.activeSquadId])
 
+  // Tracks POIs already auto-checked-in this session to prevent double-firing
+  // while position keeps updating inside the radius.
+  const autoCheckedRef = useRef<Set<string>>(new Set())
+
+  // Online: auto check-in whenever position enters 50 m of an unvisited POI.
+  useEffect(() => {
+    if (mode !== 'online' || !position) return
+    for (const poi of pois) {
+      if (visitedPois.has(poi.id) || autoCheckedRef.current.has(poi.id)) continue
+      const d = haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon)
+      if (d <= CHECKIN_RADIUS_M) {
+        autoCheckedRef.current.add(poi.id)
+        addVisit(poi)
+        setToast(`✅ Checked in at ${poi.name}!`)
+      }
+    }
+  }, [position, pois]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSquadClick = useCallback(() => navigate('/squads'), [navigate])
   const handlePoiClick = useCallback((poi: Poi) => {
-    if (panelCloseTimer.current) {
-      clearTimeout(panelCloseTimer.current)
-      panelCloseTimer.current = null
-    }
+    if (panelCloseTimer.current) { clearTimeout(panelCloseTimer.current); panelCloseTimer.current = null }
     setIsPanelClosing(false)
     setSelectedPoi(poi)
-  }, [])
+    setSelectedFoodNode(null)
+    setIsFoodPanelClosing(false)
+    if (foodPanelCloseTimer.current) { clearTimeout(foodPanelCloseTimer.current); foodPanelCloseTimer.current = null }
+    // Offline: no GPS, so check-in fires on tap instead of on proximity.
+    if (mode === 'offline' && !visitedPois.has(poi.id)) {
+      addVisit(poi)
+    }
+  }, [mode, visitedPois, addVisit])
 
   const handleClose = useCallback(() => {
     setIsPanelClosing(true)
@@ -109,19 +149,32 @@ export function MapPage() {
       panelCloseTimer.current = null
     }, 300)
   }, [])
-  const handleCheckIn = useCallback(() => {
-    if (!selectedPoi) return
-    // Re-verify proximity here too — visits are the core progression currency, so
-    // don't trust only the render-time button gate. Offline mode is a deliberate
-    // GPS-free test path and is exempt.
-    if (mode === 'online') {
-      if (!position) return
-      const d = haversineDistance(position.latitude, position.longitude, selectedPoi.lat, selectedPoi.lon)
-      if (d > CHECKIN_RADIUS_M) return
-    }
-    addVisit(selectedPoi)
-  }, [selectedPoi, addVisit, mode, position])
 
+  const handleFoodNodeClick = useCallback((id: string) => {
+    const node = profile.foodNodes.find((n) => n.id === id)
+    if (!node) return
+    if (foodPanelCloseTimer.current) { clearTimeout(foodPanelCloseTimer.current); foodPanelCloseTimer.current = null }
+    setIsFoodPanelClosing(false)
+    setSelectedFoodNode(node)
+    setSelectedPoi(null)
+    setIsPanelClosing(false)
+    if (panelCloseTimer.current) { clearTimeout(panelCloseTimer.current); panelCloseTimer.current = null }
+  }, [profile.foodNodes])
+
+  const handleFoodPanelClose = useCallback(() => {
+    setIsFoodPanelClosing(true)
+    foodPanelCloseTimer.current = setTimeout(() => {
+      setSelectedFoodNode(null)
+      setIsFoodPanelClosing(false)
+      foodPanelCloseTimer.current = null
+    }, 300)
+  }, [])
+
+  const handleSendToFood = useCallback((squadId: string, durationMs: number) => {
+    if (!selectedFoodNode) return
+    startFoodExpedition(squadId, selectedFoodNode, durationMs)
+    handleFoodPanelClose()
+  }, [selectedFoodNode, startFoodExpedition, handleFoodPanelClose])
   // Advance egg incubation as the player walks
   useEffect(() => {
     if (steps > 0) advanceEggsBySteps(steps)
@@ -151,6 +204,8 @@ export function MapPage() {
         companions={companions}
         claimMarkers={claimMarkers}
         onClaimClick={handleSquadClick}
+        foodNodeMarkers={foodNodeMarkers}
+        onFoodNodeClick={handleFoodNodeClick}
         onBearingChange={setBearing}
         compassResetRef={compassResetRef}
       />
@@ -188,7 +243,7 @@ export function MapPage() {
         <div />
       </div>
 
-      {/* Right-side HUD — below CoinCapsule (which sits at top:16, ~34px tall) */}
+      {/* Right-side HUD - below CoinCapsule (which sits at top:16, ~34px tall) */}
       <div style={{
         position: 'absolute', top: 64, right: 12,
         display: 'flex', flexDirection: 'column', gap: 8,
@@ -266,9 +321,18 @@ export function MapPage() {
           poi={selectedPoi}
           isVisited={visitedPois.has(selectedPoi.id)}
           position={position}
-          onCheckIn={handleCheckIn}
           onClose={handleClose}
           isClosing={isPanelClosing}
+        />
+      )}
+
+      {(selectedFoodNode || isFoodPanelClosing) && selectedFoodNode && (
+        <FoodNodePanel
+          node={selectedFoodNode}
+          position={position}
+          onSend={handleSendToFood}
+          onClose={handleFoodPanelClose}
+          isClosing={isFoodPanelClosing}
         />
       )}
     </div>

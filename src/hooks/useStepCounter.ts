@@ -22,7 +22,7 @@ interface StepState {
 }
 
 interface StoredState extends StepState {
-  date: string // YYYY-MM-DD — resets the count each day
+  date: string // YYYY-MM-DD - resets the count each day
 }
 
 function todayKey(timestamp: number): string {

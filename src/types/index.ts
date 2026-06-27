@@ -49,6 +49,7 @@ export interface HatchedCreature {
   id: string
   species: string
   emoji: string
+  creatureType?: string
   poiOriginId: string
   poiOriginName: string
   poiCategory: string
@@ -82,6 +83,8 @@ export interface SquadExpedition {
   lon: number
   startedAt: string   // ISO
   returnsAt: string   // ISO
+  foodNodeId?: string  // set for food-marker expeditions
+  foodId?: string      // food to award on return
 }
 
 export interface Squad {
@@ -91,7 +94,7 @@ export interface Squad {
   expedition: SquadExpedition | null
 }
 
-// Target a squad can be sent to — drawn from a visited POI.
+// Target a squad can be sent to - drawn from a visited POI.
 export interface ExpeditionTarget {
   poiId: string
   poiName: string
@@ -122,6 +125,7 @@ export interface PlayerProfile {
   eggs: Egg[]
   hatchedCreatures: HatchedCreature[]
   foodInventory: FoodItem[]
+  foodNodes: FoodNode[]
   stepsAppliedToEggs: number
   maxEggSlots: number
   bonusCreatureSlots: number   // extra creature storage bought in the shop
@@ -129,6 +133,23 @@ export interface PlayerProfile {
   activeSquadId: string | null
   coins: number
   claims: Claim[]
+  postcards: Postcard[]   // inbox (received)
+  outbox: Postcard[]      // sent by this player
+}
+
+export interface Postcard {
+  id: string
+  fromPlayerId: string
+  fromName: string
+  toPlayerId: string
+  toName: string
+  poiId: string
+  poiName: string
+  poiCategory: string
+  creatureEmoji: string
+  sentAt: string
+  deliverAt: string
+  openedAt: string | null
 }
 
 export interface FoodItem {
@@ -143,6 +164,19 @@ export interface ExpeditionCollectResult {
   egg: boolean
   food: { name: string; emoji: string } | null
   levelUps: Array<{ species: string; newLevel: number }>
+}
+
+// A food item that has appeared on the map near a POI. Sent on a food expedition
+// to retrieve it; removed from the map when the squad returns.
+export interface FoodNode {
+  id: string
+  foodId: string
+  lat: number
+  lon: number
+  poiId: string
+  poiName: string
+  poiCategory: string
+  spawnedAt: string
 }
 
 // A landmark the player holds (claimed by finishing an expedition there). Held

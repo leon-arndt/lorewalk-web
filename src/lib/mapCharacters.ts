@@ -103,7 +103,7 @@ export async function addCharacterLayer(
     })
   }
 
-  // Nature — Leafling: slim stem body, big round head, single leaf on top (Pikmin-inspired)
+  // Nature - Leafling: slim stem body, big round head, single leaf on top (Pikmin-inspired)
   function buildNature(color: number): T3.Object3D {
     const g = new THREE.Group()
     const m = pm(color)
@@ -119,7 +119,7 @@ export async function addCharacterLayer(
     return g
   }
 
-  // Heritage — Stonekin: dome shell body, small peeking head with a crest
+  // Heritage - Stonekin: dome shell body, small peeking head with a crest
   function buildHeritage(color: number): T3.Object3D {
     const g = new THREE.Group()
     const m = pm(color)
@@ -139,7 +139,7 @@ export async function addCharacterLayer(
     return g
   }
 
-  // Arts — Drifter: jellyfish bell with translucent tendrils, floats upward
+  // Arts - Drifter: jellyfish bell with translucent tendrils, floats upward
   function buildArts(color: number): T3.Object3D {
     const g = new THREE.Group()
     const bellM = pm(color, { transparent: true, opacity: 0.82, shininess: 90 })
@@ -161,7 +161,7 @@ export async function addCharacterLayer(
     return g
   }
 
-  // Religious — Glowick: glowing lantern orb with a small flame tip
+  // Religious - Glowick: glowing lantern orb with a small flame tip
   function buildReligious(color: number): T3.Object3D {
     const g = new THREE.Group()
     const orbM = pm(color, { shininess: 110, transparent: true, opacity: 0.88, emissive: color, emissiveIntensity: 0.28 })
@@ -179,7 +179,7 @@ export async function addCharacterLayer(
     return g
   }
 
-  // Museum — Hooter: egg body, large torus eye-rings, ear tufts (owl)
+  // Museum - Hooter: egg body, large torus eye-rings, ear tufts (owl)
   function buildMuseum(color: number): T3.Object3D {
     const g = new THREE.Group()
     const m = pm(color)
@@ -206,7 +206,7 @@ export async function addCharacterLayer(
     return g
   }
 
-  // Landmark — Warden: stocky body, square-ish head, two horns, glowing eyes
+  // Landmark - Warden: stocky body, square-ish head, two horns, glowing eyes
   function buildLandmark(color: number): T3.Object3D {
     const g = new THREE.Group()
     const m = pm(color)
@@ -228,7 +228,7 @@ export async function addCharacterLayer(
     return g
   }
 
-  // Default — friendly blob: round body, simple dot eyes
+  // Default - friendly blob: round body, simple dot eyes
   function buildDefault(color: number): T3.Object3D {
     const g = new THREE.Group()
     const m = pm(color)
@@ -308,7 +308,7 @@ export async function addCharacterLayer(
     })
   }
 
-  // Rebuild the whole roster — squads change rarely, so a full reset is fine.
+  // Rebuild the whole roster - squads change rarely, so a full reset is fine.
 
   function setState(c: Character, next: 'idle' | 'walk') {
     if (c.state === next) return
@@ -455,7 +455,7 @@ export async function addCharacterLayer(
       renderer.resetState()
       renderer.render(scene, camera)
       // Characters animate continuously (idle bob + idle clip), so keep the frame
-      // loop alive while any exist — but let the map go idle when the roster is
+      // loop alive while any exist - but let the map go idle when the roster is
       // empty instead of pinning the GPU at full FPS for nothing.
       if (characters.length > 0) map.triggerRepaint()
     },

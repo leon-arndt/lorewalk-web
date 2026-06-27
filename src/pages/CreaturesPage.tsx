@@ -135,14 +135,8 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
       </div>
 
       {/* Creature image */}
-      <div style={{
-        width: 72, height: 72, borderRadius: 12, overflow: 'hidden',
-        background: isRare ? '#fffbeb' : '#f5f3ff',
-        border: `2px solid ${isRare ? '#fbbf24' : '#c4b5fd'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        marginTop: 8,
-      }}>
-        <CreaturePreview category={creature.poiCategory} />
+      <div style={{ marginTop: 8 }}>
+        <CreaturePreview emoji={creature.emoji} creatureType={creature.creatureType} />
       </div>
 
       {/* XP bar */}
@@ -217,7 +211,7 @@ function FeedSheet({ food, creatures, onFeed, onClose }: {
                     padding: 10, cursor: 'pointer',
                   }}
                 >
-                  <CreaturePreview category={c.poiCategory} size={44} />
+                  <CreaturePreview emoji={c.emoji} size={44} />
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{c.species}</div>
                     <div style={{ fontSize: 10, color: col.fg, fontWeight: 600 }}>Lv.{c.level}</div>

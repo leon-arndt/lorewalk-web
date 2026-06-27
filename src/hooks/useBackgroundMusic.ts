@@ -24,7 +24,7 @@ export function useBackgroundMusic(src: string) {
       audio.play()
         .then(() => { startedRef.current = true })
         .catch(() => {
-          // Autoplay blocked — wait for first touch/click then start
+          // Autoplay blocked - wait for first touch/click then start
           document.addEventListener('pointerdown', tryPlay, { once: true })
         })
     }

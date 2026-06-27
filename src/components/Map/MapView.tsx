@@ -6,7 +6,44 @@ import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
 import type { Poi, PlayerPosition } from '@/types'
 
-// OpenFreeMap "Liberty" — free vector tiles, no API key. Gives 3D building
+export interface FoodNodeMarker {
+  id: string
+  emoji: string
+  name: string
+  lat: number
+  lon: number
+}
+
+function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
+  const outer = document.createElement('div')
+  outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;position:relative;'
+  const inner = document.createElement('div')
+  inner.style.cssText = `
+    width:38px;height:38px;border-radius:50%;
+    background:white;border:2.5px solid #f59e0b;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;line-height:1;
+    box-shadow:0 2px 10px rgba(245,158,11,0.45);
+  `
+  inner.textContent = node.emoji
+  const tooltip = document.createElement('div')
+  tooltip.textContent = node.name
+  tooltip.style.cssText = `
+    position:absolute;bottom:46px;left:50%;transform:translateX(-50%);
+    background:white;color:#1e293b;font-size:11px;font-weight:600;
+    padding:3px 9px;border-radius:7px;white-space:nowrap;
+    box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;
+    opacity:0;transition:opacity 0.12s ease;
+  `
+  outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
+  outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
+  outer.addEventListener('click', onClick)
+  outer.appendChild(inner)
+  outer.appendChild(tooltip)
+  return outer
+}
+
+// OpenFreeMap "Liberty" - free vector tiles, no API key. Gives 3D building
 // extrusions, crisp labels, and transit POIs (bus/rail/MRT) out of the box.
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
@@ -127,17 +164,20 @@ interface MapViewProps {
   companions?: CharacterSpec[]
   claimMarkers?: ClaimMarker[]
   onClaimClick?: (poiId: string) => void
+  foodNodeMarkers?: FoodNodeMarker[]
+  onFoodNodeClick?: (id: string) => void
   onBearingChange?: (bearing: number) => void
   compassResetRef?: MutableRefObject<(() => void) | null>
 }
 
-export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, onBearingChange, compassResetRef }: MapViewProps) {
+export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, onBearingChange, compassResetRef }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const playerMarkerRef = useRef<maplibregl.Marker | null>(null)
   const squadMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const claimMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const foodNodeMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const charLayerRef = useRef<CharacterLayerHandle | null>(null)
   const poiPinsRef = useRef<PoiPinsHandle | null>(null)
   const companionsRef = useRef<CharacterSpec[]>(companions)
@@ -353,6 +393,24 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     if (map.loaded()) sync()
     else map.once('load', sync)
   }, [claimMarkers, onClaimClick])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const sync = () => {
+      foodNodeMarkersRef.current.forEach((m) => m.remove())
+      foodNodeMarkersRef.current.clear()
+      foodNodeMarkers.forEach((node) => {
+        const el = buildFoodNodeElement(node, () => onFoodNodeClick?.(node.id))
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([node.lon, node.lat])
+          .addTo(map)
+        foodNodeMarkersRef.current.set(node.id, marker)
+      })
+    }
+    if (map.loaded()) sync()
+    else map.once('load', sync)
+  }, [foodNodeMarkers, onFoodNodeClick])
 
   return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
 }

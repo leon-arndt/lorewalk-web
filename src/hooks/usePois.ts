@@ -15,7 +15,7 @@ export function usePois(position: PlayerPosition | null) {
   const lastFetchRef = useRef<{ lat: number; lon: number } | null>(null)
 
   useEffect(() => {
-    // Offline: show all POIs immediately — no GPS needed, no proximity filter.
+    // Offline: show all POIs immediately - no GPS needed, no proximity filter.
     // When online and in Singapore, switch to Supabase for live proximity queries.
     if (mode === 'offline') {
       setPois(SINGAPORE_POIS)

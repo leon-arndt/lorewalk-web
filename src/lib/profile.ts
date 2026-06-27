@@ -1,5 +1,6 @@
-import type { Achievement, Claim, Egg, EggTier, FoodItem, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
+import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
 import { randomFood } from '@/data/foods'
+import { drawCreature, rollEggTier } from '@/data/creatures'
 
 // XP needed to go from level N to level N+1
 export function xpForNextLevel(level: number): number {
@@ -41,7 +42,7 @@ export function applyCreatureXp(creature: HatchedCreature, gained: number): Hatc
 }
 
 // Streak: did the player also visit yesterday?
-// Calendar days are anchored to Singapore time (UTC+8) — the game's home zone —
+// Calendar days are anchored to Singapore time (UTC+8) - the game's home zone -
 // so a check-in just before local midnight isn't bucketed into the wrong UTC day.
 const SGT_OFFSET_MS = 8 * 3_600_000
 function sgtDayStr(epochMs: number) {
@@ -137,25 +138,10 @@ export function eggSlotCost(currentMax: number): number {
   return 120 * (currentMax - MAX_EGG_SLOTS + 1) // 120, 240, 360, …
 }
 
-const CREATURE_BY_CATEGORY: Record<string, { species: string; emoji: string; tier: EggTier }> = {
-  heritage:  { species: 'Stonewarden', emoji: '🗿', tier: 'common' },
-  landmark:  { species: 'Pathfinder',  emoji: '🧭', tier: 'common' },
-  arts:      { species: 'Muse',        emoji: '🎨', tier: 'common' },
-  religious: { species: 'Luminary',    emoji: '🌟', tier: 'rare' },
-  nature:    { species: 'Fernspark',   emoji: '🌿', tier: 'rare' },
-  museum:    { species: 'Archivist',   emoji: '📜', tier: 'epic' },
-}
-
-const FALLBACK_CREATURE = { species: 'Wanderer', emoji: '✨', tier: 'common' as EggTier }
-
 export const TIER_STEPS: Record<EggTier, number> = { common: 100, rare: 1000, epic: 5000 }
 
-function creatureForCategory(category: string) {
-  return CREATURE_BY_CATEGORY[category] ?? FALLBACK_CREATURE
-}
-
 export function createEggFor(poiId: string, poiName: string, category: string): Egg {
-  const { tier } = creatureForCategory(category)
+  const tier = rollEggTier(category)
   return {
     id: `egg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     poiId,
@@ -173,11 +159,12 @@ export function createEgg(poi: Poi): Egg {
 }
 
 export function hatchEgg(egg: Egg): HatchedCreature {
-  const { species, emoji } = creatureForCategory(egg.poiCategory)
+  const def = drawCreature(egg.poiCategory, egg.tier)
   return {
     id: `creature_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    species,
-    emoji,
+    species: def.species,
+    emoji: def.emoji,
+    creatureType: def.type,
     poiOriginId: egg.poiId,
     poiOriginName: egg.poiName,
     poiCategory: egg.poiCategory,
@@ -263,22 +250,73 @@ export function hasReturned(exp: SquadExpedition, now: number): boolean {
 }
 
 // XP + coins earned when an expedition is collected, scaled by type affinity to the
-// target. Coins carry a random spread so payouts feel varied. (Egg roll is handled by
-// the caller, which knows whether an egg slot is free.)
+// target. Coins carry a random spread so payouts feel varied.
 export function rollExpeditionPayout(
   squad: Squad,
   creaturesById: Map<string, HatchedCreature>,
-): { xp: number; coins: number; food: FoodItem } {
-  if (!squad.expedition) return { xp: 0, coins: 0, food: makeFoodItem() }
+): { xp: number; coins: number } {
+  if (!squad.expedition) return { xp: 0, coins: 0 }
   const mult = affinityMultiplier(squad, squad.expedition.poiCategory, creaturesById)
   const xp = Math.round(EXPEDITION_BASE_XP * mult)
   const coins = Math.round((EXPEDITION_BASE_COINS + Math.random() * EXPEDITION_BASE_COINS) * mult)
-  return { xp, coins, food: makeFoodItem() }
+  return { xp, coins }
 }
 
-function makeFoodItem(): FoodItem {
-  const def = randomFood()
-  return { id: `food_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, foodId: def.id, acquiredAt: new Date().toISOString() }
+// ─── Food nodes (map markers for expeditions) ────────────────────────────────
+
+export const MAX_FOOD_NODES = 6
+
+// Small deterministic lat/lon offset per POI so the food marker sits slightly
+// apart from the POI pin. Stable across sessions (same seed → same offset).
+function deterministicOffset(seed: string): { dlat: number; dlon: number } {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0
+  return {
+    dlat: ((h & 0xff) - 128) / 128 * 0.0003,      // ≈ ±33 m
+    dlon: (((h >> 8) & 0xff) - 128) / 128 * 0.0003,
+  }
+}
+
+// activeExpeditionNodeIds: food nodes currently targeted by a squad - never evict these.
+export function spawnFoodNodes(pois: Poi[], existing: FoodNode[], activeExpeditionNodeIds: Set<string> = new Set()): FoodNode[] {
+  const poiById = new Map(pois.map((p) => [p.id, p]))
+  // Evict nodes for POIs no longer visible; recompute lat/lon from current POI data
+  // so stale coordinates from a previous session can't persist.
+  const kept: FoodNode[] = []
+  for (const node of existing) {
+    const poi = poiById.get(node.poiId)
+    if (!poi) {
+      if (activeExpeditionNodeIds.has(node.id)) kept.push(node)
+      continue
+    }
+    const { dlat, dlon } = deterministicOffset(poi.id)
+    kept.push({ ...node, lat: poi.lat + dlat, lon: poi.lon + dlon, poiName: poi.name })
+  }
+  if (kept.length >= MAX_FOOD_NODES) return kept
+  const occupiedPoiIds = new Set(kept.map((n) => n.poiId))
+  const available = pois.filter((p) => !occupiedPoiIds.has(p.id))
+  const toAdd = MAX_FOOD_NODES - kept.length
+  const newNodes: FoodNode[] = []
+  for (let i = 0; i < Math.min(toAdd, available.length); i++) {
+    const poi = available[i]
+    const food = randomFood()
+    const { dlat, dlon } = deterministicOffset(poi.id)
+    newNodes.push({
+      id: `fn_${poi.id}_${Date.now() + i}`,
+      foodId: food.id,
+      lat: poi.lat + dlat,
+      lon: poi.lon + dlon,
+      poiId: poi.id,
+      poiName: poi.name,
+      poiCategory: poi.category ?? 'landmark',
+      spawnedAt: new Date().toISOString(),
+    })
+  }
+  return [...kept, ...newNodes]
+}
+
+export function makeFoodItem(foodId: string): FoodItem {
+  return { id: `food_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, foodId, acquiredAt: new Date().toISOString() }
 }
 
 // ─── Player level-up rewards ─────────────────────────────────────────────────
@@ -341,6 +379,7 @@ export function loadProfile(): PlayerProfile {
         eggs,
         hatchedCreatures,
         foodInventory: parsed.foodInventory ?? [],
+        foodNodes: parsed.foodNodes ?? [],
         stepsAppliedToEggs: parsed.stepsAppliedToEggs ?? 0,
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
         bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
@@ -348,6 +387,8 @@ export function loadProfile(): PlayerProfile {
         activeSquadId: parsed.activeSquadId ?? squads[0]?.id ?? null,
         coins: parsed.coins ?? 0,
         claims: parsed.claims ?? [],
+        postcards: parsed.postcards ?? [],
+        outbox: parsed.outbox ?? [],
       }
     }
   } catch { /* ignore */ }
@@ -366,6 +407,7 @@ export function loadProfile(): PlayerProfile {
     eggs: [],
     hatchedCreatures: [],
     foodInventory: [],
+    foodNodes: [],
     stepsAppliedToEggs: 0,
     maxEggSlots: MAX_EGG_SLOTS,
     bonusCreatureSlots: 0,
@@ -373,8 +415,13 @@ export function loadProfile(): PlayerProfile {
     activeSquadId: 'squad_1',
     coins: 0,
     claims: [],
+    postcards: [],
+    outbox: [],
   }
 }
+
+// 48h in prod, 30s in dev for fast testing
+export const POSTCARD_DELIVERY_MS = import.meta.env.DEV ? 30_000 : 48 * 3_600_000
 
 export function saveProfile(profile: PlayerProfile) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))

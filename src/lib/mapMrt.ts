@@ -268,7 +268,7 @@ function buildLabelImage(lineInfos: LabelSpec[], name: string): {
   const PFZ  = 9  * SC     // pill font size
   const NFZ  = 10 * SC     // name font size
   const PADX = 5  * SC     // horizontal padding inside pill
-  const GAP  = 0           // pills touch — matches SMRT signage style
+  const GAP  = 0           // pills touch - matches SMRT signage style
   const SEP  = 6  * SC     // gap between last pill and station name
   const H    = 20 * SC     // total canvas height
 
@@ -400,7 +400,7 @@ export function addMrtLayers(map: maplibregl.Map): void {
     paint:  { 'line-color': ['get', 'color'], 'line-width': 3 },
   })
 
-  // Station dot — white fill, coloured ring.
+  // Station dot - white fill, coloured ring.
   map.addLayer({
     id: 'mrt-stations-dot', type: 'circle', source: 'mrt-stations',
     paint: {
@@ -411,7 +411,7 @@ export function addMrtLayers(map: maplibregl.Map): void {
     },
   })
 
-  // SMRT-style pill labels — canvas icons, visible from zoom 12.
+  // SMRT-style pill labels - canvas icons, visible from zoom 12.
   map.addLayer({
     id: 'mrt-station-labels', type: 'symbol', source: 'mrt-stations',
     minzoom: 12,

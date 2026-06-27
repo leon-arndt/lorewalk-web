@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
 
 // Renders Pokémon-GO–style 3D POI pins: a pulsing ground ring, a thin stem,
-// and a floating emoji orb that bobs gently — all in the same Three.js/WebGL
+// and a floating emoji orb that bobs gently - all in the same Three.js/WebGL
 // pipeline used by the companion characters so depth and pitch are correct.
 
 export interface PoiPinSpec {
@@ -21,7 +21,7 @@ export interface PoiPinsHandle {
 
 const LAYER_ID = 'lorewalk-poi-pins'
 
-// Fixed world origin — all pin positions are metre-offsets from this point.
+// Fixed world origin - all pin positions are metre-offsets from this point.
 const SG_CENTER = { lng: 103.8198, lat: 1.3521 }
 const R_EARTH = 6371000
 
@@ -65,7 +65,7 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   const { x, z } = toLocalXZ(spec.lat, spec.lon)
   group.position.set(x, 0, z)
 
-  // Pulsing ground ring (lies flat in XZ) — kept small, just a subtle halo.
+  // Pulsing ground ring (lies flat in XZ) - kept small, just a subtle halo.
   const ringGeo = new THREE.RingGeometry(0.35, 0.55, 48)
   ringGeo.rotateX(-Math.PI / 2)
   const ringMat = new THREE.MeshBasicMaterial({
@@ -76,7 +76,7 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   ring.position.y = 0.05
   group.add(ring)
 
-  // Vertical cylinder — unvisited = orange, visited = green (VISITED_COLOR).
+  // Vertical cylinder - unvisited = orange, visited = green (VISITED_COLOR).
   const CONE_HEIGHT = 1.1
   const cylColor = spec.visited ? VISITED_COLOR : 0xf97316
   const cylGeo = new THREE.CylinderGeometry(0.22, 0.22, CONE_HEIGHT, 24)
@@ -92,7 +92,7 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   head.position.y = CONE_HEIGHT
   group.add(head)
 
-  // orb is null but kept in the interface for type compat — nothing added to head.
+  // orb is null but kept in the interface for type compat - nothing added to head.
   const orb = null as unknown as T3.Sprite
 
   return { group, ring, head, orb, phase: Math.random() * Math.PI * 2 }
