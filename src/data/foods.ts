@@ -32,6 +32,14 @@ export function getFoodDef(id: string): FoodDef | undefined {
   return FOODS.find((f) => f.id === id)
 }
 
+// Total creature power needed to dispatch an expedition for this food. Scales with
+// the food's value so premium dishes demand stronger (or more) creatures.
+export function foodPowerRequirement(foodId: string): number {
+  const def = getFoodDef(foodId)
+  if (!def) return 0
+  return Math.max(3, Math.round(def.xp / 3.5))   // 20xp -> 6, 35xp -> 10, 50xp -> 14
+}
+
 export function randomFood(): FoodDef {
   return FOODS[Math.floor(Math.random() * FOODS.length)]
 }

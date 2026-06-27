@@ -44,7 +44,13 @@ export function usePois(position: PlayerPosition | null) {
       if (error) { setError(error.message); return }
 
       lastFetchRef.current = { lat: position!.latitude, lon: position!.longitude }
-      setPois((data as Poi[]) ?? [])
+      // Supabase RPC returns `latitude`/`longitude`; normalise to `lat`/`lon`.
+      const pois = ((data as any[]) ?? []).map((row) => ({
+        ...row,
+        lat: row.lat ?? row.latitude,
+        lon: row.lon ?? row.longitude,
+      })) as Poi[]
+      setPois(pois)
     }
 
     fetchPois()

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodNode, HatchedCreature, Postcard, PlayerProfile, Poi, SquadExpedition } from '@/types'
+import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile,
@@ -29,7 +29,9 @@ interface ProfileContextValue {
   renameSquad: (squadId: string, name: string) => void
   syncFoodNodes: (pois: Poi[]) => void
   startExpedition: (squadId: string, target: ExpeditionTarget, durationMs: number) => void
-  startFoodExpedition: (squadId: string, node: FoodNode, durationMs: number) => void
+  startFoodExpedition: (nodeId: string, creatureIds: string[], durationMs: number) => void
+  collectFoodNode: (nodeId: string) => FoodCollectResult | null
+  busyCreatureIds: Set<string>
   collectExpedition: (squadId: string) => ExpeditionCollectResult | null
   recallSquad: (squadId: string) => void
   collectClaim: (poiId: string) => number
@@ -55,6 +57,19 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     () => new Set(profile.visitHistory.map((v) => v.poiId)),
     [profile.visitHistory],
   )
+
+  // Creatures currently away and unavailable for new food expeditions: those already
+  // dispatched to a food node, plus members of any squad out on a POI expedition.
+  const busyCreatureIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const n of profile.foodNodes) {
+      if (n.expedition) n.expedition.creatureIds.forEach((id) => ids.add(id))
+    }
+    for (const s of profile.squads) {
+      if (s.expedition) s.slots.forEach((id) => id && ids.add(id))
+    }
+    return ids
+  }, [profile.foodNodes, profile.squads])
 
   function addVisit(poi: Poi) {
     if (visitedPois.has(poi.id)) return
@@ -201,31 +216,59 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   function syncFoodNodes(pois: Poi[]) {
-    const activeNodeIds = new Set(
-      profile.squads
-        .filter((s) => s.expedition?.foodNodeId)
-        .map((s) => s.expedition!.foodNodeId!),
-    )
-    const updated = spawnFoodNodes(pois, profile.foodNodes, activeNodeIds)
+    const updated = spawnFoodNodes(pois, profile.foodNodes)
     const changed =
       updated.length !== profile.foodNodes.length ||
-      updated.some((n, i) => n.id !== profile.foodNodes[i]?.id)
+      updated.some((n, i) => {
+        const old = profile.foodNodes[i]
+        return !old || n.id !== old.id || n.lat !== old.lat || n.lon !== old.lon
+      })
     if (changed) persist({ ...profile, foodNodes: updated })
   }
 
-  function startFoodExpedition(squadId: string, node: FoodNode, durationMs: number) {
-    const squad = profile.squads.find((sq) => sq.id === squadId)
-    if (!squad || !squad.slots.some(Boolean)) return
+  // Dispatch a set of creatures (not a squad) to a food node, Pikmin-style.
+  function startFoodExpedition(nodeId: string, creatureIds: string[], durationMs: number) {
+    if (creatureIds.length === 0) return
+    const node = profile.foodNodes.find((n) => n.id === nodeId)
+    if (!node || node.expedition) return
     const now = Date.now()
-    const expedition: SquadExpedition = {
-      poiId: node.poiId, poiName: node.poiName, poiCategory: node.poiCategory,
-      lat: node.lat, lon: node.lon,
-      startedAt: new Date(now).toISOString(),
-      returnsAt: new Date(now + durationMs).toISOString(),
-      foodNodeId: node.id, foodId: node.foodId,
-    }
-    const squads = profile.squads.map((sq) => sq.id === squadId ? { ...sq, expedition } : sq)
-    persist({ ...profile, squads })
+    const foodNodes = profile.foodNodes.map((n) =>
+      n.id === nodeId
+        ? {
+            ...n,
+            expedition: {
+              creatureIds,
+              startedAt: new Date(now).toISOString(),
+              returnsAt: new Date(now + durationMs).toISOString(),
+            },
+          }
+        : n,
+    )
+    persist({ ...profile, foodNodes })
+  }
+
+  // Collect a returned food expedition: award the food, grant the dispatched
+  // creatures XP, and remove the node from the map.
+  function collectFoodNode(nodeId: string): FoodCollectResult | null {
+    const node = profile.foodNodes.find((n) => n.id === nodeId)
+    if (!node?.expedition || Date.now() < new Date(node.expedition.returnsAt).getTime()) return null
+
+    const def = getFoodDef(node.foodId)
+    if (!def) return null
+
+    const memberIds = new Set(node.expedition.creatureIds)
+    const levelUps: Array<{ species: string; newLevel: number }> = []
+    const hatchedCreatures = profile.hatchedCreatures.map((c) => {
+      if (!memberIds.has(c.id)) return c
+      const updated = applyCreatureXp(c, def.xp)
+      if (updated.level > c.level) levelUps.push({ species: c.species, newLevel: updated.level })
+      return updated
+    })
+
+    const foodInventory = [...profile.foodInventory, makeFoodItem(node.foodId)]
+    const foodNodes = profile.foodNodes.filter((n) => n.id !== nodeId)
+    persist({ ...profile, hatchedCreatures, foodInventory, foodNodes })
+    return { food: { name: def.name, emoji: def.emoji }, levelUps }
   }
 
   function startExpedition(squadId: string, target: ExpeditionTarget, durationMs: number) {
@@ -243,8 +286,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, squads })
   }
 
-  // Collect a returned expedition. Food-marker expeditions award their specific food
-  // and remove the node; regular POI expeditions award XP/coins/egg and claim the landmark.
+  // Collect a returned squad expedition: award XP/coins/egg and claim the landmark.
   function collectExpedition(squadId: string): ExpeditionCollectResult | null {
     const squad = profile.squads.find((s) => s.id === squadId)
     if (!squad?.expedition || !hasReturned(squad.expedition, Date.now())) return null
@@ -267,20 +309,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     const squads = profile.squads.map((sq) => sq.id === squadId ? { ...sq, expedition: null } : sq)
 
-    if (exp.foodNodeId && exp.foodId) {
-      // Food expedition: award the specific food, remove the node, no egg/claim.
-      const foodDef = getFoodDef(exp.foodId)
-      const foodInventory = [...profile.foodInventory, makeFoodItem(exp.foodId)]
-      const foodNodes = profile.foodNodes.filter((n) => n.id !== exp.foodNodeId)
-      const built: PlayerProfile = {
-        ...profile, squads, hatchedCreatures, foodInventory, foodNodes,
-        level, xp: newXp, totalXp: profile.totalXp + xp, coins: profile.coins + coins,
-      }
-      persist(withLevelUpRewards(profile, built))
-      return { xp, coins, egg: false, food: foodDef ? { name: foodDef.name, emoji: foodDef.emoji } : null, levelUps }
-    }
-
-    // Regular POI expedition: egg chance + claim landmark.
+    // Egg chance + claim landmark.
     const slotFree = profile.eggs.length < profile.maxEggSlots
     const gotEgg = slotFree && Math.random() < EXPEDITION_EGG_CHANCE
     const eggs = gotEgg ? [...profile.eggs, createEggFor(exp.poiId, exp.poiName, exp.poiCategory)] : profile.eggs
@@ -442,7 +471,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
-      syncFoodNodes, startExpedition, startFoodExpedition, collectExpedition, recallSquad, collectClaim,
+      syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
       releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp,
       sendPostcard, openPostcard, seedMockPostcard,
     }}>

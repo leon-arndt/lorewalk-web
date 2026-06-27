@@ -12,20 +12,46 @@ export interface FoodNodeMarker {
   name: string
   lat: number
   lon: number
+  state?: 'idle' | 'busy' | 'ready'
 }
 
 function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
+  const state = node.state ?? 'idle'
   const outer = document.createElement('div')
-  outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;position:relative;'
+  outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
   const inner = document.createElement('div')
+  const borderColor = state === 'ready' ? '#16a34a' : state === 'busy' ? '#cbd5e1' : '#f59e0b'
+  const glow = state === 'ready' ? 'rgba(34,197,94,0.5)' : state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(245,158,11,0.45)'
   inner.style.cssText = `
     width:38px;height:38px;border-radius:50%;
-    background:white;border:2.5px solid #f59e0b;
+    background:white;border:2.5px solid ${borderColor};
     display:flex;align-items:center;justify-content:center;
     font-size:22px;line-height:1;
-    box-shadow:0 2px 10px rgba(245,158,11,0.45);
+    box-shadow:0 2px 10px ${glow};
+    opacity:${state === 'busy' ? '0.6' : '1'};
   `
   inner.textContent = node.emoji
+  if (state === 'ready') {
+    const badge = document.createElement('div')
+    badge.textContent = '🎁'
+    badge.style.cssText = `
+      position:absolute;top:-8px;right:-8px;font-size:14px;
+      background:white;border-radius:50%;width:20px;height:20px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 1px 4px rgba(0,0,0,0.25);
+    `
+    outer.appendChild(badge)
+  } else if (state === 'busy') {
+    const badge = document.createElement('div')
+    badge.textContent = '⏳'
+    badge.style.cssText = `
+      position:absolute;top:-8px;right:-8px;font-size:12px;
+      background:white;border-radius:50%;width:18px;height:18px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 1px 4px rgba(0,0,0,0.25);
+    `
+    outer.appendChild(badge)
+  }
   const tooltip = document.createElement('div')
   tooltip.textContent = node.name
   tooltip.style.cssText = `
@@ -37,7 +63,11 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  outer.addEventListener('click', onClick)
+  // Stop the click from bubbling to the map container, where MapLibre's own click
+  // handler would run the POI proximity hit-test and override this marker's action.
+  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
+  outer.addEventListener('mousedown', (e) => e.stopPropagation())
+  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
   return outer
@@ -101,7 +131,11 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  outer.addEventListener('click', onClick)
+  // Stop the click from bubbling to the map container, where MapLibre's own click
+  // handler would run the POI proximity hit-test and override this marker's action.
+  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
+  outer.addEventListener('mousedown', (e) => e.stopPropagation())
+  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
 
   outer.appendChild(inner)
   outer.appendChild(tooltip)
@@ -148,7 +182,11 @@ function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  outer.addEventListener('click', onClick)
+  // Stop the click from bubbling to the map container, where MapLibre's own click
+  // handler would run the POI proximity hit-test and override this marker's action.
+  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
+  outer.addEventListener('mousedown', (e) => e.stopPropagation())
+  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
   return outer

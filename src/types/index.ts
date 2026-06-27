@@ -83,8 +83,6 @@ export interface SquadExpedition {
   lon: number
   startedAt: string   // ISO
   returnsAt: string   // ISO
-  foodNodeId?: string  // set for food-marker expeditions
-  foodId?: string      // food to award on return
 }
 
 export interface Squad {
@@ -166,8 +164,15 @@ export interface ExpeditionCollectResult {
   levelUps: Array<{ species: string; newLevel: number }>
 }
 
-// A food item that has appeared on the map near a POI. Sent on a food expedition
-// to retrieve it; removed from the map when the squad returns.
+// Creatures dispatched to a food node (Pikmin-style ad-hoc selection, not a squad).
+export interface FoodExpedition {
+  creatureIds: string[]
+  startedAt: string   // ISO
+  returnsAt: string   // ISO
+}
+
+// A food item that has appeared on the map near a POI. Send creatures to retrieve
+// it; the node is removed from the map once the expedition is collected.
 export interface FoodNode {
   id: string
   foodId: string
@@ -177,6 +182,12 @@ export interface FoodNode {
   poiName: string
   poiCategory: string
   spawnedAt: string
+  expedition?: FoodExpedition | null
+}
+
+export interface FoodCollectResult {
+  food: { name: string; emoji: string }
+  levelUps: Array<{ species: string; newLevel: number }>
 }
 
 // A landmark the player holds (claimed by finishing an expedition there). Held

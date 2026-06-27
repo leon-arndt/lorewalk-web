@@ -210,6 +210,24 @@ export function expeditionDurationMs(distanceM: number): number {
   return Math.round(Math.min(EXPEDITION_MAX_MS, EXPEDITION_BASE_MS + (distanceM / 1000) * EXPEDITION_MS_PER_KM))
 }
 
+// ─── Food expeditions (Pikmin-style per-creature dispatch) ──────────────────────
+
+// Most creatures you can send to a single food node.
+export const MAX_FOOD_CREATURES = 2
+
+// A creature's contribution toward a food node's power requirement. Scaled so that
+// one or two creatures comfortably clear a node: a fresh creature is already worth 5,
+// and two of them (10) clear most foods. Food requirements are 6 / 10 / 14.
+export function creaturePower(c: HatchedCreature): number {
+  return c.level * 5
+}
+
+// More creatures finish the trip faster: full duration solo, halved with two, etc.
+export function foodExpeditionDurationMs(distanceM: number, creatureCount: number): number {
+  const base = expeditionDurationMs(distanceM)
+  return Math.max(15_000, Math.round(base / Math.max(1, creatureCount)))
+}
+
 const EXPEDITION_BASE_XP = 25
 const EXPEDITION_BASE_COINS = 10
 export const EXPEDITION_EGG_CHANCE = 0.4
@@ -277,16 +295,16 @@ function deterministicOffset(seed: string): { dlat: number; dlon: number } {
   }
 }
 
-// activeExpeditionNodeIds: food nodes currently targeted by a squad - never evict these.
-export function spawnFoodNodes(pois: Poi[], existing: FoodNode[], activeExpeditionNodeIds: Set<string> = new Set()): FoodNode[] {
+export function spawnFoodNodes(pois: Poi[], existing: FoodNode[]): FoodNode[] {
   const poiById = new Map(pois.map((p) => [p.id, p]))
   // Evict nodes for POIs no longer visible; recompute lat/lon from current POI data
-  // so stale coordinates from a previous session can't persist.
+  // so stale coordinates from a previous session can't persist. Nodes with an active
+  // expedition are kept regardless so the dispatched creatures can still return.
   const kept: FoodNode[] = []
   for (const node of existing) {
     const poi = poiById.get(node.poiId)
     if (!poi) {
-      if (activeExpeditionNodeIds.has(node.id)) kept.push(node)
+      if (node.expedition) kept.push(node)
       continue
     }
     const { dlat, dlon } = deterministicOffset(poi.id)
@@ -379,7 +397,10 @@ export function loadProfile(): PlayerProfile {
         eggs,
         hatchedCreatures,
         foodInventory: parsed.foodInventory ?? [],
-        foodNodes: parsed.foodNodes ?? [],
+        foodNodes: (parsed.foodNodes ?? []).filter((n: any) =>
+          typeof n.lat === 'number' && isFinite(n.lat) &&
+          typeof n.lon === 'number' && isFinite(n.lon),
+        ),
         stepsAppliedToEggs: parsed.stepsAppliedToEggs ?? 0,
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
         bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,

@@ -15,7 +15,7 @@ import { useMusic } from '@/contexts/MusicContext'
 import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
 import { getFoodDef } from '@/data/foods'
-import type { FoodNode, Poi } from '@/types'
+import type { Poi } from '@/types'
 
 const CHECKIN_RADIUS_M = 50
 
@@ -37,13 +37,13 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
-  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched, syncFoodNodes, startFoodExpedition } = useProfile()
+  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds } = useProfile()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
   const [isPanelClosing, setIsPanelClosing] = useState(false)
   const panelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [selectedFoodNode, setSelectedFoodNode] = useState<FoodNode | null>(null)
+  const [selectedFoodNodeId, setSelectedFoodNodeId] = useState<string | null>(null)
   const [isFoodPanelClosing, setIsFoodPanelClosing] = useState(false)
   const foodPanelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -61,6 +61,8 @@ export function MapPage() {
     const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
     const members = (active?.slots ?? [])
       .filter((id): id is string => !!id)
+      // Creatures away foraging at a food node don't walk with you.
+      .filter((id) => !busyCreatureIds.has(id))
       .map((id) => ({
         id,
         color: categoryColor(byId.get(id)?.poiCategory),
@@ -68,14 +70,22 @@ export function MapPage() {
       }))
     if (members.length > 0) return members
     return [0, 1, 2].map((i) => ({ id: `ambient-${i}`, color: 0x94a3b8, category: undefined }))
-  }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures])
+  }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures, busyCreatureIds])
 
   const foodNodeMarkers = useMemo(
     () => profile.foodNodes.map((n) => {
       const def = getFoodDef(n.foodId)
-      return { id: n.id, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon }
+      const state: 'idle' | 'busy' | 'ready' = !n.expedition
+        ? 'idle'
+        : Date.now() >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
+      return { id: n.id, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state }
     }),
     [profile.foodNodes],
+  )
+
+  const selectedFoodNode = useMemo(
+    () => profile.foodNodes.find((n) => n.id === selectedFoodNodeId) ?? null,
+    [profile.foodNodes, selectedFoodNodeId],
   )
 
   // Spawn food nodes near visible POIs; runs whenever the nearby POI list changes.
@@ -132,7 +142,7 @@ export function MapPage() {
     if (panelCloseTimer.current) { clearTimeout(panelCloseTimer.current); panelCloseTimer.current = null }
     setIsPanelClosing(false)
     setSelectedPoi(poi)
-    setSelectedFoodNode(null)
+    setSelectedFoodNodeId(null)
     setIsFoodPanelClosing(false)
     if (foodPanelCloseTimer.current) { clearTimeout(foodPanelCloseTimer.current); foodPanelCloseTimer.current = null }
     // Offline: no GPS, so check-in fires on tap instead of on proximity.
@@ -151,30 +161,38 @@ export function MapPage() {
   }, [])
 
   const handleFoodNodeClick = useCallback((id: string) => {
-    const node = profile.foodNodes.find((n) => n.id === id)
-    if (!node) return
     if (foodPanelCloseTimer.current) { clearTimeout(foodPanelCloseTimer.current); foodPanelCloseTimer.current = null }
     setIsFoodPanelClosing(false)
-    setSelectedFoodNode(node)
+    setSelectedFoodNodeId(id)
     setSelectedPoi(null)
     setIsPanelClosing(false)
     if (panelCloseTimer.current) { clearTimeout(panelCloseTimer.current); panelCloseTimer.current = null }
-  }, [profile.foodNodes])
+  }, [])
 
   const handleFoodPanelClose = useCallback(() => {
     setIsFoodPanelClosing(true)
     foodPanelCloseTimer.current = setTimeout(() => {
-      setSelectedFoodNode(null)
+      setSelectedFoodNodeId(null)
       setIsFoodPanelClosing(false)
       foodPanelCloseTimer.current = null
     }, 300)
   }, [])
 
-  const handleSendToFood = useCallback((squadId: string, durationMs: number) => {
-    if (!selectedFoodNode) return
-    startFoodExpedition(squadId, selectedFoodNode, durationMs)
+  const handleStartFood = useCallback((creatureIds: string[], durationMs: number) => {
+    if (!selectedFoodNodeId) return
+    startFoodExpedition(selectedFoodNodeId, creatureIds, durationMs)
     handleFoodPanelClose()
-  }, [selectedFoodNode, startFoodExpedition, handleFoodPanelClose])
+  }, [selectedFoodNodeId, startFoodExpedition, handleFoodPanelClose])
+
+  const handleCollectFood = useCallback(() => {
+    if (!selectedFoodNodeId) return
+    const result = collectFoodNode(selectedFoodNodeId)
+    if (result) {
+      const levelMsg = result.levelUps.length > 0 ? ` · ${result.levelUps.length} levelled up!` : ''
+      setToast(`${result.food.emoji} Got ${result.food.name}!${levelMsg}`)
+    }
+    handleFoodPanelClose()
+  }, [selectedFoodNodeId, collectFoodNode, handleFoodPanelClose])
   // Advance egg incubation as the player walks
   useEffect(() => {
     if (steps > 0) advanceEggsBySteps(steps)
@@ -326,11 +344,12 @@ export function MapPage() {
         />
       )}
 
-      {(selectedFoodNode || isFoodPanelClosing) && selectedFoodNode && (
+      {selectedFoodNode && (
         <FoodNodePanel
           node={selectedFoodNode}
           position={position}
-          onSend={handleSendToFood}
+          onStart={handleStartFood}
+          onCollect={handleCollectFood}
           onClose={handleFoodPanelClose}
           isClosing={isFoodPanelClosing}
         />
