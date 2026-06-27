@@ -1,5 +1,9 @@
 # Lorewalk Web (PWA)
 
+## IMPORTANT
+
+DO NOT AUTO-COMMIT AND PUSH TO MAIN - WAIT FOR PERMISSION
+
 A browser-based PWA companion to the Lorewalk Android game. Players can explore the map, view nearby historical POIs, and manage their creature collection and expeditions — without AR. Installable on Android via Chrome's "Add to Home Screen".
 
 The primary Lorewalk game and its design documents live in `../Lorewalk` (Unity/ARCore). This repo shares the same Supabase backend.
@@ -125,3 +129,4 @@ Follows the same conventions as the Unity project:
 - No comments unless the WHY is non-obvious
 - No `#region` blocks; no barrel `index.ts` re-exports unless genuinely needed
 - Tailwind utility classes preferred over custom CSS; only reach for custom CSS when Tailwind can't express it
+- Never use em dashes (—) in UI-facing strings; use a period, colon, or hyphen instead
