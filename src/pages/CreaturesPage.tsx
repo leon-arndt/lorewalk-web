@@ -1,6 +1,6 @@
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { creatureCap } from '@/lib/profile'
+import { creatureCap, xpForCreatureLevel } from '@/lib/profile'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import { EggPreview } from '@/components/UI/EggPreview'
 import type { Egg, HatchedCreature } from '@/types'
@@ -91,6 +91,11 @@ function EmptyCreatureSlot() {
 function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRelease: () => void }) {
   const { t } = useLocale()
   const isRare = RARE_CATEGORIES.has(creature.poiCategory)
+  const xpNeeded = xpForCreatureLevel(creature.level)
+  const xpPct = Math.min(1, creature.xp / xpNeeded) * 100
+  const atCap = creature.level >= 20
+  const accentColor = isRare ? '#d97706' : '#6366f1'
+  const accentBg = isRare ? '#fde68a' : '#e0e7ff'
 
   return (
     <div style={{
@@ -100,6 +105,7 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
       border: `2px solid ${isRare ? '#fde68a' : '#e0e7ff'}`,
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
     }}>
+      {/* Release button */}
       <button
         onClick={onRelease}
         title="Release this creature"
@@ -112,24 +118,51 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
       >
         ✕
       </button>
+
+      {/* Level badge */}
+      <div style={{
+        position: 'absolute', top: 6, left: 8,
+        background: accentBg, color: accentColor,
+        fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 20,
+        letterSpacing: '0.03em',
+      }}>
+        Lv.{creature.level}
+      </div>
+
+      {/* Creature image */}
       <div style={{
         width: 72, height: 72, borderRadius: 12, overflow: 'hidden',
         background: isRare ? '#fffbeb' : '#f5f3ff',
         border: `2px solid ${isRare ? '#fbbf24' : '#c4b5fd'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginTop: 8,
       }}>
         <CreaturePreview category={creature.poiCategory} />
       </div>
 
+      {/* XP bar */}
+      {!atCap && (
+        <div style={{ width: '100%' }}>
+          <div style={{
+            height: 4, borderRadius: 2, background: '#f1f5f9', overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%', width: `${xpPct}%`,
+              background: accentColor, borderRadius: 2, transition: 'width 0.3s',
+            }} />
+          </div>
+          <div style={{ fontSize: 8, color: '#94a3b8', textAlign: 'center', marginTop: 2 }}>
+            {creature.xp} / {xpNeeded} XP
+          </div>
+        </div>
+      )}
+      {atCap && (
+        <div style={{ fontSize: 8, color: accentColor, fontWeight: 700 }}>MAX</div>
+      )}
+
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
           {creature.species}
-        </div>
-        <div style={{
-          fontSize: 10, color: '#6366f1', fontWeight: 600, marginTop: 3,
-          background: '#eef2ff', padding: '1px 8px', borderRadius: 20, display: 'inline-block',
-        }}>
-          {t('creatures_bond_level', { n: creature.bondLevel })}
         </div>
       </div>
 

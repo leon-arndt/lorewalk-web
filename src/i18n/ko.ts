@@ -66,7 +66,6 @@ export const ko: Translations = {
   creatures_storage_full: '보관함이 꽉 찼습니다 — 생물을 해제하거나 한도를 올려서 (레벨업 / 상점) 더 부화시키세요.',
   creatures_empty_slot: '빈 슬롯',
   creatures_hatch_hint: '🌱 알을 부화시켜 첫 번째 슬롯을 채우세요.',
-  creatures_bond_level: '유대 Lv {n}',
   creatures_from: '출신지: {name}',
   creatures_release_confirm: '{name}을(를) 해제하시겠습니까? 슬롯이 비워지지만 생물은 영구적으로 사라집니다.',
 

@@ -66,7 +66,6 @@ export const ta: Translations = {
   creatures_storage_full: 'இடம் நிறைந்தது — மேலும் பொரிக்க ஒரு உயிரினத்தை விடுவிக்கவும் அல்லது வரம்பை உயர்த்தவும் (நிலை மேம்படுத்து / கடை).',
   creatures_empty_slot: 'காலி இடம்',
   creatures_hatch_hint: '🌱 முதல் இடத்தை நிரப்ப ஒரு முட்டையை பொரிக்கவும்.',
-  creatures_bond_level: 'பிணைப்பு நிலை {n}',
   creatures_from: 'இடம்: {name}',
   creatures_release_confirm: '{name}ஐ விடுவிக்கவா? இது ஒரு இடத்தை காலி செய்யும், ஆனால் உயிரினம் என்றும் போய்விடும்.',
 

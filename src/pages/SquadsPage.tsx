@@ -97,6 +97,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
     if (r) {
       const parts = [`+${r.xp} XP`, `+${r.coins} 🪙`]
       if (r.egg) parts.push('🥚 egg!')
+      r.levelUps.forEach(({ species, newLevel }) => parts.push(`⬆️ ${species} Lv.${newLevel}!`))
       setFlash(parts.join('  '))
       setTimeout(() => setFlash(null), 2800)
     }

@@ -18,6 +18,27 @@ export function applyXp(currentLevel: number, currentXp: number, gained: number)
   return { level, xp }
 }
 
+// ─── Creature level system ────────────────────────────────────────────────────
+
+export const CREATURE_BASE_XP = 10
+export const CREATURE_LEVEL_CAP = 20
+
+export function xpForCreatureLevel(level: number): number {
+  return level * 20
+}
+
+export function applyCreatureXp(creature: HatchedCreature, gained: number): HatchedCreature {
+  if (creature.level >= CREATURE_LEVEL_CAP) return creature
+  let level = creature.level
+  let xp = creature.xp + gained
+  while (level < CREATURE_LEVEL_CAP && xp >= xpForCreatureLevel(level)) {
+    xp -= xpForCreatureLevel(level)
+    level++
+  }
+  if (level >= CREATURE_LEVEL_CAP) xp = 0
+  return { ...creature, level, xp }
+}
+
 // Streak: did the player also visit yesterday?
 // Calendar days are anchored to Singapore time (UTC+8) — the game's home zone —
 // so a check-in just before local midnight isn't bucketed into the wrong UTC day.
@@ -160,7 +181,8 @@ export function hatchEgg(egg: Egg): HatchedCreature {
     poiOriginName: egg.poiName,
     poiCategory: egg.poiCategory,
     hatchedAt: new Date().toISOString(),
-    bondLevel: 1,
+    level: 1,
+    xp: 0,
   }
 }
 
@@ -204,18 +226,20 @@ const EXPEDITION_BASE_XP = 25
 const EXPEDITION_BASE_COINS = 10
 export const EXPEDITION_EGG_CHANCE = 0.4
 
-// Reward multiplier: +25% per matching member whose type equals the category.
+// Reward multiplier: matching members contribute +0.25 × (1 + (level−1) × 0.05),
+// so higher-level creatures amplify check-in and expedition rewards more.
 export function affinityMultiplier(
   squad: Squad | undefined,
   category: string,
   creaturesById: Map<string, HatchedCreature>,
 ): number {
   if (!squad) return 1
-  const matches = squad.slots.filter((id) => {
+  const contribution = squad.slots.reduce((sum, id) => {
     const c = id ? creaturesById.get(id) : undefined
-    return c?.poiCategory === category
-  }).length
-  return 1 + 0.25 * matches
+    if (!c || c.poiCategory !== category) return sum
+    return sum + 0.25 * (1 + (c.level - 1) * 0.05)
+  }, 0)
+  return 1 + contribution
 }
 
 export function isAway(squad: Squad): boolean {
@@ -260,10 +284,16 @@ export function loadProfile(): PlayerProfile {
     if (raw) {
       const parsed = JSON.parse(raw) as PlayerProfile
       const squads = parsed.squads ?? createEmptySquads()
+      // Migrate bondLevel → level + xp for saves created before the level system.
+      const hatchedCreatures = (parsed.hatchedCreatures ?? []).map((c: any) => {
+        if (c.level !== undefined) return c as HatchedCreature
+        const { bondLevel, ...rest } = c
+        return { ...rest, level: bondLevel ?? 1, xp: 0 } as HatchedCreature
+      })
       return {
         ...parsed,
         eggs: parsed.eggs ?? [],
-        hatchedCreatures: parsed.hatchedCreatures ?? [],
+        hatchedCreatures,
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
         bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
         squads,

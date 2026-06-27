@@ -66,7 +66,6 @@ export const de: Translations = {
   creatures_storage_full: 'Speicher voll — gib ein Wesen frei oder erhöhe das Limit (Level / Shop), um mehr auszubrüten.',
   creatures_empty_slot: 'Leerer Slot',
   creatures_hatch_hint: '🌱 Brüte ein Ei aus, um deinen ersten Slot zu füllen.',
-  creatures_bond_level: 'Bindung Lv {n}',
   creatures_from: 'Von: {name}',
   creatures_release_confirm: '{name} freilassen? Dies gibt einen Slot frei, aber das Wesen ist für immer weg.',
 

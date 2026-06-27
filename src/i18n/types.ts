@@ -64,7 +64,6 @@ export interface Translations {
   creatures_storage_full: string
   creatures_empty_slot: string
   creatures_hatch_hint: string
-  creatures_bond_level: string
   creatures_from: string
   creatures_release_confirm: string
 

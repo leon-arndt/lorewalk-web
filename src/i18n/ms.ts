@@ -66,7 +66,6 @@ export const ms: Translations = {
   creatures_storage_full: 'Storan penuh — lepaskan makhluk atau naikkan had (naik tahap / kedai) untuk menetaskan lagi.',
   creatures_empty_slot: 'Slot kosong',
   creatures_hatch_hint: '🌱 Tetaskan telur untuk mengisi slot pertama anda.',
-  creatures_bond_level: 'Ikatan Tkt {n}',
   creatures_from: 'Dari: {name}',
   creatures_release_confirm: 'Lepaskan {name}? Ini membebaskan slot tetapi makhluk akan hilang selama-lamanya.',
 

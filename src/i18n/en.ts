@@ -66,7 +66,6 @@ export const en: Translations = {
   creatures_storage_full: 'Storage full — release a creature or raise the cap (level up / shop) to hatch more.',
   creatures_empty_slot: 'Empty slot',
   creatures_hatch_hint: '🌱 Hatch an egg to fill your first slot.',
-  creatures_bond_level: 'Bond Lv {n}',
   creatures_from: 'From: {name}',
   creatures_release_confirm: 'Release {name}? This frees a slot but the creature is gone for good.',
 

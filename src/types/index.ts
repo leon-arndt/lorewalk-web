@@ -15,14 +15,6 @@ export interface Poi {
   creatureRewardId?: string | null
 }
 
-export interface Creature {
-  id: string
-  name: string
-  species: string
-  bond_level: number
-  acquired_at: string
-  poi_origin_id: string | null
-}
 
 export interface PlanterSlot {
   id: string
@@ -61,7 +53,8 @@ export interface HatchedCreature {
   poiOriginName: string
   poiCategory: string
   hatchedAt: string
-  bondLevel: number
+  level: number
+  xp: number
 }
 
 export interface PlayerPosition {
@@ -139,7 +132,8 @@ export interface PlayerProfile {
 export interface ExpeditionCollectResult {
   xp: number
   coins: number
-  egg: boolean   // whether an egg was also awarded
+  egg: boolean
+  levelUps: Array<{ species: string; newLevel: number }>
 }
 
 // A landmark the player holds (claimed by finishing an expedition there). Held

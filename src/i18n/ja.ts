@@ -66,7 +66,6 @@ export const ja: Translations = {
   creatures_storage_full: 'ストレージ満杯 — クリーチャーを解放するかキャップを上げて（レベルアップ/ショップ）もっと孵化させましょう。',
   creatures_empty_slot: '空きスロット',
   creatures_hatch_hint: '🌱 卵を孵化させて最初のスロットを埋めよう。',
-  creatures_bond_level: 'ボンド Lv {n}',
   creatures_from: '出身地: {name}',
   creatures_release_confirm: '{name}を解放しますか？スロットが空きますが、クリーチャーは永久に消えます。',
 

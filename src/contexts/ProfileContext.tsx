@@ -7,7 +7,7 @@ import {
   createEgg, createEggFor, advanceEggs, hatchEgg,
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
-  EXPEDITION_EGG_CHANCE,
+  EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp,
 } from '@/lib/profile'
 
 interface ProfileContextValue {
@@ -175,17 +175,28 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, squads })
   }
 
-  // Collect a returned expedition: award affinity-scaled XP + coins, roll for a
-  // bonus egg (only if a slot is free), and bring the squad home. Returns the
-  // reward summary, or null if it hasn't returned yet.
+  // Collect a returned expedition: award affinity-scaled XP + coins, level up squad
+  // creatures, roll for a bonus egg (only if a slot is free), and bring the squad home.
   function collectExpedition(squadId: string): ExpeditionCollectResult | null {
     const squad = profile.squads.find((s) => s.id === squadId)
     if (!squad?.expedition || !hasReturned(squad.expedition, Date.now())) return null
 
     const exp = squad.expedition
     const creaturesById = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
+    const mult = affinityMultiplier(squad, exp.poiCategory, creaturesById)
     const { xp, coins } = rollExpeditionPayout(squad, creaturesById)
     const { level, xp: newXp } = applyXp(profile.level, profile.xp, xp)
+
+    // Award creature XP to every squad member, scaled by the same affinity multiplier.
+    const creatureXp = Math.round(CREATURE_BASE_XP * mult)
+    const squadMemberIds = new Set(squad.slots.filter(Boolean) as string[])
+    const levelUps: Array<{ species: string; newLevel: number }> = []
+    const hatchedCreatures = profile.hatchedCreatures.map((c) => {
+      if (!squadMemberIds.has(c.id)) return c
+      const updated = applyCreatureXp(c, creatureXp)
+      if (updated.level > c.level) levelUps.push({ species: c.species, newLevel: updated.level })
+      return updated
+    })
 
     const slotFree = profile.eggs.length < profile.maxEggSlots
     const gotEgg = slotFree && Math.random() < EXPEDITION_EGG_CHANCE
@@ -198,7 +209,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const newClaim: Claim = {
       poiId: exp.poiId, poiName: exp.poiName, poiCategory: exp.poiCategory,
       lat: exp.lat, lon: exp.lon,
-      affinity: affinityMultiplier(squad, exp.poiCategory, creaturesById),
+      affinity: mult,
       claimedAt: nowIso, lastCollectedAt: nowIso,
     }
     const claims = [...profile.claims.filter((c) => c.poiId !== exp.poiId), newClaim]
@@ -211,12 +222,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       squads,
       eggs,
       claims,
+      hatchedCreatures,
       level,
       xp: newXp,
       totalXp: profile.totalXp + xp,
       coins: profile.coins + coins,
     })
-    return { xp, coins, egg: gotEgg }
+    return { xp, coins, egg: gotEgg, levelUps }
   }
 
   // Collect coins a held landmark has accrued since its last collection.

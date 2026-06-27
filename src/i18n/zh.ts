@@ -66,7 +66,6 @@ export const zh: Translations = {
   creatures_storage_full: '存储已满 — 释放一只生物或提升上限（升级/商店）来孵化更多。',
   creatures_empty_slot: '空槽',
   creatures_hatch_hint: '🌱 孵化一颗蛋来填满第一个槽位。',
-  creatures_bond_level: '亲密 Lv {n}',
   creatures_from: '来自：{name}',
   creatures_release_confirm: '释放 {name}？这将释放一个槽位，但生物将永久消失。',
 
