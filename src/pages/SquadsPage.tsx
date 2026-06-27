@@ -59,8 +59,15 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
       aspectRatio: '1', borderRadius: 14, cursor: disabled ? 'default' : 'pointer',
       background: c.bg, border: `2px solid ${c.ring}`, opacity: disabled ? 0.6 : 1,
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', gap: 2, padding: 4,
+      justifyContent: 'center', gap: 2, padding: 4, position: 'relative',
     }}>
+      <span style={{
+        position: 'absolute', top: 4, right: 4, fontSize: 8, fontWeight: 700,
+        color: 'white', background: '#6366f1', borderRadius: 6,
+        padding: '1px 4px', lineHeight: 1.4,
+      }}>
+        Lv.{creature.level}
+      </span>
       <CreaturePreview category={creature.poiCategory} size={40} />
       <span style={{ fontSize: 8, fontWeight: 700, color: c.fg, textTransform: 'capitalize' }}>
         {creature.poiCategory}
@@ -273,21 +280,25 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
         {profile.hatchedCreatures.map((c) => {
           const col = typeColors(c.poiCategory)
           const where = assignedIn.get(c.id)
+          const used = !!where
           return (
             <button
               key={c.id}
-              onClick={() => { assignToSlot(squad.id, slotIndex, c.id); onClose() }}
+              disabled={used}
+              onClick={() => { if (!used) { assignToSlot(squad.id, slotIndex, c.id); onClose() } }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
-                background: 'white', border: `2px solid ${col.ring}`, borderRadius: 14,
-                padding: 10, cursor: 'pointer',
+                background: used ? '#f8fafc' : 'white',
+                border: `2px solid ${used ? '#e2e8f0' : col.ring}`, borderRadius: 14,
+                padding: 10, cursor: used ? 'default' : 'pointer',
+                opacity: used ? 0.55 : 1,
               }}
             >
               <CreaturePreview category={c.poiCategory} size={48} />
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{c.species}</div>
-                <div style={{ fontSize: 10, color: col.fg, textTransform: 'capitalize', fontWeight: 600 }}>
-                  {c.poiCategory}
+                <div style={{ fontSize: 12, fontWeight: 700, color: used ? '#94a3b8' : '#1e293b' }}>{c.species}</div>
+                <div style={{ fontSize: 10, color: used ? '#94a3b8' : col.fg, textTransform: 'capitalize', fontWeight: 600 }}>
+                  {c.poiCategory} · Lv.{c.level}
                 </div>
                 {where && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>in {where}</div>}
               </div>
