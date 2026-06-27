@@ -106,7 +106,7 @@ export function FriendsSection() {
                 borderRadius: 10, padding: '9px 8px', cursor: 'pointer',
               }}
             >
-              {friendCode?.code ?? '—'}
+              {friendCode?.code ?? '-'}
             </button>
             <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 5 }}>
               {copied ? t('friends_copied') : (friendCode ? hoursLeft(friendCode.expiresAt) : '')}

@@ -199,9 +199,9 @@ function FeedSheet({ food, creatures, onFeed, onClose }: {
           </h3>
           <button onClick={onClose} style={{ border: 'none', background: 'transparent', fontSize: 20, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
-        <p style={{ margin: '0 0 12px', fontSize: 12, color: '#94a3b8' }}>+{def.xp} XP — pick a creature to feed</p>
+        <p style={{ margin: '0 0 12px', fontSize: 12, color: '#94a3b8' }}>+{def.xp} XP - pick a creature to feed</p>
         {creatures.length === 0 ? (
-          <p style={{ fontSize: 13, color: '#94a3b8' }}>No creatures yet — hatch some eggs first!</p>
+          <p style={{ fontSize: 13, color: '#94a3b8' }}>No creatures yet - hatch some eggs first!</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {creatures.map((c) => {
@@ -246,7 +246,7 @@ function PantrySection() {
       {foodInventory.length === 0 ? (
         <div style={{ padding: '10px 14px', background: '#eef2ff', borderRadius: 12 }}>
           <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
-            🍜 No food yet — send a squad on an expedition to bring some back!
+            🍜 No food yet - send a squad on an expedition to bring some back!
           </p>
         </div>
       ) : (
