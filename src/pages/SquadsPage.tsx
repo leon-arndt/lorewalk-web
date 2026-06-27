@@ -103,10 +103,11 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
     const r = collectExpedition(squad.id)
     if (r) {
       const parts = [`+${r.xp} XP`, `+${r.coins} 🪙`]
+      if (r.food) parts.push(`${r.food.emoji} ${r.food.name}!`)
       if (r.egg) parts.push('🥚 egg!')
       r.levelUps.forEach(({ species, newLevel }) => parts.push(`⬆️ ${species} Lv.${newLevel}!`))
       setFlash(parts.join('  '))
-      setTimeout(() => setFlash(null), 2800)
+      setTimeout(() => setFlash(null), 3200)
     }
   }
 

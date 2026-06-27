@@ -1,4 +1,5 @@
-import type { Achievement, Claim, Egg, EggTier, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
+import type { Achievement, Claim, Egg, EggTier, FoodItem, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
+import { randomFood } from '@/data/foods'
 
 // XP needed to go from level N to level N+1
 export function xpForNextLevel(level: number): number {
@@ -267,12 +268,17 @@ export function hasReturned(exp: SquadExpedition, now: number): boolean {
 export function rollExpeditionPayout(
   squad: Squad,
   creaturesById: Map<string, HatchedCreature>,
-): { xp: number; coins: number } {
-  if (!squad.expedition) return { xp: 0, coins: 0 }
+): { xp: number; coins: number; food: FoodItem } {
+  if (!squad.expedition) return { xp: 0, coins: 0, food: makeFoodItem() }
   const mult = affinityMultiplier(squad, squad.expedition.poiCategory, creaturesById)
   const xp = Math.round(EXPEDITION_BASE_XP * mult)
   const coins = Math.round((EXPEDITION_BASE_COINS + Math.random() * EXPEDITION_BASE_COINS) * mult)
-  return { xp, coins }
+  return { xp, coins, food: makeFoodItem() }
+}
+
+function makeFoodItem(): FoodItem {
+  const def = randomFood()
+  return { id: `food_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, foodId: def.id, acquiredAt: new Date().toISOString() }
 }
 
 // ─── localStorage persistence ────────────────────────────────────────────────
@@ -306,6 +312,7 @@ export function loadProfile(): PlayerProfile {
         ...parsed,
         eggs,
         hatchedCreatures,
+        foodInventory: parsed.foodInventory ?? [],
         stepsAppliedToEggs: parsed.stepsAppliedToEggs ?? 0,
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
         bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
@@ -330,6 +337,7 @@ export function loadProfile(): PlayerProfile {
     streakDays: 0,
     eggs: [],
     hatchedCreatures: [],
+    foodInventory: [],
     stepsAppliedToEggs: 0,
     maxEggSlots: MAX_EGG_SLOTS,
     bonusCreatureSlots: 0,

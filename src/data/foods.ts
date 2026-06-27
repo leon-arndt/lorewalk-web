@@ -1,0 +1,37 @@
+export interface FoodDef {
+  id: string
+  name: string
+  emoji: string
+  xp: number
+}
+
+export const FOODS: FoodDef[] = [
+  { id: 'nasi_lemak',      name: 'Nasi Lemak',       emoji: '🍛', xp: 35 },
+  { id: 'kaya_toast',      name: 'Kaya Toast',        emoji: '🍞', xp: 20 },
+  { id: 'chicken_rice',    name: 'Chicken Rice',      emoji: '🍗', xp: 35 },
+  { id: 'min_jiang_kueh',  name: 'Min Jiang Kueh',   emoji: '🥞', xp: 20 },
+  { id: 'ban_mian',        name: 'Ban Mian',          emoji: '🍜', xp: 35 },
+  { id: 'char_kway_teow',  name: 'Char Kway Teow',   emoji: '🥘', xp: 35 },
+  { id: 'laksa',           name: 'Laksa',             emoji: '🍲', xp: 35 },
+  { id: 'satay',           name: 'Satay',             emoji: '🍢', xp: 35 },
+  { id: 'roti_prata',      name: 'Roti Prata',        emoji: '🫓', xp: 20 },
+  { id: 'chilli_crab',     name: 'Chilli Crab',       emoji: '🦀', xp: 50 },
+  { id: 'bak_kut_teh',     name: 'Bak Kut Teh',       emoji: '🫕', xp: 35 },
+  { id: 'popiah',          name: 'Popiah',            emoji: '🌯', xp: 20 },
+  { id: 'hokkien_mee',     name: 'Hokkien Mee',       emoji: '🍝', xp: 35 },
+  { id: 'rojak',           name: 'Rojak',             emoji: '🥗', xp: 20 },
+  { id: 'ice_kachang',     name: 'Ice Kachang',       emoji: '🧊', xp: 20 },
+  { id: 'kueh_lapis',      name: 'Kueh Lapis',        emoji: '🎂', xp: 20 },
+  { id: 'ondeh_ondeh',     name: 'Ondeh Ondeh',       emoji: '🍡', xp: 20 },
+  { id: 'tau_huay',        name: 'Tau Huay',          emoji: '🍮', xp: 20 },
+  { id: 'mee_rebus',       name: 'Mee Rebus',         emoji: '🍜', xp: 35 },
+  { id: 'durian_pengat',   name: 'Durian Pengat',     emoji: '🍈', xp: 50 },
+]
+
+export function getFoodDef(id: string): FoodDef | undefined {
+  return FOODS.find((f) => f.id === id)
+}
+
+export function randomFood(): FoodDef {
+  return FOODS[Math.floor(Math.random() * FOODS.length)]
+}

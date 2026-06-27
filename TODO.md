@@ -1,3 +1,4 @@
 - party walk weekly challenge (where you can walk with a group of up to 5 people)
     - 2 modes: friend only or anyone can join the group
-- weekly challenge (uses tickets which you buy for 200 coins). 
+- weekly challenge (uses tickets which you buy for 200 coins).
+- add postcards feature like Pikmin Bloom.

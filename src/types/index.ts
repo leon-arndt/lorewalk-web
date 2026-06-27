@@ -121,6 +121,7 @@ export interface PlayerProfile {
   streakDays: number
   eggs: Egg[]
   hatchedCreatures: HatchedCreature[]
+  foodInventory: FoodItem[]
   stepsAppliedToEggs: number
   maxEggSlots: number
   bonusCreatureSlots: number   // extra creature storage bought in the shop
@@ -130,10 +131,17 @@ export interface PlayerProfile {
   claims: Claim[]
 }
 
+export interface FoodItem {
+  id: string       // unique inventory instance
+  foodId: string   // references FoodDef.id
+  acquiredAt: string
+}
+
 export interface ExpeditionCollectResult {
   xp: number
   coins: number
   egg: boolean
+  food: { name: string; emoji: string } | null
   levelUps: Array<{ species: string; newLevel: number }>
 }
 

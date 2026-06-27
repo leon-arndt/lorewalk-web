@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { creatureCap, xpForCreatureLevel } from '@/lib/profile'
+import { getFoodDef } from '@/data/foods'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import { EggPreview } from '@/components/UI/EggPreview'
-import type { Egg, HatchedCreature } from '@/types'
+import type { Egg, FoodItem, HatchedCreature } from '@/types'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
 
@@ -180,6 +182,116 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
   )
 }
 
+function FeedSheet({ food, creatures, onFeed, onClose }: {
+  food: FoodItem
+  creatures: HatchedCreature[]
+  onFeed: (creatureId: string) => void
+  onClose: () => void
+}) {
+  const def = getFoodDef(food.foodId)
+  if (!def) return null
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.35)', display: 'flex', alignItems: 'flex-end', zIndex: 50 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxHeight: '70vh', overflowY: 'auto', background: 'white', borderRadius: '20px 20px 0 0', padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+            {def.emoji} Feed {def.name}
+          </h3>
+          <button onClick={onClose} style={{ border: 'none', background: 'transparent', fontSize: 20, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
+        </div>
+        <p style={{ margin: '0 0 12px', fontSize: 12, color: '#94a3b8' }}>+{def.xp} XP — pick a creature to feed</p>
+        {creatures.length === 0 ? (
+          <p style={{ fontSize: 13, color: '#94a3b8' }}>No creatures yet — hatch some eggs first!</p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+            {creatures.map((c) => {
+              const isRare = RARE_CATEGORIES.has(c.poiCategory)
+              const col = isRare ? { bg: '#fef3c7', ring: '#fbbf24', fg: '#b45309' } : { bg: '#ede9fe', ring: '#c4b5fd', fg: '#7c3aed' }
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => { onFeed(c.id); onClose() }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+                    background: col.bg, border: `2px solid ${col.ring}`, borderRadius: 14,
+                    padding: 10, cursor: 'pointer',
+                  }}
+                >
+                  <CreaturePreview category={c.poiCategory} size={44} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{c.species}</div>
+                    <div style={{ fontSize: 10, color: col.fg, fontWeight: 600 }}>Lv.{c.level}</div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function PantrySection() {
+  const { profile, feedCreature } = useProfile()
+  const [feeding, setFeeding] = useState<FoodItem | null>(null)
+  const { foodInventory, hatchedCreatures } = profile
+
+  return (
+    <section style={{ padding: '0 16px 24px' }}>
+      <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+        🍱 Pantry · <span style={{ color: '#6366f1' }}>{foodInventory.length}</span>
+      </h2>
+
+      {foodInventory.length === 0 ? (
+        <div style={{ padding: '10px 14px', background: '#eef2ff', borderRadius: 12 }}>
+          <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
+            🍜 No food yet — send a squad on an expedition to bring some back!
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          {foodInventory.map((item) => {
+            const def = getFoodDef(item.foodId)
+            if (!def) return null
+            return (
+              <div key={item.id} style={{
+                background: 'white', borderRadius: 14, padding: '12px 8px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+                border: '2px solid #e0e7ff',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+              }}>
+                <span style={{ fontSize: 32 }}>{def.emoji}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#1e293b', textAlign: 'center', lineHeight: 1.2 }}>{def.name}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#6366f1', background: '#eef2ff', borderRadius: 20, padding: '1px 7px' }}>+{def.xp} XP</span>
+                <button
+                  onClick={() => setFeeding(item)}
+                  style={{
+                    marginTop: 2, width: '100%', fontSize: 11, fontWeight: 700,
+                    color: 'white', background: '#6366f1', border: 'none',
+                    borderRadius: 8, padding: '5px 0', cursor: 'pointer',
+                  }}
+                >
+                  Feed
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {feeding && (
+        <FeedSheet
+          food={feeding}
+          creatures={hatchedCreatures}
+          onFeed={(creatureId) => feedCreature(creatureId, feeding.id)}
+          onClose={() => setFeeding(null)}
+        />
+      )}
+    </section>
+  )
+}
+
 export function CreaturesPage() {
   const { profile, releaseCreature } = useProfile()
   const { t } = useLocale()
@@ -250,6 +362,8 @@ export function CreaturesPage() {
           ))}
         </div>
       </section>
+
+      <PantrySection />
 
       {/* Collection */}
       <section style={{ padding: '0 16px 32px' }}>
