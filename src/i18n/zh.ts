@@ -57,10 +57,10 @@ export const zh: Translations = {
   friends_added_date: '{date} 添加',
 
   creatures_title: '生物',
-  creatures_subtitle: '到访地标收集蛋，多次到访后孵化它们。',
+  creatures_subtitle: '在地标打卡收集蛋，走路孵化它们。',
   creatures_hatching: '孵化中 · {n}/{max}',
-  creatures_visit_landmark: '去到访一处地标',
-  creatures_visits_left: '还需 {n} 次到访',
+  creatures_visit_landmark: '在地标打卡',
+  creatures_visits_left: '还需 {n} 步',
   creatures_egg_hint: '💡 在地图上的地标打卡，获得你的第一颗蛋！',
   creatures_collection: '我的收藏',
   creatures_storage_full: '存储已满 — 释放一只生物或提升上限（升级/商店）来孵化更多。',

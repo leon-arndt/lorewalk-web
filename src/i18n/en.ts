@@ -57,10 +57,10 @@ export const en: Translations = {
   friends_added_date: 'Added {date}',
 
   creatures_title: 'Creatures',
-  creatures_subtitle: 'Visit landmarks to collect eggs. Visit more to hatch them.',
+  creatures_subtitle: 'Check in at landmarks to collect eggs. Walk to hatch them.',
   creatures_hatching: 'Hatching · {n}/{max}',
-  creatures_visit_landmark: 'Visit a landmark',
-  creatures_visits_left: '{n} visits left',
+  creatures_visit_landmark: 'Check in at a landmark',
+  creatures_visits_left: '{n} steps left',
   creatures_egg_hint: '💡 Check in at a landmark on the map to get your first egg!',
   creatures_collection: 'Your Collection',
   creatures_storage_full: 'Storage full — release a creature or raise the cap (level up / shop) to hatch more.',

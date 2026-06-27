@@ -57,10 +57,10 @@ export const ja: Translations = {
   friends_added_date: '{date}に追加',
 
   creatures_title: 'クリーチャー',
-  creatures_subtitle: 'ランドマークを訪れて卵を集めよう。もっと訪れると孵化します。',
+  creatures_subtitle: 'ランドマークにチェックインして卵を集めよう。歩いて孵化させよう。',
   creatures_hatching: '孵化中 · {n}/{max}',
-  creatures_visit_landmark: 'ランドマークを訪問',
-  creatures_visits_left: 'あと{n}回訪問',
+  creatures_visit_landmark: 'ランドマークにチェックイン',
+  creatures_visits_left: 'あと{n}歩',
   creatures_egg_hint: '💡 マップのランドマークでチェックインして最初の卵を手に入れよう！',
   creatures_collection: 'コレクション',
   creatures_storage_full: 'ストレージ満杯 — クリーチャーを解放するかキャップを上げて（レベルアップ/ショップ）もっと孵化させましょう。',

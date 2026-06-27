@@ -57,10 +57,10 @@ export const de: Translations = {
   friends_added_date: 'Hinzugefügt am {date}',
 
   creatures_title: 'Wesen',
-  creatures_subtitle: 'Besuche Sehenswürdigkeiten, um Eier zu sammeln. Besuche mehr, um sie auszubrüten.',
+  creatures_subtitle: 'Checke an Sehenswürdigkeiten ein, um Eier zu sammeln. Laufe, um sie auszubrüten.',
   creatures_hatching: 'Schlüpfen · {n}/{max}',
-  creatures_visit_landmark: 'Sehenswürdigkeit besuchen',
-  creatures_visits_left: 'Noch {n} Besuche',
+  creatures_visit_landmark: 'Sehenswürdigkeit einchecken',
+  creatures_visits_left: 'Noch {n} Schritte',
   creatures_egg_hint: '💡 Checke an einer Sehenswürdigkeit auf der Karte ein, um dein erstes Ei zu bekommen!',
   creatures_collection: 'Deine Sammlung',
   creatures_storage_full: 'Speicher voll — gib ein Wesen frei oder erhöhe das Limit (Level / Shop), um mehr auszubrüten.',

@@ -57,10 +57,10 @@ export const id: Translations = {
   friends_added_date: 'Ditambah {date}',
 
   creatures_title: 'Makhluk',
-  creatures_subtitle: 'Kunjungi tengara untuk mengumpulkan telur. Kunjungi lebih banyak untuk menetaskannya.',
+  creatures_subtitle: 'Check in di tengara untuk mengumpulkan telur. Berjalan untuk menetaskannya.',
   creatures_hatching: 'Menetaskan · {n}/{max}',
-  creatures_visit_landmark: 'Kunjungi tengara',
-  creatures_visits_left: '{n} kunjungan lagi',
+  creatures_visit_landmark: 'Check in di tengara',
+  creatures_visits_left: '{n} langkah lagi',
   creatures_egg_hint: '💡 Check in di tengara pada peta untuk mendapatkan telur pertamamu!',
   creatures_collection: 'Koleksi Kamu',
   creatures_storage_full: 'Penyimpanan penuh — lepaskan makhluk atau naikkan batas (naik level / toko) untuk menetaskan lebih banyak.',

@@ -58,20 +58,21 @@ Inspired by geocaching. Players check in at POIs to mark them as visited and ear
 
 ### Core loop
 1. **Check in at a POI** → receive an egg tied to that POI's category.
-2. **Visit more landmarks** → each check-in advances all incubating eggs.
-3. **Egg hatches** when it reaches its visit requirement → creature added to your collection.
+2. **Walk** → steps accumulate and advance all incubating eggs (GPS-estimated, ~0.76 m/step).
+3. **Egg hatches** when it reaches its step requirement → creature added to your collection.
 4. **Toast notification** appears on the map when a creature hatches.
 
 ### Egg slots
 - Default **3 egg slots** (all incubate simultaneously).
 - A new egg is awarded on each check-in, as long as a slot is free.
-- If all 3 slots are full, the new check-in still advances existing eggs but no new egg is awarded.
+- If all 3 slots are full, the new check-in awards no new egg (walking still advances existing eggs).
 
-### Egg tiers and visit requirements
-| Tier | Visits to hatch | Categories |
+### Egg tiers and step requirements
+| Tier | Steps to hatch | Categories |
 |---|---|---|
-| Common | 5 | Heritage, Landmark, Arts |
-| Rare | 8 | Religious, Museum, Nature |
+| Common | 100 | Heritage, Landmark, Arts |
+| Rare | 1,000 | Religious, Nature |
+| Epic | 5,000 | Museum |
 
 ### Creatures by category
 | Category | Species | Emoji | Tier |
@@ -80,8 +81,8 @@ Inspired by geocaching. Players check in at POIs to mark them as visited and ear
 | Landmark | Pathfinder | 🧭 | Common |
 | Arts | Muse | 🎨 | Common |
 | Religious | Luminary | 🌟 | Rare |
-| Museum | Archivist | 📜 | Rare |
 | Nature | Fernspark | 🌿 | Rare |
+| Museum | Archivist | 📜 | Epic |
 | Unknown | Wanderer | ✨ | Common |
 
 ### Creature storage cap (Pikmin Bloom)

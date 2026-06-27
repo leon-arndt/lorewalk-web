@@ -26,14 +26,15 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
   }
 
   const isRare = egg.tier === 'rare'
-  const pct = Math.min((egg.visitsProgress / egg.visitsRequired) * 100, 100)
-  const remaining = egg.visitsRequired - egg.visitsProgress
+  const isEpic = egg.tier === 'epic'
+  const pct = Math.min((egg.stepsProgress / egg.stepsRequired) * 100, 100)
+  const remaining = egg.stepsRequired - egg.stepsProgress
 
   return (
     <div style={{
       background: 'white', borderRadius: 16, padding: '14px 10px',
       boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-      border: `2px solid ${isRare ? '#fde68a' : '#c7d2fe'}`,
+      border: `2px solid ${isEpic ? '#fca5a5' : isRare ? '#fde68a' : '#c7d2fe'}`,
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: 7, minHeight: 144,
     }}>
@@ -41,8 +42,8 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
 
       <span style={{
         fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 20,
-        background: isRare ? '#fef3c7' : '#ede9fe',
-        color: isRare ? '#b45309' : '#7c3aed',
+        background: isEpic ? '#fee2e2' : isRare ? '#fef3c7' : '#ede9fe',
+        color: isEpic ? '#dc2626' : isRare ? '#b45309' : '#7c3aed',
         textTransform: 'uppercase', letterSpacing: '0.04em',
       }}>
         {egg.tier}
@@ -61,7 +62,9 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
         <div style={{ height: 4, background: '#f1f5f9', borderRadius: 2, overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 2, transition: 'width 0.4s ease',
-            background: isRare
+            background: isEpic
+              ? 'linear-gradient(90deg, #ef4444, #f87171)'
+              : isRare
               ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
               : 'linear-gradient(90deg, #818cf8, #a78bfa)',
             width: `${pct}%`,
@@ -229,20 +232,20 @@ export function CreaturesPage() {
         {/* Category hint */}
         <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {[
-            { label: 'Heritage 🗿', rare: false },
-            { label: 'Landmark 🧭', rare: false },
-            { label: 'Arts 🎨', rare: false },
-            { label: 'Nature 🌿', rare: true },
-            { label: 'Religious 🌟', rare: true },
-            { label: 'Museum 📜', rare: true },
-          ].map(({ label, rare }) => (
+            { label: 'Heritage 🗿', tier: 'common', steps: 100 },
+            { label: 'Landmark 🧭', tier: 'common', steps: 100 },
+            { label: 'Arts 🎨',     tier: 'common', steps: 100 },
+            { label: 'Religious 🌟', tier: 'rare',  steps: 1000 },
+            { label: 'Nature 🌿',   tier: 'rare',   steps: 1000 },
+            { label: 'Museum 📜',   tier: 'epic',   steps: 5000 },
+          ].map(({ label, tier, steps }) => (
             <span key={label} style={{
               fontSize: 10, padding: '3px 8px', borderRadius: 20,
-              background: rare ? '#fef3c7' : '#ede9fe',
-              color: rare ? '#b45309' : '#7c3aed',
+              background: tier === 'epic' ? '#fee2e2' : tier === 'rare' ? '#fef3c7' : '#ede9fe',
+              color: tier === 'epic' ? '#dc2626' : tier === 'rare' ? '#b45309' : '#7c3aed',
               fontWeight: 600,
             }}>
-              {label} · {rare ? 'Rare (8 visits)' : 'Common (5 visits)'}
+              {label} · {tier.charAt(0).toUpperCase() + tier.slice(1)} ({steps.toLocaleString()} steps)
             </span>
           ))}
         </div>

@@ -35,7 +35,7 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
-  const { profile, visitedPois, addVisit, justHatched, clearJustHatched } = useProfile()
+  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched } = useProfile()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
@@ -121,6 +121,11 @@ export function MapPage() {
     }
     addVisit(selectedPoi)
   }, [selectedPoi, addVisit, mode, position])
+
+  // Advance egg incubation as the player walks
+  useEffect(() => {
+    if (steps > 0) advanceEggsBySteps(steps)
+  }, [steps]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Show hatching toast
   useEffect(() => {

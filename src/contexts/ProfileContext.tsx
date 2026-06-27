@@ -14,6 +14,7 @@ interface ProfileContextValue {
   profile: PlayerProfile
   visitedPois: Set<string>
   addVisit: (poi: Poi) => void
+  advanceEggsBySteps: (currentStepsToday: number) => void
   setDisplayName: (name: string) => void
   justHatched: HatchedCreature[]
   clearJustHatched: () => void
@@ -75,22 +76,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       streakDays,
     )
 
-    // Advance all active eggs; split newly-hatched from still-incubating
-    const { incubating, hatched } = advanceEggs(profile.eggs)
-
-    // Only hatch as many as the creature cap allows; the rest stay as ready eggs
-    // (they hatch once you make room — release a creature or buy storage).
-    const cap = creatureCap(level, profile.bonusCreatureSlots)
-    const available = Math.max(0, cap - profile.hatchedCreatures.length)
-    const newCreatures = hatched.slice(0, available).map(hatchEgg)
-    const blockedEggs = hatched.slice(available) // already at visitsRequired = ready
-
     // Award a new egg from this POI if a slot is available
-    const carriedEggs = [...incubating, ...blockedEggs]
     const updatedEggs =
-      carriedEggs.length < profile.maxEggSlots
-        ? [...carriedEggs, createEgg(poi)]
-        : carriedEggs
+      profile.eggs.length < profile.maxEggSlots
+        ? [...profile.eggs, createEgg(poi)]
+        : profile.eggs
 
     const updated: PlayerProfile = {
       ...profile,
@@ -102,19 +92,42 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       lastVisitDate,
       streakDays,
       eggs: updatedEggs,
-      hatchedCreatures: [...profile.hatchedCreatures, ...newCreatures],
     }
 
     setProfile(updated)
     saveProfile(updated)
-
-    if (newCreatures.length > 0) setJustHatched(newCreatures)
   }
 
   function setDisplayName(name: string) {
     const updated = { ...profile, displayName: name.trim() || 'Explorer' }
     setProfile(updated)
     saveProfile(updated)
+  }
+
+  // Advance incubating eggs by steps walked. Call with the current today's step count
+  // each time it changes; handles daily resets by detecting when count decreases.
+  function advanceEggsBySteps(currentStepsToday: number) {
+    if (profile.eggs.length === 0) return
+    const prev = profile.stepsAppliedToEggs
+    // If count went down (new day), apply all of today's steps; otherwise apply delta.
+    const delta = currentStepsToday <= prev ? currentStepsToday : currentStepsToday - prev
+    if (delta <= 0) return
+
+    const { incubating, hatched } = advanceEggs(profile.eggs, delta)
+    const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
+    const available = Math.max(0, cap - profile.hatchedCreatures.length)
+    const newCreatures = hatched.slice(0, available).map(hatchEgg)
+    const blockedEggs = hatched.slice(available)
+
+    const updated: PlayerProfile = {
+      ...profile,
+      stepsAppliedToEggs: currentStepsToday,
+      eggs: [...incubating, ...blockedEggs],
+      hatchedCreatures: [...profile.hatchedCreatures, ...newCreatures],
+    }
+    setProfile(updated)
+    saveProfile(updated)
+    if (newCreatures.length > 0) setJustHatched(newCreatures)
   }
 
   // Stable identity: consumers list this in effect deps (MapPage's hatch toast),
@@ -289,7 +302,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, visitedPois, addVisit, setDisplayName, justHatched, clearJustHatched,
+      profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       startExpedition, collectExpedition, recallSquad, collectClaim,
       releaseCreature, buyCreatureSlots, buyEggSlot, addCoins,

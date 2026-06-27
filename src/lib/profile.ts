@@ -141,13 +141,13 @@ const CREATURE_BY_CATEGORY: Record<string, { species: string; emoji: string; tie
   landmark:  { species: 'Pathfinder',  emoji: '🧭', tier: 'common' },
   arts:      { species: 'Muse',        emoji: '🎨', tier: 'common' },
   religious: { species: 'Luminary',    emoji: '🌟', tier: 'rare' },
-  museum:    { species: 'Archivist',   emoji: '📜', tier: 'rare' },
   nature:    { species: 'Fernspark',   emoji: '🌿', tier: 'rare' },
+  museum:    { species: 'Archivist',   emoji: '📜', tier: 'epic' },
 }
 
 const FALLBACK_CREATURE = { species: 'Wanderer', emoji: '✨', tier: 'common' as EggTier }
 
-const TIER_VISITS: Record<EggTier, number> = { common: 5, rare: 8 }
+export const TIER_STEPS: Record<EggTier, number> = { common: 100, rare: 1000, epic: 5000 }
 
 function creatureForCategory(category: string) {
   return CREATURE_BY_CATEGORY[category] ?? FALLBACK_CREATURE
@@ -161,8 +161,8 @@ export function createEggFor(poiId: string, poiName: string, category: string): 
     poiName,
     poiCategory: category,
     tier,
-    visitsRequired: TIER_VISITS[tier],
-    visitsProgress: 0,
+    stepsRequired: TIER_STEPS[tier],
+    stepsProgress: 0,
     acquiredAt: new Date().toISOString(),
   }
 }
@@ -186,13 +186,13 @@ export function hatchEgg(egg: Egg): HatchedCreature {
   }
 }
 
-// Advance all eggs by 1 visit; split into still-incubating and newly-hatched.
-export function advanceEggs(eggs: Egg[]): { incubating: Egg[]; hatched: Egg[] } {
+// Advance all eggs by stepDelta steps; split into still-incubating and newly-hatched.
+export function advanceEggs(eggs: Egg[], stepDelta: number): { incubating: Egg[]; hatched: Egg[] } {
   const incubating: Egg[] = []
   const hatched: Egg[] = []
   for (const egg of eggs) {
-    const updated = { ...egg, visitsProgress: egg.visitsProgress + 1 }
-    ;(updated.visitsProgress >= updated.visitsRequired ? hatched : incubating).push(updated)
+    const updated = { ...egg, stepsProgress: egg.stepsProgress + stepDelta }
+    ;(updated.stepsProgress >= updated.stepsRequired ? hatched : incubating).push(updated)
   }
   return { incubating, hatched }
 }
@@ -290,10 +290,23 @@ export function loadProfile(): PlayerProfile {
         const { bondLevel, ...rest } = c
         return { ...rest, level: bondLevel ?? 1, xp: 0 } as HatchedCreature
       })
+      const eggs: Egg[] = (parsed.eggs ?? []).map((e: any) => {
+        // Migrate pre-steps saves: rename visitsRequired/visitsProgress → steps fields
+        if (e.stepsRequired !== undefined) return e as Egg
+        const tier: EggTier = e.tier ?? 'common'
+        return {
+          ...e,
+          stepsRequired: TIER_STEPS[tier] ?? TIER_STEPS.common,
+          stepsProgress: 0,
+          visitsRequired: undefined,
+          visitsProgress: undefined,
+        } as Egg
+      })
       return {
         ...parsed,
-        eggs: parsed.eggs ?? [],
+        eggs,
         hatchedCreatures,
+        stepsAppliedToEggs: parsed.stepsAppliedToEggs ?? 0,
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
         bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
         squads,
@@ -317,6 +330,7 @@ export function loadProfile(): PlayerProfile {
     streakDays: 0,
     eggs: [],
     hatchedCreatures: [],
+    stepsAppliedToEggs: 0,
     maxEggSlots: MAX_EGG_SLOTS,
     bonusCreatureSlots: 0,
     squads: createEmptySquads(),

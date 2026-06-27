@@ -32,7 +32,7 @@ export interface Expedition {
   status: 'active' | 'returned'
 }
 
-export type EggTier = 'common' | 'rare'
+export type EggTier = 'common' | 'rare' | 'epic'
 
 export interface Egg {
   id: string
@@ -40,8 +40,8 @@ export interface Egg {
   poiName: string
   poiCategory: string
   tier: EggTier
-  visitsRequired: number
-  visitsProgress: number
+  stepsRequired: number
+  stepsProgress: number
   acquiredAt: string
 }
 
@@ -121,6 +121,7 @@ export interface PlayerProfile {
   streakDays: number
   eggs: Egg[]
   hatchedCreatures: HatchedCreature[]
+  stepsAppliedToEggs: number
   maxEggSlots: number
   bonusCreatureSlots: number   // extra creature storage bought in the shop
   squads: Squad[]

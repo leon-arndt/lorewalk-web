@@ -57,10 +57,10 @@ export const ko: Translations = {
   friends_added_date: '{date} 추가',
 
   creatures_title: '생물',
-  creatures_subtitle: '랜드마크를 방문하여 알을 모으세요. 더 많이 방문하면 부화합니다.',
+  creatures_subtitle: '랜드마크에 체크인하여 알을 모으세요. 걸어서 부화시키세요.',
   creatures_hatching: '부화 중 · {n}/{max}',
-  creatures_visit_landmark: '랜드마크 방문',
-  creatures_visits_left: '방문 {n}회 남음',
+  creatures_visit_landmark: '랜드마크 체크인',
+  creatures_visits_left: '{n}걸음 남음',
   creatures_egg_hint: '💡 지도에서 랜드마크에 체크인하여 첫 번째 알을 받으세요!',
   creatures_collection: '내 컬렉션',
   creatures_storage_full: '보관함이 꽉 찼습니다 — 생물을 해제하거나 한도를 올려서 (레벨업 / 상점) 더 부화시키세요.',

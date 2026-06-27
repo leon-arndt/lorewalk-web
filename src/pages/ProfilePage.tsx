@@ -27,7 +27,7 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName } = useProfile()
+  const { profile, setDisplayName, advanceEggsBySteps } = useProfile()
   const { t, locale, setLocale } = useLocale()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
@@ -300,6 +300,29 @@ export function ProfilePage() {
           <br />
           v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
         </p>
+
+        {import.meta.env.DEV && (
+          <section style={{ marginTop: 24, padding: '14px 16px', background: '#1e1e2e', borderRadius: 14 }}>
+            <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              🛠 Dev cheats
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[100, 1000, 5000].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => advanceEggsBySteps(profile.stepsAppliedToEggs + n)}
+                  style={{
+                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
+                    background: '#312e81', color: '#c4b5fd', fontWeight: 700, fontSize: 12,
+                    cursor: 'pointer',
+                  }}
+                >
+                  +{n.toLocaleString()} steps
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )

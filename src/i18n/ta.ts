@@ -57,10 +57,10 @@ export const ta: Translations = {
   friends_added_date: '{date} அன்று சேர்த்தது',
 
   creatures_title: 'உயிரினங்கள்',
-  creatures_subtitle: 'முட்டைகள் சேகரிக்க சின்னங்களை பார்வையிடவும். மேலும் பார்வையிட்டு பொரிக்கவும்.',
+  creatures_subtitle: 'முட்டைகள் சேகரிக்க சின்னங்களில் பதிவு செய்யவும். நடந்து பொரிக்கவும்.',
   creatures_hatching: 'பொரிக்கும் · {n}/{max}',
-  creatures_visit_landmark: 'ஒரு சின்னத்தை பார்வையிடவும்',
-  creatures_visits_left: '{n} வருகை மீதம்',
+  creatures_visit_landmark: 'சின்னத்தில் பதிவு செய்யவும்',
+  creatures_visits_left: '{n} அடிகள் மீதம்',
   creatures_egg_hint: '💡 முதல் முட்டை பெற வரைபடத்தில் ஒரு சின்னத்தில் பதிவு செய்யவும்!',
   creatures_collection: 'உங்கள் தொகுப்பு',
   creatures_storage_full: 'இடம் நிறைந்தது — மேலும் பொரிக்க ஒரு உயிரினத்தை விடுவிக்கவும் அல்லது வரம்பை உயர்த்தவும் (நிலை மேம்படுத்து / கடை).',

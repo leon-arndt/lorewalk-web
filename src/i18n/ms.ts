@@ -57,10 +57,10 @@ export const ms: Translations = {
   friends_added_date: 'Ditambah {date}',
 
   creatures_title: 'Makhluk',
-  creatures_subtitle: 'Lawati mercu tanda untuk kumpul telur. Lawat lebih banyak untuk menetaskannya.',
+  creatures_subtitle: 'Daftar masuk di mercu tanda untuk kumpul telur. Berjalan untuk menetaskannya.',
   creatures_hatching: 'Menetaskan · {n}/{max}',
-  creatures_visit_landmark: 'Lawati mercu tanda',
-  creatures_visits_left: '{n} lawatan lagi',
+  creatures_visit_landmark: 'Daftar masuk di mercu tanda',
+  creatures_visits_left: '{n} langkah lagi',
   creatures_egg_hint: '💡 Daftar masuk di mercu tanda pada peta untuk mendapatkan telur pertama anda!',
   creatures_collection: 'Koleksi Anda',
   creatures_storage_full: 'Storan penuh — lepaskan makhluk atau naikkan had (naik tahap / kedai) untuk menetaskan lagi.',
