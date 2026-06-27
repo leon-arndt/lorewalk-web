@@ -9,6 +9,7 @@ import {
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp,
+  levelRewardsFor, applyLevelRewards, type LevelReward,
 } from '@/lib/profile'
 
 interface ProfileContextValue {
@@ -19,6 +20,8 @@ interface ProfileContextValue {
   setDisplayName: (name: string) => void
   justHatched: HatchedCreature[]
   clearJustHatched: () => void
+  pendingLevelUp: { level: number; rewards: LevelReward[] } | null
+  dismissLevelUp: () => void
   assignToSlot: (squadId: string, slotIndex: number, creatureId: string) => void
   clearSlot: (squadId: string, slotIndex: number) => void
   setActiveSquad: (squadId: string) => void
@@ -39,6 +42,7 @@ const ProfileContext = createContext<ProfileContextValue | null>(null)
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<PlayerProfile>(loadProfile)
   const [justHatched, setJustHatched] = useState<HatchedCreature[]>([])
+  const [pendingLevelUp, setPendingLevelUp] = useState<{ level: number; rewards: LevelReward[] } | null>(null)
 
   const visitedPois = useMemo(
     () => new Set(profile.visitHistory.map((v) => v.poiId)),
@@ -96,8 +100,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       eggs: updatedEggs,
     }
 
-    setProfile(updated)
-    saveProfile(updated)
+    const final = withLevelUpRewards(profile, updated)
+    setProfile(final)
+    saveProfile(final)
   }
 
   function setDisplayName(name: string) {
@@ -141,6 +146,19 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   function persist(updated: PlayerProfile) {
     setProfile(updated)
     saveProfile(updated)
+  }
+
+  // If the player crossed a level boundary, collect rewards for every new level,
+  // apply them to the profile, and queue the level-up screen.
+  function withLevelUpRewards(before: PlayerProfile, after: PlayerProfile): PlayerProfile {
+    if (after.level <= before.level) return after
+    const allRewards: LevelReward[] = []
+    for (let lvl = before.level + 1; lvl <= after.level; lvl++) {
+      allRewards.push(...levelRewardsFor(lvl))
+    }
+    const rewardUpdates = applyLevelRewards(after, allRewards)
+    setPendingLevelUp({ level: after.level, rewards: allRewards })
+    return { ...after, ...rewardUpdates }
   }
 
   // Assign a creature to a slot, removing it from any slot it already occupies
@@ -235,7 +253,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const squads = profile.squads.map((sq) =>
       sq.id === squadId ? { ...sq, expedition: null } : sq,
     )
-    persist({
+    const built: PlayerProfile = {
       ...profile,
       squads,
       eggs,
@@ -246,7 +264,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       xp: newXp,
       totalXp: profile.totalXp + xp,
       coins: profile.coins + coins,
-    })
+    }
+    persist(withLevelUpRewards(profile, built))
     return { xp, coins, egg: gotEgg, food: foodDef ? { name: foodDef.name, emoji: foodDef.emoji } : null, levelUps }
   }
 
@@ -318,9 +337,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, squads })
   }
 
+  const dismissLevelUp = useCallback(() => setPendingLevelUp(null), [])
+
   return (
     <ProfileContext.Provider value={{
       profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
+      pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       startExpedition, collectExpedition, recallSquad, collectClaim,
       releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature,

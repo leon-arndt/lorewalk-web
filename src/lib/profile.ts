@@ -281,6 +281,34 @@ function makeFoodItem(): FoodItem {
   return { id: `food_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, foodId: def.id, acquiredAt: new Date().toISOString() }
 }
 
+// ─── Player level-up rewards ─────────────────────────────────────────────────
+
+export type LevelReward =
+  | { type: 'coins'; amount: number }
+  | { type: 'egg_slot' }
+  | { type: 'creature_slots'; amount: number }
+
+export function levelRewardsFor(level: number): LevelReward[] {
+  const rewards: LevelReward[] = []
+  rewards.push({ type: 'coins', amount: Math.floor(25 + level * 25) })
+  if (level % 4 === 0) rewards.push({ type: 'egg_slot' })
+  if (level % 5 === 0) rewards.push({ type: 'creature_slots', amount: 3 })
+  return rewards
+}
+
+export function applyLevelRewards(
+  profile: PlayerProfile,
+  rewards: LevelReward[],
+): Pick<PlayerProfile, 'coins' | 'maxEggSlots' | 'bonusCreatureSlots'> {
+  let { coins, maxEggSlots, bonusCreatureSlots } = profile
+  for (const r of rewards) {
+    if (r.type === 'coins') coins += r.amount
+    else if (r.type === 'egg_slot') maxEggSlots = Math.min(MAX_EGG_SLOTS_CAP, maxEggSlots + 1)
+    else if (r.type === 'creature_slots') bonusCreatureSlots += r.amount
+  }
+  return { coins, maxEggSlots, bonusCreatureSlots }
+}
+
 // ─── localStorage persistence ────────────────────────────────────────────────
 const STORAGE_KEY = 'lorewalk_profile'
 

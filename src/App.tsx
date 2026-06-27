@@ -1,15 +1,22 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ConnectionModeProvider } from '@/contexts/ConnectionModeContext'
-import { ProfileProvider } from '@/contexts/ProfileContext'
+import { ProfileProvider, useProfile } from '@/contexts/ProfileContext'
 import { LocaleProvider } from '@/contexts/LocaleContext'
 import { MusicProvider } from '@/contexts/MusicContext'
 import { BottomNav } from '@/components/UI/BottomNav'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
+import { LevelUpScreen } from '@/components/UI/LevelUpScreen'
 import { MapPage } from '@/pages/MapPage'
 import { CreaturesPage } from '@/pages/CreaturesPage'
 import { SquadsPage } from '@/pages/SquadsPage'
 import { ShopPage } from '@/pages/ShopPage'
 import { ProfilePage } from '@/pages/ProfilePage'
+
+function LevelUpOverlay() {
+  const { pendingLevelUp, dismissLevelUp } = useProfile()
+  if (!pendingLevelUp) return null
+  return <LevelUpScreen level={pendingLevelUp.level} rewards={pendingLevelUp.rewards} onDismiss={dismissLevelUp} />
+}
 
 export default function App() {
   return (
@@ -31,6 +38,7 @@ export default function App() {
             <CoinCapsule />
           </div>
           <BottomNav />
+          <LevelUpOverlay />
         </BrowserRouter>
       </ProfileProvider>
     </ConnectionModeProvider>
