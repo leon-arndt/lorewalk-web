@@ -5,6 +5,8 @@ import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
 import { ShrinePanel } from '@/components/UI/ShrinePanel'
+import { WeeklyWalkPanel } from '@/components/UI/WeeklyWalkPanel'
+import { useReward } from '@/contexts/RewardContext'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { StepCounter } from '@/components/UI/StepCounter'
 import { useGeolocation } from '@/hooks/useGeolocation'
@@ -39,6 +41,7 @@ export function MapPage() {
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
   const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
+  const { showReward } = useReward()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
@@ -50,6 +53,9 @@ export function MapPage() {
   const [selectedShrineNodeId, setSelectedShrineNodeId] = useState<string | null>(null)
   const [isShrinePanelClosing, setIsShrinePanelClosing] = useState(false)
   const shrinePanelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [weeklyWalkOpen, setWeeklyWalkOpen] = useState(false)
+  const [isWeeklyWalkClosing, setIsWeeklyWalkClosing] = useState(false)
+  const weeklyWalkCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
@@ -237,13 +243,38 @@ export function MapPage() {
     if (!selectedShrineNodeId) return
     const result = collectShrineNode(selectedShrineNodeId)
     if (result) {
-      const msg = result.won
-        ? `🏆 Shrine claimed! +${result.coins} coins${result.egg ? ' + egg!' : ''}`
-        : `💀 Defeated. Try with stronger creatures.`
-      setToast(msg)
+      if (result.won) {
+        const items: Array<{ type: 'xp' | 'coins' | 'egg' | 'level_up'; amount?: number; label?: string }> = [
+          { type: 'xp', amount: result.xp },
+          { type: 'coins', amount: result.coins },
+        ]
+        if (result.egg) items.push({ type: 'egg' })
+        result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
+        showReward({ emoji: '⛩️', title: 'Shrine Claimed!', subtitle: 'Your creatures defeated the guardian.', items })
+      } else {
+        setToast('💀 Defeated. Send stronger creatures next time.')
+      }
     }
     handleShrinePanelClose()
-  }, [selectedShrineNodeId, collectShrineNode, handleShrinePanelClose])
+  }, [selectedShrineNodeId, collectShrineNode, handleShrinePanelClose, showReward])
+
+  const handleWeeklyWalkOpen = useCallback(() => {
+    if (weeklyWalkCloseTimer.current) { clearTimeout(weeklyWalkCloseTimer.current); weeklyWalkCloseTimer.current = null }
+    setIsWeeklyWalkClosing(false)
+    setWeeklyWalkOpen(true)
+    setSelectedPoi(null)
+    setSelectedFoodNodeId(null)
+    setSelectedShrineNodeId(null)
+  }, [])
+
+  const handleWeeklyWalkClose = useCallback(() => {
+    setIsWeeklyWalkClosing(true)
+    weeklyWalkCloseTimer.current = setTimeout(() => {
+      setWeeklyWalkOpen(false)
+      setIsWeeklyWalkClosing(false)
+      weeklyWalkCloseTimer.current = null
+    }, 300)
+  }, [])
 
   const handleCollectFood = useCallback(() => {
     if (!selectedFoodNodeId) return
@@ -407,6 +438,40 @@ export function MapPage() {
         />
       )}
 
+      {/* Weekly walk floating button - bottom left above nav */}
+      <button
+        onClick={handleWeeklyWalkOpen}
+        style={{
+          position: 'absolute',
+          bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
+          left: 16,
+          display: 'flex', alignItems: 'center', gap: 7,
+          padding: '9px 14px', borderRadius: 22,
+          background: profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed
+            ? 'linear-gradient(135deg, #6366f1, #a855f7)'
+            : 'rgba(255,255,255,0.88)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.14)',
+          border: 'none', cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          color: profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed ? 'white' : '#334155',
+          fontSize: 13, fontWeight: 700,
+          zIndex: 8,
+        }}
+      >
+        <span style={{ fontSize: 18 }}>🚶</span>
+        <span>Weekly Walk</span>
+        {profile.tickets > 0 && !profile.weeklyWalk && (
+          <span style={{
+            background: '#6366f1', color: 'white',
+            borderRadius: 10, fontSize: 10, fontWeight: 800,
+            padding: '1px 6px', marginLeft: 2,
+          }}>
+            {profile.tickets}🎟️
+          </span>
+        )}
+      </button>
+
       {selectedShrineNode && (
         <ShrinePanel
           node={selectedShrineNode}
@@ -426,6 +491,14 @@ export function MapPage() {
           onCollect={handleCollectFood}
           onClose={handleFoodPanelClose}
           isClosing={isFoodPanelClosing}
+        />
+      )}
+
+      {(weeklyWalkOpen || isWeeklyWalkClosing) && (
+        <WeeklyWalkPanel
+          currentDistanceM={distanceM}
+          onClose={handleWeeklyWalkClose}
+          isClosing={isWeeklyWalkClosing}
         />
       )}
     </div>

@@ -1,4 +1,4 @@
-import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, ShrineNode, VisitRecord } from '@/types'
+import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PartyMember, PlayerProfile, Poi, Squad, SquadExpedition, ShrineNode, VisitRecord, WeeklyPartyWalk } from '@/types'
 import { randomFood } from '@/data/foods'
 import { drawCreature, rollEggTier } from '@/data/creatures'
 
@@ -282,7 +282,7 @@ export function rollExpeditionPayout(
 
 // ─── Food nodes (map markers for expeditions) ────────────────────────────────
 
-export const MAX_FOOD_NODES = 6
+export const MAX_FOOD_NODES = 15
 
 // Small deterministic lat/lon offset per POI so the food marker sits slightly
 // apart from the POI pin. Stable across sessions (same seed → same offset).
@@ -293,6 +293,37 @@ function deterministicOffset(seed: string): { dlat: number; dlon: number } {
     dlat: ((h & 0xff) - 128) / 128 * 0.0003,      // ≈ ±33 m
     dlon: (((h >> 8) & 0xff) - 128) / 128 * 0.0003,
   }
+}
+
+// Pick up to `count` POIs spread across the island instead of clustered together.
+// POIs are bucketed into a coarse geographic grid and chosen round-robin across
+// cells, so nodes don't all pile up in the dense CBD. Deterministic given the input.
+const SPREAD_CELL_DEG = 0.03   // ≈ 3 km
+function pickSpread(pois: Poi[], count: number): Poi[] {
+  if (count <= 0 || pois.length === 0) return []
+  const cells = new Map<string, Poi[]>()
+  for (const p of pois) {
+    const key = `${Math.round(p.lat / SPREAD_CELL_DEG)}_${Math.round(p.lon / SPREAD_CELL_DEG)}`
+    const arr = cells.get(key)
+    if (arr) arr.push(p)
+    else cells.set(key, [p])
+  }
+  const cellKeys = [...cells.keys()].sort()
+  for (const k of cellKeys) cells.get(k)!.sort((a, b) => a.id.localeCompare(b.id))
+  const picked: Poi[] = []
+  for (let round = 0; picked.length < count; round++) {
+    let addedThisRound = false
+    for (const k of cellKeys) {
+      const arr = cells.get(k)!
+      if (round < arr.length) {
+        picked.push(arr[round])
+        addedThisRound = true
+        if (picked.length >= count) break
+      }
+    }
+    if (!addedThisRound) break   // every cell exhausted
+  }
+  return picked
 }
 
 export function spawnFoodNodes(pois: Poi[], existing: FoodNode[]): FoodNode[] {
@@ -313,10 +344,10 @@ export function spawnFoodNodes(pois: Poi[], existing: FoodNode[]): FoodNode[] {
   if (kept.length >= MAX_FOOD_NODES) return kept
   const occupiedPoiIds = new Set(kept.map((n) => n.poiId))
   const available = pois.filter((p) => !occupiedPoiIds.has(p.id))
-  const toAdd = MAX_FOOD_NODES - kept.length
+  const chosen = pickSpread(available, MAX_FOOD_NODES - kept.length)
   const newNodes: FoodNode[] = []
-  for (let i = 0; i < Math.min(toAdd, available.length); i++) {
-    const poi = available[i]
+  for (let i = 0; i < chosen.length; i++) {
+    const poi = chosen[i]
     const food = randomFood()
     const { dlat, dlon } = deterministicOffset(poi.id)
     newNodes.push({
@@ -341,7 +372,7 @@ const SHRINE_CATEGORIES: Record<string, number> = {
   religious: 50,
   museum: 20,
 }
-export const MAX_SHRINE_NODES = 3
+export const MAX_SHRINE_NODES = 8
 export const MAX_SHRINE_CREATURES = 4
 export const SHRINE_DURATION_MS = import.meta.env.DEV ? 60_000 : 2 * 3_600_000
 
@@ -386,10 +417,10 @@ export function spawnShrineNodes(pois: Poi[], existing: ShrineNode[]): ShrineNod
   const available = pois.filter(
     (p) => !occupiedPoiIds.has(p.id) && eligibleCategories.has(p.category ?? ''),
   )
-  const toAdd = MAX_SHRINE_NODES - kept.length
+  const chosen = pickSpread(available, MAX_SHRINE_NODES - kept.length)
   const newNodes: ShrineNode[] = []
-  for (let i = 0; i < Math.min(toAdd, available.length); i++) {
-    const poi = available[i]
+  for (let i = 0; i < chosen.length; i++) {
+    const poi = chosen[i]
     const { dlat, dlon } = deterministicOffset(poi.id + '_shrine')
     newNodes.push({
       id: `sn_${poi.id}_${Date.now() + i}`,
@@ -483,9 +514,11 @@ export function loadProfile(): PlayerProfile {
         squads,
         activeSquadId: parsed.activeSquadId ?? squads[0]?.id ?? null,
         coins: parsed.coins ?? 0,
+        tickets: parsed.tickets ?? 0,
         claims: parsed.claims ?? [],
         postcards: parsed.postcards ?? [],
         outbox: parsed.outbox ?? [],
+        weeklyWalk: parsed.weeklyWalk ?? null,
       }
     }
   } catch { /* ignore */ }
@@ -512,9 +545,11 @@ export function loadProfile(): PlayerProfile {
     squads: createEmptySquads(),
     activeSquadId: 'squad_1',
     coins: 0,
+    tickets: 0,
     claims: [],
     postcards: [],
     outbox: [],
+    weeklyWalk: null,
   }
 }
 
@@ -523,4 +558,88 @@ export const POSTCARD_DELIVERY_MS = import.meta.env.DEV ? 30_000 : 48 * 3_600_00
 
 export function saveProfile(profile: PlayerProfile) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
+}
+
+// ─── Ticket economy ───────────────────────────────────────────────────────────
+
+export const TICKET_COST_COINS = 200
+
+// ─── Weekly party walk ────────────────────────────────────────────────────────
+
+export const WEEKLY_WALK_PARTY_SIZE = 5
+export const WEEKLY_WALK_TARGET_KM = import.meta.env.DEV ? 1.0 : 10.0
+// How long mock members take to complete their share (drives their simulated pace)
+const MOCK_MEMBER_DURATION_MS = import.meta.env.DEV ? 120_000 : 5 * 24 * 3_600_000
+
+const MOCK_PARTY_POOL: Array<{ name: string; emoji: string }> = [
+  { name: 'Aisha', emoji: '🌿' },
+  { name: 'Rajan', emoji: '🗿' },
+  { name: 'Wei Ling', emoji: '🧭' },
+  { name: 'Priya', emoji: '🌸' },
+]
+
+// Returns the Monday 00:00 UTC of the week containing `now`.
+export function weekStart(now = Date.now()): string {
+  const d = new Date(now)
+  const day = d.getUTCDay()  // 0=Sun, 1=Mon …
+  const diffToMon = (day === 0 ? -6 : 1 - day)
+  d.setUTCDate(d.getUTCDate() + diffToMon)
+  d.setUTCHours(0, 0, 0, 0)
+  return d.toISOString()
+}
+
+export function buildWeeklyWalk(startDistanceM: number): WeeklyPartyWalk {
+  const targetPerMember = WEEKLY_WALK_TARGET_KM / WEEKLY_WALK_PARTY_SIZE
+  const members: PartyMember[] = [
+    { id: 'player', name: 'You', emoji: '🧭', targetKm: targetPerMember, isPlayer: true },
+    ...MOCK_PARTY_POOL.slice(0, WEEKLY_WALK_PARTY_SIZE - 1).map((m) => ({
+      id: `mock_${m.name}`,
+      name: m.name,
+      emoji: m.emoji,
+      targetKm: targetPerMember,
+      isPlayer: false,
+    })),
+  ]
+  return {
+    id: `walk_${Date.now()}`,
+    weekStart: weekStart(),
+    totalTargetKm: WEEKLY_WALK_TARGET_KM,
+    partyMembers: members,
+    joinedAt: new Date().toISOString(),
+    startDistanceM,
+    completedAt: null,
+    rewardClaimed: false,
+  }
+}
+
+// Distance contributed by a mock member based on time elapsed since join.
+export function mockMemberProgressKm(joinedAt: string, targetKm: number, now = Date.now()): number {
+  const elapsed = now - new Date(joinedAt).getTime()
+  const fraction = Math.min(1, elapsed / MOCK_MEMBER_DURATION_MS)
+  return Math.round(fraction * targetKm * 1000) / 1000
+}
+
+// Player's contributed distance in km.
+export function playerProgressKm(walk: WeeklyPartyWalk, currentDistanceM: number): number {
+  const gained = Math.max(0, currentDistanceM - walk.startDistanceM)
+  const targetKm = walk.totalTargetKm / WEEKLY_WALK_PARTY_SIZE
+  return Math.min(targetKm, Math.round(gained) / 1000)
+}
+
+// Total combined distance across all party members.
+export function partyTotalKm(walk: WeeklyPartyWalk, currentDistanceM: number, now = Date.now()): number {
+  return walk.partyMembers.reduce((sum, m) => {
+    if (m.isPlayer) return sum + playerProgressKm(walk, currentDistanceM)
+    return sum + mockMemberProgressKm(walk.joinedAt, m.targetKm, now)
+  }, 0)
+}
+
+// True once combined distance hits the target.
+export function isWalkComplete(walk: WeeklyPartyWalk, currentDistanceM: number, now = Date.now()): boolean {
+  return partyTotalKm(walk, currentDistanceM, now) >= walk.totalTargetKm
+}
+
+// Walk expires if the player is still on last week's walk.
+export function isWalkExpired(walk: WeeklyPartyWalk, now = Date.now()): boolean {
+  return walk.weekStart !== weekStart(now)
 }

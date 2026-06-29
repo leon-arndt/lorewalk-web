@@ -12,6 +12,7 @@ import {
   levelRewardsFor, applyLevelRewards, type LevelReward,
   spawnFoodNodes, makeFoodItem, POSTCARD_DELIVERY_MS,
   spawnShrineNodes, solveShrineResult, SHRINE_DURATION_MS,
+  TICKET_COST_COINS, buildWeeklyWalk, isWalkExpired,
 } from '@/lib/profile'
 
 interface ProfileContextValue {
@@ -48,6 +49,10 @@ interface ProfileContextValue {
   syncShrineNodes: (pois: Poi[]) => void
   startShrineExpedition: (nodeId: string, creatureIds: string[]) => void
   collectShrineNode: (nodeId: string) => ShrineCollectResult | null
+  buyTicket: () => boolean
+  joinWeeklyWalk: (startDistanceM: number) => boolean
+  claimWeeklyWalkReward: (currentDistanceM: number) => { coins: number; egg: boolean } | null
+  expireWeeklyWalkIfStale: () => void
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
@@ -528,6 +533,46 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return { ...result, levelUps: result.levelUps }
   }
 
+  // ─── Ticket economy ────────────────────────────────────────────────────────
+
+  function buyTicket(): boolean {
+    if (profile.coins < TICKET_COST_COINS) return false
+    persist({ ...profile, coins: profile.coins - TICKET_COST_COINS, tickets: profile.tickets + 1 })
+    return true
+  }
+
+  // ─── Weekly party walk ─────────────────────────────────────────────────────
+
+  function joinWeeklyWalk(startDistanceM: number): boolean {
+    if (profile.tickets < 1) return false
+    const walk = buildWeeklyWalk(startDistanceM)
+    persist({ ...profile, tickets: profile.tickets - 1, weeklyWalk: walk })
+    return true
+  }
+
+  function claimWeeklyWalkReward(_currentDistanceM: number): { coins: number; egg: boolean } | null {
+    const walk = profile.weeklyWalk
+    if (!walk || walk.rewardClaimed) return null
+    const coins = Math.round(80 + Math.random() * 40)
+    const egg = true
+    const { level, xp: newXp } = applyXp(profile.level, profile.xp, 75)
+    const eggs = [...profile.eggs, createEggFor('weekly_walk', 'Weekly Party Walk', 'landmark')]
+    const built: PlayerProfile = {
+      ...profile,
+      weeklyWalk: { ...walk, completedAt: walk.completedAt ?? new Date().toISOString(), rewardClaimed: true },
+      coins: profile.coins + coins,
+      eggs, level, xp: newXp, totalXp: profile.totalXp + 75,
+    }
+    persist(withLevelUpRewards(profile, built))
+    return { coins, egg }
+  }
+
+  function expireWeeklyWalkIfStale() {
+    if (profile.weeklyWalk && isWalkExpired(profile.weeklyWalk)) {
+      persist({ ...profile, weeklyWalk: null })
+    }
+  }
+
   return (
     <ProfileContext.Provider value={{
       profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
@@ -537,6 +582,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
+      buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,
     }}>
       {children}
     </ProfileContext.Provider>

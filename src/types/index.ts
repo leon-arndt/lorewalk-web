@@ -131,9 +131,11 @@ export interface PlayerProfile {
   squads: Squad[]
   activeSquadId: string | null
   coins: number
+  tickets: number
   claims: Claim[]
   postcards: Postcard[]   // inbox (received)
   outbox: Postcard[]      // sent by this player
+  weeklyWalk: WeeklyPartyWalk | null
 }
 
 export interface Postcard {
@@ -217,6 +219,44 @@ export interface ShrineCollectResult {
   egg: boolean
   xp: number
   levelUps: Array<{ species: string; newLevel: number }>
+}
+
+// ─── Weekly party walk ───────────────────────────────────────────────────────
+
+export interface PartyMember {
+  id: string
+  name: string
+  emoji: string       // creature emoji representing them on the party screen
+  targetKm: number    // their share of the total goal
+  isPlayer: boolean
+}
+
+export interface WeeklyPartyWalk {
+  id: string
+  weekStart: string         // ISO Monday midnight UTC
+  totalTargetKm: number
+  partyMembers: PartyMember[]
+  joinedAt: string          // ISO when player joined
+  startDistanceM: number    // player odometer at join time
+  completedAt: string | null
+  rewardClaimed: boolean
+}
+
+// ─── Reward screen ────────────────────────────────────────────────────────────
+
+export type RewardItemType = 'xp' | 'coins' | 'egg' | 'level_up' | 'badge'
+
+export interface RewardItem {
+  type: RewardItemType
+  amount?: number
+  label?: string            // for level_up: creature name; for badge: badge name
+}
+
+export interface RewardConfig {
+  emoji: string
+  title: string
+  subtitle?: string
+  items: RewardItem[]
 }
 
 // A landmark the player holds (claimed by finishing an expedition there). Held
