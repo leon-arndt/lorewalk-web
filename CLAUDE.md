@@ -4,6 +4,8 @@
 
 DO NOT AUTO-COMMIT AND PUSH TO MAIN - WAIT FOR PERMISSION
 
+Always check [TODO.md](TODO.md) at the start of a task to see what's outstanding, and clean it up (remove or check off completed items) after finishing work that addresses one.
+
 A browser-based PWA companion to the Lorewalk Android game. Players can explore the map, view nearby historical POIs, and manage their creature collection and expeditions — without AR. Installable on Android via Chrome's "Add to Home Screen".
 
 The primary Lorewalk game and its design documents live in `../Lorewalk` (Unity/ARCore). This repo shares the same Supabase backend.
