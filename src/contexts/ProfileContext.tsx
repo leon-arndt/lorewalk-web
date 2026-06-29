@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, SquadExpedition } from '@/types'
+import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, ShrineCollectResult, ShrineNode, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile,
@@ -11,6 +11,7 @@ import {
   EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp,
   levelRewardsFor, applyLevelRewards, type LevelReward,
   spawnFoodNodes, makeFoodItem, POSTCARD_DELIVERY_MS,
+  spawnShrineNodes, solveShrineResult, SHRINE_DURATION_MS,
 } from '@/lib/profile'
 
 interface ProfileContextValue {
@@ -44,6 +45,9 @@ interface ProfileContextValue {
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
+  syncShrineNodes: (pois: Poi[]) => void
+  startShrineExpedition: (nodeId: string, creatureIds: string[]) => void
+  collectShrineNode: (nodeId: string) => ShrineCollectResult | null
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
@@ -466,6 +470,64 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, postcards: [...profile.postcards, card] })
   }
 
+  function syncShrineNodes(pois: Poi[]) {
+    const updated = spawnShrineNodes(pois, profile.shrineNodes)
+    const changed =
+      updated.length !== profile.shrineNodes.length ||
+      updated.some((n, i) => n.id !== profile.shrineNodes[i]?.id)
+    if (changed) persist({ ...profile, shrineNodes: updated })
+  }
+
+  function startShrineExpedition(nodeId: string, creatureIds: string[]) {
+    const node = profile.shrineNodes.find((n) => n.id === nodeId)
+    if (!node || node.expedition) return
+    const now = Date.now()
+    const expedition = {
+      creatureIds,
+      power: creatureIds.reduce((sum, id) => {
+        const c = profile.hatchedCreatures.find((x) => x.id === id)
+        return sum + (c ? c.level * 5 : 0)
+      }, 0),
+      startedAt: new Date(now).toISOString(),
+      returnsAt: new Date(now + SHRINE_DURATION_MS).toISOString(),
+    }
+    const shrineNodes = profile.shrineNodes.map((n) =>
+      n.id === nodeId ? { ...n, expedition } : n,
+    )
+    persist({ ...profile, shrineNodes })
+  }
+
+  function collectShrineNode(nodeId: string): ShrineCollectResult | null {
+    const node = profile.shrineNodes.find((n) => n.id === nodeId)
+    const exp = node?.expedition
+    if (!exp || Date.now() < new Date(exp.returnsAt).getTime()) return null
+    const participants = exp.creatureIds
+      .map((id) => profile.hatchedCreatures.find((c) => c.id === id))
+      .filter((c): c is NonNullable<typeof c> => !!c)
+    const result = solveShrineResult(exp.power, node!.difficulty, participants)
+    const { level, xp: newXp } = applyXp(profile.level, profile.xp, result.xp)
+    const hatchedCreatures = profile.hatchedCreatures.map((c) => {
+      if (!exp.creatureIds.includes(c.id)) return c
+      return applyCreatureXp(c, result.won ? 20 : 5)
+    })
+    const eggs = result.egg
+      ? [...profile.eggs, createEggFor(node!.poiId, node!.poiName, node!.poiCategory)]
+      : profile.eggs
+    const clearedUntil = result.won
+      ? new Date(Date.now() + 24 * 3_600_000).toISOString()
+      : null
+    const shrineNodes = profile.shrineNodes.map((n) =>
+      n.id === nodeId ? { ...n, expedition: null, clearedUntil } : n,
+    )
+    const built: PlayerProfile = {
+      ...profile, shrineNodes, hatchedCreatures, eggs,
+      level, xp: newXp, totalXp: profile.totalXp + result.xp,
+      coins: profile.coins + result.coins,
+    }
+    persist(withLevelUpRewards(profile, built))
+    return { ...result, levelUps: result.levelUps }
+  }
+
   return (
     <ProfileContext.Provider value={{
       profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
@@ -474,6 +536,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
       releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp,
       sendPostcard, openPostcard, seedMockPostcard,
+      syncShrineNodes, startShrineExpedition, collectShrineNode,
     }}>
       {children}
     </ProfileContext.Provider>

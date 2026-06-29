@@ -15,6 +15,14 @@ export interface FoodNodeMarker {
   state?: 'idle' | 'busy' | 'ready'
 }
 
+export interface ShrineNodeMarker {
+  id: string
+  name: string
+  lat: number
+  lon: number
+  state: 'idle' | 'busy' | 'ready' | 'cleared'
+}
+
 function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   const state = node.state ?? 'idle'
   const outer = document.createElement('div')
@@ -65,6 +73,51 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
   // Stop the click from bubbling to the map container, where MapLibre's own click
   // handler would run the POI proximity hit-test and override this marker's action.
+  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
+  outer.addEventListener('mousedown', (e) => e.stopPropagation())
+  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
+  outer.appendChild(inner)
+  outer.appendChild(tooltip)
+  return outer
+}
+
+function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
+  const outer = document.createElement('div')
+  outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
+  const borderColor = node.state === 'ready' ? '#16a34a' : node.state === 'cleared' ? '#7c3aed' : node.state === 'busy' ? '#cbd5e1' : '#9333ea'
+  const glow = node.state === 'ready' ? 'rgba(34,197,94,0.5)' : node.state === 'cleared' ? 'rgba(124,58,237,0.4)' : node.state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(147,51,234,0.45)'
+  const inner = document.createElement('div')
+  inner.style.cssText = `
+    width:42px;height:42px;border-radius:10px;
+    background:${node.state === 'cleared' ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : 'white'};
+    border:2.5px solid ${borderColor};
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;line-height:1;
+    box-shadow:0 2px 10px ${glow};
+    opacity:${node.state === 'busy' ? '0.6' : '1'};
+  `
+  inner.textContent = '⛩️'
+  if (node.state === 'ready') {
+    const badge = document.createElement('div')
+    badge.textContent = '⚔️'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);'
+    outer.appendChild(badge)
+  } else if (node.state === 'busy') {
+    const badge = document.createElement('div')
+    badge.textContent = '⏳'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:12px;background:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);'
+    outer.appendChild(badge)
+  } else if (node.state === 'cleared') {
+    const badge = document.createElement('div')
+    badge.textContent = '🏆'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);'
+    outer.appendChild(badge)
+  }
+  const tooltip = document.createElement('div')
+  tooltip.textContent = node.name
+  tooltip.style.cssText = 'position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:white;color:#1e293b;font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;opacity:0;transition:opacity 0.12s ease;'
+  outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
+  outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
   outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
   outer.addEventListener('mousedown', (e) => e.stopPropagation())
   outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
@@ -204,11 +257,13 @@ interface MapViewProps {
   onClaimClick?: (poiId: string) => void
   foodNodeMarkers?: FoodNodeMarker[]
   onFoodNodeClick?: (id: string) => void
+  shrineNodeMarkers?: ShrineNodeMarker[]
+  onShrineNodeClick?: (id: string) => void
   onBearingChange?: (bearing: number) => void
   compassResetRef?: MutableRefObject<(() => void) | null>
 }
 
-export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, onBearingChange, compassResetRef }: MapViewProps) {
+export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -216,6 +271,7 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
   const squadMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const claimMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const foodNodeMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const shrineMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const charLayerRef = useRef<CharacterLayerHandle | null>(null)
   const poiPinsRef = useRef<PoiPinsHandle | null>(null)
   const companionsRef = useRef<CharacterSpec[]>(companions)
@@ -449,6 +505,24 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     if (map.loaded()) sync()
     else map.once('load', sync)
   }, [foodNodeMarkers, onFoodNodeClick])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const sync = () => {
+      shrineMarkersRef.current.forEach((m) => m.remove())
+      shrineMarkersRef.current.clear()
+      shrineNodeMarkers.forEach((node) => {
+        const el = buildShrineElement(node, () => onShrineNodeClick?.(node.id))
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([node.lon, node.lat])
+          .addTo(map)
+        shrineMarkersRef.current.set(node.id, marker)
+      })
+    }
+    if (map.loaded()) sync()
+    else map.once('load', sync)
+  }, [shrineNodeMarkers, onShrineNodeClick])
 
   return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
 }

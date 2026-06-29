@@ -1,4 +1,4 @@
-import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, VisitRecord } from '@/types'
+import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PlayerProfile, Poi, Squad, SquadExpedition, ShrineNode, VisitRecord } from '@/types'
 import { randomFood } from '@/data/foods'
 import { drawCreature, rollEggTier } from '@/data/creatures'
 
@@ -333,6 +333,78 @@ export function spawnFoodNodes(pois: Poi[], existing: FoodNode[]): FoodNode[] {
   return [...kept, ...newNodes]
 }
 
+// ─── Guardian Shrines (boss fights) ──────────────────────────────────────────
+
+// Categories that can host a shrine, and their difficulty (power required to win).
+const SHRINE_CATEGORIES: Record<string, number> = {
+  heritage: 30,
+  religious: 50,
+  museum: 20,
+}
+export const MAX_SHRINE_NODES = 3
+export const MAX_SHRINE_CREATURES = 4
+export const SHRINE_DURATION_MS = import.meta.env.DEV ? 60_000 : 2 * 3_600_000
+
+export function shrineDifficulty(category: string): number {
+  return SHRINE_CATEGORIES[category] ?? 30
+}
+
+export function solveShrineResult(
+  power: number,
+  difficulty: number,
+  creatures: HatchedCreature[],
+): { won: boolean; coins: number; xp: number; egg: boolean; levelUps: Array<{ species: string; newLevel: number }> } {
+  const won = power >= difficulty
+  const coins = won ? Math.round(40 + Math.random() * 40) : 5
+  const xp = won ? 50 : 10
+  const egg = won && Math.random() < 0.6
+  // Creature XP for participants
+  const levelUps: Array<{ species: string; newLevel: number }> = []
+  for (const c of creatures) {
+    const gained = won ? 20 : 5
+    const updated = applyCreatureXp(c, gained)
+    if (updated.level > c.level) levelUps.push({ species: c.species, newLevel: updated.level })
+  }
+  return { won, coins, xp, egg, levelUps }
+}
+
+export function spawnShrineNodes(pois: Poi[], existing: ShrineNode[]): ShrineNode[] {
+  const poiById = new Map(pois.map((p) => [p.id, p]))
+  const eligibleCategories = new Set(Object.keys(SHRINE_CATEGORIES))
+  const kept: ShrineNode[] = []
+  for (const node of existing) {
+    const poi = poiById.get(node.poiId)
+    if (!poi) {
+      if (node.expedition) kept.push(node)
+      continue
+    }
+    const { dlat, dlon } = deterministicOffset(poi.id + '_shrine')
+    kept.push({ ...node, lat: poi.lat + dlat, lon: poi.lon + dlon, poiName: poi.name })
+  }
+  if (kept.length >= MAX_SHRINE_NODES) return kept
+  const occupiedPoiIds = new Set(kept.map((n) => n.poiId))
+  const available = pois.filter(
+    (p) => !occupiedPoiIds.has(p.id) && eligibleCategories.has(p.category ?? ''),
+  )
+  const toAdd = MAX_SHRINE_NODES - kept.length
+  const newNodes: ShrineNode[] = []
+  for (let i = 0; i < Math.min(toAdd, available.length); i++) {
+    const poi = available[i]
+    const { dlat, dlon } = deterministicOffset(poi.id + '_shrine')
+    newNodes.push({
+      id: `sn_${poi.id}_${Date.now() + i}`,
+      poiId: poi.id,
+      poiName: poi.name,
+      poiCategory: poi.category ?? 'heritage',
+      lat: poi.lat + dlat,
+      lon: poi.lon + dlon,
+      difficulty: shrineDifficulty(poi.category ?? ''),
+      spawnedAt: new Date().toISOString(),
+    })
+  }
+  return [...kept, ...newNodes]
+}
+
 export function makeFoodItem(foodId: string): FoodItem {
   return { id: `food_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, foodId, acquiredAt: new Date().toISOString() }
 }
@@ -401,6 +473,10 @@ export function loadProfile(): PlayerProfile {
           typeof n.lat === 'number' && isFinite(n.lat) &&
           typeof n.lon === 'number' && isFinite(n.lon),
         ),
+        shrineNodes: (parsed.shrineNodes ?? []).filter((n: any) =>
+          typeof n.lat === 'number' && isFinite(n.lat) &&
+          typeof n.lon === 'number' && isFinite(n.lon),
+        ),
         stepsAppliedToEggs: parsed.stepsAppliedToEggs ?? 0,
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
         bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
@@ -429,6 +505,7 @@ export function loadProfile(): PlayerProfile {
     hatchedCreatures: [],
     foodInventory: [],
     foodNodes: [],
+    shrineNodes: [],
     stepsAppliedToEggs: 0,
     maxEggSlots: MAX_EGG_SLOTS,
     bonusCreatureSlots: 0,

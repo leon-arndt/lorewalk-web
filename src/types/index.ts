@@ -124,6 +124,7 @@ export interface PlayerProfile {
   hatchedCreatures: HatchedCreature[]
   foodInventory: FoodItem[]
   foodNodes: FoodNode[]
+  shrineNodes: ShrineNode[]
   stepsAppliedToEggs: number
   maxEggSlots: number
   bonusCreatureSlots: number   // extra creature storage bought in the shop
@@ -187,6 +188,34 @@ export interface FoodNode {
 
 export interface FoodCollectResult {
   food: { name: string; emoji: string }
+  levelUps: Array<{ species: string; newLevel: number }>
+}
+
+export interface ShrineExpedition {
+  creatureIds: string[]
+  power: number       // total power sent, determines win/loss on collect
+  startedAt: string
+  returnsAt: string
+}
+
+export interface ShrineNode {
+  id: string
+  poiId: string
+  poiName: string
+  poiCategory: string
+  lat: number
+  lon: number
+  difficulty: number   // power required to win
+  spawnedAt: string
+  expedition?: ShrineExpedition | null
+  clearedUntil?: string | null  // ISO — shrine is "held" until this time after a win
+}
+
+export interface ShrineCollectResult {
+  won: boolean
+  coins: number
+  egg: boolean
+  xp: number
   levelUps: Array<{ species: string; newLevel: number }>
 }
 

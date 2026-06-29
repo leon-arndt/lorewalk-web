@@ -4,6 +4,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
+import { ShrinePanel } from '@/components/UI/ShrinePanel'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { StepCounter } from '@/components/UI/StepCounter'
 import { useGeolocation } from '@/hooks/useGeolocation'
@@ -37,7 +38,7 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
-  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds } = useProfile()
+  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
@@ -46,6 +47,9 @@ export function MapPage() {
   const [selectedFoodNodeId, setSelectedFoodNodeId] = useState<string | null>(null)
   const [isFoodPanelClosing, setIsFoodPanelClosing] = useState(false)
   const foodPanelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [selectedShrineNodeId, setSelectedShrineNodeId] = useState<string | null>(null)
+  const [isShrinePanelClosing, setIsShrinePanelClosing] = useState(false)
+  const shrinePanelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
@@ -88,9 +92,31 @@ export function MapPage() {
     [profile.foodNodes, selectedFoodNodeId],
   )
 
+  const shrineNodeMarkers = useMemo(
+    () => profile.shrineNodes.map((n) => {
+      const now = Date.now()
+      const state: 'idle' | 'busy' | 'ready' | 'cleared' =
+        n.clearedUntil && now < new Date(n.clearedUntil).getTime()
+          ? 'cleared'
+          : !n.expedition
+            ? 'idle'
+            : now >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
+      return { id: n.id, name: n.poiName, lat: n.lat, lon: n.lon, state }
+    }),
+    [profile.shrineNodes],
+  )
+
+  const selectedShrineNode = useMemo(
+    () => profile.shrineNodes.find((n) => n.id === selectedShrineNodeId) ?? null,
+    [profile.shrineNodes, selectedShrineNodeId],
+  )
+
   // Spawn food nodes near visible POIs; runs whenever the nearby POI list changes.
   useEffect(() => {
-    if (pois.length > 0) syncFoodNodes(pois)
+    if (pois.length > 0) {
+      syncFoodNodes(pois)
+      syncShrineNodes(pois)
+    }
   }, [pois]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const claimMarkers = useMemo(
@@ -184,6 +210,41 @@ export function MapPage() {
     handleFoodPanelClose()
   }, [selectedFoodNodeId, startFoodExpedition, handleFoodPanelClose])
 
+  const handleShrineNodeClick = useCallback((id: string) => {
+    if (shrinePanelCloseTimer.current) { clearTimeout(shrinePanelCloseTimer.current); shrinePanelCloseTimer.current = null }
+    setIsShrinePanelClosing(false)
+    setSelectedShrineNodeId(id)
+    setSelectedPoi(null)
+    setSelectedFoodNodeId(null)
+  }, [])
+
+  const handleShrinePanelClose = useCallback(() => {
+    setIsShrinePanelClosing(true)
+    shrinePanelCloseTimer.current = setTimeout(() => {
+      setSelectedShrineNodeId(null)
+      setIsShrinePanelClosing(false)
+      shrinePanelCloseTimer.current = null
+    }, 300)
+  }, [])
+
+  const handleStartShrine = useCallback((creatureIds: string[]) => {
+    if (!selectedShrineNodeId) return
+    startShrineExpedition(selectedShrineNodeId, creatureIds)
+    handleShrinePanelClose()
+  }, [selectedShrineNodeId, startShrineExpedition, handleShrinePanelClose])
+
+  const handleCollectShrine = useCallback(() => {
+    if (!selectedShrineNodeId) return
+    const result = collectShrineNode(selectedShrineNodeId)
+    if (result) {
+      const msg = result.won
+        ? `🏆 Shrine claimed! +${result.coins} coins${result.egg ? ' + egg!' : ''}`
+        : `💀 Defeated. Try with stronger creatures.`
+      setToast(msg)
+    }
+    handleShrinePanelClose()
+  }, [selectedShrineNodeId, collectShrineNode, handleShrinePanelClose])
+
   const handleCollectFood = useCallback(() => {
     if (!selectedFoodNodeId) return
     const result = collectFoodNode(selectedFoodNodeId)
@@ -224,6 +285,8 @@ export function MapPage() {
         onClaimClick={handleSquadClick}
         foodNodeMarkers={foodNodeMarkers}
         onFoodNodeClick={handleFoodNodeClick}
+        shrineNodeMarkers={shrineNodeMarkers}
+        onShrineNodeClick={handleShrineNodeClick}
         onBearingChange={setBearing}
         compassResetRef={compassResetRef}
       />
@@ -341,6 +404,17 @@ export function MapPage() {
           position={position}
           onClose={handleClose}
           isClosing={isPanelClosing}
+        />
+      )}
+
+      {selectedShrineNode && (
+        <ShrinePanel
+          node={selectedShrineNode}
+          position={position}
+          onStart={handleStartShrine}
+          onCollect={handleCollectShrine}
+          onClose={handleShrinePanelClose}
+          isClosing={isShrinePanelClosing}
         />
       )}
 
