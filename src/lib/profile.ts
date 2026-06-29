@@ -567,7 +567,7 @@ export const TICKET_COST_COINS = 200
 // ─── Weekly party walk ────────────────────────────────────────────────────────
 
 export const WEEKLY_WALK_PARTY_SIZE = 5
-export const WEEKLY_WALK_TARGET_STEPS = import.meta.env.DEV ? 500 : 30_000
+export const WEEKLY_WALK_TARGET_STEPS = 30_000
 // How long mock members take to complete their share (drives their simulated pace)
 const MOCK_MEMBER_DURATION_MS = import.meta.env.DEV ? 120_000 : 5 * 24 * 3_600_000
 
