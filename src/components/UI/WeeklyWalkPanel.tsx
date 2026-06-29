@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
 import {
-  WEEKLY_WALK_TARGET_KM, TICKET_COST_COINS,
-  mockMemberProgressKm, playerProgressKm, partyTotalKm, isWalkComplete, isWalkExpired,
+  WEEKLY_WALK_TARGET_STEPS, TICKET_COST_COINS,
+  mockMemberProgressSteps, playerProgressSteps, partyTotalSteps, isWalkComplete, isWalkExpired,
 } from '@/lib/profile'
 import { glassPanel, glassChrome } from '@/lib/glass'
 
 interface Props {
-  currentDistanceM: number
+  currentSteps: number
   onClose: () => void
   isClosing?: boolean
 }
@@ -40,11 +40,11 @@ function ProgressBar({ value, max, color = ACCENT }: { value: number; max: numbe
   )
 }
 
-function formatKm(km: number) {
-  return km >= 1 ? `${km.toFixed(2)} km` : `${Math.round(km * 1000)} m`
+function formatSteps(steps: number) {
+  return steps.toLocaleString() + ' steps'
 }
 
-export function WeeklyWalkPanel({ currentDistanceM, onClose, isClosing = false }: Props) {
+export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Props) {
   const { profile, buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale } = useProfile()
   const { showReward } = useReward()
   const [now, setNow] = useState(Date.now())
@@ -105,16 +105,16 @@ export function WeeklyWalkPanel({ currentDistanceM, onClose, isClosing = false }
 
   // ── Active walk ───────────────────────────────────────────────────────────────
   if (walk && !walk.rewardClaimed) {
-    const totalKm = partyTotalKm(walk, currentDistanceM, now)
-    const complete = isWalkComplete(walk, currentDistanceM, now)
+    const totalSteps = partyTotalSteps(walk, currentSteps, now)
+    const complete = isWalkComplete(walk, currentSteps, now)
 
     function handleClaim() {
-      const result = claimWeeklyWalkReward(currentDistanceM)
+      const result = claimWeeklyWalkReward(currentSteps)
       if (!result) return
       showReward({
         emoji: '🎉',
         title: 'Party Walk Complete!',
-        subtitle: `Your party walked ${WEEKLY_WALK_TARGET_KM} km together this week.`,
+        subtitle: `Your party walked ${WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps together this week.`,
         items: [
           { type: 'xp', amount: 75 },
           { type: 'coins', amount: result.coins },
@@ -134,7 +134,7 @@ export function WeeklyWalkPanel({ currentDistanceM, onClose, isClosing = false }
           <div style={{ fontSize: 40, lineHeight: 1 }}>🚶</div>
           <div>
             <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>Weekly Party Walk</h2>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Combined goal: {WEEKLY_WALK_TARGET_KM} km</p>
+            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Combined goal: {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps</p>
           </div>
         </div>
 
@@ -143,19 +143,19 @@ export function WeeklyWalkPanel({ currentDistanceM, onClose, isClosing = false }
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>Party progress</span>
             <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b' }}>
-              {formatKm(Math.min(totalKm, WEEKLY_WALK_TARGET_KM))} / {WEEKLY_WALK_TARGET_KM} km
+              {formatSteps(Math.min(totalSteps, WEEKLY_WALK_TARGET_STEPS))} / {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps
             </span>
           </div>
-          <ProgressBar value={totalKm} max={WEEKLY_WALK_TARGET_KM} />
+          <ProgressBar value={totalSteps} max={WEEKLY_WALK_TARGET_STEPS} />
         </div>
 
         {/* Per-member list */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
           {walk.partyMembers.map((m) => {
             const contributed = m.isPlayer
-              ? playerProgressKm(walk, currentDistanceM)
-              : mockMemberProgressKm(walk.joinedAt, m.targetKm, now)
-            const done = contributed >= m.targetKm
+              ? playerProgressSteps(walk, currentSteps)
+              : mockMemberProgressSteps(walk.joinedAt, m.targetSteps, now)
+            const done = contributed >= m.targetSteps
             return (
               <div key={m.id}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
@@ -173,14 +173,14 @@ export function WeeklyWalkPanel({ currentDistanceM, onClose, isClosing = false }
                         {m.name} {m.isPlayer ? '(you)' : ''}
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 700, color: done ? '#16a34a' : '#94a3b8' }}>
-                        {formatKm(Math.min(contributed, m.targetKm))} / {formatKm(m.targetKm)}
+                        {formatSteps(Math.min(Math.round(contributed), m.targetSteps))} / {formatSteps(m.targetSteps)}
                       </span>
                     </div>
                   </div>
                 </div>
                 <ProgressBar
                   value={contributed}
-                  max={m.targetKm}
+                  max={m.targetSteps}
                   color={done ? '#16a34a' : m.isPlayer ? ACCENT : '#94a3b8'}
                 />
               </div>
@@ -238,7 +238,7 @@ export function WeeklyWalkPanel({ currentDistanceM, onClose, isClosing = false }
   }
 
   function handleJoin() {
-    joinWeeklyWalk(currentDistanceM)
+    joinWeeklyWalk(currentSteps)
   }
 
   return (
@@ -250,7 +250,7 @@ export function WeeklyWalkPanel({ currentDistanceM, onClose, isClosing = false }
         <div style={{ fontSize: 52, marginBottom: 10 }}>🚶</div>
         <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: '#1e293b' }}>Weekly Party Walk</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
-          Walk {WEEKLY_WALK_TARGET_KM} km combined with your party this week.
+          Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.
           Resets every Monday.
         </p>
       </div>

@@ -50,8 +50,8 @@ interface ProfileContextValue {
   startShrineExpedition: (nodeId: string, creatureIds: string[]) => void
   collectShrineNode: (nodeId: string) => ShrineCollectResult | null
   buyTicket: () => boolean
-  joinWeeklyWalk: (startDistanceM: number) => boolean
-  claimWeeklyWalkReward: (currentDistanceM: number) => { coins: number; egg: boolean } | null
+  joinWeeklyWalk: (startSteps: number) => boolean
+  claimWeeklyWalkReward: (currentSteps: number) => { coins: number; egg: boolean } | null
   expireWeeklyWalkIfStale: () => void
 }
 
@@ -543,9 +543,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   // ─── Weekly party walk ─────────────────────────────────────────────────────
 
-  function joinWeeklyWalk(startDistanceM: number): boolean {
+  function joinWeeklyWalk(startSteps: number): boolean {
     if (profile.tickets < 1) return false
-    const walk = buildWeeklyWalk(startDistanceM)
+    const walk = buildWeeklyWalk(startSteps)
     persist({ ...profile, tickets: profile.tickets - 1, weeklyWalk: walk })
     return true
   }

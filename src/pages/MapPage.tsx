@@ -496,7 +496,7 @@ export function MapPage() {
 
       {(weeklyWalkOpen || isWeeklyWalkClosing) && (
         <WeeklyWalkPanel
-          currentDistanceM={distanceM}
+          currentSteps={steps}
           onClose={handleWeeklyWalkClose}
           isClosing={isWeeklyWalkClosing}
         />

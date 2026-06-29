@@ -567,7 +567,7 @@ export const TICKET_COST_COINS = 200
 // ─── Weekly party walk ────────────────────────────────────────────────────────
 
 export const WEEKLY_WALK_PARTY_SIZE = 5
-export const WEEKLY_WALK_TARGET_KM = import.meta.env.DEV ? 1.0 : 10.0
+export const WEEKLY_WALK_TARGET_STEPS = import.meta.env.DEV ? 500 : 30_000
 // How long mock members take to complete their share (drives their simulated pace)
 const MOCK_MEMBER_DURATION_MS = import.meta.env.DEV ? 120_000 : 5 * 24 * 3_600_000
 
@@ -588,55 +588,55 @@ export function weekStart(now = Date.now()): string {
   return d.toISOString()
 }
 
-export function buildWeeklyWalk(startDistanceM: number): WeeklyPartyWalk {
-  const targetPerMember = WEEKLY_WALK_TARGET_KM / WEEKLY_WALK_PARTY_SIZE
+export function buildWeeklyWalk(startSteps: number): WeeklyPartyWalk {
+  const targetPerMember = WEEKLY_WALK_TARGET_STEPS / WEEKLY_WALK_PARTY_SIZE
   const members: PartyMember[] = [
-    { id: 'player', name: 'You', emoji: '🧭', targetKm: targetPerMember, isPlayer: true },
+    { id: 'player', name: 'You', emoji: '🧭', targetSteps: targetPerMember, isPlayer: true },
     ...MOCK_PARTY_POOL.slice(0, WEEKLY_WALK_PARTY_SIZE - 1).map((m) => ({
       id: `mock_${m.name}`,
       name: m.name,
       emoji: m.emoji,
-      targetKm: targetPerMember,
+      targetSteps: targetPerMember,
       isPlayer: false,
     })),
   ]
   return {
     id: `walk_${Date.now()}`,
     weekStart: weekStart(),
-    totalTargetKm: WEEKLY_WALK_TARGET_KM,
+    totalTargetSteps: WEEKLY_WALK_TARGET_STEPS,
     partyMembers: members,
     joinedAt: new Date().toISOString(),
-    startDistanceM,
+    startSteps,
     completedAt: null,
     rewardClaimed: false,
   }
 }
 
-// Distance contributed by a mock member based on time elapsed since join.
-export function mockMemberProgressKm(joinedAt: string, targetKm: number, now = Date.now()): number {
+// Steps contributed by a mock member based on time elapsed since join.
+export function mockMemberProgressSteps(joinedAt: string, targetSteps: number, now = Date.now()): number {
   const elapsed = now - new Date(joinedAt).getTime()
   const fraction = Math.min(1, elapsed / MOCK_MEMBER_DURATION_MS)
-  return Math.round(fraction * targetKm * 1000) / 1000
+  return Math.round(fraction * targetSteps)
 }
 
-// Player's contributed distance in km.
-export function playerProgressKm(walk: WeeklyPartyWalk, currentDistanceM: number): number {
-  const gained = Math.max(0, currentDistanceM - walk.startDistanceM)
-  const targetKm = walk.totalTargetKm / WEEKLY_WALK_PARTY_SIZE
-  return Math.min(targetKm, Math.round(gained) / 1000)
+// Player's contributed steps.
+export function playerProgressSteps(walk: WeeklyPartyWalk, currentSteps: number): number {
+  const gained = Math.max(0, currentSteps - walk.startSteps)
+  const targetSteps = walk.totalTargetSteps / WEEKLY_WALK_PARTY_SIZE
+  return Math.min(targetSteps, gained)
 }
 
-// Total combined distance across all party members.
-export function partyTotalKm(walk: WeeklyPartyWalk, currentDistanceM: number, now = Date.now()): number {
+// Total combined steps across all party members.
+export function partyTotalSteps(walk: WeeklyPartyWalk, currentSteps: number, now = Date.now()): number {
   return walk.partyMembers.reduce((sum, m) => {
-    if (m.isPlayer) return sum + playerProgressKm(walk, currentDistanceM)
-    return sum + mockMemberProgressKm(walk.joinedAt, m.targetKm, now)
+    if (m.isPlayer) return sum + playerProgressSteps(walk, currentSteps)
+    return sum + mockMemberProgressSteps(walk.joinedAt, m.targetSteps, now)
   }, 0)
 }
 
-// True once combined distance hits the target.
-export function isWalkComplete(walk: WeeklyPartyWalk, currentDistanceM: number, now = Date.now()): boolean {
-  return partyTotalKm(walk, currentDistanceM, now) >= walk.totalTargetKm
+// True once combined steps hit the target.
+export function isWalkComplete(walk: WeeklyPartyWalk, currentSteps: number, now = Date.now()): boolean {
+  return partyTotalSteps(walk, currentSteps, now) >= walk.totalTargetSteps
 }
 
 // Walk expires if the player is still on last week's walk.

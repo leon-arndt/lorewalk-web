@@ -227,17 +227,17 @@ export interface PartyMember {
   id: string
   name: string
   emoji: string       // creature emoji representing them on the party screen
-  targetKm: number    // their share of the total goal
+  targetSteps: number  // their share of the total goal
   isPlayer: boolean
 }
 
 export interface WeeklyPartyWalk {
   id: string
   weekStart: string         // ISO Monday midnight UTC
-  totalTargetKm: number
+  totalTargetSteps: number
   partyMembers: PartyMember[]
   joinedAt: string          // ISO when player joined
-  startDistanceM: number    // player odometer at join time
+  startSteps: number        // player step count at join time
   completedAt: string | null
   rewardClaimed: boolean
 }
