@@ -28,7 +28,7 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, advanceEggsBySteps, addXp } = useProfile()
+  const { profile, setDisplayName, advanceEggsBySteps, addXp, addCoins } = useProfile()
   const { t, locale, setLocale } = useLocale()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
@@ -336,6 +336,21 @@ export function ProfilePage() {
                   }}
                 >
                   +{n.toLocaleString()} XP
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              {[10, 100, 1000].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => addCoins(n)}
+                  style={{
+                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
+                    background: '#422006', color: '#fcd34d', fontWeight: 700, fontSize: 12,
+                    cursor: 'pointer',
+                  }}
+                >
+                  +{n.toLocaleString()} 🪙
                 </button>
               ))}
             </div>
