@@ -156,7 +156,7 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
 
       {/* Creature image */}
       <div style={{ marginTop: 8 }}>
-        <CreaturePreview emoji={creature.emoji} creatureType={creature.creatureType} />
+        <CreaturePreview emoji={creature.emoji} creatureType={creature.creatureType} isShiny={creature.isShiny} />
       </div>
 
       {/* XP bar */}
@@ -231,7 +231,7 @@ function FeedSheet({ food, creatures, onFeed, onClose }: {
                     padding: 10, cursor: 'pointer',
                   }}
                 >
-                  <CreaturePreview emoji={c.emoji} size={44} />
+                  <CreaturePreview emoji={c.emoji} isShiny={c.isShiny} size={44} />
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{creatureName(c)}</div>
                     <div style={{ fontSize: 10, color: col.fg, fontWeight: 600 }}>Lv.{c.level}</div>

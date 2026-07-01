@@ -129,7 +129,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {members.map((m) => (
             <div key={m.id} style={{ textAlign: 'center' }}>
-              <CreaturePreview emoji={m.emoji} creatureType={m.creatureType} size={48} />
+              <CreaturePreview emoji={m.emoji} creatureType={m.creatureType} isShiny={m.isShiny} size={48} />
               <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>Lv.{m.level}</div>
             </div>
           ))}
@@ -231,7 +231,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>✓</span>
                   )}
-                  <CreaturePreview emoji={c.emoji} creatureType={c.creatureType} size={40} />
+                  <CreaturePreview emoji={c.emoji} creatureType={c.creatureType} isShiny={c.isShiny} size={40} />
                   <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', lineHeight: 1.1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{creatureName(c)}</span>
                   <span style={{ fontSize: 9, fontWeight: 600, color: '#f59e0b' }}>⚡{creaturePower(c)}</span>
                 </button>

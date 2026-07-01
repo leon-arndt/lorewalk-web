@@ -28,7 +28,7 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, advanceEggsBySteps, addXp, addCoins } = useProfile()
+  const { profile, setDisplayName, advanceEggsBySteps, addXp, addCoins, addDevEgg } = useProfile()
   const { t, locale, setLocale } = useLocale()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
@@ -353,6 +353,28 @@ export function ProfilePage() {
                   +{n.toLocaleString()} 🪙
                 </button>
               ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button
+                onClick={() => addDevEgg(false)}
+                style={{
+                  flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
+                  background: '#1a2e1a', color: '#86efac', fontWeight: 700, fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                +Egg
+              </button>
+              <button
+                onClick={() => addDevEgg(true)}
+                style={{
+                  flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
+                  background: '#2e2000', color: '#fcd34d', fontWeight: 700, fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                ✨ Shiny Egg
+              </button>
             </div>
             <div style={{ marginTop: 8 }}>
               <button

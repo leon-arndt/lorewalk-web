@@ -1,6 +1,7 @@
 import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PartyMember, PlayerProfile, Poi, Squad, SquadExpedition, ShrineNode, VisitRecord, WeeklyPartyWalk } from '@/types'
 import { randomFood } from '@/data/foods'
 import { drawCreature, rollEggTier } from '@/data/creatures'
+export { rollEggTier }
 
 // XP needed to go from level N to level N+1
 export function xpForNextLevel(level: number): number {
@@ -139,6 +140,7 @@ export function eggSlotCost(currentMax: number): number {
 }
 
 export const TIER_STEPS: Record<EggTier, number> = { common: 100, rare: 1000, epic: 5000 }
+export const SHINY_CHANCE = 0.01
 
 export function createEggFor(poiId: string, poiName: string, category: string): Egg {
   const tier = rollEggTier(category)
@@ -160,11 +162,13 @@ export function createEgg(poi: Poi): Egg {
 
 export function hatchEgg(egg: Egg): HatchedCreature {
   const def = drawCreature(egg.poiCategory, egg.tier)
+  const isShiny = egg.isShiny ?? Math.random() < SHINY_CHANCE
   return {
     id: `creature_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     species: def.species,
     emoji: def.emoji,
     creatureType: def.type,
+    isShiny,
     poiOriginId: egg.poiId,
     poiOriginName: egg.poiName,
     poiCategory: egg.poiCategory,
@@ -185,7 +189,8 @@ export function advanceEggs(eggs: Egg[], stepDelta: number): Egg[] {
 }
 
 export function creatureName(c: HatchedCreature): string {
-  return c.nickname?.trim() || c.species
+  const base = c.nickname?.trim() || c.species
+  return c.isShiny ? `✨ ${base}` : base
 }
 
 // ─── Squad system ─────────────────────────────────────────────────────────────

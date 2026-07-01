@@ -8,7 +8,8 @@ import {
   createEgg, createEggFor, advanceEggs, hatchEgg, isEggReady,
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
-  EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp,
+  EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp, TIER_STEPS,
+  rollEggTier,
   levelRewardsFor, applyLevelRewards, type LevelReward,
   spawnFoodNodes, makeFoodItem, POSTCARD_DELIVERY_MS,
   spawnShrineNodes, solveShrineResult, SHRINE_DURATION_MS,
@@ -45,6 +46,7 @@ interface ProfileContextValue {
   addCoins: (amount: number) => void
   feedCreature: (creatureId: string, foodItemId: string) => void
   addXp: (amount: number) => void
+  addDevEgg: (isShiny?: boolean) => void
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
@@ -445,6 +447,25 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist(withLevelUpRewards(profile, updated))
   }
 
+  function addDevEgg(isShiny = false) {
+    if (profile.eggs.length >= profile.maxEggSlots) return
+    const categories = ['heritage', 'landmark', 'arts', 'religious', 'nature', 'museum']
+    const category = categories[Math.floor(Math.random() * categories.length)]
+    const tier = rollEggTier(category)
+    const egg: Egg = {
+      id: `egg_dev_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+      poiId: 'dev',
+      poiName: 'Dev Cheat',
+      poiCategory: category,
+      tier,
+      stepsRequired: TIER_STEPS[tier],
+      stepsProgress: TIER_STEPS[tier],  // immediately ready
+      acquiredAt: new Date().toISOString(),
+      isShiny,
+    }
+    persist({ ...profile, eggs: [...profile.eggs, egg] })
+  }
+
   function sendPostcard(toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) {
     const activeSquad = profile.squads.find((s) => s.id === profile.activeSquadId)
     const firstCreatureId = activeSquad?.slots.find(Boolean)
@@ -605,7 +626,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

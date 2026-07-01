@@ -20,18 +20,27 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(10,8,30,0.93)',
+      background: creature.isShiny ? 'rgba(30,20,0,0.95)' : 'rgba(10,8,30,0.93)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       gap: 18, padding: 24,
     }}>
+      {creature.isShiny && (
+        <div style={{
+          fontSize: 11, fontWeight: 800, letterSpacing: 5,
+          color: '#f59e0b', textTransform: 'uppercase',
+        }}>
+          ✨ Shiny!
+        </div>
+      )}
+
       <div style={{
         fontSize: 11, fontWeight: 800, letterSpacing: 5,
-        color: '#c4b5fd', textTransform: 'uppercase',
+        color: creature.isShiny ? '#fcd34d' : '#c4b5fd', textTransform: 'uppercase',
       }}>
         Hatched!
       </div>
 
-      <CreaturePreview emoji={creature.emoji} creatureType={creature.creatureType} size={140} />
+      <CreaturePreview emoji={creature.emoji} creatureType={creature.creatureType} isShiny={creature.isShiny} size={140} />
 
       {editing ? (
         <div style={{ display: 'flex', gap: 8 }}>

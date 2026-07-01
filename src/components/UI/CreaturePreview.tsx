@@ -7,20 +7,26 @@ const TYPE_STYLE: Record<string, { bg: string; border: string }> = {
   mythic:    { bg: '#fdf4ff', border: '#e9d5ff' },
 }
 
+const SHINY_STYLE = { bg: '#fffbeb', border: '#f59e0b' }
+
 export const CreaturePreview = memo(function CreaturePreview({
   emoji,
   creatureType,
+  isShiny,
   size = 72,
 }: {
   emoji: string
   creatureType?: string
+  isShiny?: boolean
   size?: number
 }) {
-  const style = TYPE_STYLE[creatureType ?? ''] ?? { bg: '#f1f5f9', border: '#e2e8f0' }
+  const style = isShiny ? SHINY_STYLE : (TYPE_STYLE[creatureType ?? ''] ?? { bg: '#f1f5f9', border: '#e2e8f0' })
   return (
     <div style={{
       width: size, height: size, borderRadius: Math.round(size * 0.22),
-      background: style.bg, border: `2px solid ${style.border}`,
+      background: style.bg,
+      border: `2px solid ${style.border}`,
+      boxShadow: isShiny ? '0 0 10px rgba(245,158,11,0.45)' : undefined,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>

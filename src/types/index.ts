@@ -43,6 +43,7 @@ export interface Egg {
   stepsRequired: number
   stepsProgress: number
   acquiredAt: string
+  isShiny?: boolean
 }
 
 export interface HatchedCreature {
@@ -51,6 +52,7 @@ export interface HatchedCreature {
   nickname?: string
   emoji: string
   creatureType?: string
+  isShiny?: boolean
   poiOriginId: string
   poiOriginName: string
   poiCategory: string
