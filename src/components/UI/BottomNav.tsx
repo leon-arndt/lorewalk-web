@@ -1,5 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useProfile } from '@/contexts/ProfileContext'
+import { isEggReady } from '@/lib/profile'
 import { glassNav } from '@/lib/glass'
 
 const MapIcon = () => (
@@ -32,12 +34,14 @@ const ProfileIcon = () => (
 
 export function BottomNav() {
   const { t } = useLocale()
+  const { profile } = useProfile()
+  const hasReadyEgg = profile.eggs.some(isEggReady)
 
   const tabs = [
-    { to: '/', icon: <MapIcon />, label: t('nav_map') },
-    { to: '/creatures', icon: <CreaturesIcon />, label: t('nav_creatures') },
-    { to: '/squads', icon: <SquadsIcon />, label: t('nav_squads') },
-    { to: '/profile', icon: <ProfileIcon />, label: t('nav_profile') },
+    { to: '/', icon: <MapIcon />, label: t('nav_map'), dot: false },
+    { to: '/creatures', icon: <CreaturesIcon />, label: t('nav_creatures'), dot: hasReadyEgg },
+    { to: '/squads', icon: <SquadsIcon />, label: t('nav_squads'), dot: false },
+    { to: '/profile', icon: <ProfileIcon />, label: t('nav_profile'), dot: false },
   ]
 
   return (
@@ -53,12 +57,13 @@ export function BottomNav() {
       ...glassNav,
       whiteSpace: 'nowrap',
     }}>
-      {tabs.map(({ to, icon, label }) => (
+      {tabs.map(({ to, icon, label, dot }) => (
         <NavLink
           key={to}
           to={to}
           end={to === '/'}
           style={({ isActive }) => ({
+            position: 'relative',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -83,6 +88,12 @@ export function BottomNav() {
             WebkitTapHighlightColor: 'transparent',
           })}
         >
+          {dot && (
+            <span style={{
+              position: 'absolute', top: 6, right: 14, width: 9, height: 9,
+              borderRadius: '50%', background: '#ef4444', border: '1.5px solid white',
+            }} />
+          )}
           {icon}
           <span>{label}</span>
         </NavLink>

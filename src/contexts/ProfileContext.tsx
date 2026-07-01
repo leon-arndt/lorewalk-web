@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
+import type { Claim, Egg, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile,
   applyXp, updateStreak, checkAchievements,
-  createEgg, createEggFor, advanceEggs, hatchEgg,
+  createEgg, createEggFor, advanceEggs, hatchEgg, isEggReady,
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp,
@@ -21,8 +21,10 @@ interface ProfileContextValue {
   addVisit: (poi: Poi) => void
   advanceEggsBySteps: (currentStepsToday: number) => void
   setDisplayName: (name: string) => void
-  justHatched: HatchedCreature[]
-  clearJustHatched: () => void
+  hatchReadyEgg: (eggId: string) => HatchedCreature | null
+  renameCreature: (creatureId: string, nickname: string) => void
+  justReady: Egg[]
+  clearJustReady: () => void
   pendingLevelUp: { level: number; rewards: LevelReward[] } | null
   dismissLevelUp: () => void
   assignToSlot: (squadId: string, slotIndex: number, creatureId: string) => void
@@ -59,7 +61,7 @@ const ProfileContext = createContext<ProfileContextValue | null>(null)
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<PlayerProfile>(loadProfile)
-  const [justHatched, setJustHatched] = useState<HatchedCreature[]>([])
+  const [justReady, setJustReady] = useState<Egg[]>([])
   const [pendingLevelUp, setPendingLevelUp] = useState<{ level: number; rewards: LevelReward[] } | null>(null)
 
   const visitedPois = useMemo(
@@ -144,6 +146,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   // Advance incubating eggs by steps walked. Call with the current today's step count
   // each time it changes; handles daily resets by detecting when count decreases.
+  // Eggs that reach their requirement become "ready" and wait for the player to tap
+  // them in the Creatures tab - hatching no longer happens automatically.
   function advanceEggsBySteps(currentStepsToday: number) {
     if (profile.eggs.length === 0) return
     const prev = profile.stepsAppliedToEggs
@@ -151,28 +155,50 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const delta = currentStepsToday <= prev ? currentStepsToday : currentStepsToday - prev
     if (delta <= 0) return
 
-    const { incubating, hatched } = advanceEggs(profile.eggs, delta)
-    const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
-    const available = Math.max(0, cap - profile.hatchedCreatures.length)
-    const newCreatures = hatched.slice(0, available).map(hatchEgg)
-    const blockedEggs = hatched.slice(available)
+    const eggs = advanceEggs(profile.eggs, delta)
+    const newlyReady = eggs.filter((egg, i) => isEggReady(egg) && !isEggReady(profile.eggs[i]))
 
+    const updated: PlayerProfile = { ...profile, stepsAppliedToEggs: currentStepsToday, eggs }
+    setProfile(updated)
+    saveProfile(updated)
+    if (newlyReady.length > 0) setJustReady(newlyReady)
+  }
+
+  // Stable identity: consumers list this in effect deps (MapPage's ready toast),
+  // so recreating it each render would reset their timers on any profile change.
+  const clearJustReady = useCallback(() => {
+    setJustReady([])
+  }, [])
+
+  // Hatch a single ready egg, triggered by the player tapping it in the Creatures tab.
+  function hatchReadyEgg(eggId: string): HatchedCreature | null {
+    const egg = profile.eggs.find((e) => e.id === eggId)
+    if (!egg || !isEggReady(egg)) return null
+    const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
+    if (profile.hatchedCreatures.length >= cap) return null
+
+    const creature = hatchEgg(egg)
     const updated: PlayerProfile = {
       ...profile,
-      stepsAppliedToEggs: currentStepsToday,
-      eggs: [...incubating, ...blockedEggs],
-      hatchedCreatures: [...profile.hatchedCreatures, ...newCreatures],
+      eggs: profile.eggs.filter((e) => e.id !== eggId),
+      hatchedCreatures: [...profile.hatchedCreatures, creature],
     }
     setProfile(updated)
     saveProfile(updated)
-    if (newCreatures.length > 0) setJustHatched(newCreatures)
+    return creature
   }
 
-  // Stable identity: consumers list this in effect deps (MapPage's hatch toast),
-  // so recreating it each render would reset their timers on any profile change.
-  const clearJustHatched = useCallback(() => {
-    setJustHatched([])
-  }, [])
+  function renameCreature(creatureId: string, nickname: string) {
+    const trimmed = nickname.trim()
+    const updated: PlayerProfile = {
+      ...profile,
+      hatchedCreatures: profile.hatchedCreatures.map((c) =>
+        c.id === creatureId ? { ...c, nickname: trimmed || undefined } : c,
+      ),
+    }
+    setProfile(updated)
+    saveProfile(updated)
+  }
 
   function persist(updated: PlayerProfile) {
     setProfile(updated)
@@ -575,7 +601,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, justHatched, clearJustHatched,
+      profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, hatchReadyEgg, renameCreature, justReady, clearJustReady,
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
-import { creaturePower, MAX_SHRINE_CREATURES, SHRINE_DURATION_MS } from '@/lib/profile'
+import { creaturePower, creatureName, MAX_SHRINE_CREATURES, SHRINE_DURATION_MS } from '@/lib/profile'
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { HatchedCreature, ShrineNode, PlayerPosition } from '@/types'
@@ -274,7 +274,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
                     }}>✓</span>
                   )}
                   <CreaturePreview emoji={c.emoji} creatureType={c.creatureType} size={40} />
-                  <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', lineHeight: 1.1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{c.species}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', lineHeight: 1.1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{creatureName(c)}</span>
                   <span style={{ fontSize: 9, fontWeight: 600, color: '#f59e0b' }}>⚡{creaturePower(c)}</span>
                 </button>
               )

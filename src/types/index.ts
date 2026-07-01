@@ -48,6 +48,7 @@ export interface Egg {
 export interface HatchedCreature {
   id: string
   species: string
+  nickname?: string
   emoji: string
   creatureType?: string
   poiOriginId: string

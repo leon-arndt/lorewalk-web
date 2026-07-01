@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useGeolocation } from '@/hooks/useGeolocation'
-import { hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
+import { hasReturned, expeditionDurationMs, claimPendingCoins, creatureName } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { ExpeditionTarget, HatchedCreature, Squad } from '@/types'
@@ -297,7 +297,7 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
             >
               <CreaturePreview emoji={c.emoji} size={48} />
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: used ? '#94a3b8' : '#1e293b' }}>{c.species}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: used ? '#94a3b8' : '#1e293b' }}>{creatureName(c)}</div>
                 <div style={{ fontSize: 10, color: used ? '#94a3b8' : col.fg, textTransform: 'capitalize', fontWeight: 600 }}>
                   {c.poiCategory} · Lv.{c.level}
                 </div>

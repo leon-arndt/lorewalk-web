@@ -174,15 +174,18 @@ export function hatchEgg(egg: Egg): HatchedCreature {
   }
 }
 
-// Advance all eggs by stepDelta steps; split into still-incubating and newly-hatched.
-export function advanceEggs(eggs: Egg[], stepDelta: number): { incubating: Egg[]; hatched: Egg[] } {
-  const incubating: Egg[] = []
-  const hatched: Egg[] = []
-  for (const egg of eggs) {
-    const updated = { ...egg, stepsProgress: egg.stepsProgress + stepDelta }
-    ;(updated.stepsProgress >= updated.stepsRequired ? hatched : incubating).push(updated)
-  }
-  return { incubating, hatched }
+export function isEggReady(egg: Egg): boolean {
+  return egg.stepsProgress >= egg.stepsRequired
+}
+
+// Advance all eggs by stepDelta steps. Eggs that reach their step requirement stay in
+// the list as "ready" - hatching itself is a separate, player-triggered action.
+export function advanceEggs(eggs: Egg[], stepDelta: number): Egg[] {
+  return eggs.map((egg) => ({ ...egg, stepsProgress: egg.stepsProgress + stepDelta }))
+}
+
+export function creatureName(c: HatchedCreature): string {
+  return c.nickname?.trim() || c.species
 }
 
 // ─── Squad system ─────────────────────────────────────────────────────────────

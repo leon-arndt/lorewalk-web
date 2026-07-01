@@ -40,7 +40,7 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
-  const { profile, visitedPois, addVisit, advanceEggsBySteps, justHatched, clearJustHatched, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
+  const { profile, visitedPois, addVisit, advanceEggsBySteps, justReady, clearJustReady, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
   const { showReward } = useReward()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
@@ -290,17 +290,19 @@ export function MapPage() {
     if (steps > 0) advanceEggsBySteps(steps)
   }, [steps]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Show hatching toast
+  // Show "egg ready" toast
   useEffect(() => {
-    if (justHatched.length === 0) return
-    const names = justHatched.map((c) => c.species).join(', ')
-    setToast(`🎉 ${names} hatched! Check Creatures →`)
+    if (justReady.length === 0) return
+    const msg = justReady.length === 1
+      ? `🥚 Egg from ${justReady[0].poiName} is ready to hatch. Check Creatures →`
+      : `🥚 ${justReady.length} eggs are ready to hatch. Check Creatures →`
+    setToast(msg)
     const t = setTimeout(() => {
       setToast(null)
-      clearJustHatched()
+      clearJustReady()
     }, 4000)
     return () => clearTimeout(t)
-  }, [justHatched, clearJustHatched])
+  }, [justReady, clearJustReady])
 
   return (
     <div style={{ position: 'absolute', inset: 0 }}>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { getFoodDef, foodPowerRequirement } from '@/data/foods'
-import { creaturePower, foodExpeditionDurationMs, MAX_FOOD_CREATURES } from '@/lib/profile'
+import { creaturePower, creatureName, foodExpeditionDurationMs, MAX_FOOD_CREATURES } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
@@ -232,7 +232,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
                     }}>✓</span>
                   )}
                   <CreaturePreview emoji={c.emoji} creatureType={c.creatureType} size={40} />
-                  <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', lineHeight: 1.1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{c.species}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', lineHeight: 1.1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{creatureName(c)}</span>
                   <span style={{ fontSize: 9, fontWeight: 600, color: '#f59e0b' }}>⚡{creaturePower(c)}</span>
                 </button>
               )

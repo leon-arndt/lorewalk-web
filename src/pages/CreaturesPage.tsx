@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { creatureCap, xpForCreatureLevel } from '@/lib/profile'
+import { creatureCap, creatureName, isEggReady, xpForCreatureLevel } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import { EggPreview } from '@/components/UI/EggPreview'
+import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
 import type { Egg, FoodItem, HatchedCreature } from '@/types'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
 
-function EggSlotCard({ egg }: { egg: Egg | null }) {
+function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: string) => void }) {
   const { t } = useLocale()
 
   if (!egg) {
@@ -29,17 +30,30 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
 
   const isRare = egg.tier === 'rare'
   const isEpic = egg.tier === 'epic'
+  const ready = isEggReady(egg)
   const pct = Math.min((egg.stepsProgress / egg.stepsRequired) * 100, 100)
   const remaining = egg.stepsRequired - egg.stepsProgress
 
   return (
-    <div style={{
-      background: 'white', borderRadius: 16, padding: '14px 10px',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-      border: `2px solid ${isEpic ? '#fca5a5' : isRare ? '#fde68a' : '#c7d2fe'}`,
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      gap: 7, minHeight: 144,
-    }}>
+    <div
+      onClick={ready ? () => onHatch(egg.id) : undefined}
+      style={{
+        position: 'relative',
+        background: 'white', borderRadius: 16, padding: '14px 10px',
+        boxShadow: ready ? '0 0 0 3px rgba(99,102,241,0.25), 0 1px 4px rgba(0,0,0,0.08)' : '0 1px 4px rgba(0,0,0,0.08)',
+        border: `2px solid ${ready ? '#818cf8' : isEpic ? '#fca5a5' : isRare ? '#fde68a' : '#c7d2fe'}`,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: 7, minHeight: 144,
+        cursor: ready ? 'pointer' : 'default',
+      }}
+    >
+      {ready && (
+        <span style={{
+          position: 'absolute', top: -5, right: -5, width: 14, height: 14,
+          borderRadius: '50%', background: '#ef4444', border: '2px solid white',
+        }} />
+      )}
+
       <EggPreview tier={egg.tier} size={52} />
 
       <span style={{
@@ -60,22 +74,28 @@ function EggSlotCard({ egg }: { egg: Egg | null }) {
         {egg.poiName}
       </span>
 
-      <div style={{ width: '100%' }}>
-        <div style={{ height: 4, background: '#f1f5f9', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: 2, transition: 'width 0.4s ease',
-            background: isEpic
-              ? 'linear-gradient(90deg, #ef4444, #f87171)'
-              : isRare
-              ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-              : 'linear-gradient(90deg, #818cf8, #a78bfa)',
-            width: `${pct}%`,
-          }} />
-        </div>
-        <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, display: 'block', textAlign: 'center' }}>
-          {t('creatures_visits_left', { n: remaining })}
+      {ready ? (
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#6366f1' }}>
+          Tap to hatch!
         </span>
-      </div>
+      ) : (
+        <div style={{ width: '100%' }}>
+          <div style={{ height: 4, background: '#f1f5f9', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 2, transition: 'width 0.4s ease',
+              background: isEpic
+                ? 'linear-gradient(90deg, #ef4444, #f87171)'
+                : isRare
+                ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                : 'linear-gradient(90deg, #818cf8, #a78bfa)',
+              width: `${pct}%`,
+            }} />
+          </div>
+          <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, display: 'block', textAlign: 'center' }}>
+            {t('creatures_visits_left', { n: remaining })}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -161,7 +181,7 @@ function CreatureCard({ creature, onRelease }: { creature: HatchedCreature; onRe
 
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
-          {creature.species}
+          {creatureName(creature)}
         </div>
       </div>
 
@@ -213,7 +233,7 @@ function FeedSheet({ food, creatures, onFeed, onClose }: {
                 >
                   <CreaturePreview emoji={c.emoji} size={44} />
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{c.species}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>{creatureName(c)}</div>
                     <div style={{ fontSize: 10, color: col.fg, fontWeight: 600 }}>Lv.{c.level}</div>
                   </div>
                 </button>
@@ -287,16 +307,22 @@ function PantrySection() {
 }
 
 export function CreaturesPage() {
-  const { profile, releaseCreature } = useProfile()
+  const { profile, releaseCreature, hatchReadyEgg, renameCreature } = useProfile()
   const { t } = useLocale()
   const { eggs, hatchedCreatures, maxEggSlots } = profile
   const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
   const full = hatchedCreatures.length >= cap
+  const [rewardCreature, setRewardCreature] = useState<HatchedCreature | null>(null)
 
   function handleRelease(creature: HatchedCreature) {
-    if (window.confirm(t('creatures_release_confirm', { name: creature.species }))) {
+    if (window.confirm(t('creatures_release_confirm', { name: creatureName(creature) }))) {
       releaseCreature(creature.id)
     }
+  }
+
+  function handleHatch(eggId: string) {
+    const creature = hatchReadyEgg(eggId)
+    if (creature) setRewardCreature(creature)
   }
 
   const emptySlots = Math.max(0, maxEggSlots - eggs.length)
@@ -320,7 +346,7 @@ export function CreaturesPage() {
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
           {slots.map((egg, i) => (
-            <EggSlotCard key={egg?.id ?? `empty-${i}`} egg={egg} />
+            <EggSlotCard key={egg?.id ?? `empty-${i}`} egg={egg} onHatch={handleHatch} />
           ))}
         </div>
 
@@ -391,6 +417,17 @@ export function CreaturesPage() {
           </div>
         )}
       </section>
+
+      {rewardCreature && (
+        <HatchRewardScreen
+          creature={rewardCreature}
+          onRename={(nickname) => {
+            renameCreature(rewardCreature.id, nickname)
+            setRewardCreature({ ...rewardCreature, nickname: nickname || undefined })
+          }}
+          onDismiss={() => setRewardCreature(null)}
+        />
+      )}
     </div>
   )
 }
