@@ -288,11 +288,19 @@ export function MapPage() {
     if (!selectedFoodNodeId) return
     const result = collectFoodNode(selectedFoodNodeId)
     if (result) {
-      const levelMsg = result.levelUps.length > 0 ? ` · ${result.levelUps.length} levelled up!` : ''
-      setToast(`${result.food.emoji} Got ${result.food.name}!${levelMsg}`)
+      const items: Array<{ type: 'food' | 'level_up'; amount?: number; label?: string; emoji?: string }> = [
+        { type: 'food', label: result.food.name, emoji: result.food.emoji },
+      ]
+      result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
+      showReward({
+        emoji: result.food.emoji,
+        title: 'Expedition Complete!',
+        subtitle: `Your creatures brought back ${result.food.name}.`,
+        items,
+      })
     }
     handleFoodPanelClose()
-  }, [selectedFoodNodeId, collectFoodNode, handleFoodPanelClose])
+  }, [selectedFoodNodeId, collectFoodNode, handleFoodPanelClose, showReward])
   // Advance egg incubation as the player walks
   useEffect(() => {
     if (steps > 0) advanceEggsBySteps(steps)

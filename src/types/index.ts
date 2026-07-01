@@ -247,12 +247,13 @@ export interface WeeklyPartyWalk {
 
 // ─── Reward screen ────────────────────────────────────────────────────────────
 
-export type RewardItemType = 'xp' | 'coins' | 'egg' | 'level_up' | 'badge'
+export type RewardItemType = 'xp' | 'coins' | 'egg' | 'level_up' | 'badge' | 'food'
 
 export interface RewardItem {
   type: RewardItemType
   amount?: number
-  label?: string            // for level_up: creature name; for badge: badge name
+  label?: string            // for level_up: creature name; for badge/food: item name
+  emoji?: string            // overrides the type's default icon (e.g. the specific food)
 }
 
 export interface RewardConfig {
