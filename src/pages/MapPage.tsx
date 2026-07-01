@@ -83,14 +83,18 @@ export function MapPage() {
   }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures, busyCreatureIds])
 
   const foodNodeMarkers = useMemo(
-    () => profile.foodNodes.map((n) => {
-      const def = getFoodDef(n.foodId)
-      const state: 'idle' | 'busy' | 'ready' = !n.expedition
-        ? 'idle'
-        : Date.now() >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
-      return { id: n.id, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state }
-    }),
-    [profile.foodNodes],
+    () => {
+      const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
+      return profile.foodNodes.map((n) => {
+        const def = getFoodDef(n.foodId)
+        const state: 'idle' | 'busy' | 'ready' = !n.expedition
+          ? 'idle'
+          : Date.now() >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
+        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => byId.get(id)?.emoji ?? '🐾') : []
+        return { id: n.id, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state, travelers }
+      })
+    },
+    [profile.foodNodes, profile.hatchedCreatures],
   )
 
   const selectedFoodNode = useMemo(
@@ -99,17 +103,21 @@ export function MapPage() {
   )
 
   const shrineNodeMarkers = useMemo(
-    () => profile.shrineNodes.map((n) => {
-      const now = Date.now()
-      const state: 'idle' | 'busy' | 'ready' | 'cleared' =
-        n.clearedUntil && now < new Date(n.clearedUntil).getTime()
-          ? 'cleared'
-          : !n.expedition
-            ? 'idle'
-            : now >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
-      return { id: n.id, name: n.poiName, lat: n.lat, lon: n.lon, state }
-    }),
-    [profile.shrineNodes],
+    () => {
+      const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
+      return profile.shrineNodes.map((n) => {
+        const now = Date.now()
+        const state: 'idle' | 'busy' | 'ready' | 'cleared' =
+          n.clearedUntil && now < new Date(n.clearedUntil).getTime()
+            ? 'cleared'
+            : !n.expedition
+              ? 'idle'
+              : now >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
+        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => byId.get(id)?.emoji ?? '🐾') : []
+        return { id: n.id, name: n.poiName, lat: n.lat, lon: n.lon, state, travelers }
+      })
+    },
+    [profile.shrineNodes, profile.hatchedCreatures],
   )
 
   const selectedShrineNode = useMemo(

@@ -34,3 +34,8 @@ html, body, #root {
   from { transform: translateY(0);    opacity: 1; }
   to   { transform: translateY(110%); opacity: 0; }
 }
+
+/* Creatures orbiting a node while away on an expedition. tvOrbit spins the arm;
+   tvCounter keeps the creature bubble upright as it circles. */
+@keyframes tvOrbit   { to { transform: rotate(360deg); } }
+@keyframes tvCounter { to { transform: rotate(-360deg); } }

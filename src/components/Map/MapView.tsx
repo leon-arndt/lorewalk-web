@@ -13,6 +13,7 @@ export interface FoodNodeMarker {
   lat: number
   lon: number
   state?: 'idle' | 'busy' | 'ready'
+  travelers?: string[]   // emojis of creatures currently dispatched here
 }
 
 export interface ShrineNodeMarker {
@@ -21,6 +22,29 @@ export interface ShrineNodeMarker {
   lat: number
   lon: number
   state: 'idle' | 'busy' | 'ready' | 'cleared'
+  travelers?: string[]
+}
+
+// Append little creature bubbles that orbit the node marker while an expedition is
+// in progress, so dispatched creatures are visibly "there" working. Pure CSS orbit
+// (screen-space, so it stays visible at every zoom); a static offset ring holds the
+// radius while the body counter-rotates to stay upright.
+function appendOrbitingCreatures(outer: HTMLElement, emojis: string[]) {
+  const R = 32
+  const DUR = 8
+  emojis.forEach((emoji, i) => {
+    const delay = -(i / Math.max(1, emojis.length)) * DUR
+    const arm = document.createElement('div')
+    arm.style.cssText = `position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:2;animation:tvOrbit ${DUR}s linear infinite;animation-delay:${delay}s;`
+    const offset = document.createElement('div')
+    offset.style.cssText = `position:absolute;transform:translateX(${R}px);`
+    const body = document.createElement('div')
+    body.textContent = emoji
+    body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:white;border:1.5px solid #cbd5e1;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
+    offset.appendChild(body)
+    arm.appendChild(offset)
+    outer.appendChild(arm)
+  })
 }
 
 function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
@@ -78,6 +102,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
+  if (node.travelers && node.travelers.length > 0) appendOrbitingCreatures(outer, node.travelers)
   return outer
 }
 
@@ -123,6 +148,7 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
+  if (node.travelers && node.travelers.length > 0) appendOrbitingCreatures(outer, node.travelers)
   return outer
 }
 
