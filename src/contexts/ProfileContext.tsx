@@ -21,6 +21,7 @@ interface ProfileContextValue {
   visitedPois: Set<string>
   addVisit: (poi: Poi) => void
   advanceEggsBySteps: (currentStepsToday: number) => void
+  recordDailySteps: (dateKey: string, steps: number) => void
   setDisplayName: (name: string) => void
   hatchReadyEgg: (eggId: string) => HatchedCreature | null
   renameCreature: (creatureId: string, nickname: string) => void
@@ -47,6 +48,7 @@ interface ProfileContextValue {
   feedCreature: (creatureId: string, foodItemId: string) => void
   addXp: (amount: number) => void
   addDevEgg: (isShiny?: boolean) => void
+  addDevSteps: (n: number) => void
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
@@ -150,6 +152,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // each time it changes; handles daily resets by detecting when count decreases.
   // Eggs that reach their requirement become "ready" and wait for the player to tap
   // them in the Creatures tab - hatching no longer happens automatically.
+  // Persist today's step total into the per-day log the journal calendar reads.
+  // Steps only climb within a day, so we keep the max and skip no-op writes.
+  function recordDailySteps(dateKey: string, steps: number) {
+    if (steps <= 0) return
+    const current = profile.dailySteps ?? {}
+    if ((current[dateKey] ?? 0) >= steps) return
+    persist({ ...profile, dailySteps: { ...current, [dateKey]: steps } })
+  }
+
   function advanceEggsBySteps(currentStepsToday: number) {
     if (profile.eggs.length === 0) return
     const prev = profile.stepsAppliedToEggs
@@ -466,6 +477,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, eggs: [...profile.eggs, egg] })
   }
 
+  function addDevSteps(n: number) {
+    const newStepsApplied = profile.stepsAppliedToEggs + n
+    const eggs = profile.eggs.length > 0 ? advanceEggs(profile.eggs, n) : profile.eggs
+    const newlyReady = eggs.filter((egg, i) => isEggReady(egg) && !isEggReady(profile.eggs[i]))
+    const key = new Date().toLocaleDateString('sv')
+    const dailySteps = { ...profile.dailySteps, [key]: (profile.dailySteps?.[key] ?? 0) + n }
+    const updated: PlayerProfile = { ...profile, stepsAppliedToEggs: newStepsApplied, eggs, dailySteps }
+    setProfile(updated)
+    saveProfile(updated)
+    if (newlyReady.length > 0) setJustReady(newlyReady)
+  }
+
   function sendPostcard(toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) {
     const activeSquad = profile.squads.find((s) => s.id === profile.activeSquadId)
     const firstCreatureId = activeSquad?.slots.find(Boolean)
@@ -622,11 +645,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, visitedPois, addVisit, advanceEggsBySteps, setDisplayName, hatchReadyEgg, renameCreature, justReady, clearJustReady,
+      profile, visitedPois, addVisit, advanceEggsBySteps, recordDailySteps, setDisplayName, hatchReadyEgg, renameCreature, justReady, clearJustReady,
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

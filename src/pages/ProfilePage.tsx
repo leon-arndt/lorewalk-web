@@ -28,7 +28,7 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, advanceEggsBySteps, addXp, addCoins, addDevEgg } = useProfile()
+  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps } = useProfile()
   const { t, locale, setLocale } = useLocale()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
@@ -313,7 +313,7 @@ export function ProfilePage() {
               {[100, 1000, 5000].map((n) => (
                 <button
                   key={n}
-                  onClick={() => advanceEggsBySteps(profile.stepsAppliedToEggs + n)}
+                  onClick={() => addDevSteps(n)}
                   style={{
                     flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
                     background: '#312e81', color: '#c4b5fd', fontWeight: 700, fontSize: 12,
