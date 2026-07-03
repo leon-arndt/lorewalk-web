@@ -25,6 +25,8 @@ html, body, #root {
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
 @keyframes panelSlideUp {
   from { transform: translateY(110%); opacity: 0.5; }
   to   { transform: translateY(0);    opacity: 1; }
@@ -39,3 +41,29 @@ html, body, #root {
    tvCounter keeps the creature bubble upright as it circles. */
 @keyframes tvOrbit   { to { transform: rotate(360deg); } }
 @keyframes tvCounter { to { transform: rotate(-360deg); } }
+
+/* Creature idle bob + matching shadow shrink */
+@keyframes creatureBob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-9px); }
+}
+@keyframes shadowPulse {
+  0%, 100% { transform: scaleX(1);   opacity: 0.22; }
+  50%       { transform: scaleX(0.6); opacity: 0.10; }
+}
+
+/* Happy nom when fed */
+@keyframes creatureNom {
+  0%   { transform: translateY(0)   scale(1)    rotate(0deg); }
+  20%  { transform: translateY(-6px) scale(1.25) rotate(-8deg); }
+  45%  { transform: translateY(0)   scale(0.92) rotate(5deg); }
+  65%  { transform: translateY(-3px) scale(1.08) rotate(-3deg); }
+  100% { transform: translateY(0)   scale(1)    rotate(0deg); }
+}
+
+/* Food chip flying up to creature */
+@keyframes foodFlyUp {
+  0%   { transform: translateY(0)     scale(1);   opacity: 1; }
+  55%  { transform: translateY(-100px) scale(1.4); opacity: 1; }
+  100% { transform: translateY(-70px) scale(0.2); opacity: 0; }
+}

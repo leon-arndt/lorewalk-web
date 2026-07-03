@@ -527,6 +527,7 @@ export function loadProfile(): PlayerProfile {
         postcards: parsed.postcards ?? [],
         outbox: parsed.outbox ?? [],
         weeklyWalk: parsed.weeklyWalk ?? null,
+        dailySteps: parsed.dailySteps ?? {},
       }
     }
   } catch { /* ignore */ }
@@ -558,7 +559,17 @@ export function loadProfile(): PlayerProfile {
     postcards: [],
     outbox: [],
     weeklyWalk: null,
+    dailySteps: {},
   }
+}
+
+// Target steps for a full daily ring on the journal calendar.
+export const DAILY_STEP_GOAL = 5000
+
+// Local (not UTC) YYYY-MM-DD, so calendar days match the player's wall clock.
+export function localDateKey(d: Date): string {
+  const p = (n: number) => n.toString().padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
 }
 
 // 48h in prod, 30s in dev for fast testing

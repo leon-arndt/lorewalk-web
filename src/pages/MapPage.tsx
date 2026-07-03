@@ -6,6 +6,8 @@ import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
 import { ShrinePanel } from '@/components/UI/ShrinePanel'
 import { WeeklyWalkPanel } from '@/components/UI/WeeklyWalkPanel'
+import { WeekStrip } from '@/components/UI/WeekStrip'
+import { JournalOverlay } from '@/components/UI/JournalOverlay'
 import { useReward } from '@/contexts/RewardContext'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { StepCounter } from '@/components/UI/StepCounter'
@@ -17,6 +19,7 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
+import { localDateKey } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import type { Poi } from '@/types'
 
@@ -40,7 +43,7 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
-  const { profile, visitedPois, addVisit, advanceEggsBySteps, justReady, clearJustReady, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
+  const { profile, visitedPois, addVisit, advanceEggsBySteps, recordDailySteps, justReady, clearJustReady, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
   const { showReward } = useReward()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
@@ -57,6 +60,7 @@ export function MapPage() {
   const [isWeeklyWalkClosing, setIsWeeklyWalkClosing] = useState(false)
   const weeklyWalkCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [journalOpen, setJournalOpen] = useState(false)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
   const { muted, toggle: toggleMusic } = useMusic()
@@ -301,9 +305,12 @@ export function MapPage() {
     }
     handleFoodPanelClose()
   }, [selectedFoodNodeId, collectFoodNode, handleFoodPanelClose, showReward])
-  // Advance egg incubation as the player walks
+  // Advance egg incubation as the player walks, and log today's steps for the journal.
   useEffect(() => {
-    if (steps > 0) advanceEggsBySteps(steps)
+    if (steps > 0) {
+      advanceEggsBySteps(steps)
+      recordDailySteps(localDateKey(new Date()), steps)
+    }
   }, [steps]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Show "egg ready" toast
@@ -342,43 +349,51 @@ export function MapPage() {
 
       <div style={{
         position: 'absolute', top: 12, left: 12, right: 12,
-        display: 'grid', gridTemplateColumns: '1fr auto 1fr',
-        alignItems: 'center',
+        display: 'flex', flexDirection: 'column', gap: 8,
         pointerEvents: 'none',
       }}>
-        <div style={{ pointerEvents: 'auto', justifySelf: 'start' }}>
-          <ModeToggle />
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center',
+        }}>
+          <div style={{ pointerEvents: 'auto', justifySelf: 'start' }}>
+            <ModeToggle />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <StepCounter steps={steps} distanceM={distanceM} />
+            {gpsLoading && (
+              <div style={{
+                ...glassChrome, color: '#64748b', fontSize: 12,
+                padding: '4px 10px', borderRadius: 999,
+              }}>
+                {t('hud_locating')}
+              </div>
+            )}
+            {gpsError && !position && (
+              <div style={{
+                ...glassChrome,
+                background: 'rgba(255,241,242,0.72)',
+                color: '#e11d48', fontSize: 12,
+                padding: '4px 10px', borderRadius: 999,
+              }}>
+                {t('hud_gps_unavailable')}
+              </div>
+            )}
+          </div>
+          <div />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <StepCounter steps={steps} distanceM={distanceM} />
-          {gpsLoading && (
-            <div style={{
-              ...glassChrome, color: '#64748b', fontSize: 12,
-              padding: '4px 10px', borderRadius: 999,
-            }}>
-              {t('hud_locating')}
-            </div>
-          )}
-          {gpsError && !position && (
-            <div style={{
-              ...glassChrome,
-              background: 'rgba(255,241,242,0.72)',
-              color: '#e11d48', fontSize: 12,
-              padding: '4px 10px', borderRadius: 999,
-            }}>
-              {t('hud_gps_unavailable')}
-            </div>
-          )}
-        </div>
-        <div />
-      </div>
 
-      {/* Right-side HUD - below CoinCapsule (which sits at top:16, ~34px tall) */}
-      <div style={{
-        position: 'absolute', top: 64, right: 12,
-        display: 'flex', flexDirection: 'column', gap: 8,
-        pointerEvents: 'auto',
-      }}>
+        {/* Journal week strip - tap to open the full calendar (Pikmin-Bloom-style) */}
+        <div style={{ pointerEvents: 'auto' }}>
+          <WeekStrip dailySteps={profile.dailySteps} onOpen={() => setJournalOpen(true)} />
+        </div>
+
+        {/* Compass + mute: right-aligned inside the column so they always sit
+            below the week strip and never overlap it, whatever its height. */}
+        <div style={{
+          alignSelf: 'flex-end', marginTop: 4,
+          display: 'flex', flexDirection: 'column', gap: 8,
+          pointerEvents: 'auto',
+        }}>
         <button
           onClick={() => compassResetRef.current?.()}
           title="Reset to north"
@@ -429,6 +444,7 @@ export function MapPage() {
             </svg>
           )}
         </button>
+        </div>
       </div>
 
       {/* Hatching toast */}
@@ -519,6 +535,8 @@ export function MapPage() {
           isClosing={isWeeklyWalkClosing}
         />
       )}
+
+      {journalOpen && <JournalOverlay onClose={() => setJournalOpen(false)} />}
     </div>
   )
 }

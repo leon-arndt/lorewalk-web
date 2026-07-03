@@ -139,6 +139,7 @@ export interface PlayerProfile {
   postcards: Postcard[]   // inbox (received)
   outbox: Postcard[]      // sent by this player
   weeklyWalk: WeeklyPartyWalk | null
+  dailySteps: Record<string, number>   // local date (YYYY-MM-DD) -> steps that day
 }
 
 export interface Postcard {
