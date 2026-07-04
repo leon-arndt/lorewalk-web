@@ -34,10 +34,14 @@ Design tensions kept deliberately simple: no combat, no PvP, no losing — claim
 
 - **Framework**: React 19 + TypeScript (Vite)
 - **Map**: MapLibre GL JS — OpenFreeMap "Liberty" vector tiles (3D buildings, transit POIs), tilted 45°
+- **3D**: three.js — animated creature companions, POI pins, and MRT lines drawn as custom MapLibre layers (`mapCharacters.ts`, `mapPoiPins.ts`, `mapMrt.ts`)
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`) — same Supabase project as the Unity client
+- **Native**: Capacitor 7 Android wrapper + `@devmaxime/capacitor-health-connect` for step data; `qrcode` for friend-invite QR
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite`)
 - **PWA**: `vite-plugin-pwa` + Workbox — `registerType: autoUpdate`
 - **Routing**: React Router v7 (BrowserRouter)
+- **i18n**: hand-rolled `LocaleContext` + per-language dictionaries in `src/i18n/` (en, de, ja, ko, zh, ms, id, ta)
+- **Testing**: Playwright e2e (`e2e/`) — see Testing section
 
 ## Project Structure
 
@@ -45,26 +49,35 @@ Design tensions kept deliberately simple: no combat, no PvP, no losing — claim
 src/
   components/
     Map/
-      MapView.tsx          # MapLibre map, player dot, POI markers
-    UI/
-      BottomNav.tsx        # 5-tab bottom navigation (Map/Creatures/Squads/Shop/Profile)
-      PoiDetailPanel.tsx   # Slide-up panel shown when a POI marker is tapped
+      MapView.tsx          # MapLibre map, player dot, 3D creature/POI/MRT layers
+    UI/                    # panels, HUD, overlays (BottomNav, PoiDetailPanel,
+                           #   ShrinePanel, JournalOverlay, PostcardsSection,
+                           #   HatchRewardScreen, LevelUpScreen, WeekStrip, etc)
+  contexts/               # React context providers
+    ProfileContext.tsx     # player profile: creatures, squads, coins, eggs, steps
+    RewardContext.tsx      # queued reward/level-up screens
+    ConnectionModeContext, LocaleContext, MusicContext
   hooks/
     useGeolocation.ts      # watchPosition wrapper → PlayerPosition state
     usePois.ts             # Supabase RPC → nearby Poi[] (re-fetches on ~50m movement)
+    useVisitedPois, useStepCounter, useFriends, useBackgroundMusic
   lib/
     supabase.ts            # Supabase client (env vars VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
-    mapUtils.ts            # haversineDistance (matches LocationService.cs logic)
+    profile.ts             # profile persistence + game rules (achievements, XP, eggs)
+    journalDb.ts           # IndexedDB store for journal photos / postcards
+    mapCharacters.ts       # three.js creature companions (loads /models/creature-<cat>.glb)
+    mapPoiPins.ts, mapMrt.ts, creaturePreview.ts, mapUtils.ts, health.ts, glass.ts
+  data/                   # static game data: creatures.ts, foods.ts, singapore-pois.ts
+  i18n/                   # locale dictionaries (en/de/ja/ko/zh/ms/id/ta) + types
   types/
-    index.ts               # Shared types: Poi, Creature, PlanterSlot, Expedition, PlayerPosition
-  pages/
-    MapPage.tsx            # Main screen: map + GPS status + POI detail panel
-    CreaturesPage.tsx      # Creature collection (stub)
-    ExpeditionsPage.tsx    # Expedition slots (stub)
-    ProfilePage.tsx        # Player stats (stub)
-  App.tsx                  # BrowserRouter + Routes + BottomNav
+    index.ts               # Shared types: Poi, Creature, Squad, Expedition, PlayerPosition, ...
+  pages/                  # MapPage, CreaturesPage, SquadsPage, ExpeditionsPage, ShopPage, ProfilePage
+  App.tsx                  # BrowserRouter + Routes + BottomNav + context providers
   main.tsx
   index.css                # Tailwind import + MapLibre CSS + mobile reset
+public/
+  models/                 # CC0 .glb creature models per POI category (procedural fallback)
+e2e/                      # Playwright specs + profile-seed helper
 ```
 
 ## Environment
@@ -120,9 +133,20 @@ $$;
 
 ```bash
 npm run dev       # local dev server (localhost:8849)
-npm run build     # production build → dist/
+npm run build     # tsc -b + production build → dist/
 npm run preview   # preview production build locally
+npm run lint      # eslint
+npm run test:e2e  # Playwright e2e suite (auto-starts dev server)
+npm run android   # build + cap sync + open Android Studio
 ```
+
+## Testing
+
+Playwright e2e only (no unit runner). Specs in `e2e/lorewalk.spec.ts`, Chromium project, config in `playwright.config.ts` (baseURL `localhost:8849`, `webServer` auto-runs `npm run dev` and reuses a running one).
+
+- `e2e/profile-seed.ts` seeds a known profile into localStorage so tests start from a fixed state. Its `ACHIEVEMENT_IDS` list is hand-mirrored from `profile.ts` — keep it in sync when adding achievements.
+- Covers: map render + nav routing, egg hatching, pantry/feed, dev cheats, squad management, expedition dispatch, shrine system.
+- Run before committing gameplay changes: `npm run test:e2e`.
 
 ## Code Style
 
