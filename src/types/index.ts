@@ -140,6 +140,7 @@ export interface PlayerProfile {
   outbox: Postcard[]      // sent by this player
   weeklyWalk: WeeklyPartyWalk | null
   dailySteps: Record<string, number>   // local date (YYYY-MM-DD) -> steps that day
+  isPremium: boolean   // client-side only for now; not server-verified, see lib/profile.ts
 }
 
 export interface Postcard {

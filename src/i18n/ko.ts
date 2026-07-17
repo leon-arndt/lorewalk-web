@@ -23,6 +23,8 @@ export const ko: Translations = {
   poi_checkin_offline: '✓ 체크인 (오프라인)',
   poi_get_closer: '체크인하려면 {radius}m 이내로 이동하세요',
   poi_currently_away: '(현재 {dist}m 거리)',
+  poi_premium_locked: '🔒 프리미엄 장소',
+  poi_premium_locked_desc: 'Lorewalk 프리미엄으로 이 장소를 잠금 해제하세요.',
 
   profile_xp_progress: 'XP 진행도',
   profile_xp_to_level: '레벨 {level}까지 {xp} XP',
@@ -35,6 +37,7 @@ export const ko: Translations = {
   profile_no_visits: '아직 방문이 없습니다. 랜드마크에서 체크인하여 시작하세요.',
   profile_explorer_since: '{date}부터 탐험 중',
   profile_language: '언어',
+  profile_premium_badge: '프리미엄',
 
   friends_title: '친구 · {n}',
   friends_loading: '친구 불러오는 중…',

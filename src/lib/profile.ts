@@ -528,6 +528,7 @@ export function loadProfile(): PlayerProfile {
         outbox: parsed.outbox ?? [],
         weeklyWalk: parsed.weeklyWalk ?? null,
         dailySteps: parsed.dailySteps ?? {},
+        isPremium: parsed.isPremium ?? false,
       }
     }
   } catch { /* ignore */ }
@@ -560,7 +561,15 @@ export function loadProfile(): PlayerProfile {
     outbox: [],
     weeklyWalk: null,
     dailySteps: {},
+    isPremium: false,
   }
+}
+
+// Premium entitlement gate for premium_only POIs. Client-side only: fine while
+// isPremium is a local dev toggle, but must move to a server-verified check
+// (Supabase profiles row + purchase receipt) before this gates anything real.
+export function isPoiLocked(poi: Poi, profile: PlayerProfile): boolean {
+  return !!poi.premiumOnly && !profile.isPremium
 }
 
 // Target steps for a full daily ring on the journal calendar.

@@ -21,6 +21,8 @@ export interface Translations {
   poi_checkin_offline: string
   poi_get_closer: string
   poi_currently_away: string
+  poi_premium_locked: string
+  poi_premium_locked_desc: string
 
   profile_xp_progress: string
   profile_xp_to_level: string
@@ -33,6 +35,7 @@ export interface Translations {
   profile_no_visits: string
   profile_explorer_since: string
   profile_language: string
+  profile_premium_badge: string
 
   friends_title: string
   friends_loading: string

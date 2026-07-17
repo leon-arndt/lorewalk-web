@@ -115,8 +115,20 @@ Pikmin Bloom uses steps (pedometer) to grow seedlings — web has no reliable st
 ## Monetisation (from Unity game — applies to PWA too)
 
 - **Free tier**: Limited POI set, starter creatures only, basic evolution.
-- **Premium (15 SGD/year)**: All POIs, unlimited creatures, full evolution tree, exclusive landmark creatures.
+- **Premium**: All POIs, unlimited creatures, full evolution tree, exclusive landmark creatures, plus the **monthly medal event** below.
 - **Coin shop (IAP)**: Cosmetics, extra planter/expedition slots, convenience items. Never pay-to-win.
+
+### Premium pricing (decided 2026-07-17, figures in SGD — Singapore is the first market)
+
+Anchored against Geocaching Premium (USD $39.99/yr ≈ SGD 54/yr ≈ SGD 4.50/mo, or USD $6.99/mo ≈ SGD 9.50/mo standalone) — but Geocaching's tier is digital-only, so its price doesn't have to cover physical fulfillment. Lorewalk's premium does, once the medal event ships, so pricing needs headroom over the digital-only 15 SGD/year figure this doc previously used. Exact price TBD pending a real medal supplier quote; see CLAUDE.md's "Monetisation costs" section for the landed-cost numbers (SGD 12-20/unit at low order volume, dropping toward SGD 6-10/unit at 250+ unit bulk import) that any price point has to clear.
+
+### Monthly medal event (Premium's flagship perk)
+
+Each month, Premium subscribers get access to a themed **event** (e.g. a step goal, a set of landmarks to visit, a mini-challenge). Completing it earns a **real, physical medal**, mailed to the player.
+
+- **Earned, not guaranteed-per-subscriber.** The subscription unlocks *eligibility* to attempt the event; the medal itself ships only to players who complete it. This is a deliberate cost control — shipping a medal to every subscriber every month, at low subscriber counts, costs more than the subscription revenue covers (see CLAUDE.md cost breakdown). Completion-gating caps unit volume to actual finishers.
+- Physical fulfillment (address collection, print-on-demand/bulk medal ordering, shipping, customs for international) is **not yet built** — this is an operational/ops problem as much as a code one, and needs a supplier chosen before it can go live.
+- App-side, this only needs: knowing a player is Premium-eligible, tracking their progress on the current month's event, and recording a claim once they complete it (which should carry a shipping address at claim time, not before).
 
 ### Shop (implemented — coins only so far)
 Lives on the **Profile** tab. Spends the soft **coin** currency (earned from expeditions + held landmarks):
@@ -124,6 +136,10 @@ Lives on the **Profile** tab. Spends the soft **coin** currency (earned from exp
 - **+1 egg slot** — cost `120 × (slotsBought + 1)`, capped at `MAX_EGG_SLOTS_CAP` (6).
 
 Real-money IAP is deferred; coins-only already closes the earn → spend loop. Costs are dev-tuned — rebalance with the duration/rate constants before launch.
+
+### Premium entitlement (implemented — gating only, no payment)
+
+`PlayerProfile.isPremium` (`src/types/index.ts`) gates `Poi.premiumOnly` landmarks via `isPoiLocked()` in `src/lib/profile.ts`: locked POIs show a lock badge in `PoiDetailPanel` and are skipped by both the online auto-check-in effect and the offline tap-to-check-in handler in `MapPage.tsx`. The flag is currently **client-side only** (toggleable from the dev cheats panel on Profile, dev builds only) — it is not server-verified and must not be trusted for anything of real value until it's backed by a Supabase-side entitlement check against an actual purchase.
 
 ---
 

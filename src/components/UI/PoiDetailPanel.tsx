@@ -17,12 +17,13 @@ const CHECKIN_RADIUS_M = 50
 interface PoiDetailPanelProps {
   poi: Poi
   isVisited: boolean
+  isLocked?: boolean
   position: PlayerPosition | null
   onClose: () => void
   isClosing?: boolean
 }
 
-export function PoiDetailPanel({ poi, isVisited, position, onClose, isClosing = false }: PoiDetailPanelProps) {
+export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onClose, isClosing = false }: PoiDetailPanelProps) {
   const { mode } = useConnectionMode()
   const { t } = useLocale()
   const { sendPostcard } = useProfile()
@@ -67,6 +68,17 @@ export function PoiDetailPanel({ poi, isVisited, position, onClose, isClosing = 
           }}>
             {isPermanent ? t('poi_landmark') : t('poi_event')}
           </span>
+          {isLocked && (
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              background: 'rgba(254,249,195,0.80)',
+              color: '#a16207',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}>
+              {t('poi_premium_locked')}
+            </span>
+          )}
           {poi.points !== undefined && (
             <span style={{
               fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
@@ -188,6 +200,16 @@ export function PoiDetailPanel({ poi, isVisited, position, onClose, isClosing = 
                 ))}
               </div>
             )}
+          </div>
+        ) : isLocked ? (
+          <div style={{
+            padding: '12px 16px', borderRadius: 16, textAlign: 'center',
+            background: 'rgba(254,249,195,0.70)',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#a16207', fontWeight: 500 }}>
+              {t('poi_premium_locked_desc')}
+            </p>
           </div>
         ) : mode === 'online' ? (
           <div style={{

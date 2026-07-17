@@ -14,6 +14,15 @@ The primary Lorewalk game and its design documents live in `../Lorewalk` (Unity/
 
 All game design decisions — POI system, check-in mechanic, creature system, UI/UX choices, and monetisation — are documented in [GameDesign.md](GameDesign.md). Read it before making changes to game mechanics or UI flows.
 
+### Monetisation costs (reference before pricing changes)
+
+Full pricing/cadence decisions live in GameDesign.md's Monetisation section; the raw cost inputs behind them. All figures in **SGD** (Singapore is the first market — medals are sourced overseas either way, so cost is driven by bulk-import volume into Singapore, not a US-style domestic/international split; approx. USD→SGD 1.35 used where a figure originated in USD):
+
+- **Physical medal (Premium's "monthly event" reward), landed cost at low order volume (bulk-imported, then cheap in-country last-mile since Singapore is compact)**: roughly **SGD 12-20/unit** (die-struck medal SGD 3-11 depending on order size, +SGD 0.70-2.70 engraving, +SGD 0.70-1.35 packaging, +SGD 3-6 local last-mile once landed, +customs/inbound-freight share). Cost per unit drops sharply at 250+ unit bulk import orders, toward **SGD 6-10/unit**, and further at 1,000+.
+- **Comparable anchor**: Geocaching Premium is USD $39.99/yr (≈ **SGD 54/yr**, ≈ **SGD 4.50/mo**) or USD $6.99/mo (≈ **SGD 9.50/mo**), digital-only (no physical fulfillment cost). Lorewalk's premium currently prices lower (15 SGD/yr per GameDesign.md) for a smaller, earlier user base with no physical fulfillment built in yet.
+- **Why medals are earned, not guaranteed-per-subscriber**: at low subscriber counts, shipping a medal to every premium subscriber every month costs more than a SGD 4.50-9.50/mo subscription covers. Gating the medal behind completing that month's event caps actual unit volume to whoever finishes it, not everyone who pays.
+- Real-money payment processing is still deferred (see GameDesign.md's Shop section) — `isPremium` on `PlayerProfile` is currently a **client-side-only, unverified** flag (toggleable via the dev cheats panel) for building out gating logic ahead of an actual payment integration. It must move to a server-verified entitlement (Supabase row + purchase receipt check) before it gates anything of real value.
+
 ### Core gameplay loop
 
 One sentence: **walk to real places → collect & hatch creatures → build typed squads → deploy them to boost or claim places → grow your collection and holdings.**

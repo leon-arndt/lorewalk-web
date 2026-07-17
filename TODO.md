@@ -1,1 +1,4 @@
 - add postcards feature like Pikmin Bloom.
+- premium: pick a medal supplier and get a real quote (see CLAUDE.md cost breakdown), then finalize Premium price point.
+- premium: wire real payment (Google Play Billing, per the existing coin-shop deferral note) and move `isPremium` to a server-verified Supabase entitlement.
+- premium: design + build the monthly event (progress tracking, completion claim, shipping-address capture at claim time).

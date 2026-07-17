@@ -23,6 +23,8 @@ export const ta: Translations = {
   poi_checkin_offline: '✓ வருகை பதிவு (இணையமின்றி)',
   poi_get_closer: 'வருகை பதிவிட {radius}மீ. அருகில் வாருங்கள்',
   poi_currently_away: '(தற்போது {dist}மீ. தூரம்)',
+  poi_premium_locked: '🔒 பிரீமியம் இடம்',
+  poi_premium_locked_desc: 'Lorewalk பிரீமியத்துடன் இந்த இடத்தைத் திறக்கவும்.',
 
   profile_xp_progress: 'XP முன்னேற்றம்',
   profile_xp_to_level: '{level} நிலைக்கு {xp} XP தேவை',
@@ -35,6 +37,7 @@ export const ta: Translations = {
   profile_no_visits: 'இன்னும் வருகை இல்லை. ஒரு சின்னத்தில் பதிவு செய்து தொடங்குங்கள்.',
   profile_explorer_since: '{date} முதல் தேடிக்காரர்',
   profile_language: 'மொழி',
+  profile_premium_badge: 'பிரீமியம்',
 
   friends_title: 'நண்பர்கள் · {n}',
   friends_loading: 'நண்பர்கள் ஏற்றுகிறது…',

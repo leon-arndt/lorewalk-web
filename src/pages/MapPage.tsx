@@ -19,7 +19,7 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
-import { localDateKey } from '@/lib/profile'
+import { localDateKey, isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import type { Poi } from '@/types'
 
@@ -175,6 +175,10 @@ export function MapPage() {
       const d = haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon)
       if (d <= CHECKIN_RADIUS_M) {
         autoCheckedRef.current.add(poi.id)
+        if (isPoiLocked(poi, profile)) {
+          setToast(`🔒 ${poi.name} is a Premium landmark`)
+          continue
+        }
         addVisit(poi)
         setToast(`✅ Checked in at ${poi.name}!`)
       }
@@ -190,10 +194,10 @@ export function MapPage() {
     setIsFoodPanelClosing(false)
     if (foodPanelCloseTimer.current) { clearTimeout(foodPanelCloseTimer.current); foodPanelCloseTimer.current = null }
     // Offline: no GPS, so check-in fires on tap instead of on proximity.
-    if (mode === 'offline' && !visitedPois.has(poi.id)) {
+    if (mode === 'offline' && !visitedPois.has(poi.id) && !isPoiLocked(poi, profile)) {
       addVisit(poi)
     }
-  }, [mode, visitedPois, addVisit])
+  }, [mode, visitedPois, addVisit, profile])
 
   const handleClose = useCallback(() => {
     setIsPanelClosing(true)
@@ -466,6 +470,7 @@ export function MapPage() {
         <PoiDetailPanel
           poi={selectedPoi}
           isVisited={visitedPois.has(selectedPoi.id)}
+          isLocked={isPoiLocked(selectedPoi, profile)}
           position={position}
           onClose={handleClose}
           isClosing={isPanelClosing}

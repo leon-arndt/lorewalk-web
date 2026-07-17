@@ -23,6 +23,8 @@ export const zh: Translations = {
   poi_checkin_offline: '✓ 打卡（离线）',
   poi_get_closer: '走到{radius}米以内即可打卡',
   poi_currently_away: '（当前距离 {dist} 米）',
+  poi_premium_locked: '🔒 高级地标',
+  poi_premium_locked_desc: '使用 Lorewalk 高级会员解锁此地标。',
 
   profile_xp_progress: '经验进度',
   profile_xp_to_level: '升至 {level} 级还需 {xp} 经验',
@@ -35,6 +37,7 @@ export const zh: Translations = {
   profile_no_visits: '还未有到访记录。在地图上打卡开始探险吧！',
   profile_explorer_since: '{date} 起的探险者',
   profile_language: '语言',
+  profile_premium_badge: '高级会员',
 
   friends_title: '好友 · {n}',
   friends_loading: '加载好友中…',

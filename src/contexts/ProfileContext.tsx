@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { Claim, Egg, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
-  loadProfile, saveProfile,
+  loadProfile, saveProfile, isPoiLocked,
   applyXp, updateStreak, checkAchievements,
   createEgg, createEggFor, advanceEggs, hatchEgg, isEggReady,
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
@@ -49,6 +49,7 @@ interface ProfileContextValue {
   addXp: (amount: number) => void
   addDevEgg: (isShiny?: boolean) => void
   addDevSteps: (n: number) => void
+  toggleDevPremium: () => void
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
@@ -88,6 +89,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   function addVisit(poi: Poi) {
     if (visitedPois.has(poi.id)) return
+    if (isPoiLocked(poi, profile)) return
 
     const category = poi.category ?? 'landmark'
     const creaturesById = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
@@ -489,6 +491,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (newlyReady.length > 0) setJustReady(newlyReady)
   }
 
+  function toggleDevPremium() {
+    persist({ ...profile, isPremium: !profile.isPremium })
+  }
+
   function sendPostcard(toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) {
     const activeSquad = profile.squads.find((s) => s.id === profile.activeSquadId)
     const firstCreatureId = activeSquad?.slots.find(Boolean)
@@ -649,7 +655,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

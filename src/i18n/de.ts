@@ -23,6 +23,8 @@ export const de: Translations = {
   poi_checkin_offline: '✓ Einchecken (offline)',
   poi_get_closer: 'Komm auf {radius}m heran, um einzuchecken',
   poi_currently_away: '(aktuell {dist}m entfernt)',
+  poi_premium_locked: '🔒 Premium-Ort',
+  poi_premium_locked_desc: 'Schalte diesen Ort mit Lorewalk Premium frei.',
 
   profile_xp_progress: 'XP-Fortschritt',
   profile_xp_to_level: '{xp} XP bis Level {level}',
@@ -35,6 +37,7 @@ export const de: Translations = {
   profile_no_visits: 'Noch keine Besuche. Checke an einer Sehenswürdigkeit ein, um loszulegen.',
   profile_explorer_since: 'Entdecker seit {date}',
   profile_language: 'Sprache',
+  profile_premium_badge: 'Premium',
 
   friends_title: 'Freunde · {n}',
   friends_loading: 'Freunde laden…',

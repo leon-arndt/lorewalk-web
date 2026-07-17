@@ -23,6 +23,8 @@ export const id: Translations = {
   poi_checkin_offline: '✓ Check in (offline)',
   poi_get_closer: 'Dekati hingga {radius}m untuk check in',
   poi_currently_away: '(saat ini {dist}m jauh)',
+  poi_premium_locked: '🔒 Landmark Premium',
+  poi_premium_locked_desc: 'Buka landmark ini dengan Lorewalk Premium.',
 
   profile_xp_progress: 'Kemajuan XP',
   profile_xp_to_level: '{xp} XP ke Level {level}',
@@ -35,6 +37,7 @@ export const id: Translations = {
   profile_no_visits: 'Belum ada kunjungan. Check in di tengara untuk memulai.',
   profile_explorer_since: 'Penjelajah sejak {date}',
   profile_language: 'Bahasa',
+  profile_premium_badge: 'Premium',
 
   friends_title: 'Teman · {n}',
   friends_loading: 'Memuat teman…',

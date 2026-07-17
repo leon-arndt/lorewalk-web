@@ -23,6 +23,8 @@ export const ms: Translations = {
   poi_checkin_offline: '✓ Daftar masuk (luar talian)',
   poi_get_closer: 'Dekati dalam {radius}m untuk daftar masuk',
   poi_currently_away: '(kini {dist}m jauh)',
+  poi_premium_locked: '🔒 Mercu tanda Premium',
+  poi_premium_locked_desc: 'Buka kunci mercu tanda ini dengan Lorewalk Premium.',
 
   profile_xp_progress: 'Kemajuan XP',
   profile_xp_to_level: '{xp} XP ke Tahap {level}',
@@ -35,6 +37,7 @@ export const ms: Translations = {
   profile_no_visits: 'Belum ada lawatan. Daftar masuk di mercu tanda untuk bermula.',
   profile_explorer_since: 'Penjelajah sejak {date}',
   profile_language: 'Bahasa',
+  profile_premium_badge: 'Premium',
 
   friends_title: 'Rakan · {n}',
   friends_loading: 'Memuat rakan…',

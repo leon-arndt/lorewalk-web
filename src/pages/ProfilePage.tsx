@@ -28,7 +28,7 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps } = useProfile()
+  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, toggleDevPremium } = useProfile()
   const { t, locale, setLocale } = useLocale()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
@@ -50,15 +50,38 @@ export function ProfilePage() {
       {/* Header card */}
       <div style={{ background: 'white', padding: '28px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Avatar */}
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #818cf8 0%, #c084fc 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 28, flexShrink: 0,
-            boxShadow: '0 4px 12px rgba(129,140,248,0.35)',
-          }}>
-            🧭
+          {/* Avatar - premium members get a shield-shaped background instead of a circle */}
+          <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+            {profile.isPremium ? (
+              <svg width={64} height={64} viewBox="0 0 100 100" style={{ filter: 'drop-shadow(0 4px 10px rgba(245,158,11,0.45))' }}>
+                <defs>
+                  <linearGradient id="premiumShieldFill" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fde68a" />
+                    <stop offset="55%" stopColor="#f59e0b" />
+                    <stop offset="100%" stopColor="#b45309" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M50 4 L88 18 L88 50 C88 77 70 92 50 98 C30 92 12 77 12 50 L12 18 Z"
+                  fill="url(#premiumShieldFill)"
+                  stroke="#fff7ed"
+                  strokeWidth={2}
+                />
+              </svg>
+            ) : (
+              <div style={{
+                width: 64, height: 64, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #818cf8 0%, #c084fc 100%)',
+                boxShadow: '0 4px 12px rgba(129,140,248,0.35)',
+              }} />
+            )}
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28,
+            }}>
+              🧭
+            </div>
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -103,7 +126,7 @@ export function ProfilePage() {
                 </button>
               </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
                 background: 'linear-gradient(135deg, #818cf8, #c084fc)',
@@ -111,6 +134,16 @@ export function ProfilePage() {
               }}>
                 Lv {profile.level}
               </span>
+              {profile.isPremium && (
+                <span style={{
+                  fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
+                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
+                  color: '#78350f',
+                  display: 'inline-flex', alignItems: 'center', gap: 3,
+                }}>
+                  👑 {t('profile_premium_badge')}
+                </span>
+              )}
               <span style={{ fontSize: 12, color: '#94a3b8' }}>
                 {profile.totalXp} {t('profile_stat_total_xp')}
               </span>
@@ -374,6 +407,19 @@ export function ProfilePage() {
                 }}
               >
                 ✨ Shiny Egg
+              </button>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <button
+                onClick={toggleDevPremium}
+                style={{
+                  width: '100%', padding: '8px 0', borderRadius: 10, border: 'none',
+                  background: profile.isPremium ? '#422006' : '#1e1e2e',
+                  color: profile.isPremium ? '#fcd34d' : '#a78bfa',
+                  fontWeight: 700, fontSize: 12, cursor: 'pointer',
+                }}
+              >
+                {profile.isPremium ? '👑 Premium ON' : '👑 Toggle Premium (dev)'}
               </button>
             </div>
             <div style={{ marginTop: 8 }}>
