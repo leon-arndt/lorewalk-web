@@ -529,6 +529,7 @@ export function loadProfile(): PlayerProfile {
         weeklyWalk: parsed.weeklyWalk ?? null,
         dailySteps: parsed.dailySteps ?? {},
         isPremium: parsed.isPremium ?? false,
+        medals: parsed.medals ?? [],
       }
     }
   } catch { /* ignore */ }
@@ -562,6 +563,7 @@ export function loadProfile(): PlayerProfile {
     weeklyWalk: null,
     dailySteps: {},
     isPremium: false,
+    medals: [],
   }
 }
 
@@ -670,4 +672,29 @@ export function isWalkComplete(walk: WeeklyPartyWalk, currentSteps: number, now 
 // Walk expires if the player is still on last week's walk.
 export function isWalkExpired(walk: WeeklyPartyWalk, now = Date.now()): boolean {
   return walk.weekStart !== weekStart(now)
+}
+
+// ─── Monthly medal event (Premium) ─────────────────────────────────────────────
+// Deliberately not a persisted "event" object with a join step, unlike the weekly
+// walk above: progress is derived live from dailySteps (already tracked for the
+// journal calendar), so there's nothing to expire and nothing to lose by
+// subscribing mid-month. claimMedal() in ProfileContext is the only write.
+
+export const MEDAL_EVENT_TARGET_STEPS = 60_000
+
+export function currentMonthKey(now = Date.now()): string {
+  const d = new Date(now)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+export function monthLabel(monthKey: string): string {
+  const [y, m] = monthKey.split('-').map(Number)
+  return new Date(y, m - 1, 1).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })
+}
+
+export function stepsThisMonth(dailySteps: Record<string, number>, monthKey = currentMonthKey()): number {
+  return Object.entries(dailySteps).reduce(
+    (sum, [date, steps]) => (date.startsWith(monthKey) ? sum + steps : sum),
+    0,
+  )
 }

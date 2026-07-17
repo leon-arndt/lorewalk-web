@@ -141,6 +141,16 @@ export interface PlayerProfile {
   weeklyWalk: WeeklyPartyWalk | null
   dailySteps: Record<string, number>   // local date (YYYY-MM-DD) -> steps that day
   isPremium: boolean   // client-side only for now; not server-verified, see lib/profile.ts
+  medals: EarnedMedal[]   // one per completed monthly medal challenge, Premium only
+}
+
+// A medal earned by hitting a calendar month's step goal while Premium. One per
+// monthKey - claimMedal() in ProfileContext enforces that.
+export interface EarnedMedal {
+  id: string
+  monthKey: string   // 'YYYY-MM', the challenge this came from
+  title: string
+  claimedAt: string
 }
 
 export interface Postcard {

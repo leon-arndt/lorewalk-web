@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, Egg, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
+import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile, isPoiLocked,
+  currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
   applyXp, updateStreak, checkAchievements,
   createEgg, createEggFor, advanceEggs, hatchEgg, isEggReady,
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
@@ -50,6 +51,8 @@ interface ProfileContextValue {
   addDevEgg: (isShiny?: boolean) => void
   addDevSteps: (n: number) => void
   toggleDevPremium: () => void
+  subscribePremium: () => void
+  claimMedal: () => EarnedMedal | null
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
@@ -495,6 +498,26 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, isPremium: !profile.isPremium })
   }
 
+  function subscribePremium() {
+    if (profile.isPremium) return
+    persist({ ...profile, isPremium: true })
+  }
+
+  function claimMedal(): EarnedMedal | null {
+    if (!profile.isPremium) return null
+    const monthKey = currentMonthKey()
+    if (profile.medals.some((m) => m.monthKey === monthKey)) return null
+    if (stepsThisMonth(profile.dailySteps, monthKey) < MEDAL_EVENT_TARGET_STEPS) return null
+    const medal: EarnedMedal = {
+      id: `medal_${Date.now()}`,
+      monthKey,
+      title: `${monthLabel(monthKey)} Medal`,
+      claimedAt: new Date().toISOString(),
+    }
+    persist({ ...profile, medals: [...profile.medals, medal] })
+    return medal
+  }
+
   function sendPostcard(toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) {
     const activeSquad = profile.squads.find((s) => s.id === profile.activeSquadId)
     const firstCreatureId = activeSquad?.slots.find(Boolean)
@@ -655,7 +678,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium, subscribePremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

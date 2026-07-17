@@ -1,10 +1,18 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { useReward } from '@/contexts/RewardContext'
 import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
 import type { Locale } from '@/contexts/LocaleContext'
-import { xpForNextLevel } from '@/lib/profile'
+import { xpForNextLevel, currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
 import { PostcardsSection } from '@/components/UI/PostcardsSection'
+
+const PREMIUM_BENEFITS = [
+  { icon: '🔓', text: 'Every landmark unlocked' },
+  { icon: '🏅', text: "Monthly challenge - earn a unique real physical medal" },
+  { icon: '🐣', text: 'Unlimited creatures & full evolution tree' },
+]
 
 declare const __APP_VERSION__: string
 declare const __GIT_COMMIT__: string
@@ -28,10 +36,13 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, toggleDevPremium } = useProfile()
+  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, toggleDevPremium, subscribePremium, claimMedal } = useProfile()
+  const { mode } = useConnectionMode()
+  const { showReward } = useReward()
   const { t, locale, setLocale } = useLocale()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
+  const [premiumFlash, setPremiumFlash] = useState<string | null>(null)
 
   const xpNeeded = xpForNextLevel(profile.level)
   const xpPct = Math.min((profile.xp / xpNeeded) * 100, 100)
@@ -39,9 +50,38 @@ export function ProfilePage() {
   const unlockedAchievements = profile.achievements.filter((a) => a.unlockedAt)
   const lockedAchievements = profile.achievements.filter((a) => !a.unlockedAt)
 
+  const currentMonth = currentMonthKey()
+  const monthSteps = stepsThisMonth(profile.dailySteps, currentMonth)
+  const medalComplete = monthSteps >= MEDAL_EVENT_TARGET_STEPS
+  const medalClaimed = profile.medals.some((m) => m.monthKey === currentMonth)
+
   function handleNameSave() {
     setDisplayName(nameInput)
     setEditingName(false)
+  }
+
+  // Real money runs through Google Play Billing (Digital Goods API in a TWA), same
+  // as the coin shop. Until that's wired, offline mode grants Premium instantly as
+  // a clearly-labelled test purchase.
+  function handleSubscribe() {
+    if (mode === 'offline') {
+      subscribePremium()
+      setPremiumFlash('✅ Test purchase complete - Premium unlocked!')
+    } else {
+      setPremiumFlash('Real payments coming soon - switch to offline mode to test Premium.')
+    }
+    setTimeout(() => setPremiumFlash(null), 2800)
+  }
+
+  function handleClaimMedal() {
+    const medal = claimMedal()
+    if (!medal) return
+    showReward({
+      emoji: '🏅',
+      title: 'Medal earned!',
+      subtitle: `You completed the ${monthLabel(medal.monthKey)} challenge.`,
+      items: [{ type: 'badge', label: medal.title }],
+    })
   }
 
   return (
@@ -190,6 +230,128 @@ export function ProfilePage() {
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        {/* Premium */}
+        <section>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+            👑 Lorewalk Premium
+          </h2>
+
+          {profile.isPremium ? (
+            <div style={{
+              background: 'white', borderRadius: 18, padding: 18,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              border: '1px solid #fde68a',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 22 }}>🏅</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{monthLabel(currentMonth)} challenge</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8' }}>Walk {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps this month</div>
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: 11, fontWeight: 700, color: '#78350f', padding: '3px 10px', borderRadius: 20,
+                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)', flexShrink: 0,
+                }}>
+                  Premium
+                </span>
+              </div>
+
+              <div style={{ height: 8, borderRadius: 4, background: '#f1f5f9', overflow: 'hidden', marginBottom: 6 }}>
+                <div style={{
+                  height: '100%', borderRadius: 4,
+                  background: 'linear-gradient(90deg, #fde68a, #f59e0b)',
+                  width: `${Math.min(100, (monthSteps / MEDAL_EVENT_TARGET_STEPS) * 100)}%`,
+                  transition: 'width 0.4s ease',
+                }} />
+              </div>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: medalClaimed || medalComplete ? 12 : 0 }}>
+                {Math.min(monthSteps, MEDAL_EVENT_TARGET_STEPS).toLocaleString()} / {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps
+              </div>
+
+              {medalClaimed ? (
+                <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#16a34a' }}>
+                  ✅ Medal claimed for {monthLabel(currentMonth)}
+                </div>
+              ) : medalComplete ? (
+                <button
+                  onClick={handleClaimMedal}
+                  style={{
+                    width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
+                    background: 'linear-gradient(135deg, #fde68a, #f59e0b)', color: '#78350f',
+                    fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
+                  }}
+                >
+                  🏅 Claim this month's medal
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <div style={{
+              background: 'linear-gradient(160deg, #fffbeb 0%, #fff7ed 100%)',
+              border: '2px solid #fde68a', borderRadius: 18, padding: 18,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <span style={{ fontSize: 32 }}>🛡️</span>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: '#78350f' }}>Go Premium</div>
+                  <div style={{ fontSize: 12, color: '#92400e' }}>Unlock everything Lorewalk has to offer</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+                {PREMIUM_BENEFITS.map((b) => (
+                  <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#78350f', fontWeight: 600 }}>
+                    <span style={{ fontSize: 16 }}>{b.icon}</span> {b.text}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={handleSubscribe}
+                style={{
+                  width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
+                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
+                  color: '#78350f', fontSize: 15, fontWeight: 800, cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
+                }}
+              >
+                Subscribe - SGD 6.99/mo
+              </button>
+            </div>
+          )}
+
+          {premiumFlash && (
+            <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: '#16a34a', textAlign: 'center' }}>
+              {premiumFlash}
+            </div>
+          )}
+
+          {profile.medals.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+              {profile.medals.slice().reverse().map((m) => (
+                <div
+                  key={m.id}
+                  title={`${m.title} - earned ${formatDate(m.claimedAt)}`}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: 4, padding: '10px 12px', borderRadius: 14,
+                    background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
+                    minWidth: 72, cursor: 'default',
+                  }}
+                >
+                  <span style={{ fontSize: 26 }}>🏅</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#78350f', textAlign: 'center', lineHeight: 1.3 }}>
+                    {monthLabel(m.monthKey)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         <PostcardsSection />
 

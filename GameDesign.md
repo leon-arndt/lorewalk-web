@@ -124,7 +124,7 @@ Anchored against Geocaching Premium (USD $39.99/yr ≈ SGD 54/yr ≈ SGD 4.50/mo
 
 ### Monthly medal event (Premium's flagship perk)
 
-Each month, Premium subscribers get access to a themed **event** (e.g. a step goal, a set of landmarks to visit, a mini-challenge). Completing it earns a **real, physical medal**, mailed to the player.
+Each month, Premium subscribers get access to a themed **event** (e.g. a step goal, a set of landmarks to visit, a mini-challenge). Completing it earns a **unique, real physical medal**, mailed to the player — "unique" meaning each month gets its own design, not one reused medal, which is the whole point of the value pitch ("earn a unique real physical medal" is the exact phrasing used in the Premium upsell copy in ProfilePage.tsx). That's a real fulfillment implication: a new design per month means a new production run per month, not one bulk order to draw down over the year.
 
 - **Earned, not guaranteed-per-subscriber.** The subscription unlocks *eligibility* to attempt the event; the medal itself ships only to players who complete it. This is a deliberate cost control — shipping a medal to every subscriber every month, at low subscriber counts, costs more than the subscription revenue covers (see CLAUDE.md cost breakdown). Completion-gating caps unit volume to actual finishers.
 - Physical fulfillment (address collection, print-on-demand/bulk medal ordering, shipping, customs for international) is **not yet built** — this is an operational/ops problem as much as a code one, and needs a supplier chosen before it can go live.
