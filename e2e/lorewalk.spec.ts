@@ -119,7 +119,7 @@ test.describe('Creatures page', () => {
     await seedProfile(page, { foodInventory: [TEST_FOOD], hatchedCreatures: [TEST_CREATURE] })
     await page.goto('/creatures')
     await page.getByText('Stone Sprite').click()
-    await expect(page.getByText('Swipe a food upward to feed')).toBeVisible()
+    await expect(page.getByText('Drag a food onto the creature')).toBeVisible()
     await expect(page.getByText('Kaya Toast').last()).toBeVisible()
   })
 
