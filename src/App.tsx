@@ -1,3 +1,4 @@
+import { Component, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ConnectionModeProvider } from '@/contexts/ConnectionModeContext'
 import { ProfileProvider, useProfile } from '@/contexts/ProfileContext'
@@ -13,6 +14,20 @@ import { CreaturesPage } from '@/pages/CreaturesPage'
 import { SquadsPage } from '@/pages/SquadsPage'
 import { ShopPage } from '@/pages/ShopPage'
 import { ProfilePage } from '@/pages/ProfilePage'
+
+class MapErrorBoundary extends Component<{ children: ReactNode }, { crashed: boolean }> {
+  state = { crashed: false }
+  static getDerivedStateFromError() { return { crashed: true } }
+  render() {
+    if (this.state.crashed) return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, color: '#94a3b8', fontSize: 14 }}>
+        <span style={{ fontSize: 40 }}>🗺</span>
+        Map unavailable
+      </div>
+    )
+    return this.props.children
+  }
+}
 
 function LevelUpOverlay() {
   const { pendingLevelUp, dismissLevelUp } = useProfile()
@@ -31,7 +46,7 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
               <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
                 <Routes>
-                  <Route path="/" element={<MapPage />} />
+                  <Route path="/" element={<MapErrorBoundary><MapPage /></MapErrorBoundary>} />
                   <Route path="/creatures" element={<CreaturesPage />} />
                   <Route path="/squads" element={<SquadsPage />} />
                   <Route path="/shop" element={<ShopPage />} />
