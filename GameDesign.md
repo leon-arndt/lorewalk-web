@@ -124,11 +124,17 @@ Anchored against Geocaching Premium (USD $39.99/yr ≈ SGD 54/yr ≈ SGD 4.50/mo
 
 ### Monthly medal event (Premium's flagship perk)
 
-Each month, Premium subscribers get access to a themed **event** (e.g. a step goal, a set of landmarks to visit, a mini-challenge). Completing it earns a **unique, real physical medal**, mailed to the player — "unique" meaning each month gets its own design, not one reused medal, which is the whole point of the value pitch ("earn a unique real physical medal" is the exact phrasing used in the Premium upsell copy in ProfilePage.tsx). That's a real fulfillment implication: a new design per month means a new production run per month, not one bulk order to draw down over the year.
+Each month, Premium subscribers get access to a themed **event** (e.g. a step goal, a set of landmarks to visit, a mini-challenge). Completing it earns a **unique, real physical medal** — "unique" meaning each month gets its own design, not one reused medal, which is the whole point of the value pitch ("earn a unique real physical medal" is the exact phrasing used in the Premium upsell copy in ProfilePage.tsx). That's a real production implication: a new design per month means a new production run per month, not one bulk order to draw down over the year.
 
-- **Earned, not guaranteed-per-subscriber.** The subscription unlocks *eligibility* to attempt the event; the medal itself ships only to players who complete it. This is a deliberate cost control — shipping a medal to every subscriber every month, at low subscriber counts, costs more than the subscription revenue covers (see CLAUDE.md cost breakdown). Completion-gating caps unit volume to actual finishers.
-- Physical fulfillment (address collection, print-on-demand/bulk medal ordering, shipping, customs for international) is **not yet built** — this is an operational/ops problem as much as a code one, and needs a supplier chosen before it can go live.
-- App-side, this only needs: knowing a player is Premium-eligible, tracking their progress on the current month's event, and recording a claim once they complete it (which should carry a shipping address at claim time, not before).
+Medals are **not mailed**. They're picked up in person at a real-life monthly community event in Singapore, listed on Meetup:
+
+1. **Community 5k walk** — a group walk, open to anyone (not gated behind Premium; the walk itself is the community draw, the medal is the Premium hook).
+2. **Free drinks** afterwards.
+3. **Medal pickup** — players who completed that month's in-app challenge show the QR code from their profile to collect their medal on the spot. Same model as **parkrun**: the achievement is tracked digitally, but claiming the physical reward happens face-to-face at a recurring community meetup, not by mail.
+
+- **Earned, not guaranteed-per-subscriber.** The subscription unlocks *eligibility* to attempt the event; the medal itself is only claimable by players who complete it. This is a deliberate cost control — producing a medal for every subscriber every month, at low subscriber counts, costs more than the subscription revenue covers (see CLAUDE.md cost breakdown). Completion-gating caps unit volume to actual finishers.
+- In-person pickup removes shipping and customs entirely (no address collection, no courier, no international fulfillment) but trades it for **event ops**: a monthly Meetup listing, a venue and walk route, and a drinks budget in Singapore. Medal ordering (print-on-demand/bulk) is still **not yet built** and needs a supplier chosen before it can go live.
+- App-side, this only needs: knowing a player is Premium-eligible, tracking their progress on the current month's event, and generating a **claimable QR code** once they complete it, for staff to scan at the event. The profile QR flow already exists for friend invites via the `qrcode` package — this reuses that pattern rather than building a new one.
 
 ### Shop (implemented — coins only so far)
 Lives on the **Profile** tab. Spends the soft **coin** currency (earned from expeditions + held landmarks):
