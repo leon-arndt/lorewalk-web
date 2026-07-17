@@ -6,6 +6,14 @@ DO NOT AUTO-COMMIT AND PUSH TO MAIN - WAIT FOR PERMISSION
 
 Always check [TODO.md](TODO.md) at the start of a task to see what's outstanding, and clean it up (remove or check off completed items) after finishing work that addresses one.
 
+### Multi-agent workflow
+
+TODO.md has two sections: **WIP** (in-progress across agents/chats) and **Backlog** (not started).
+
+- When you begin a Backlog item, move it to WIP immediately with a one-line note of what exists and where to look.
+- When you finish and commit an item, remove it from WIP entirely.
+- If you pick up a WIP item, run `git log --oneline -10` first to see what has already landed before writing any code.
+
 A browser-based PWA companion to the Lorewalk Android game. Players can explore the map, view nearby historical POIs, and manage their creature collection and expeditions — without AR. Installable on Android via Chrome's "Add to Home Screen".
 
 The primary Lorewalk game and its design documents live in `../Lorewalk` (Unity/ARCore). This repo shares the same Supabase backend.
