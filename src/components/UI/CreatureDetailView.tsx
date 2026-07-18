@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getFoodDef } from '@/data/foods'
+import { getCreaturePreviewURL } from '@/lib/creaturePreview'
 import { creatureName, xpForCreatureLevel } from '@/lib/profile'
 import type { FoodItem, HatchedCreature } from '@/types'
 
@@ -21,6 +22,13 @@ function CreatureScene({ creature, size, nomming, highlight }: {
   const groundH = large ? 46 : 24
   const shadowW = large ? 70 : 36
   const shadowH = large ? 14 : 7
+
+  const [src, setSrc] = useState<string | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    getCreaturePreviewURL(creature.species, creature.isShiny).then((url) => { if (!cancelled) setSrc(url) })
+    return () => { cancelled = true }
+  }, [creature.species, creature.isShiny])
 
   return (
     <div
@@ -44,7 +52,9 @@ function CreatureScene({ creature, size, nomming, highlight }: {
         animationDelay: nomming ? '0s' : bobDelay(creature.id),
         filter: creature.isShiny ? 'drop-shadow(0 0 10px rgba(245,158,11,0.75))' : undefined,
       }}>
-        {creature.emoji}
+        {src
+          ? <img src={src} width={emojiSize} height={emojiSize} alt={creature.species} style={{ display: 'block' }} />
+          : creature.emoji}
       </span>
 
       <div style={{

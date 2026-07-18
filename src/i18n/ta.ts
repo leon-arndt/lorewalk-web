@@ -38,6 +38,12 @@ export const ta: Translations = {
   profile_explorer_since: '{date} முதல் தேடிக்காரர்',
   profile_language: 'மொழி',
   profile_premium_badge: 'பிரீமியம்',
+  profile_settings: 'அமைப்புகள்',
+  settings_title: 'அமைப்புகள்',
+  settings_music_volume: 'இசை ஒலி அளவு',
+  settings_notifications: 'அறிவிப்புகள்',
+  settings_daily_motivation: 'தினசரி ஊக்கம்',
+  settings_daily_motivation_desc: 'ஆராய்ச்சியைத் தொடர தினசரி நினைவூட்டலைப் பெறுங்கள்',
 
   friends_title: 'நண்பர்கள் · {n}',
   friends_loading: 'நண்பர்கள் ஏற்றுகிறது…',

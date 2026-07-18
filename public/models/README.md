@@ -1,3 +1,15 @@
+# Creature + map character models
+
+## Creature collection thumbnails
+
+`cat.glb` — base rigged cat mesh used for creature-card/detail thumbnails (replaces
+the emoji placeholders). CC0, by [Quaternius](https://poly.pizza/m/2f54vbV0In)
+(poly.pizza). Materials are flat-shaded and named `Cat_Main` / `Cat_Secondary` /
+`Ears` / `Eye_White` / `Eye_Black` so `creaturePreview.ts` can retint a single
+shared mesh per creature's coat `color` (see `data/creatures.ts`) instead of
+needing one model per coat variant. Animation clips: Idle, Walk, Jump, Dance,
+Bite_Front, HitRecieve, Death, Yes, No.
+
 # Map character models
 
 Each creature category renders a distinct procedural 3D shape by default (no file

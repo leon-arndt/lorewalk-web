@@ -6,6 +6,7 @@ import { getFoodDef } from '@/data/foods'
 import { EggPreview } from '@/components/UI/EggPreview'
 import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
 import { CreatureDetailView, CreatureSceneCard } from '@/components/UI/CreatureDetailView'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { Egg, HatchedCreature } from '@/types'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
@@ -200,7 +201,7 @@ function PantrySection() {
               border: '2px solid #e0e7ff',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
             }}>
-              <span style={{ fontSize: 32 }}>{def.emoji}</span>
+              <EmojiSprite id={`food_${item.foodId}`} emoji={def.emoji} size={32} />
               <span style={{ fontSize: 10, fontWeight: 700, color: '#1e293b', textAlign: 'center', lineHeight: 1.2 }}>{def.name}</span>
               <span style={{ fontSize: 9, fontWeight: 700, color: '#6366f1', background: '#eef2ff', borderRadius: 20, padding: '1px 7px' }}>+{def.xp} XP</span>
             </div>

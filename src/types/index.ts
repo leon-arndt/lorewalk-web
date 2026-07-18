@@ -142,6 +142,7 @@ export interface PlayerProfile {
   dailySteps: Record<string, number>   // local date (YYYY-MM-DD) -> steps that day
   isPremium: boolean   // client-side only for now; not server-verified, see lib/profile.ts
   medals: EarnedMedal[]   // one per completed monthly medal challenge, Premium only
+  dailyMotivationNotifications: boolean   // preference only; no push delivery wired up yet
 }
 
 // A medal earned by hitting a calendar month's step goal while Premium. One per

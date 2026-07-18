@@ -51,6 +51,7 @@ interface ProfileContextValue {
   addDevEgg: (isShiny?: boolean) => void
   addDevSteps: (n: number) => void
   toggleDevPremium: () => void
+  toggleDailyMotivationNotifications: () => void
   subscribePremium: () => void
   claimMedal: () => EarnedMedal | null
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
@@ -498,6 +499,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, isPremium: !profile.isPremium })
   }
 
+  function toggleDailyMotivationNotifications() {
+    persist({ ...profile, dailyMotivationNotifications: !profile.dailyMotivationNotifications })
+  }
+
   function subscribePremium() {
     if (profile.isPremium) return
     persist({ ...profile, isPremium: true })
@@ -678,7 +683,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium, subscribePremium, claimMedal,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium, toggleDailyMotivationNotifications, subscribePremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

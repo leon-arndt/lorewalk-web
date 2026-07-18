@@ -38,6 +38,12 @@ export const zh: Translations = {
   profile_explorer_since: '{date} 起的探险者',
   profile_language: '语言',
   profile_premium_badge: '高级会员',
+  profile_settings: '设置',
+  settings_title: '设置',
+  settings_music_volume: '音乐音量',
+  settings_notifications: '通知',
+  settings_daily_motivation: '每日激励',
+  settings_daily_motivation_desc: '获取每日探索提醒',
 
   friends_title: '好友 · {n}',
   friends_loading: '加载好友中…',

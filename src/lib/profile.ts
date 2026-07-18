@@ -530,6 +530,7 @@ export function loadProfile(): PlayerProfile {
         dailySteps: parsed.dailySteps ?? {},
         isPremium: parsed.isPremium ?? false,
         medals: parsed.medals ?? [],
+        dailyMotivationNotifications: parsed.dailyMotivationNotifications ?? false,
       }
     }
   } catch { /* ignore */ }
@@ -564,6 +565,7 @@ export function loadProfile(): PlayerProfile {
     dailySteps: {},
     isPremium: false,
     medals: [],
+    dailyMotivationNotifications: false,
   }
 }
 

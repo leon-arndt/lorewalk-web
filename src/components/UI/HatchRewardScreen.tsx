@@ -40,7 +40,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
         Hatched!
       </div>
 
-      <CreaturePreview emoji={creature.emoji} creatureType={creature.creatureType} isShiny={creature.isShiny} size={140} />
+      <CreaturePreview species={creature.species} emoji={creature.emoji} creatureType={creature.creatureType} isShiny={creature.isShiny} size={140} />
 
       {editing ? (
         <div style={{ display: 'flex', gap: 8 }}>

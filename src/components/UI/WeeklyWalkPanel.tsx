@@ -6,6 +6,7 @@ import {
   mockMemberProgressSteps, playerProgressSteps, partyTotalSteps, isWalkComplete, isWalkExpired,
 } from '@/lib/profile'
 import { glassPanel, glassChrome } from '@/lib/glass'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 
 interface Props {
   currentSteps: number
@@ -131,7 +132,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <div style={{ fontSize: 40, lineHeight: 1 }}>🚶</div>
+          <EmojiSprite id="weekly_walk" emoji="🚶" size={40} />
           <div>
             <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>Weekly Party Walk</h2>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Combined goal: {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps</p>
@@ -165,7 +166,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 16,
                   }}>
-                    {m.emoji}
+                    <EmojiSprite id={m.id} emoji={m.emoji} size={22} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -247,7 +248,9 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
 
       {/* Title */}
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <div style={{ fontSize: 52, marginBottom: 10 }}>🚶</div>
+        <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}>
+          <EmojiSprite id="weekly_walk" emoji="🚶" size={52} />
+        </div>
         <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: '#1e293b' }}>Weekly Party Walk</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
           Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.

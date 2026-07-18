@@ -38,6 +38,12 @@ export const ja: Translations = {
   profile_explorer_since: '{date}から探索中',
   profile_language: '言語',
   profile_premium_badge: 'プレミアム',
+  profile_settings: '設定',
+  settings_title: '設定',
+  settings_music_volume: '音楽の音量',
+  settings_notifications: '通知',
+  settings_daily_motivation: '毎日のモチベーション',
+  settings_daily_motivation_desc: '探索を続けるための毎日のリマインダーを受け取る',
 
   friends_title: 'フレンド · {n}',
   friends_loading: 'フレンド読み込み中…',

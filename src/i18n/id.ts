@@ -38,6 +38,12 @@ export const id: Translations = {
   profile_explorer_since: 'Penjelajah sejak {date}',
   profile_language: 'Bahasa',
   profile_premium_badge: 'Premium',
+  profile_settings: 'Pengaturan',
+  settings_title: 'Pengaturan',
+  settings_music_volume: 'Volume musik',
+  settings_notifications: 'Notifikasi',
+  settings_daily_motivation: 'Motivasi harian',
+  settings_daily_motivation_desc: 'Dapatkan dorongan harian untuk terus menjelajah',
 
   friends_title: 'Teman · {n}',
   friends_loading: 'Memuat teman…',

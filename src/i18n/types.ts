@@ -36,6 +36,12 @@ export interface Translations {
   profile_explorer_since: string
   profile_language: string
   profile_premium_badge: string
+  profile_settings: string
+  settings_title: string
+  settings_music_volume: string
+  settings_notifications: string
+  settings_daily_motivation: string
+  settings_daily_motivation_desc: string
 
   friends_title: string
   friends_loading: string

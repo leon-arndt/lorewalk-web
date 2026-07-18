@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { LevelReward } from '@/lib/profile'
 
 const BURST_COLORS = ['#818cf8','#c084fc','#34d399','#fbbf24','#f472b6','#60a5fa','#fb923c']
@@ -114,7 +115,9 @@ function RewardCard({
     >
       {revealed ? (
         <>
-          <div style={{ fontSize: 38, marginBottom: 8, lineHeight: 1 }}>{info.emoji}</div>
+          <div style={{ fontSize: 38, marginBottom: 8, lineHeight: 1 }}>
+            <EmojiSprite id={reward.type} emoji={info.emoji} size={38} />
+          </div>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{info.title}</div>
           <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4, lineHeight: 1.3 }}>{info.sub}</div>
         </>

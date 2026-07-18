@@ -1,12 +1,14 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useReward } from '@/contexts/RewardContext'
-import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
-import type { Locale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { xpForNextLevel, currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
 import { PostcardsSection } from '@/components/UI/PostcardsSection'
+import { MedalSvg } from '@/components/UI/MedalSvg'
+import { getMedalConfig } from '@/data/medals'
 
 const PREMIUM_BENEFITS = [
   { icon: '🔓', text: 'Every landmark unlocked' },
@@ -39,7 +41,8 @@ export function ProfilePage() {
   const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, toggleDevPremium, subscribePremium, claimMedal } = useProfile()
   const { mode } = useConnectionMode()
   const { showReward } = useReward()
-  const { t, locale, setLocale } = useLocale()
+  const { t } = useLocale()
+  const navigate = useNavigate()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
   const [premiumFlash, setPremiumFlash] = useState<string | null>(null)
@@ -331,24 +334,25 @@ export function ProfilePage() {
           )}
 
           {profile.medals.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-              {profile.medals.slice().reverse().map((m) => (
-                <div
-                  key={m.id}
-                  title={`${m.title} - earned ${formatDate(m.claimedAt)}`}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: 4, padding: '10px 12px', borderRadius: 14,
-                    background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                    minWidth: 72, cursor: 'default',
-                  }}
-                >
-                  <span style={{ fontSize: 26 }}>🏅</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#78350f', textAlign: 'center', lineHeight: 1.3 }}>
-                    {monthLabel(m.monthKey)}
-                  </span>
-                </div>
-              ))}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 12 }}>
+              {profile.medals.slice().reverse().map((m) => {
+                const cfg = getMedalConfig(m.monthKey)
+                return (
+                  <div
+                    key={m.id}
+                    title={`${m.title} - earned ${formatDate(m.claimedAt)}`}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'default' }}
+                  >
+                    {cfg
+                      ? <MedalSvg config={cfg} size={96} />
+                      : <span style={{ fontSize: 48 }}>🏅</span>
+                    }
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#78350f', textAlign: 'center', lineHeight: 1.3 }}>
+                      {monthLabel(m.monthKey)}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           )}
         </section>
@@ -356,34 +360,6 @@ export function ProfilePage() {
         <PostcardsSection />
 
         <FriendsSection />
-
-        {/* Language picker */}
-        <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-            {t('profile_language')}
-          </h2>
-          <div style={{
-            background: 'white', borderRadius: 16, padding: '4px 6px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', flexWrap: 'wrap', gap: 6,
-          }}>
-            {(Object.entries(LOCALE_LABELS) as [Locale, string][]).map(([code, label]) => (
-              <button
-                key={code}
-                onClick={() => setLocale(code)}
-                style={{
-                  fontSize: 13, fontWeight: locale === code ? 700 : 500,
-                  padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                  background: locale === code ? '#6366f1' : 'transparent',
-                  color: locale === code ? 'white' : '#475569',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </section>
 
         {/* Achievements */}
         <section>
@@ -490,6 +466,23 @@ export function ProfilePage() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* Settings */}
+        <section>
+          <button
+            onClick={() => navigate('/settings')}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'white', borderRadius: 16, padding: '14px 16px', border: 'none', cursor: 'pointer',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+              ⚙️ {t('profile_settings')}
+            </span>
+            <span style={{ fontSize: 16, color: '#cbd5e1' }}>›</span>
+          </button>
         </section>
 
         {/* Joined date + app version */}

@@ -38,6 +38,12 @@ export const ms: Translations = {
   profile_explorer_since: 'Penjelajah sejak {date}',
   profile_language: 'Bahasa',
   profile_premium_badge: 'Premium',
+  profile_settings: 'Tetapan',
+  settings_title: 'Tetapan',
+  settings_music_volume: 'Kelantangan muzik',
+  settings_notifications: 'Pemberitahuan',
+  settings_daily_motivation: 'Motivasi harian',
+  settings_daily_motivation_desc: 'Dapatkan dorongan harian untuk terus meneroka',
 
   friends_title: 'Rakan · {n}',
   friends_loading: 'Memuat rakan…',

@@ -16,7 +16,6 @@ import { useStepCounter } from '@/hooks/useStepCounter'
 import { usePois } from '@/hooks/usePois'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
-import { useMusic } from '@/contexts/MusicContext'
 import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
 import { localDateKey, isPoiLocked } from '@/lib/profile'
@@ -63,7 +62,6 @@ export function MapPage() {
   const [journalOpen, setJournalOpen] = useState(false)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
-  const { muted, toggle: toggleMusic } = useMusic()
 
   // The active squad's creatures become the 3D companions that walk with you -
   // unless that squad is away on an expedition, in which case nobody follows.
@@ -391,11 +389,10 @@ export function MapPage() {
           <WeekStrip dailySteps={profile.dailySteps} onOpen={() => setJournalOpen(true)} />
         </div>
 
-        {/* Compass + mute: right-aligned inside the column so they always sit
-            below the week strip and never overlap it, whatever its height. */}
+        {/* Compass: right-aligned inside the column so it always sits below
+            the week strip and never overlaps it, whatever its height. */}
         <div style={{
           alignSelf: 'flex-end', marginTop: 4,
-          display: 'flex', flexDirection: 'column', gap: 8,
           pointerEvents: 'auto',
         }}>
         <button
@@ -422,31 +419,6 @@ export function MapPage() {
             <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
             <circle r="2" fill="#334155" />
           </svg>
-        </button>
-        <button
-          onClick={toggleMusic}
-          title={muted ? 'Unmute music' : 'Mute music'}
-          style={{
-            width: 44, height: 44, borderRadius: 14, padding: 0,
-            ...glassChrome,
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          {muted ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <line x1="23" y1="9" x2="17" y2="15" />
-              <line x1="17" y1="9" x2="23" y2="15" />
-            </svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-            </svg>
-          )}
         </button>
         </div>
       </div>

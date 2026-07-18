@@ -2,15 +2,15 @@ import { createContext, useContext } from 'react'
 import { useBackgroundMusic } from '@/hooks/useBackgroundMusic'
 
 interface MusicContextValue {
-  muted: boolean
-  toggle: () => void
+  volume: number
+  setVolume: (v: number) => void
 }
 
-const MusicContext = createContext<MusicContextValue>({ muted: false, toggle: () => {} })
+const MusicContext = createContext<MusicContextValue>({ volume: 0.35, setVolume: () => {} })
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  const { muted, toggle } = useBackgroundMusic('/music/town-theme.mp3')
-  return <MusicContext.Provider value={{ muted, toggle }}>{children}</MusicContext.Provider>
+  const { volume, setVolume } = useBackgroundMusic('/music/town-theme.mp3')
+  return <MusicContext.Provider value={{ volume, setVolume }}>{children}</MusicContext.Provider>
 }
 
 export const useMusic = () => useContext(MusicContext)

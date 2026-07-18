@@ -1,4 +1,5 @@
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
+import { getCreaturePreviewURL } from '@/lib/creaturePreview'
 
 const TYPE_STYLE: Record<string, { bg: string; border: string }> = {
   stray:     { bg: '#f0f4ff', border: '#c7d2fe' },
@@ -10,17 +11,28 @@ const TYPE_STYLE: Record<string, { bg: string; border: string }> = {
 const SHINY_STYLE = { bg: '#fffbeb', border: '#f59e0b' }
 
 export const CreaturePreview = memo(function CreaturePreview({
+  species,
   emoji,
   creatureType,
   isShiny,
   size = 72,
 }: {
+  species: string
   emoji: string
   creatureType?: string
   isShiny?: boolean
   size?: number
 }) {
+  const [src, setSrc] = useState<string | null>(null)
   const style = isShiny ? SHINY_STYLE : (TYPE_STYLE[creatureType ?? ''] ?? { bg: '#f1f5f9', border: '#e2e8f0' })
+
+  useEffect(() => {
+    let cancelled = false
+    setSrc(null)
+    getCreaturePreviewURL(species, isShiny).then((url) => { if (!cancelled) setSrc(url) })
+    return () => { cancelled = true }
+  }, [species, isShiny])
+
   return (
     <div style={{
       width: size, height: size, borderRadius: Math.round(size * 0.22),
@@ -30,7 +42,9 @@ export const CreaturePreview = memo(function CreaturePreview({
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: Math.round(size * 0.52), lineHeight: 1 }}>{emoji}</span>
+      {src
+        ? <img src={src} width={Math.round(size * 0.86)} height={Math.round(size * 0.86)} alt={species} style={{ display: 'block' }} />
+        : <span style={{ fontSize: Math.round(size * 0.52), lineHeight: 1 }}>{emoji}</span>}
     </div>
   )
 })

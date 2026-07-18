@@ -4,7 +4,26 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
+import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
 import type { Poi, PlayerPosition } from '@/types'
+
+// Map markers are built with raw DOM (MapLibre, not React) - this mirrors EmojiSprite's
+// emoji-fallback-then-3D-swap pattern for that imperative context.
+function spriteEl(emoji: string, sizePx: number): HTMLElement {
+  const wrap = document.createElement('div')
+  wrap.textContent = emoji
+  wrap.style.cssText = `width:${sizePx}px;height:${sizePx}px;display:flex;align-items:center;justify-content:center;line-height:1;font-size:${sizePx}px;`
+  getPlaceholderPreviewURL(emoji).then((url) => {
+    wrap.textContent = ''
+    const img = document.createElement('img')
+    img.src = url
+    img.width = sizePx
+    img.height = sizePx
+    img.style.display = 'block'
+    wrap.appendChild(img)
+  })
+  return wrap
+}
 
 export interface FoodNodeMarker {
   id: string
@@ -39,8 +58,8 @@ function appendOrbitingCreatures(outer: HTMLElement, emojis: string[]) {
     const offset = document.createElement('div')
     offset.style.cssText = `position:absolute;transform:translateX(${R}px);`
     const body = document.createElement('div')
-    body.textContent = emoji
     body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:white;border:1.5px solid #cbd5e1;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
+    body.appendChild(spriteEl(emoji, 15))
     offset.appendChild(body)
     arm.appendChild(offset)
     outer.appendChild(arm)
@@ -62,7 +81,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
     box-shadow:0 2px 10px ${glow};
     opacity:${state === 'busy' ? '0.6' : '1'};
   `
-  inner.textContent = node.emoji
+  inner.appendChild(spriteEl(node.emoji, 22))
   if (state === 'ready') {
     const badge = document.createElement('div')
     badge.textContent = '🎁'
@@ -121,7 +140,7 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
     box-shadow:0 2px 10px ${glow};
     opacity:${node.state === 'busy' ? '0.6' : '1'};
   `
-  inner.textContent = '⛩️'
+  inner.appendChild(spriteEl('⛩️', 24))
   if (node.state === 'ready') {
     const badge = document.createElement('div')
     badge.textContent = '⚔️'
@@ -182,8 +201,8 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   const filled = squad.emojis.slice(0, 4)
   for (let i = 0; i < 4; i++) {
     const cell = document.createElement('div')
-    cell.textContent = filled[i] ?? ''
     cell.style.cssText = 'font-size:13px;line-height:1;'
+    if (filled[i]) cell.appendChild(spriteEl(filled[i], 15))
     inner.appendChild(cell)
   }
 
@@ -249,7 +268,7 @@ function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
     background:white;border:2px solid ${claim.color};
     box-shadow:0 2px 6px rgba(0,0,0,0.18);
   `
-  inner.textContent = '🚩'
+  inner.appendChild(spriteEl('🚩', 15))
   const tooltip = document.createElement('div')
   tooltip.textContent = claim.name + ' · yours'
   tooltip.style.cssText = `

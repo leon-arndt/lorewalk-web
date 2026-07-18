@@ -1,22 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
 
-const STORAGE_KEY = 'music-muted'
+const STORAGE_KEY = 'music-volume'
+const DEFAULT_VOLUME = 0.35
+
+function readStoredVolume(): number {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  return saved !== null ? Number(saved) : DEFAULT_VOLUME
+}
 
 export function useBackgroundMusic(src: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const startedRef = useRef(false)
-  const [muted, setMuted] = useState(() => localStorage.getItem(STORAGE_KEY) === 'true')
+  const [volume, setVolumeState] = useState(readStoredVolume)
 
   useEffect(() => {
     const audio = new Audio(src)
     audio.loop = true
-    audio.volume = 0.35
 
-    const initialMuted = localStorage.getItem(STORAGE_KEY) === 'true'
-    audio.muted = initialMuted
+    const initialVolume = readStoredVolume()
+    audio.volume = initialVolume
     audioRef.current = audio
 
-    if (!initialMuted) {
+    if (initialVolume > 0) {
       const tryPlay = () => {
         if (startedRef.current) return
         audio.play().then(() => { startedRef.current = true }).catch(() => {})
@@ -38,19 +43,17 @@ export function useBackgroundMusic(src: string) {
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
-    audio.muted = muted
-    if (!muted && !startedRef.current) {
+    audio.volume = volume
+    if (volume > 0 && !startedRef.current) {
       audio.play().then(() => { startedRef.current = true }).catch(() => {})
     }
-  }, [muted])
+  }, [volume])
 
-  const toggle = () => {
-    setMuted((prev) => {
-      const next = !prev
-      localStorage.setItem(STORAGE_KEY, String(next))
-      return next
-    })
+  const setVolume = (v: number) => {
+    const clamped = Math.min(1, Math.max(0, v))
+    setVolumeState(clamped)
+    localStorage.setItem(STORAGE_KEY, String(clamped))
   }
 
-  return { muted, toggle }
+  return { volume, setVolume }
 }

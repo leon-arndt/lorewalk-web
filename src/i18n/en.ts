@@ -38,6 +38,12 @@ export const en: Translations = {
   profile_explorer_since: 'Explorer since {date}',
   profile_language: 'Language',
   profile_premium_badge: 'Premium',
+  profile_settings: 'Settings',
+  settings_title: 'Settings',
+  settings_music_volume: 'Music volume',
+  settings_notifications: 'Notifications',
+  settings_daily_motivation: 'Daily motivation',
+  settings_daily_motivation_desc: 'Get a daily nudge to keep exploring',
 
   friends_title: 'Friends · {n}',
   friends_loading: 'Loading friends…',

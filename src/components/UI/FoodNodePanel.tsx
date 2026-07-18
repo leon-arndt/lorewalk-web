@@ -5,6 +5,7 @@ import { creaturePower, creatureName, foodExpeditionDurationMs, MAX_FOOD_CREATUR
 import { haversineDistance } from '@/lib/mapUtils'
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { FoodNode, HatchedCreature, PlayerPosition } from '@/types'
 
 function formatDuration(ms: number) {
@@ -119,7 +120,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
       <div style={panelStyle(isClosing)}>
         {header}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-          <div style={{ fontSize: 44, lineHeight: 1, flexShrink: 0 }}>{def.emoji}</div>
+          <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={44} />
           <div>
             <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>{def.name}</h2>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Near {node.poiName}</p>
@@ -129,7 +130,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {members.map((m) => (
             <div key={m.id} style={{ textAlign: 'center' }}>
-              <CreaturePreview emoji={m.emoji} creatureType={m.creatureType} isShiny={m.isShiny} size={48} />
+              <CreaturePreview species={m.species} emoji={m.emoji} creatureType={m.creatureType} isShiny={m.isShiny} size={48} />
               <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>Lv.{m.level}</div>
             </div>
           ))}
@@ -168,7 +169,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
         {header}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-            <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0 }}>{def.emoji}</div>
+            <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={36} />
             <div style={{ minWidth: 0 }}>
               <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>{def.name}</h2>
               <p style={{ margin: 0, fontSize: 11, color: '#94a3b8' }}>Select up to {MAX_FOOD_CREATURES} creatures</p>
@@ -231,7 +232,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>✓</span>
                   )}
-                  <CreaturePreview emoji={c.emoji} creatureType={c.creatureType} isShiny={c.isShiny} size={40} />
+                  <CreaturePreview species={c.species} emoji={c.emoji} creatureType={c.creatureType} isShiny={c.isShiny} size={40} />
                   <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', lineHeight: 1.1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{creatureName(c)}</span>
                   <span style={{ fontSize: 9, fontWeight: 600, color: '#f59e0b' }}>⚡{creaturePower(c)}</span>
                 </button>
@@ -266,7 +267,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
     <div style={panelStyle(isClosing)}>
       {header}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-        <div style={{ fontSize: 44, lineHeight: 1, flexShrink: 0 }}>{def.emoji}</div>
+        <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={44} />
         <div style={{ minWidth: 0 }}>
           <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>{def.name}</h2>
           <p style={{ margin: '0 0 6px', fontSize: 12, color: '#94a3b8' }}>Near {node.poiName}</p>

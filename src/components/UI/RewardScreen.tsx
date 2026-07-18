@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import { useReward } from '@/contexts/RewardContext'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { RewardItem } from '@/types'
 
 const ITEM_META: Record<string, { icon: string; color: string; label: (item: RewardItem) => string }> = {
@@ -98,13 +99,13 @@ export function RewardScreen() {
           textAlign: 'center',
         }}
       >
-        {/* Big emoji */}
+        {/* Big icon */}
         <div style={{
           fontSize: 72, lineHeight: 1, marginBottom: 16,
           animation: 'rewardBounce 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s both',
           display: 'inline-block',
         }}>
-          {emoji}
+          <EmojiSprite id={emoji} emoji={emoji} size={72} />
         </div>
 
         {/* Title */}
@@ -138,7 +139,7 @@ export function RewardScreen() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 20,
                   }}>
-                    {item.emoji ?? meta.icon}
+                    <EmojiSprite id={item.emoji ?? item.type} emoji={item.emoji ?? meta.icon} size={22} />
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textAlign: 'left' }}>
                     {meta.label(item)}
