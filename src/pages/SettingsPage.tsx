@@ -29,7 +29,7 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () =>
 
 export function SettingsPage() {
   const { t, locale, setLocale } = useLocale()
-  const { volume, setVolume } = useMusic()
+  const { volume, setVolume, sfxEnabled, setSfxEnabled } = useMusic()
   const { profile, toggleDailyMotivationNotifications } = useProfile()
   const navigate = useNavigate()
 
@@ -107,6 +107,20 @@ export function SettingsPage() {
               onChange={(e) => setVolume(Number(e.target.value))}
               style={{ flex: 1, accentColor: '#6366f1' }}
             />
+          </div>
+        </section>
+
+        <section>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+            {t('settings_sound_effects')}
+          </h2>
+          <div style={{
+            background: 'white', borderRadius: 16, padding: '14px 16px',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          }}>
+            <span style={{ fontSize: 18 }}>{sfxEnabled ? '🔊' : '🔇'}</span>
+            <ToggleSwitch checked={sfxEnabled} onChange={() => setSfxEnabled(!sfxEnabled)} />
           </div>
         </section>
 

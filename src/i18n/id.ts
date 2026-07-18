@@ -41,6 +41,7 @@ export const id: Translations = {
   profile_settings: 'Pengaturan',
   settings_title: 'Pengaturan',
   settings_music_volume: 'Volume musik',
+  settings_sound_effects: 'Efek suara',
   settings_notifications: 'Notifikasi',
   settings_daily_motivation: 'Motivasi harian',
   settings_daily_motivation_desc: 'Dapatkan dorongan harian untuk terus menjelajah',

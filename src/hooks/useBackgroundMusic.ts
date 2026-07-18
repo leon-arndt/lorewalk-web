@@ -2,16 +2,23 @@ import { useEffect, useRef, useState } from 'react'
 
 const STORAGE_KEY = 'music-volume'
 const DEFAULT_VOLUME = 0.35
+const SFX_STORAGE_KEY = 'sfx-enabled'
 
 function readStoredVolume(): number {
   const saved = localStorage.getItem(STORAGE_KEY)
   return saved !== null ? Number(saved) : DEFAULT_VOLUME
 }
 
+function readStoredSfxEnabled(): boolean {
+  const saved = localStorage.getItem(SFX_STORAGE_KEY)
+  return saved !== null ? saved === 'true' : true
+}
+
 export function useBackgroundMusic(src: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const startedRef = useRef(false)
   const [volume, setVolumeState] = useState(readStoredVolume)
+  const [sfxEnabled, setSfxEnabledState] = useState(readStoredSfxEnabled)
 
   useEffect(() => {
     const audio = new Audio(src)
@@ -55,5 +62,10 @@ export function useBackgroundMusic(src: string) {
     localStorage.setItem(STORAGE_KEY, String(clamped))
   }
 
-  return { volume, setVolume }
+  const setSfxEnabled = (enabled: boolean) => {
+    setSfxEnabledState(enabled)
+    localStorage.setItem(SFX_STORAGE_KEY, String(enabled))
+  }
+
+  return { volume, setVolume, sfxEnabled, setSfxEnabled }
 }

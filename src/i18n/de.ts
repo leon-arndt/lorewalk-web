@@ -41,6 +41,7 @@ export const de: Translations = {
   profile_settings: 'Einstellungen',
   settings_title: 'Einstellungen',
   settings_music_volume: 'Musiklautstärke',
+  settings_sound_effects: 'Soundeffekte',
   settings_notifications: 'Benachrichtigungen',
   settings_daily_motivation: 'Tägliche Motivation',
   settings_daily_motivation_desc: 'Erhalte täglich einen Anstoß zum Weiterentdecken',

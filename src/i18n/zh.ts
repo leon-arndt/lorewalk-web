@@ -41,6 +41,7 @@ export const zh: Translations = {
   profile_settings: '设置',
   settings_title: '设置',
   settings_music_volume: '音乐音量',
+  settings_sound_effects: '音效',
   settings_notifications: '通知',
   settings_daily_motivation: '每日激励',
   settings_daily_motivation_desc: '获取每日探索提醒',

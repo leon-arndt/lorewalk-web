@@ -41,6 +41,7 @@ export const ko: Translations = {
   profile_settings: '설정',
   settings_title: '설정',
   settings_music_volume: '음악 음량',
+  settings_sound_effects: '효과음',
   settings_notifications: '알림',
   settings_daily_motivation: '일일 동기부여',
   settings_daily_motivation_desc: '탐험을 계속하도록 매일 알림을 받아보세요',

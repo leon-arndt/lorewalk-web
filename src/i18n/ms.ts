@@ -41,6 +41,7 @@ export const ms: Translations = {
   profile_settings: 'Tetapan',
   settings_title: 'Tetapan',
   settings_music_volume: 'Kelantangan muzik',
+  settings_sound_effects: 'Kesan bunyi',
   settings_notifications: 'Pemberitahuan',
   settings_daily_motivation: 'Motivasi harian',
   settings_daily_motivation_desc: 'Dapatkan dorongan harian untuk terus meneroka',

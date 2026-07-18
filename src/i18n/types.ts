@@ -39,6 +39,7 @@ export interface Translations {
   profile_settings: string
   settings_title: string
   settings_music_volume: string
+  settings_sound_effects: string
   settings_notifications: string
   settings_daily_motivation: string
   settings_daily_motivation_desc: string
