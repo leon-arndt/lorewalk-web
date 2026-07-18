@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
+import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile, isPoiLocked,
@@ -51,7 +51,7 @@ interface ProfileContextValue {
   addDevEgg: (isShiny?: boolean) => void
   addDevSteps: (n: number) => void
   toggleDevPremium: () => void
-  toggleDailyMotivationNotifications: () => void
+  toggleNotificationPref: (key: NotificationPrefKey) => void
   subscribePremium: () => void
   claimMedal: () => EarnedMedal | null
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
@@ -499,8 +499,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, isPremium: !profile.isPremium })
   }
 
-  function toggleDailyMotivationNotifications() {
-    persist({ ...profile, dailyMotivationNotifications: !profile.dailyMotivationNotifications })
+  function toggleNotificationPref(key: NotificationPrefKey) {
+    persist({ ...profile, [key]: !profile[key] })
   }
 
   function subscribePremium() {
@@ -683,7 +683,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium, toggleDailyMotivationNotifications, subscribePremium, claimMedal,
+      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium, toggleNotificationPref, subscribePremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

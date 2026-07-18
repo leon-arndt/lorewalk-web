@@ -11,6 +11,7 @@ export interface Translations {
   mode_offline: string
 
   steps_today: string
+  steps_unit: string
 
   poi_landmark: string
   poi_event: string
@@ -43,6 +44,14 @@ export interface Translations {
   settings_notifications: string
   settings_daily_motivation: string
   settings_daily_motivation_desc: string
+  settings_notif_party_walk: string
+  settings_notif_party_walk_desc: string
+  settings_notif_challenges: string
+  settings_notif_challenges_desc: string
+  settings_notif_friends_gifts: string
+  settings_notif_friends_gifts_desc: string
+  settings_notif_latest_news: string
+  settings_notif_latest_news_desc: string
 
   friends_title: string
   friends_loading: string

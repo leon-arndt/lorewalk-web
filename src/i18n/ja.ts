@@ -13,6 +13,7 @@ export const ja: Translations = {
   mode_offline: 'オフライン',
 
   steps_today: '今日 {distance}',
+  steps_unit: '歩',
 
   poi_landmark: 'ランドマーク',
   poi_event: 'イベント',
@@ -45,6 +46,14 @@ export const ja: Translations = {
   settings_notifications: '通知',
   settings_daily_motivation: '毎日のモチベーション',
   settings_daily_motivation_desc: '探索を続けるための毎日のリマインダーを受け取る',
+  settings_notif_party_walk: 'パーティーウォーク',
+  settings_notif_party_walk_desc: '新しい週間パーティーウォークが始まったときに通知を受け取る',
+  settings_notif_challenges: 'チャレンジ',
+  settings_notif_challenges_desc: '新しいチャレンジやメダルの進捗について通知を受け取る',
+  settings_notif_friends_gifts: 'フレンドとギフト',
+  settings_notif_friends_gifts_desc: 'フレンドからポストカードやギフトが届いたときに通知を受け取る',
+  settings_notif_latest_news: '最新ニュース',
+  settings_notif_latest_news_desc: 'アプリの更新やお知らせについて通知を受け取る',
 
   friends_title: 'フレンド · {n}',
   friends_loading: 'フレンド読み込み中…',

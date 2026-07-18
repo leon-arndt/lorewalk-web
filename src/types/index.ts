@@ -143,7 +143,18 @@ export interface PlayerProfile {
   isPremium: boolean   // client-side only for now; not server-verified, see lib/profile.ts
   medals: EarnedMedal[]   // one per completed monthly medal challenge, Premium only
   dailyMotivationNotifications: boolean   // preference only; no push delivery wired up yet
+  partyWalkNotifications: boolean         // preference only; no push delivery wired up yet
+  challengesNotifications: boolean        // preference only; no push delivery wired up yet
+  friendsAndGiftsNotifications: boolean   // preference only; no push delivery wired up yet
+  latestNewsNotifications: boolean        // preference only; no push delivery wired up yet
 }
+
+export type NotificationPrefKey =
+  | 'dailyMotivationNotifications'
+  | 'partyWalkNotifications'
+  | 'challengesNotifications'
+  | 'friendsAndGiftsNotifications'
+  | 'latestNewsNotifications'
 
 // A medal earned by hitting a calendar month's step goal while Premium. One per
 // monthKey - claimMedal() in ProfileContext enforces that.

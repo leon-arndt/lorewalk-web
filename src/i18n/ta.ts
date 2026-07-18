@@ -13,6 +13,7 @@ export const ta: Translations = {
   mode_offline: 'இணையமின்றி',
 
   steps_today: 'இன்று {distance}',
+  steps_unit: 'படிகள்',
 
   poi_landmark: 'சின்னம்',
   poi_event: 'நிகழ்வு',
@@ -45,6 +46,14 @@ export const ta: Translations = {
   settings_notifications: 'அறிவிப்புகள்',
   settings_daily_motivation: 'தினசரி ஊக்கம்',
   settings_daily_motivation_desc: 'ஆராய்ச்சியைத் தொடர தினசரி நினைவூட்டலைப் பெறுங்கள்',
+  settings_notif_party_walk: 'பார்ட்டி வாக்',
+  settings_notif_party_walk_desc: 'புதிய வாராந்திர பார்ட்டி வாக் தொடங்கும்போது அறிவிப்பு பெறுங்கள்',
+  settings_notif_challenges: 'சவால்கள்',
+  settings_notif_challenges_desc: 'புதிய சவால்கள் மற்றும் பதக்க முன்னேற்றம் பற்றிய அறிவிப்பைப் பெறுங்கள்',
+  settings_notif_friends_gifts: 'நண்பர்கள் மற்றும் பரிசுகள்',
+  settings_notif_friends_gifts_desc: 'நண்பர்கள் அஞ்சல் அட்டைகள் அல்லது பரிசுகளை அனுப்பும்போது அறிவிப்பு பெறுங்கள்',
+  settings_notif_latest_news: 'சமீபத்திய செய்திகள்',
+  settings_notif_latest_news_desc: 'ஆப் புதுப்பிப்புகள் மற்றும் அறிவிப்புகள் பற்றி அறிவிப்பு பெறுங்கள்',
 
   friends_title: 'நண்பர்கள் · {n}',
   friends_loading: 'நண்பர்கள் ஏற்றுகிறது…',

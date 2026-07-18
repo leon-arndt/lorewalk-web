@@ -13,6 +13,7 @@ export const ko: Translations = {
   mode_offline: '오프라인',
 
   steps_today: '오늘 {distance}',
+  steps_unit: '걸음',
 
   poi_landmark: '랜드마크',
   poi_event: '이벤트',
@@ -45,6 +46,14 @@ export const ko: Translations = {
   settings_notifications: '알림',
   settings_daily_motivation: '일일 동기부여',
   settings_daily_motivation_desc: '탐험을 계속하도록 매일 알림을 받아보세요',
+  settings_notif_party_walk: '파티 워크',
+  settings_notif_party_walk_desc: '새로운 주간 파티 워크가 시작되면 알림 받기',
+  settings_notif_challenges: '챌린지',
+  settings_notif_challenges_desc: '새로운 챌린지와 메달 진행 상황 알림 받기',
+  settings_notif_friends_gifts: '친구와 선물',
+  settings_notif_friends_gifts_desc: '친구가 엽서나 선물을 보낼 때 알림 받기',
+  settings_notif_latest_news: '최신 소식',
+  settings_notif_latest_news_desc: '앱 업데이트와 공지사항 알림 받기',
 
   friends_title: '친구 · {n}',
   friends_loading: '친구 불러오는 중…',

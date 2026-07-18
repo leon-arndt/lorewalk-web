@@ -13,6 +13,7 @@ export const ms: Translations = {
   mode_offline: 'Luar talian',
 
   steps_today: '{distance} hari ini',
+  steps_unit: 'langkah',
 
   poi_landmark: 'Mercu tanda',
   poi_event: 'Acara',
@@ -45,6 +46,14 @@ export const ms: Translations = {
   settings_notifications: 'Pemberitahuan',
   settings_daily_motivation: 'Motivasi harian',
   settings_daily_motivation_desc: 'Dapatkan dorongan harian untuk terus meneroka',
+  settings_notif_party_walk: 'Party Walk',
+  settings_notif_party_walk_desc: 'Dapatkan pemberitahuan apabila Party Walk mingguan baharu bermula',
+  settings_notif_challenges: 'Cabaran',
+  settings_notif_challenges_desc: 'Dapatkan pemberitahuan tentang cabaran baharu dan kemajuan pingat',
+  settings_notif_friends_gifts: 'Rakan dan Hadiah',
+  settings_notif_friends_gifts_desc: 'Dapatkan pemberitahuan apabila rakan menghantar poskad atau hadiah',
+  settings_notif_latest_news: 'Berita Terkini',
+  settings_notif_latest_news_desc: 'Dapatkan pemberitahuan tentang kemas kini aplikasi dan pengumuman',
 
   friends_title: 'Rakan · {n}',
   friends_loading: 'Memuat rakan…',

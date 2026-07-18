@@ -3,6 +3,15 @@ import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
 import type { Locale } from '@/contexts/LocaleContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { useProfile } from '@/contexts/ProfileContext'
+import type { NotificationPrefKey } from '@/types'
+
+const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_motivation' | 'settings_notif_party_walk' | 'settings_notif_challenges' | 'settings_notif_friends_gifts' | 'settings_notif_latest_news'; descKey: 'settings_daily_motivation_desc' | 'settings_notif_party_walk_desc' | 'settings_notif_challenges_desc' | 'settings_notif_friends_gifts_desc' | 'settings_notif_latest_news_desc' }[] = [
+  { key: 'dailyMotivationNotifications', titleKey: 'settings_daily_motivation', descKey: 'settings_daily_motivation_desc' },
+  { key: 'partyWalkNotifications', titleKey: 'settings_notif_party_walk', descKey: 'settings_notif_party_walk_desc' },
+  { key: 'challengesNotifications', titleKey: 'settings_notif_challenges', descKey: 'settings_notif_challenges_desc' },
+  { key: 'friendsAndGiftsNotifications', titleKey: 'settings_notif_friends_gifts', descKey: 'settings_notif_friends_gifts_desc' },
+  { key: 'latestNewsNotifications', titleKey: 'settings_notif_latest_news', descKey: 'settings_notif_latest_news_desc' },
+]
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
@@ -30,15 +39,15 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () =>
 export function SettingsPage() {
   const { t, locale, setLocale } = useLocale()
   const { volume, setVolume, sfxEnabled, setSfxEnabled } = useMusic()
-  const { profile, toggleDailyMotivationNotifications } = useProfile()
+  const { profile, toggleNotificationPref } = useProfile()
   const navigate = useNavigate()
 
-  async function handleToggleNotifications() {
-    const turningOn = !profile.dailyMotivationNotifications
+  async function handleToggleNotifications(key: NotificationPrefKey) {
+    const turningOn = !profile[key]
     if (turningOn && 'Notification' in window && Notification.permission === 'default') {
       await Notification.requestPermission()
     }
-    toggleDailyMotivationNotifications()
+    toggleNotificationPref(key)
   }
 
   return (
@@ -129,19 +138,30 @@ export function SettingsPage() {
             {t('settings_notifications')}
           </h2>
           <div style={{
-            background: 'white', borderRadius: 16, padding: '14px 16px',
+            background: 'white', borderRadius: 16, padding: '4px 16px',
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            display: 'flex', flexDirection: 'column',
           }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
-                {t('settings_daily_motivation')}
+            {NOTIFICATION_PREFS.map(({ key, titleKey, descKey }, i) => (
+              <div
+                key={key}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  padding: '14px 0',
+                  borderTop: i > 0 ? '1px solid #f1f5f9' : 'none',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
+                    {t(titleKey)}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                    {t(descKey)}
+                  </div>
+                </div>
+                <ToggleSwitch checked={profile[key]} onChange={() => handleToggleNotifications(key)} />
               </div>
-              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-                {t('settings_daily_motivation_desc')}
-              </div>
-            </div>
-            <ToggleSwitch checked={profile.dailyMotivationNotifications} onChange={handleToggleNotifications} />
+            ))}
           </div>
         </section>
       </div>

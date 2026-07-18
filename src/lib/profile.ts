@@ -531,6 +531,10 @@ export function loadProfile(): PlayerProfile {
         isPremium: parsed.isPremium ?? false,
         medals: parsed.medals ?? [],
         dailyMotivationNotifications: parsed.dailyMotivationNotifications ?? false,
+        partyWalkNotifications: parsed.partyWalkNotifications ?? false,
+        challengesNotifications: parsed.challengesNotifications ?? false,
+        friendsAndGiftsNotifications: parsed.friendsAndGiftsNotifications ?? false,
+        latestNewsNotifications: parsed.latestNewsNotifications ?? false,
       }
     }
   } catch { /* ignore */ }
@@ -566,6 +570,10 @@ export function loadProfile(): PlayerProfile {
     isPremium: false,
     medals: [],
     dailyMotivationNotifications: false,
+    partyWalkNotifications: false,
+    challengesNotifications: false,
+    friendsAndGiftsNotifications: false,
+    latestNewsNotifications: false,
   }
 }
 

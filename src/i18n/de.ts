@@ -13,6 +13,7 @@ export const de: Translations = {
   mode_offline: 'Offline',
 
   steps_today: '{distance} heute',
+  steps_unit: 'Schritte',
 
   poi_landmark: 'Sehenswürdigkeit',
   poi_event: 'Veranstaltung',
@@ -45,6 +46,14 @@ export const de: Translations = {
   settings_notifications: 'Benachrichtigungen',
   settings_daily_motivation: 'Tägliche Motivation',
   settings_daily_motivation_desc: 'Erhalte täglich einen Anstoß zum Weiterentdecken',
+  settings_notif_party_walk: 'Party-Walk',
+  settings_notif_party_walk_desc: 'Benachrichtigung, wenn ein neuer wöchentlicher Party-Walk beginnt',
+  settings_notif_challenges: 'Herausforderungen',
+  settings_notif_challenges_desc: 'Benachrichtigung über neue Herausforderungen und Medaillenfortschritt',
+  settings_notif_friends_gifts: 'Freunde und Geschenke',
+  settings_notif_friends_gifts_desc: 'Benachrichtigung, wenn Freunde dir Postkarten oder Geschenke schicken',
+  settings_notif_latest_news: 'Neuigkeiten',
+  settings_notif_latest_news_desc: 'Benachrichtigung über App-Updates und Ankündigungen',
 
   friends_title: 'Freunde · {n}',
   friends_loading: 'Freunde laden…',

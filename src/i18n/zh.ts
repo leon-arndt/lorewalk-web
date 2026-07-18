@@ -13,6 +13,7 @@ export const zh: Translations = {
   mode_offline: '离线',
 
   steps_today: '今日 {distance}',
+  steps_unit: '步',
 
   poi_landmark: '地标',
   poi_event: '活动',
@@ -45,6 +46,14 @@ export const zh: Translations = {
   settings_notifications: '通知',
   settings_daily_motivation: '每日激励',
   settings_daily_motivation_desc: '获取每日探索提醒',
+  settings_notif_party_walk: '派对漫步',
+  settings_notif_party_walk_desc: '新的每周派对漫步开始时通知我',
+  settings_notif_challenges: '挑战',
+  settings_notif_challenges_desc: '有新挑战和奖章进度时通知我',
+  settings_notif_friends_gifts: '好友与礼物',
+  settings_notif_friends_gifts_desc: '好友发送明信片或礼物时通知我',
+  settings_notif_latest_news: '最新消息',
+  settings_notif_latest_news_desc: '应用更新和公告通知',
 
   friends_title: '好友 · {n}',
   friends_loading: '加载好友中…',
