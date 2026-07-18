@@ -102,6 +102,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
       <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
       <button
         onClick={onClose}
+        data-sfx="close"
         style={{
           position: 'absolute', top: 20, right: 20,
           ...glassChrome, cursor: 'pointer',

@@ -98,6 +98,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
         </div>
         <button
           onClick={onClose}
+          data-sfx="close"
           style={{
             ...glassChrome,
             cursor: 'pointer',

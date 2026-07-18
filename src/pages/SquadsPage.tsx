@@ -234,6 +234,7 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
   return (
     <div
       onClick={onClose}
+      data-sfx="close"
       style={{
         position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.35)',
         display: 'flex', alignItems: 'flex-end', zIndex: 50,
@@ -248,7 +249,7 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>{title}</h3>
-          <button onClick={onClose} style={{ border: 'none', background: 'transparent', fontSize: 20, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
+          <button onClick={onClose} data-sfx="close" style={{ border: 'none', background: 'transparent', fontSize: 20, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
         {children}
       </div>

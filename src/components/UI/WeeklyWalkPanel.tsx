@@ -67,6 +67,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
       <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
       <button
         onClick={onClose}
+        data-sfx="close"
         style={{
           position: 'absolute', top: 20, right: 20,
           ...glassChrome, cursor: 'pointer',
@@ -91,6 +92,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
           </p>
           <button
             onClick={() => { expireWeeklyWalkIfStale(); onClose() }}
+            data-sfx="close"
             style={{
               padding: '12px 28px', borderRadius: 14, border: 'none',
               background: ACCENT, color: 'white', fontSize: 14, fontWeight: 700,

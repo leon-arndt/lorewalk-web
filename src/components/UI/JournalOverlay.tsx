@@ -53,6 +53,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
   return (
     <div
       onClick={onClose}
+      data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 70,
         background: 'rgba(15,10,30,0.55)',
@@ -192,6 +193,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
             WebkitTapHighlightColor: 'transparent',
           }}
           aria-label="Close journal"
+          data-sfx="close"
         >×</button>
       </div>
 

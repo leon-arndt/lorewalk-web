@@ -221,6 +221,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
   return (
     <div
       onClick={onClose}
+      data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 60,
         background: 'rgba(15,23,42,0.45)',
@@ -321,7 +322,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
             }}>
               Release {creature.species}
             </button>
-            <button onClick={onClose} style={{
+            <button onClick={onClose} data-sfx="close" style={{
               width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
               background: '#f1f5f9', color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer',
             }}>

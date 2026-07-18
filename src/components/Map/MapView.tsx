@@ -5,6 +5,7 @@ import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
 import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
+import { playClickSfx } from '@/lib/sfx'
 import type { Poi, PlayerPosition } from '@/types'
 
 // Map markers are built with raw DOM (MapLibre, not React) - this mirrors EmojiSprite's
@@ -70,6 +71,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   const state = node.state ?? 'idle'
   const outer = document.createElement('div')
   outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
+  outer.setAttribute('role', 'button')
   const inner = document.createElement('div')
   const borderColor = state === 'ready' ? '#16a34a' : state === 'busy' ? '#cbd5e1' : '#f59e0b'
   const glow = state === 'ready' ? 'rgba(34,197,94,0.5)' : state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(245,158,11,0.45)'
@@ -128,6 +130,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
 function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   const outer = document.createElement('div')
   outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
+  outer.setAttribute('role', 'button')
   const borderColor = node.state === 'ready' ? '#16a34a' : node.state === 'cleared' ? '#7c3aed' : node.state === 'busy' ? '#cbd5e1' : '#9333ea'
   const glow = node.state === 'ready' ? 'rgba(34,197,94,0.5)' : node.state === 'cleared' ? 'rgba(124,58,237,0.4)' : node.state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(147,51,234,0.45)'
   const inner = document.createElement('div')
@@ -188,6 +191,7 @@ const TAP_RADIUS_PX = 48
 function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   const outer = document.createElement('div')
   outer.style.cssText = 'cursor:pointer;'
+  outer.setAttribute('role', 'button')
 
   const inner = document.createElement('div')
   inner.style.cssText = `
@@ -261,6 +265,7 @@ export interface ClaimMarker {
 function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
   const outer = document.createElement('div')
   outer.style.cssText = 'cursor:pointer;'
+  outer.setAttribute('role', 'button')
   const inner = document.createElement('div')
   inner.style.cssText = `
     width:26px;height:26px;border-radius:8px;
@@ -376,7 +381,7 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
         const d = (proj.x - pt.x) ** 2 + (proj.y - pt.y) ** 2
         if (d < bestDist) { bestDist = d; best = poi }
       }
-      if (best) onPoiClickRef.current(best)
+      if (best) { playClickSfx(); onPoiClickRef.current(best) }
     })
 
     return () => {

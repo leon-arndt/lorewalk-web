@@ -59,6 +59,7 @@ export function SettingsPage() {
       }}>
         <button
           onClick={() => navigate('/profile')}
+          data-sfx="close"
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             fontSize: 22, color: '#1e293b', padding: 0, lineHeight: 1,
