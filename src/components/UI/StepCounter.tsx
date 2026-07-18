@@ -45,15 +45,15 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 8,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
       padding: '6px 12px', borderRadius: 999,
       ...glassChrome,
       pointerEvents: 'none', userSelect: 'none',
     }}>
       <span style={{ fontSize: 16 }}>👟</span>
-      <div style={{ lineHeight: 1.1 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
-          {(animatedSteps ?? steps).toLocaleString()}
+      <div style={{ lineHeight: 1.1, textAlign: 'center' }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+          {(animatedSteps ?? steps).toLocaleString()} {t('steps_unit')}
         </div>
         <div style={{ fontSize: 10, color: '#64748b' }}>{t('steps_today', { distance })}</div>
       </div>
