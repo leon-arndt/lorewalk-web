@@ -1,4 +1,5 @@
 import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PartyMember, PlayerProfile, Poi, Squad, SquadExpedition, ShrineNode, VisitRecord, WeeklyPartyWalk } from '@/types'
+import type { FoodDef } from '@/data/foods'
 import { randomFood } from '@/data/foods'
 import { drawCreature, rollEggTier } from '@/data/creatures'
 export { rollEggTier }
@@ -49,18 +50,61 @@ const SGT_OFFSET_MS = 8 * 3_600_000
 function sgtDayStr(epochMs: number) {
   return new Date(epochMs + SGT_OFFSET_MS).toISOString().slice(0, 10)
 }
-function todayStr() {
+export function todayStr() {
   return sgtDayStr(Date.now())
 }
 function yesterdayStr() {
   return sgtDayStr(Date.now() - 24 * 3_600_000)
 }
 
-export function updateStreak(lastVisitDate: string | null, currentStreak: number): { streakDays: number; lastVisitDate: string } {
+// ─── Streak freeze (shop item - protects the streak across missed days) ────
+export const STREAK_FREEZE_MAX = 2
+export const STREAK_FREEZE_COST = 40
+
+function daysBetweenDayStrings(a: string, b: string): number {
+  return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000)
+}
+
+export function updateStreak(
+  lastVisitDate: string | null,
+  currentStreak: number,
+  streakFreezes: number,
+): { streakDays: number; lastVisitDate: string; freezesUsed: number } {
   const today = todayStr()
-  if (lastVisitDate === today) return { streakDays: currentStreak, lastVisitDate }
-  if (lastVisitDate === yesterdayStr()) return { streakDays: currentStreak + 1, lastVisitDate: today }
-  return { streakDays: 1, lastVisitDate: today }
+  if (lastVisitDate === today) return { streakDays: currentStreak, lastVisitDate, freezesUsed: 0 }
+  if (lastVisitDate === yesterdayStr()) return { streakDays: currentStreak + 1, lastVisitDate: today, freezesUsed: 0 }
+  if (lastVisitDate) {
+    const missedDays = daysBetweenDayStrings(lastVisitDate, today) - 1
+    if (missedDays > 0 && missedDays <= streakFreezes) {
+      return { streakDays: currentStreak + 1, lastVisitDate: today, freezesUsed: missedDays }
+    }
+  }
+  return { streakDays: 1, lastVisitDate: today, freezesUsed: 0 }
+}
+
+// ─── Streak chest (Duolingo-style perfect-week reward) ─────────────────────
+export const STREAK_CHEST_INTERVAL = 7
+
+// Highest streak-day milestone reached so far (0, 7, 14, ...). A new chest is
+// granted whenever this increases past the profile's last-recorded milestone.
+export function streakChestMilestoneFor(streakDays: number): number {
+  return Math.floor(streakDays / STREAK_CHEST_INTERVAL) * STREAK_CHEST_INTERVAL
+}
+
+export interface StreakChestRewards {
+  coins: number
+  xp: number
+  food: FoodDef | null
+  egg: boolean
+}
+
+export function rollStreakChestRewards(): StreakChestRewards {
+  return {
+    coins: Math.round(30 + Math.random() * 50),  // 30-80
+    xp: Math.round(20 + Math.random() * 30),      // 20-50
+    food: Math.random() < 0.5 ? randomFood() : null,
+    egg: Math.random() < 0.25,
+  }
 }
 
 // ─── Achievement definitions ────────────────────────────────────────────────
@@ -133,10 +177,10 @@ export function creatureCap(level: number, bonus: number): number {
 export const MAX_EGG_SLOTS_CAP = 6
 export const CREATURE_SLOT_CHUNK = 3
 export function creatureSlotsCost(bonus: number): number {
-  return 60 + 60 * (bonus / CREATURE_SLOT_CHUNK) // 60, 120, 180, …
+  return 50 + 50 * (bonus / CREATURE_SLOT_CHUNK) // 50, 100, 150, …
 }
 export function eggSlotCost(currentMax: number): number {
-  return 120 * (currentMax - MAX_EGG_SLOTS + 1) // 120, 240, 360, …
+  return 100 * (currentMax - MAX_EGG_SLOTS + 1) // 100, 200, 300, …
 }
 
 export const TIER_STEPS: Record<EggTier, number> = { common: 100, rare: 1000, epic: 5000 }
@@ -535,6 +579,11 @@ export function loadProfile(): PlayerProfile {
         challengesNotifications: parsed.challengesNotifications ?? false,
         friendsAndGiftsNotifications: parsed.friendsAndGiftsNotifications ?? false,
         latestNewsNotifications: parsed.latestNewsNotifications ?? false,
+        pendingStreakChest: parsed.pendingStreakChest ?? false,
+        // Saves from before this feature existed start at their current milestone
+        // rather than retroactively granting a chest for streak days already banked.
+        streakChestMilestone: parsed.streakChestMilestone ?? streakChestMilestoneFor(parsed.streakDays ?? 0),
+        streakFreezes: parsed.streakFreezes ?? 0,
       }
     }
   } catch { /* ignore */ }
@@ -550,6 +599,9 @@ export function loadProfile(): PlayerProfile {
     createdAt: new Date().toISOString(),
     lastVisitDate: null,
     streakDays: 0,
+    pendingStreakChest: false,
+    streakChestMilestone: 0,
+    streakFreezes: 0,
     eggs: [],
     hatchedCreatures: [],
     foodInventory: [],

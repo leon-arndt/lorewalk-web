@@ -31,6 +31,10 @@ android/build/
 # Vite temp files
 vite.config.ts.timestamp-*
 
+# Playwright e2e output
+test-results/
+playwright-report/
+
 # OS
 Thumbs.db
 

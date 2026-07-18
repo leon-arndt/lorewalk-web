@@ -67,3 +67,12 @@ html, body, #root {
   55%  { transform: translateY(-100px) scale(1.4); opacity: 1; }
   100% { transform: translateY(-70px) scale(0.2); opacity: 0; }
 }
+
+/* Streak chest wiggling right before it pops open */
+@keyframes chestShake {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20%      { transform: rotate(-10deg) scale(1.05); }
+  40%      { transform: rotate(9deg) scale(1.05); }
+  60%      { transform: rotate(-7deg) scale(1.08); }
+  80%      { transform: rotate(5deg) scale(1.08); }
+}

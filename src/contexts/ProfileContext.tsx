@@ -5,10 +5,12 @@ import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile, isPoiLocked,
   currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
-  applyXp, updateStreak, checkAchievements,
+  applyXp, updateStreak, checkAchievements, todayStr,
+  streakChestMilestoneFor, rollStreakChestRewards, type StreakChestRewards,
   createEgg, createEggFor, advanceEggs, hatchEgg, isEggReady,
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
+  STREAK_FREEZE_MAX, STREAK_FREEZE_COST,
   EXPEDITION_EGG_CHANCE, CREATURE_BASE_XP, applyCreatureXp, TIER_STEPS,
   rollEggTier,
   levelRewardsFor, applyLevelRewards, type LevelReward,
@@ -45,11 +47,14 @@ interface ProfileContextValue {
   releaseCreature: (creatureId: string) => void
   buyCreatureSlots: () => boolean
   buyEggSlot: () => boolean
+  buyStreakFreeze: () => boolean
   addCoins: (amount: number) => void
   feedCreature: (creatureId: string, foodItemId: string) => void
   addXp: (amount: number) => void
   addDevEgg: (isShiny?: boolean) => void
   addDevSteps: (n: number) => void
+  addDevStreakDays: (n: number) => void
+  openStreakChest: () => StreakChestRewards | null
   toggleDevPremium: () => void
   toggleNotificationPref: (key: NotificationPrefKey) => void
   subscribePremium: () => void
@@ -103,7 +108,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const mult = affinityMultiplier(boostingSquad, category, creaturesById)
     const xpGained = Math.round((poi.points ?? 5) * mult)
     const { level, xp } = applyXp(profile.level, profile.xp, xpGained)
-    const { streakDays, lastVisitDate } = updateStreak(profile.lastVisitDate, profile.streakDays)
+    const { streakDays, lastVisitDate, freezesUsed } = updateStreak(profile.lastVisitDate, profile.streakDays, profile.streakFreezes)
+    const newMilestone = streakChestMilestoneFor(streakDays)
+    const gotStreakChest = newMilestone > profile.streakChestMilestone
 
     const newHistory = [
       {
@@ -140,6 +147,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       achievements: updatedAchievements,
       lastVisitDate,
       streakDays,
+      streakFreezes: profile.streakFreezes - freezesUsed,
+      pendingStreakChest: profile.pendingStreakChest || gotStreakChest,
+      streakChestMilestone: gotStreakChest ? newMilestone : profile.streakChestMilestone,
       eggs: updatedEggs,
     }
 
@@ -152,6 +162,47 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const updated = { ...profile, displayName: name.trim() || 'Explorer' }
     setProfile(updated)
     saveProfile(updated)
+  }
+
+  // Rolls + applies a perfect-week streak chest's contents. Returns null if none
+  // is pending (e.g. a stale tap after it was already opened elsewhere).
+  function openStreakChest(): StreakChestRewards | null {
+    if (!profile.pendingStreakChest) return null
+    const rewards = rollStreakChestRewards()
+    const { level, xp } = applyXp(profile.level, profile.xp, rewards.xp)
+    const eggs = rewards.egg && profile.eggs.length < profile.maxEggSlots
+      ? [...profile.eggs, createEggFor('streak_chest', 'Streak Chest', 'landmark')]
+      : profile.eggs
+    const foodInventory = rewards.food
+      ? [...profile.foodInventory, makeFoodItem(rewards.food.id)]
+      : profile.foodInventory
+
+    const built: PlayerProfile = {
+      ...profile,
+      pendingStreakChest: false,
+      coins: profile.coins + rewards.coins,
+      level, xp, totalXp: profile.totalXp + rewards.xp,
+      eggs, foodInventory,
+    }
+    persist(withLevelUpRewards(profile, built))
+    return rewards
+  }
+
+  // Dev cheat: advances the streak by a full chest interval (7 days) through the
+  // real updateStreak/milestone path, so it also exercises the achievement check.
+  function addDevStreakDays(n: number) {
+    const streakDays = profile.streakDays + n
+    const newMilestone = streakChestMilestoneFor(streakDays)
+    const gotStreakChest = newMilestone > profile.streakChestMilestone
+    const achievements = checkAchievements(profile.achievements, profile.visitHistory, profile.level, streakDays)
+    persist({
+      ...profile,
+      streakDays,
+      lastVisitDate: todayStr(),
+      achievements,
+      pendingStreakChest: profile.pendingStreakChest || gotStreakChest,
+      streakChestMilestone: gotStreakChest ? newMilestone : profile.streakChestMilestone,
+    })
   }
 
   // Advance incubating eggs by steps walked. Call with the current today's step count
@@ -424,6 +475,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return true
   }
 
+  function buyStreakFreeze(): boolean {
+    if (profile.streakFreezes >= STREAK_FREEZE_MAX) return false
+    if (profile.coins < STREAK_FREEZE_COST) return false
+    persist({ ...profile, coins: profile.coins - STREAK_FREEZE_COST, streakFreezes: profile.streakFreezes + 1 })
+    return true
+  }
+
   // Credit purchased coins. NOTE: real money flows through Google Play Billing
   // (Digital Goods API in a TWA); this just applies the granted amount.
   function addCoins(amount: number) {
@@ -683,7 +741,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, toggleDevPremium, toggleNotificationPref, subscribePremium, claimMedal,
+      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, subscribePremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

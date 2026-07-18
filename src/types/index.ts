@@ -123,6 +123,9 @@ export interface PlayerProfile {
   createdAt: string
   lastVisitDate: string | null  // ISO date of last check-in (for streak)
   streakDays: number
+  pendingStreakChest: boolean    // a perfect-week chest is waiting to be tapped open
+  streakChestMilestone: number   // highest streak-day count (multiple of STREAK_CHEST_INTERVAL) already granted
+  streakFreezes: number   // held streak-freeze items (shop), capped at STREAK_FREEZE_MAX; auto-consumed to cover a missed day
   eggs: Egg[]
   hatchedCreatures: HatchedCreature[]
   foodInventory: FoodItem[]

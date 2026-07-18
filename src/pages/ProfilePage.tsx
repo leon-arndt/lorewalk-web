@@ -9,6 +9,7 @@ import { FriendsSection } from '@/components/UI/FriendsSection'
 import { PostcardsSection } from '@/components/UI/PostcardsSection'
 import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
+import { StreakChestCard } from '@/components/UI/StreakChestCard'
 
 const PREMIUM_BENEFITS = [
   { icon: '🔓', text: 'Every landmark unlocked' },
@@ -38,7 +39,7 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, toggleDevPremium, subscribePremium, claimMedal } = useProfile()
+  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, addDevStreakDays, toggleDevPremium, subscribePremium, claimMedal } = useProfile()
   const { mode } = useConnectionMode()
   const { showReward } = useReward()
   const { t } = useLocale()
@@ -248,6 +249,8 @@ export function ProfilePage() {
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        <StreakChestCard />
 
         {/* Premium */}
         <section>
@@ -560,6 +563,18 @@ export function ProfilePage() {
                 }}
               >
                 ✨ Shiny Egg
+              </button>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <button
+                onClick={() => addDevStreakDays(7)}
+                style={{
+                  width: '100%', padding: '8px 0', borderRadius: 10, border: 'none',
+                  background: '#422006', color: '#fcd34d', fontWeight: 700, fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                🔥 +7 streak days (grant chest)
               </button>
             </div>
             <div style={{ marginTop: 8 }}>

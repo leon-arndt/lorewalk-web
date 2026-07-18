@@ -6,19 +6,21 @@ import { useLocale } from '@/contexts/LocaleContext'
 import {
   creatureCap, creatureSlotsCost, eggSlotCost,
   CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
+  STREAK_FREEZE_MAX, STREAK_FREEZE_COST,
 } from '@/lib/profile'
 
 // Real money runs through Google Play Billing (Digital Goods API in a TWA). Until
 // that's wired, the buy buttons credit coins directly - clearly labelled as test.
+// Priced in SGD - Singapore is the first launch market (see CLAUDE.md).
 const COIN_PACKS = [
-  { coins: 100, price: '€0.99', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
-  { coins: 600, price: '€4.99', tagKey: 'shop_popular' as const },
-  { coins: 1000, price: '€6.99', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
-  { coins: 2500, price: '€9.99', tagKey: 'shop_best_value' as const },
+  { coins: 100, price: 'S$0.79', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { coins: 600, price: 'S$3.49', tagKey: 'shop_popular' as const },
+  { coins: 1000, price: 'S$5.00', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { coins: 2500, price: 'S$6.99', tagKey: 'shop_best_value' as const },
 ]
 
 export function ShopPage() {
-  const { profile, buyCreatureSlots, buyEggSlot, addCoins } = useProfile()
+  const { profile, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins } = useProfile()
   const { mode } = useConnectionMode()
   const { t } = useLocale()
   const location = useLocation()
@@ -36,6 +38,7 @@ export function ShopPage() {
   const creatureCost = creatureSlotsCost(profile.bonusCreatureSlots)
   const eggCost = eggSlotCost(profile.maxEggSlots)
   const eggMaxed = profile.maxEggSlots >= MAX_EGG_SLOTS_CAP
+  const streakFreezeMaxed = profile.streakFreezes >= STREAK_FREEZE_MAX
   const cap = creatureCap(profile.level, profile.bonusCreatureSlots)
 
   const upgrades = [
@@ -50,6 +53,14 @@ export function ShopPage() {
       title: '+1 egg slot',
       sub: eggMaxed ? `Maxed (${MAX_EGG_SLOTS_CAP})` : `Incubate ${profile.maxEggSlots + 1} eggs at once`,
       cost: eggCost, disabled: eggMaxed || profile.coins < eggCost, buy: buyEggSlot,
+    },
+    {
+      key: 'streakFreeze', icon: '🧊',
+      title: 'Streak freeze',
+      sub: streakFreezeMaxed
+        ? `Maxed (${STREAK_FREEZE_MAX} held)`
+        : `Covers a missed day - ${profile.streakFreezes}/${STREAK_FREEZE_MAX} held`,
+      cost: STREAK_FREEZE_COST, disabled: streakFreezeMaxed || profile.coins < STREAK_FREEZE_COST, buy: buyStreakFreeze,
     },
   ]
 

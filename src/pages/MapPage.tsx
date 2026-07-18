@@ -390,37 +390,41 @@ export function MapPage() {
         </div>
 
         {/* Compass: right-aligned inside the column so it always sits below
-            the week strip and never overlaps it, whatever its height. */}
-        <div style={{
-          alignSelf: 'flex-end', marginTop: 4,
-          pointerEvents: 'auto',
-        }}>
-        <button
-          onClick={() => compassResetRef.current?.()}
-          title="Reset to north"
-          style={{
-            width: 44, height: 44, borderRadius: 14, padding: 0,
-            ...glassChrome,
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          <svg
-            width="28" height="28"
-            viewBox="-14 -14 28 28"
+            the week strip and never overlaps it, whatever its height. Only
+            shown once the map is rotated off north, where it also acts as
+            the "reset rotation" button. */}
+        {Math.abs(bearing) > 0.5 && (
+          <div style={{
+            alignSelf: 'flex-end', marginTop: 4,
+            pointerEvents: 'auto',
+          }}>
+          <button
+            onClick={() => compassResetRef.current?.()}
+            title="Reset to north"
             style={{
-              transform: `rotate(${-bearing}deg)`,
-              transition: 'transform 0.1s linear',
-              display: 'block',
+              width: 44, height: 44, borderRadius: 14, padding: 0,
+              ...glassChrome,
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <polygon points="0,-11 -5.5,0 5.5,0" fill="#ef4444" />
-            <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
-            <circle r="2" fill="#334155" />
-          </svg>
-        </button>
-        </div>
+            <svg
+              width="28" height="28"
+              viewBox="-14 -14 28 28"
+              style={{
+                transform: `rotate(${-bearing}deg)`,
+                transition: 'transform 0.1s linear',
+                display: 'block',
+              }}
+            >
+              <polygon points="0,-11 -5.5,0 5.5,0" fill="#ef4444" />
+              <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
+              <circle r="2" fill="#334155" />
+            </svg>
+          </button>
+          </div>
+        )}
       </div>
 
       {/* Hatching toast */}

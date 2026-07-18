@@ -41,7 +41,7 @@ export function BottomNav() {
     { to: '/', icon: <MapIcon />, label: t('nav_map'), dot: false },
     { to: '/creatures', icon: <CreaturesIcon />, label: t('nav_creatures'), dot: hasReadyEgg },
     { to: '/squads', icon: <SquadsIcon />, label: t('nav_squads'), dot: false },
-    { to: '/profile', icon: <ProfileIcon />, label: t('nav_profile'), dot: false },
+    { to: '/profile', icon: <ProfileIcon />, label: t('nav_profile'), dot: profile.pendingStreakChest },
   ]
 
   return (
