@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import { useReward } from '@/contexts/RewardContext'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { MedalSvg } from '@/components/UI/MedalSvg'
+import { getMedalConfig } from '@/data/medals'
 import type { RewardItem } from '@/types'
 
 const ITEM_META: Record<string, { icon: string; color: string; label: (item: RewardItem) => string }> = {
@@ -72,7 +74,8 @@ export function RewardScreen() {
   const { pendingReward, dismissReward } = useReward()
   if (!pendingReward) return null
 
-  const { emoji, title, subtitle, items } = pendingReward
+  const { emoji, title, subtitle, items, medalMonthKey } = pendingReward
+  const medalConfig = medalMonthKey ? getMedalConfig(medalMonthKey) : null
 
   return (
     <div
@@ -99,13 +102,16 @@ export function RewardScreen() {
           textAlign: 'center',
         }}
       >
-        {/* Big icon */}
+        {/* Big icon — medal SVG if available, otherwise emoji */}
         <div style={{
-          fontSize: 72, lineHeight: 1, marginBottom: 16,
+          lineHeight: 1, marginBottom: 16,
           animation: 'rewardBounce 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s both',
           display: 'inline-block',
         }}>
-          <EmojiSprite id={emoji} emoji={emoji} size={72} />
+          {medalConfig
+            ? <MedalSvg config={medalConfig} size={140} />
+            : <EmojiSprite id={emoji} emoji={emoji} size={72} />
+          }
         </div>
 
         {/* Title */}

@@ -274,6 +274,7 @@ export interface RewardConfig {
   title: string
   subtitle?: string
   items: RewardItem[]
+  medalMonthKey?: string  // when set, renders MedalSvg instead of the emoji header
 }
 
 // A landmark the player holds (claimed by finishing an expedition there). Held

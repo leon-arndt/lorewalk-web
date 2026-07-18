@@ -84,6 +84,7 @@ export function ProfilePage() {
       title: 'Medal earned!',
       subtitle: `You completed the ${monthLabel(medal.monthKey)} challenge.`,
       items: [{ type: 'badge', label: medal.title }],
+      medalMonthKey: medal.monthKey,
     })
   }
 
