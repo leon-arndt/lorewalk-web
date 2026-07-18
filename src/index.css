@@ -68,6 +68,14 @@ html, body, #root {
   100% { transform: translateY(-70px) scale(0.2); opacity: 0; }
 }
 
+/* Paper plane launching from the "Send postcard" button toward the top-right,
+   shrinking and fading as if departing for delivery. */
+@keyframes postcardPlaneOut {
+  0%   { transform: translate(-50%, -50%) translate(0, 0)         rotate(-6deg)  scale(1);    opacity: 1; }
+  18%  { transform: translate(-50%, -50%) translate(20px, -18px)  rotate(-16deg) scale(1.15); opacity: 1; }
+  100% { transform: translate(-50%, -50%) translate(260px, -320px) rotate(20deg) scale(0.2);  opacity: 0; }
+}
+
 /* Streak chest wiggling right before it pops open */
 @keyframes chestShake {
   0%, 100% { transform: rotate(0deg) scale(1); }

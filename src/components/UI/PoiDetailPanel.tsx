@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -29,8 +29,13 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
   const { sendPostcard } = useProfile()
   const [pickingFriend, setPickingFriend] = useState(false)
   const [sent, setSent] = useState<string | null>(null)
+  const [plane, setPlane] = useState<{ x: number; y: number; key: number } | null>(null)
+  const planeKeyRef = useRef(0)
 
-  function handleSend(friendId: string, friendName: string) {
+  function handleSend(friendId: string, friendName: string, e: React.MouseEvent<HTMLButtonElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    planeKeyRef.current += 1
+    setPlane({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, key: planeKeyRef.current })
     sendPostcard(friendId, friendName, { id: poi.id, name: poi.name, category: poi.category ?? 'landmark' })
     setSent(friendName)
     setPickingFriend(false)
@@ -181,7 +186,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                 {MOCK_FRIENDS.map((f) => (
                   <button
                     key={f.id}
-                    onClick={() => handleSend(f.id, f.name)}
+                    onClick={(e) => handleSend(f.id, f.name, e)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 10,
                       padding: '10px 14px', borderRadius: 12, border: '1.5px solid #e2e8f0',
@@ -225,6 +230,21 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           </div>
         ) : null}
       </div>
+
+      {plane && (
+        <span
+          key={plane.key}
+          onAnimationEnd={() => setPlane(null)}
+          style={{
+            position: 'fixed',
+            left: plane.x, top: plane.y,
+            fontSize: 22, zIndex: 1000, pointerEvents: 'none',
+            animation: 'postcardPlaneOut 0.85s cubic-bezier(0.3,0,0.4,1) forwards',
+          }}
+        >
+          ✈️
+        </span>
+      )}
     </div>
   )
 }
