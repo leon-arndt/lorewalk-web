@@ -584,8 +584,9 @@ export function isPoiLocked(poi: Poi, profile: PlayerProfile): boolean {
   return !!poi.premiumOnly && !profile.isPremium
 }
 
-// Target steps for a full daily ring on the journal calendar.
-export const DAILY_STEP_GOAL = 5000
+// Target steps for a full daily ring - journal calendar and the map HUD ring
+// around the step counter both read off this. Matches Google Fit's default.
+export const DAILY_STEP_GOAL = 10_000
 
 // Local (not UTC) YYYY-MM-DD, so calendar days match the player's wall clock.
 export function localDateKey(d: Date): string {
