@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { useFriends } from '@/hooks/useFriends'
+import { useFriends, type Friend } from '@/hooks/useFriends'
+import { totalSteps as sumTotalSteps } from '@/lib/profile'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
+import { FriendProfileScreen } from '@/components/UI/FriendProfileScreen'
 
 function formatAdded(iso: string): string {
   return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
@@ -16,6 +18,9 @@ export function FriendsSection() {
   const { friendCode, friends, loading, addFriend, regenerate } = useFriends(
     profile.id,
     profile.displayName,
+    profile.level,
+    sumTotalSteps(profile.dailySteps),
+    profile.achievements.filter((a) => a.unlockedAt).map((a) => a.id),
   )
 
   const [qrUrl, setQrUrl] = useState<string | null>(null)
@@ -24,6 +29,7 @@ export function FriendsSection() {
   const [adding, setAdding] = useState(false)
   const [copied, setCopied] = useState(false)
   const [, setTick] = useState(0)
+  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
 
   // The "Refreshes in Xh" label is computed at render; tick once a minute so it
   // counts down on its own instead of freezing until the next unrelated re-render.
@@ -189,11 +195,16 @@ export function FriendsSection() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {friends.map((f) => (
-            <div key={f.playerId} style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              background: 'white', borderRadius: 14, padding: '12px 14px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            }}>
+            <button
+              key={f.playerId}
+              onClick={() => setSelectedFriend(f)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                textAlign: 'left', border: 'none', cursor: 'pointer',
+                background: 'white', borderRadius: 14, padding: '12px 14px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              }}
+            >
               <div style={{
                 position: 'relative', width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
                 background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
@@ -206,19 +217,35 @@ export function FriendsSection() {
                 </div>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{
+                    fontSize: 14, fontWeight: 600, color: '#1e293b',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {f.displayName}
+                  </span>
+                  <span style={{
+                    flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#047857',
+                    background: '#d1fae5', borderRadius: 20, padding: '1px 7px',
+                  }}>
+                    Lv {f.level}
+                  </span>
+                </div>
                 <div style={{
-                  fontSize: 14, fontWeight: 600, color: '#1e293b',
+                  fontSize: 11, color: '#94a3b8', marginTop: 2,
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>
-                  {f.displayName}
-                </div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                  {t('friends_added_date', { date: formatAdded(f.addedAt) })}
+                  {f.totalSteps.toLocaleString()} steps · {t('friends_added_date', { date: formatAdded(f.addedAt) })}
                 </div>
               </div>
-            </div>
+              <span style={{ flexShrink: 0, color: '#cbd5e1', fontSize: 18, fontWeight: 700 }}>›</span>
+            </button>
           ))}
         </div>
+      )}
+
+      {selectedFriend && (
+        <FriendProfileScreen friend={selectedFriend} onClose={() => setSelectedFriend(null)} />
       )}
     </section>
   )

@@ -13,6 +13,9 @@ export interface Friend {
   playerId: string
   displayName: string
   addedAt: string
+  level: number
+  totalSteps: number
+  achievementIds: string[]
 }
 
 export interface FriendCode {
@@ -37,11 +40,27 @@ const OFFLINE_CODE: FriendCode = {
 }
 
 const OFFLINE_FRIENDS: Friend[] = [
-  { playerId: 'stub-1', displayName: 'Aria Tanaka', addedAt: new Date().toISOString() },
-  { playerId: 'stub-2', displayName: 'Marcus Chen', addedAt: new Date().toISOString() },
+  {
+    playerId: 'stub-1', displayName: 'Aria Tanaka',
+    addedAt: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+    level: 8, totalSteps: 214_300,
+    achievementIds: ['first_step', 'explorer', 'history_buff', 'nature_lover', 'streak_3', 'streak_7', 'level_5'],
+  },
+  {
+    playerId: 'stub-2', displayName: 'Marcus Chen',
+    addedAt: new Date(Date.now() - 6 * 86_400_000).toISOString(),
+    level: 3, totalSteps: 58_900,
+    achievementIds: ['first_step', 'explorer', 'streak_3'],
+  },
 ]
 
-export function useFriends(playerId: string, displayName: string) {
+export function useFriends(
+  playerId: string,
+  displayName: string,
+  level: number,
+  totalSteps: number,
+  achievementIds: string[],
+) {
   const { mode } = useConnectionMode()
   const offline = mode === 'offline'
 
@@ -65,6 +84,20 @@ export function useFriends(playerId: string, displayName: string) {
     if (offline || !playerId) return
     void supabase.from('friend_codes').update({ display_name: displayName }).eq('player_id', playerId)
   }, [playerId, displayName, offline])
+
+  // Publish the stats friends see on our row (level, total steps, unlocked
+  // achievements) - see player_public_stats in CLAUDE.md for the table shape.
+  useEffect(() => {
+    if (offline || !playerId) return
+    void supabase.from('player_public_stats').upsert({
+      player_id: playerId,
+      display_name: displayName,
+      level,
+      total_steps: totalSteps,
+      achievement_ids: achievementIds,
+      updated_at: new Date().toISOString(),
+    })
+  }, [playerId, displayName, level, totalSteps, achievementIds, offline])
 
   async function loadAll() {
     setLoading(true)
@@ -114,15 +147,35 @@ export function useFriends(playerId: string, displayName: string) {
       .from('friendships')
       .select('player_a, player_b, name_a, name_b, created_at')
       .or(`player_a.eq.${playerId},player_b.eq.${playerId}`)
-    if (data) {
-      setFriends(
-        data.map((row) => ({
-          playerId: row.player_a === playerId ? row.player_b : row.player_a,
-          displayName: row.player_a === playerId ? row.name_b : row.name_a,
-          addedAt: row.created_at,
-        })),
-      )
-    }
+    if (!data) return
+
+    const base = data.map((row) => ({
+      playerId: row.player_a === playerId ? row.player_b : row.player_a,
+      displayName: row.player_a === playerId ? row.name_b : row.name_a,
+      addedAt: row.created_at,
+    }))
+
+    if (base.length === 0) { setFriends([]); return }
+
+    // Best-effort: a friend who hasn't opened the app since this table shipped
+    // simply has no row yet, so fall back to zeroed stats rather than dropping them.
+    const { data: stats } = await supabase
+      .from('player_public_stats')
+      .select('player_id, level, total_steps, achievement_ids')
+      .in('player_id', base.map((f) => f.playerId))
+    const statsById = new Map((stats ?? []).map((s) => [s.player_id, s]))
+
+    setFriends(
+      base.map((f) => {
+        const s = statsById.get(f.playerId)
+        return {
+          ...f,
+          level: s?.level ?? 1,
+          totalSteps: s?.total_steps ?? 0,
+          achievementIds: s?.achievement_ids ?? [],
+        }
+      }),
+    )
   }
 
   const regenerate = useCallback(async () => {
@@ -149,7 +202,11 @@ export function useFriends(playerId: string, displayName: string) {
         if (code === friendCode?.code) return { ok: false, key: 'friends_own_code' }
         setFriends((prev) => [
           ...prev,
-          { playerId: `stub-${Date.now()}`, displayName: 'Test Friend', addedAt: new Date().toISOString() },
+          {
+            playerId: `stub-${Date.now()}`, displayName: 'Test Friend',
+            addedAt: new Date().toISOString(),
+            level: 1, totalSteps: 0, achievementIds: [],
+          },
         ])
         return { ok: true, key: 'friends_added_test' }
       }

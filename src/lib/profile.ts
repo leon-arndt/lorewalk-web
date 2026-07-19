@@ -109,7 +109,7 @@ export function rollStreakChestRewards(): StreakChestRewards {
 }
 
 // ─── Achievement definitions ────────────────────────────────────────────────
-const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlockedAt'>[] = [
+export const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlockedAt'>[] = [
   { id: 'first_step',       name: 'First Step',          icon: '👣', description: 'Visit your first landmark' },
   { id: 'explorer',         name: 'Explorer',            icon: '🗺️', description: 'Visit 5 landmarks' },
   { id: 'history_buff',     name: 'History Buff',        icon: '📜', description: 'Visit 10 landmarks' },
@@ -128,6 +128,17 @@ const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlockedAt'>[] = [
 
 export function buildInitialAchievements(): Achievement[] {
   return ACHIEVEMENT_DEFS.map((def) => ({ ...def, unlockedAt: null }))
+}
+
+export interface FriendAchievement extends Omit<Achievement, 'unlockedAt'> {
+  unlocked: boolean
+}
+
+// We only sync which achievement ids a friend has unlocked (not exact unlock
+// dates - that's more sync traffic than it's worth), so reconstruct their
+// grid from the same static defs used for the local player.
+export function friendAchievementList(unlockedIds: string[]): FriendAchievement[] {
+  return ACHIEVEMENT_DEFS.map((def) => ({ ...def, unlocked: unlockedIds.includes(def.id) }))
 }
 
 export function checkAchievements(
@@ -776,4 +787,10 @@ export function stepsThisMonth(dailySteps: Record<string, number>, monthKey = cu
     (sum, [date, steps]) => (date.startsWith(monthKey) ? sum + steps : sum),
     0,
   )
+}
+
+// dailySteps accumulates one entry per day for as long as the profile exists
+// (never pruned), so summing it is an accurate lifetime total.
+export function totalSteps(dailySteps: Record<string, number>): number {
+  return Object.values(dailySteps).reduce((sum, steps) => sum + steps, 0)
 }

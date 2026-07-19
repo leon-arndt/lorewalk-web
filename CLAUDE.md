@@ -135,6 +135,24 @@ returns setof json language sql stable as $$
 $$;
 ```
 
+`useFriends` also expects `friend_codes` and `friendships` tables (code-based friend adding) and a `player_public_stats` table (what a friend's profile card shows: level, total steps, unlocked achievement ids). None of these enforce `auth.uid()` — like the rest of this pre-launch prototype, `player_id` is a client-generated id trusted at face value, so RLS is open rather than owner-scoped.
+
+```sql
+create table if not exists player_public_stats (
+  player_id text primary key,
+  display_name text not null,
+  level int not null default 1,
+  total_steps bigint not null default 0,
+  achievement_ids text[] not null default '{}',
+  updated_at timestamptz not null default now()
+);
+
+alter table player_public_stats enable row level security;
+create policy "public read" on player_public_stats for select using (true);
+create policy "anyone can upsert" on player_public_stats for insert with check (true);
+create policy "anyone can update" on player_public_stats for update using (true);
+```
+
 ## Map
 
 - **Tile source**: OpenFreeMap "Liberty" vector style (`https://tiles.openfreemap.org/styles/liberty`) — free, no API key, includes 3D building extrusions and transit POIs. Community-funded with no SLA: self-host the tiles or use a paid provider before any high-volume public launch. (Previously flat raster OSM; the web map no longer matches the Unity client's 2D look — this was a deliberate aesthetic choice.)
