@@ -687,7 +687,9 @@ export function weekStart(now = Date.now()): string {
 export function buildWeeklyWalk(startSteps: number): WeeklyPartyWalk {
   const targetPerMember = WEEKLY_WALK_TARGET_STEPS / WEEKLY_WALK_PARTY_SIZE
   const members: PartyMember[] = [
-    { id: 'player', name: 'You', emoji: '🧭', targetSteps: targetPerMember, isPlayer: true },
+    // Pikmin-Bloom-style: the player isn't capped to an equal share - walking the
+    // whole combined goal solo finishes the party walk, same as any real member.
+    { id: 'player', name: 'You', emoji: '🧭', targetSteps: WEEKLY_WALK_TARGET_STEPS, isPlayer: true },
     ...MOCK_PARTY_POOL.slice(0, WEEKLY_WALK_PARTY_SIZE - 1).map((m) => ({
       id: `mock_${m.name}`,
       name: m.name,
@@ -715,11 +717,11 @@ export function mockMemberProgressSteps(joinedAt: string, targetSteps: number, n
   return Math.round(fraction * targetSteps)
 }
 
-// Player's contributed steps.
+// Player's contributed steps - capped at the combined party goal, not an equal
+// share of it, so one person walking it all finishes the party walk alone.
 export function playerProgressSteps(walk: WeeklyPartyWalk, currentSteps: number): number {
   const gained = Math.max(0, currentSteps - walk.startSteps)
-  const targetSteps = walk.totalTargetSteps / WEEKLY_WALK_PARTY_SIZE
-  return Math.min(targetSteps, gained)
+  return Math.min(walk.totalTargetSteps, gained)
 }
 
 // Total combined steps across all party members.

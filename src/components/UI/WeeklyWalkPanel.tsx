@@ -256,6 +256,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: '#1e293b' }}>Weekly Party Walk</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
           Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.
+          Your own steps count toward the whole goal, so you can finish it solo if the rest of the party falls behind.
           Resets every Monday.
         </p>
       </div>
