@@ -11,6 +11,8 @@ import { JournalOverlay } from '@/components/UI/JournalOverlay'
 import { useReward } from '@/contexts/RewardContext'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { StepCounter } from '@/components/UI/StepCounter'
+import { LevelCapsule } from '@/components/UI/LevelCapsule'
+import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useStepCounter } from '@/hooks/useStepCounter'
 import { usePois } from '@/hooks/usePois'
@@ -358,7 +360,8 @@ export function MapPage() {
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center',
         }}>
-          <div style={{ pointerEvents: 'auto', justifySelf: 'start' }}>
+          <div style={{ pointerEvents: 'auto', justifySelf: 'start', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <LevelCapsule level={profile.level} />
             <ModeToggle />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
@@ -382,7 +385,9 @@ export function MapPage() {
               </div>
             )}
           </div>
-          <div />
+          <div style={{ pointerEvents: 'auto', justifySelf: 'end' }}>
+            <CoinCapsule />
+          </div>
         </div>
 
         {/* Journal week strip - tap to open the full calendar (Pikmin-Bloom-style) */}

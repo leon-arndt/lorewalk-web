@@ -7,7 +7,6 @@ import { MusicProvider } from '@/contexts/MusicContext'
 import { RewardProvider } from '@/contexts/RewardContext'
 import { playClickSfx, playCloseSfx } from '@/lib/sfx'
 import { BottomNav } from '@/components/UI/BottomNav'
-import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import { LevelUpScreen } from '@/components/UI/LevelUpScreen'
 import { RewardScreen } from '@/components/UI/RewardScreen'
 import { MapPage } from '@/pages/MapPage'
@@ -78,7 +77,6 @@ export default function App() {
                   <Route path="/customize" element={<CharacterCustomizationPage />} />
                 </Routes>
               </div>
-              <CoinCapsule />
             </div>
             <BottomNav />
             <LevelUpOverlay />

@@ -12,7 +12,6 @@ export function CoinCapsule() {
       <button
         onClick={() => setOpen(true)}
         style={{
-          position: 'fixed', top: 16, right: 16, zIndex: 50,
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'rgba(255,251,235,0.80)',
           backdropFilter: 'blur(40px) saturate(200%) brightness(1.04)',

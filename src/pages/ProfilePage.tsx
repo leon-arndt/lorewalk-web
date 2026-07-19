@@ -1,16 +1,19 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { xpForNextLevel, currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS } from '@/lib/profile'
+import { xpForNextLevel, currentMonthKey, monthLabel, recentMonthKeys, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
 import { PostcardsSection } from '@/components/UI/PostcardsSection'
 import { MedalSvg } from '@/components/UI/MedalSvg'
+import { BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
+import { MedalHistoryScreen } from '@/components/UI/MedalHistoryScreen'
 import { getMedalConfig } from '@/data/medals'
 import { StreakChestCard } from '@/components/UI/StreakChestCard'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
+import type { Achievement, EarnedMedal } from '@/types'
 
 const PREMIUM_BENEFITS = [
   { icon: '🔓', text: 'Every landmark unlocked' },
@@ -49,6 +52,10 @@ export function ProfilePage() {
   const [nameInput, setNameInput] = useState(profile.displayName)
   const [premiumFlash, setPremiumFlash] = useState<string | null>(null)
   const [showChallengeInfo, setShowChallengeInfo] = useState(false)
+  const [badgeDetail, setBadgeDetail] = useState<{
+    icon: ReactNode; name: string; description: string; status: string; statusColor: string
+  } | null>(null)
+  const [showMedalHistory, setShowMedalHistory] = useState(false)
 
   const xpNeeded = xpForNextLevel(profile.level)
   const xpPct = Math.min((profile.xp / xpNeeded) * 100, 100)
@@ -77,6 +84,36 @@ export function ProfilePage() {
       setPremiumFlash('Real payments coming soon - switch to offline mode to test Premium.')
     }
     setTimeout(() => setPremiumFlash(null), 2800)
+  }
+
+  function openAchievementDetail(a: Achievement) {
+    setBadgeDetail({
+      icon: (
+        <span style={{ fontSize: 64, filter: a.unlockedAt ? undefined : 'grayscale(1)', opacity: a.unlockedAt ? 1 : 0.5 }}>
+          {a.icon}
+        </span>
+      ),
+      name: a.name,
+      description: a.description,
+      status: a.unlockedAt ? `Acquired on ${formatDate(a.unlockedAt)}` : 'Not yet unlocked',
+      statusColor: a.unlockedAt ? '#16a34a' : '#94a3b8',
+    })
+  }
+
+  function openMedalDetail(monthKey: string, earned: EarnedMedal | undefined) {
+    const cfg = getMedalConfig(monthKey)
+    if (!cfg) return
+    setBadgeDetail({
+      icon: (
+        <div style={{ filter: earned ? undefined : 'grayscale(1)', opacity: earned ? 1 : 0.45 }}>
+          <MedalSvg config={cfg} size={140} />
+        </div>
+      ),
+      name: cfg.title,
+      description: cfg.challenge,
+      status: earned ? `Acquired on ${formatDate(earned.claimedAt)}` : 'Not yet earned',
+      statusColor: earned ? '#16a34a' : '#94a3b8',
+    })
   }
 
   function handleClaimMedal() {
@@ -388,28 +425,43 @@ export function ProfilePage() {
             </div>
           )}
 
-          {profile.medals.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 12 }}>
-              {profile.medals.slice().reverse().map((m) => {
-                const cfg = getMedalConfig(m.monthKey)
-                return (
-                  <div
-                    key={m.id}
-                    title={`${m.title} - earned ${formatDate(m.claimedAt)}`}
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'default' }}
-                  >
-                    {cfg
-                      ? <MedalSvg config={cfg} size={96} />
-                      : <span style={{ fontSize: 48 }}>🏅</span>
-                    }
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#78350f', textAlign: 'center', lineHeight: 1.3 }}>
-                      {monthLabel(m.monthKey)}
-                    </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#78350f' }}>Monthly medals</span>
+            <button
+              onClick={() => setShowMedalHistory(true)}
+              aria-label="View all monthly medals"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#b45309', fontSize: 18, fontWeight: 800, padding: 4, lineHeight: 1,
+              }}
+            >
+              ›
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            {recentMonthKeys(4).map((monthKey) => {
+              const cfg = getMedalConfig(monthKey)
+              if (!cfg) return null
+              const earned = profile.medals.find((m) => m.monthKey === monthKey)
+              return (
+                <button
+                  key={monthKey}
+                  onClick={() => openMedalDetail(monthKey, earned)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer', flex: 1,
+                  }}
+                >
+                  <div style={{ filter: earned ? undefined : 'grayscale(1)', opacity: earned ? 1 : 0.4 }}>
+                    <MedalSvg config={cfg} size={72} />
                   </div>
-                )
-              })}
-            </div>
-          )}
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#78350f', textAlign: 'center', lineHeight: 1.3 }}>
+                    {monthLabel(monthKey)}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </section>
 
         <PostcardsSection />
@@ -419,27 +471,27 @@ export function ProfilePage() {
         {/* Achievements */}
         <section>
           <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-            {t('profile_achievements')} · {unlockedAchievements.length}/{profile.achievements.length}
+            {t('profile_achievements')}
           </h2>
 
           {unlockedAchievements.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
               {unlockedAchievements.map((a) => (
-                <div
+                <button
                   key={a.id}
-                  title={`${a.name}: ${a.description}\nUnlocked ${formatDate(a.unlockedAt!)}`}
+                  onClick={() => openAchievementDetail(a)}
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: 4, padding: '10px 12px', borderRadius: 14,
+                    gap: 4, padding: '10px 12px', borderRadius: 14, border: 'none',
                     background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                    minWidth: 72, cursor: 'default',
+                    minWidth: 72, cursor: 'pointer',
                   }}
                 >
                   <span style={{ fontSize: 26 }}>{a.icon}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, color: '#1e293b', textAlign: 'center', lineHeight: 1.3 }}>
                     {a.name}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -447,21 +499,21 @@ export function ProfilePage() {
           {lockedAchievements.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {lockedAchievements.map((a) => (
-                <div
+                <button
                   key={a.id}
-                  title={a.description}
+                  onClick={() => openAchievementDetail(a)}
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: 4, padding: '10px 12px', borderRadius: 14,
-                    background: '#f8fafc', border: '1px dashed #e2e8f0',
-                    minWidth: 72, opacity: 0.5, cursor: 'default',
+                    gap: 4, padding: '10px 12px', borderRadius: 14, border: '1px dashed #e2e8f0',
+                    background: '#f8fafc',
+                    minWidth: 72, opacity: 0.5, cursor: 'pointer',
                   }}
                 >
                   <span style={{ fontSize: 26, filter: 'grayscale(1)' }}>{a.icon}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textAlign: 'center', lineHeight: 1.3 }}>
                     {a.name}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -681,6 +733,26 @@ export function ProfilePage() {
             </button>
           </div>
         </div>
+      )}
+
+      {showMedalHistory && (
+        <MedalHistoryScreen
+          medals={profile.medals}
+          createdAt={profile.createdAt}
+          onSelectMonth={(monthKey, earned) => { setShowMedalHistory(false); openMedalDetail(monthKey, earned) }}
+          onClose={() => setShowMedalHistory(false)}
+        />
+      )}
+
+      {badgeDetail && (
+        <BadgeDetailSheet
+          icon={badgeDetail.icon}
+          name={badgeDetail.name}
+          description={badgeDetail.description}
+          status={badgeDetail.status}
+          statusColor={badgeDetail.statusColor}
+          onClose={() => setBadgeDetail(null)}
+        />
       )}
     </div>
   )

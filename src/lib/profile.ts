@@ -758,6 +758,17 @@ export function monthLabel(monthKey: string): string {
   return new Date(y, m - 1, 1).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })
 }
 
+// Oldest -> newest, ending at `from` (inclusive). Used for the recent-medals strip.
+export function recentMonthKeys(n: number, from = currentMonthKey()): string[] {
+  const [y, m] = from.split('-').map(Number)
+  const keys: string[] = []
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(y, m - 1 - i, 1)
+    keys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+  }
+  return keys
+}
+
 export function stepsThisMonth(dailySteps: Record<string, number>, monthKey = currentMonthKey()): number {
   return Object.entries(dailySteps).reduce(
     (sum, [date, steps]) => (date.startsWith(monthKey) ? sum + steps : sum),
