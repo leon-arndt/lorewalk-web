@@ -129,7 +129,7 @@ export function ProfilePage() {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 55%, #fdf6ff 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
 
       {/* Header card */}
       <div style={{ position: 'relative', background: 'white', padding: '44px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>
@@ -178,8 +178,8 @@ export function ProfilePage() {
             ) : (
               <div style={{
                 width: 64, height: 64, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #818cf8 0%, #c084fc 100%)',
-                boxShadow: '0 4px 12px rgba(129,140,248,0.35)',
+                background: 'linear-gradient(135deg, #34d399 0%, #6ee7b7 100%)',
+                boxShadow: '0 4px 12px rgba(52,211,153,0.35)',
               }} />
             )}
             <div style={{
@@ -201,14 +201,14 @@ export function ProfilePage() {
                   maxLength={24}
                   style={{
                     flex: 1, fontSize: 18, fontWeight: 700, color: '#1e293b',
-                    border: '2px solid #6366f1', borderRadius: 10,
+                    border: '2px solid #059669', borderRadius: 10,
                     padding: '4px 10px', outline: 'none',
                   }}
                 />
                 <button
                   onClick={handleNameSave}
                   style={{
-                    background: '#6366f1', color: 'white', border: 'none',
+                    background: '#059669', color: 'white', border: 'none',
                     borderRadius: 10, padding: '4px 14px', fontWeight: 600,
                     fontSize: 13, cursor: 'pointer',
                   }}
@@ -249,7 +249,7 @@ export function ProfilePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
-                background: 'linear-gradient(135deg, #818cf8, #c084fc)',
+                background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
                 color: 'white',
               }}>
                 Lv {profile.level}
@@ -274,7 +274,7 @@ export function ProfilePage() {
               <div style={{ height: 6, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', borderRadius: 3,
-                  background: 'linear-gradient(90deg, #818cf8, #c084fc)',
+                  background: 'linear-gradient(90deg, #34d399, #6ee7b7)',
                   width: `${xpPct}%`,
                   transition: 'width 0.4s ease',
                 }} />

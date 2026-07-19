@@ -44,11 +44,11 @@ export function WeekStrip({ dailySteps = {}, onOpen }: {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             opacity: d.isFuture ? 0.4 : 1,
           }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: d.isToday ? '#6366f1' : '#94a3b8' }}>{d.dow}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: d.isToday ? '#059669' : '#94a3b8' }}>{d.dow}</span>
             <StepRing progress={d.steps / DAILY_STEP_GOAL} size={30} stroke={3}>
               {goalMet
                 ? <span style={{ fontSize: 12 }}>😄</span>
-                : <span style={{ fontSize: 10, fontWeight: 700, color: d.isToday ? '#6366f1' : '#475569' }}>{d.date}</span>}
+                : <span style={{ fontSize: 10, fontWeight: 700, color: d.isToday ? '#059669' : '#475569' }}>{d.date}</span>}
             </StepRing>
           </div>
         )

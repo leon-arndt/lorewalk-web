@@ -111,9 +111,9 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
             disabled={busy}
             style={{
               aspectRatio: '1', borderRadius: 12, cursor: busy ? 'default' : 'pointer',
-              border: '2px dashed #c7d2fe', background: '#f5f7ff',
+              border: '2px dashed #a7f3d0', background: '#ecfdf5',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
-              color: '#6366f1', WebkitTapHighlightColor: 'transparent',
+              color: '#059669', WebkitTapHighlightColor: 'transparent',
             }}
           >
             <span style={{ fontSize: 26, lineHeight: 1 }}>{busy ? '⏳' : '📷'}</span>
@@ -173,7 +173,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 50, overflowY: 'auto',
-      background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 55%, #fdf6ff 100%)',
+      background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)',
       animation: 'panelSlideUp 0.34s cubic-bezier(0.16,1,0.3,1)',
       paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     }}>
@@ -236,7 +236,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                 padding: '6px 0', border: 'none', borderRadius: 12,
-                background: isToday ? 'rgba(99,102,241,0.10)' : 'transparent',
+                background: isToday ? 'rgba(5,150,105,0.10)' : 'transparent',
                 cursor: isFuture ? 'default' : 'pointer', opacity: isFuture ? 0.35 : 1,
                 WebkitTapHighlightColor: 'transparent',
               }}
@@ -244,7 +244,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
               <StepRing progress={steps / DAILY_STEP_GOAL} size={34} stroke={3.5}>
                 {goalMet
                   ? <span style={{ fontSize: 13 }}>😄</span>
-                  : <span style={{ fontSize: 11, fontWeight: 700, color: isToday ? '#6366f1' : '#475569' }}>{day}</span>}
+                  : <span style={{ fontSize: 11, fontWeight: 700, color: isToday ? '#059669' : '#475569' }}>{day}</span>}
               </StepRing>
               <span style={{
                 width: 5, height: 5, borderRadius: '50%',
@@ -269,7 +269,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
 
 const navBtn: React.CSSProperties = {
   width: 36, height: 36, borderRadius: '50%', border: 'none',
-  background: 'white', color: '#6366f1', fontSize: 20, fontWeight: 700,
+  background: 'white', color: '#059669', fontSize: 20, fontWeight: 700,
   cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   WebkitTapHighlightColor: 'transparent',

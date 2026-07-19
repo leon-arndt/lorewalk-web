@@ -20,7 +20,7 @@ export function ModeToggle() {
         fontSize: 12,
         fontWeight: 600,
         ...glassChrome,
-        color: isOnline ? '#6366f1' : '#94a3b8',
+        color: isOnline ? '#059669' : '#94a3b8',
         transition: 'color 0.15s ease',
         WebkitTapHighlightColor: 'transparent',
       }}

@@ -35,7 +35,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
 
       <div style={{
         fontSize: 11, fontWeight: 800, letterSpacing: 5,
-        color: creature.isShiny ? '#fcd34d' : '#c4b5fd', textTransform: 'uppercase',
+        color: creature.isShiny ? '#fcd34d' : '#6ee7b7', textTransform: 'uppercase',
       }}>
         Hatched!
       </div>
@@ -52,14 +52,14 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
             maxLength={24}
             style={{
               fontSize: 18, fontWeight: 700, color: '#1e293b',
-              border: '2px solid #818cf8', borderRadius: 10,
+              border: '2px solid #34d399', borderRadius: 10,
               padding: '6px 12px', outline: 'none', textAlign: 'center',
             }}
           />
           <button
             onClick={handleSave}
             style={{
-              background: '#818cf8', color: 'white', border: 'none',
+              background: '#34d399', color: 'white', border: 'none',
               borderRadius: 10, padding: '6px 18px', fontWeight: 700, fontSize: 14, cursor: 'pointer',
             }}
           >

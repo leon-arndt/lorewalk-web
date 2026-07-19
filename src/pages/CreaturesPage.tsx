@@ -41,8 +41,8 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
       style={{
         position: 'relative',
         background: 'white', borderRadius: 16, padding: '14px 10px',
-        boxShadow: ready ? '0 0 0 3px rgba(99,102,241,0.25), 0 1px 4px rgba(0,0,0,0.08)' : '0 1px 4px rgba(0,0,0,0.08)',
-        border: `2px solid ${ready ? '#818cf8' : isEpic ? '#fca5a5' : isRare ? '#fde68a' : '#c7d2fe'}`,
+        boxShadow: ready ? '0 0 0 3px rgba(5,150,105,0.25), 0 1px 4px rgba(0,0,0,0.08)' : '0 1px 4px rgba(0,0,0,0.08)',
+        border: `2px solid ${ready ? '#34d399' : isEpic ? '#fca5a5' : isRare ? '#fde68a' : '#a7f3d0'}`,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         gap: 7, minHeight: 144,
         cursor: ready ? 'pointer' : 'default',
@@ -59,8 +59,8 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
 
       <span style={{
         fontSize: 9, fontWeight: 700, padding: '1px 7px', borderRadius: 20,
-        background: isEpic ? '#fee2e2' : isRare ? '#fef3c7' : '#ede9fe',
-        color: isEpic ? '#dc2626' : isRare ? '#b45309' : '#7c3aed',
+        background: isEpic ? '#fee2e2' : isRare ? '#fef3c7' : '#d1fae5',
+        color: isEpic ? '#dc2626' : isRare ? '#b45309' : '#047857',
         textTransform: 'uppercase', letterSpacing: '0.04em',
       }}>
         {egg.tier}
@@ -76,7 +76,7 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
       </span>
 
       {ready ? (
-        <span style={{ fontSize: 11, fontWeight: 800, color: '#6366f1' }}>
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#059669' }}>
           Tap to hatch!
         </span>
       ) : (
@@ -88,7 +88,7 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
                 ? 'linear-gradient(90deg, #ef4444, #f87171)'
                 : isRare
                 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-                : 'linear-gradient(90deg, #818cf8, #a78bfa)',
+                : 'linear-gradient(90deg, #34d399, #6ee7b7)',
               width: `${pct}%`,
             }} />
           </div>
@@ -119,8 +119,8 @@ function CreatureCard({ creature, onTap }: { creature: HatchedCreature; onTap: (
   const xpNeeded = xpForCreatureLevel(creature.level)
   const xpPct = Math.min(1, creature.xp / xpNeeded) * 100
   const atCap = creature.level >= 20
-  const accentColor = creature.isShiny ? '#d97706' : isRare ? '#d97706' : '#6366f1'
-  const accentBg = creature.isShiny ? '#fef3c7' : isRare ? '#fde68a' : '#e0e7ff'
+  const accentColor = creature.isShiny ? '#d97706' : isRare ? '#d97706' : '#059669'
+  const accentBg = creature.isShiny ? '#fef3c7' : isRare ? '#fde68a' : '#d1fae5'
 
   return (
     <div
@@ -134,7 +134,7 @@ function CreatureCard({ creature, onTap }: { creature: HatchedCreature; onTap: (
         boxShadow: creature.isShiny
           ? '0 0 0 2px #f59e0b, 0 2px 8px rgba(245,158,11,0.20)'
           : '0 1px 4px rgba(0,0,0,0.06)',
-        border: `2px solid ${creature.isShiny ? '#f59e0b' : isRare ? '#fde68a' : '#e0e7ff'}`,
+        border: `2px solid ${creature.isShiny ? '#f59e0b' : isRare ? '#fde68a' : '#d1fae5'}`,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         cursor: 'pointer',
         WebkitTapHighlightColor: 'transparent',
@@ -188,7 +188,7 @@ function PantrySection() {
   return (
     <section style={{ padding: '0 16px 24px' }}>
       <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-        Pantry <span style={{ color: '#6366f1' }}>{foodInventory.length}</span>
+        Pantry <span style={{ color: '#059669' }}>{foodInventory.length}</span>
       </h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {foodInventory.map((item) => {
@@ -198,12 +198,12 @@ function PantrySection() {
             <div key={item.id} style={{
               background: 'white', borderRadius: 14, padding: '12px 8px',
               boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-              border: '2px solid #e0e7ff',
+              border: '2px solid #d1fae5',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
             }}>
               <EmojiSprite id={`food_${item.foodId}`} emoji={def.emoji} size={32} />
               <span style={{ fontSize: 10, fontWeight: 700, color: '#1e293b', textAlign: 'center', lineHeight: 1.2 }}>{def.name}</span>
-              <span style={{ fontSize: 9, fontWeight: 700, color: '#6366f1', background: '#eef2ff', borderRadius: 20, padding: '1px 7px' }}>+{def.xp} XP</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#059669', background: '#ecfdf5', borderRadius: 20, padding: '1px 7px' }}>+{def.xp} XP</span>
             </div>
           )
         })}
@@ -240,7 +240,7 @@ export function CreaturesPage() {
   const slots: (Egg | null)[] = [...eggs, ...Array<null>(emptySlots).fill(null)]
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 55%, #fdf6ff 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 20px' }}>
         <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>
           {t('creatures_title')}
@@ -262,8 +262,8 @@ export function CreaturesPage() {
         </div>
 
         {eggs.length === 0 && (
-          <div style={{ marginTop: 12, padding: '10px 14px', background: '#eef2ff', borderRadius: 12 }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
+          <div style={{ marginTop: 12, padding: '10px 14px', background: '#ecfdf5', borderRadius: 12 }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#059669' }}>
               {t('creatures_egg_hint')}
             </p>
           </div>
@@ -281,8 +281,8 @@ export function CreaturesPage() {
           ].map(({ label, tier, steps }) => (
             <span key={label} style={{
               fontSize: 10, padding: '3px 8px', borderRadius: 20,
-              background: tier === 'epic' ? '#fee2e2' : tier === 'rare' ? '#fef3c7' : '#ede9fe',
-              color: tier === 'epic' ? '#dc2626' : tier === 'rare' ? '#b45309' : '#7c3aed',
+              background: tier === 'epic' ? '#fee2e2' : tier === 'rare' ? '#fef3c7' : '#d1fae5',
+              color: tier === 'epic' ? '#dc2626' : tier === 'rare' ? '#b45309' : '#047857',
               fontWeight: 600,
             }}>
               {label} - {tier.charAt(0).toUpperCase() + tier.slice(1)} ({steps.toLocaleString()} steps)
@@ -318,8 +318,8 @@ export function CreaturesPage() {
         </div>
 
         {hatchedCreatures.length === 0 && (
-          <div style={{ marginTop: 12, padding: '10px 14px', background: '#eef2ff', borderRadius: 12 }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
+          <div style={{ marginTop: 12, padding: '10px 14px', background: '#ecfdf5', borderRadius: 12 }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#059669' }}>
               {t('creatures_hatch_hint')}
             </p>
           </div>

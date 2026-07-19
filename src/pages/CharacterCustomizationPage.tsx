@@ -25,8 +25,8 @@ function ColorSwatchRow({ swatches, selectedId, onSelect }: {
           style={{
             width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
             background: toCssColor(s.color),
-            border: selectedId === s.id ? '3px solid #6366f1' : '3px solid white',
-            boxShadow: selectedId === s.id ? '0 0 0 2px #6366f1' : '0 1px 4px rgba(0,0,0,0.15)',
+            border: selectedId === s.id ? '3px solid #059669' : '3px solid white',
+            boxShadow: selectedId === s.id ? '0 0 0 2px #059669' : '0 1px 4px rgba(0,0,0,0.15)',
           }}
         />
       ))}
@@ -50,8 +50,8 @@ function ItemRow({ slot, selectedId, onSelect }: {
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
             padding: '8px 10px', borderRadius: 12, cursor: 'pointer', flexShrink: 0,
-            background: selectedId === item.id ? '#eef2ff' : 'white',
-            border: selectedId === item.id ? '2px solid #6366f1' : '2px solid transparent',
+            background: selectedId === item.id ? '#ecfdf5' : 'white',
+            border: selectedId === item.id ? '2px solid #059669' : '2px solid transparent',
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           }}
         >

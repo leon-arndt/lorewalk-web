@@ -160,10 +160,10 @@ export function RewardScreen() {
           onClick={dismissReward}
           style={{
             width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-            background: 'linear-gradient(135deg, #818cf8, #c084fc)',
+            background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
             color: 'white', fontSize: 17, fontWeight: 800,
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-            boxShadow: '0 4px 16px rgba(129,140,248,0.4)',
+            boxShadow: '0 4px 16px rgba(52,211,153,0.4)',
             letterSpacing: '0.01em',
           }}
         >

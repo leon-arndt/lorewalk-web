@@ -19,7 +19,7 @@ const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
 function typeColors(category: string) {
   return RARE_CATEGORIES.has(category)
     ? { bg: '#fef3c7', fg: '#b45309', ring: '#fbbf24' }
-    : { bg: '#ede9fe', fg: '#7c3aed', ring: '#c4b5fd' }
+    : { bg: '#d1fae5', fg: '#047857', ring: '#6ee7b7' }
 }
 
 function matchCount(squad: Squad, category: string, byId: Map<string, HatchedCreature>) {
@@ -63,7 +63,7 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
     }}>
       <span style={{
         position: 'absolute', top: 4, right: 4, fontSize: 8, fontWeight: 700,
-        color: 'white', background: '#6366f1', borderRadius: 6,
+        color: 'white', background: '#059669', borderRadius: 6,
         padding: '1px 4px', lineHeight: 1.4,
       }}>
         Lv.{creature.level}
@@ -115,7 +115,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
     <div style={{
       background: 'white', borderRadius: 18, padding: 16, marginBottom: 14,
       boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-      border: `2px solid ${isActive ? '#a5b4fc' : 'transparent'}`,
+      border: `2px solid ${isActive ? '#6ee7b7' : 'transparent'}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <input
@@ -131,7 +131,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             border: 'none', borderBottom: '1px solid transparent', outline: 'none',
             background: 'transparent', padding: '2px 0',
           }}
-          onFocus={(e) => (e.target.style.borderBottomColor = '#c7d2fe')}
+          onFocus={(e) => (e.target.style.borderBottomColor = '#a7f3d0')}
         />
         <button
           onClick={() => setActiveSquad(squad.id)}
@@ -139,8 +139,8 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
           style={{
             fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20,
             border: 'none', cursor: isActive ? 'default' : 'pointer',
-            background: isActive ? '#6366f1' : '#eef2ff',
-            color: isActive ? 'white' : '#6366f1',
+            background: isActive ? '#059669' : '#ecfdf5',
+            color: isActive ? 'white' : '#059669',
           }}
         >
           {isActive ? t('squads_active') : t('squads_set_active')}
@@ -162,8 +162,8 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             style={{
               marginTop: 12, width: '100%', textAlign: 'center',
               fontSize: 13, fontWeight: 600,
-              color: hasMembers ? '#6366f1' : '#94a3b8',
-              background: hasMembers ? '#eef2ff' : '#f1f5f9',
+              color: hasMembers ? '#059669' : '#94a3b8',
+              background: hasMembers ? '#ecfdf5' : '#f1f5f9',
               border: 'none', borderRadius: 10,
               padding: '10px 12px',
               cursor: hasMembers ? 'pointer' : 'not-allowed',
@@ -189,7 +189,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
               onClick={handleCollect}
               style={{
                 width: '100%', fontSize: 13, fontWeight: 700, color: 'white',
-                background: 'linear-gradient(135deg, #818cf8, #c084fc)',
+                background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
                 border: 'none', borderRadius: 10, padding: '10px', cursor: 'pointer',
               }}
             >
@@ -197,7 +197,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             </button>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#6366f1', fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: '#059669', fontVariantNumeric: 'tabular-nums' }}>
                 {formatCountdown(new Date(exp.returnsAt).getTime() - now)}
               </span>
               <button
@@ -393,7 +393,7 @@ export function SquadsPage() {
     : SG_CENTRE
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 55%, #fdf6ff 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('squads_title')}</h1>

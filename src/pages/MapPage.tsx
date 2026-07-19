@@ -437,10 +437,10 @@ export function MapPage() {
       {toast && (
         <div style={{
           position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #818cf8, #c084fc)',
+          background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
           color: 'white', fontSize: 13, fontWeight: 600,
           padding: '10px 20px', borderRadius: 24,
-          boxShadow: '0 4px 16px rgba(129,140,248,0.45)',
+          boxShadow: '0 4px 16px rgba(52,211,153,0.45)',
           whiteSpace: 'nowrap', pointerEvents: 'none',
           animation: 'fadeInUp 0.3s ease',
         }}>
@@ -469,7 +469,7 @@ export function MapPage() {
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 14px', borderRadius: 22,
           background: profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed
-            ? 'linear-gradient(135deg, #6366f1, #a855f7)'
+            ? 'linear-gradient(135deg, #059669, #047857)'
             : 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.14)',
@@ -484,7 +484,7 @@ export function MapPage() {
         <span>Weekly Walk</span>
         {profile.tickets > 0 && !profile.weeklyWalk && (
           <span style={{
-            background: '#6366f1', color: 'white',
+            background: '#059669', color: 'white',
             borderRadius: 10, fontSize: 10, fontWeight: 800,
             padding: '1px 6px', marginLeft: 2,
           }}>

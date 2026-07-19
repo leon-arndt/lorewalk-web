@@ -33,7 +33,7 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          background: 'linear-gradient(160deg, #f8faff 0%, #f2efff 60%, #fdf6ff 100%)',
+          background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 60%, #f5fdf8 100%)',
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

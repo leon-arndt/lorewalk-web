@@ -106,8 +106,8 @@ function RewardCard({
         borderRadius: 18,
         padding: '20px 12px 16px',
         textAlign: 'center',
-        background: revealed ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.06)',
-        border: `2px solid ${revealed ? '#818cf8' : isNext ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
+        background: revealed ? 'rgba(5,150,105,0.18)' : 'rgba(255,255,255,0.06)',
+        border: `2px solid ${revealed ? '#34d399' : isNext ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
         boxShadow: isNext && !revealed ? '0 0 12px rgba(255,255,255,0.12)' : 'none',
         transition: 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
         transform: revealed ? 'scale(1)' : 'scale(0.88)',
@@ -209,7 +209,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
       )}
 
       <div style={{
-        fontSize: 11, color: allRevealed ? '#818cf8' : '#475569',
+        fontSize: 11, color: allRevealed ? '#34d399' : '#475569',
         fontWeight: allRevealed ? 700 : 400,
         marginTop: 4,
         transition: 'color 0.3s ease, font-weight 0.3s ease',

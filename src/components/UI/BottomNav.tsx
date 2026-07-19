@@ -77,12 +77,12 @@ export function BottomNav() {
             fontWeight: 600,
             letterSpacing: '0.04em',
             textTransform: 'uppercase' as const,
-            color: isActive ? '#6366f1' : 'rgba(100,116,139,0.70)',
+            color: isActive ? '#059669' : 'rgba(100,116,139,0.70)',
             background: isActive
-              ? 'rgba(99,102,241,0.12)'
+              ? 'rgba(5,150,105,0.12)'
               : 'transparent',
             boxShadow: isActive
-              ? 'inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 rgba(99,102,241,0.10)'
+              ? 'inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 rgba(5,150,105,0.10)'
               : 'none',
             transition: 'background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease',
             WebkitTapHighlightColor: 'transparent',

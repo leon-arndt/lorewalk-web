@@ -87,7 +87,7 @@ export function SettingsPage() {
                 style={{
                   fontSize: 13, fontWeight: locale === code ? 700 : 500,
                   padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                  background: locale === code ? '#6366f1' : 'transparent',
+                  background: locale === code ? '#059669' : 'transparent',
                   color: locale === code ? 'white' : '#475569',
                   transition: 'background 0.15s, color 0.15s',
                 }}
@@ -115,7 +115,7 @@ export function SettingsPage() {
               step={0.05}
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              style={{ flex: 1, accentColor: '#6366f1' }}
+              style={{ flex: 1, accentColor: '#059669' }}
             />
           </div>
         </section>

@@ -99,7 +99,7 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
           <rect
             x={RING_STROKE / 2} y={RING_STROKE / 2} width={pathW} height={pathH}
             rx={ringRadius} ry={ringRadius} fill="none"
-            stroke={progress >= 1 ? '#22c55e' : '#818cf8'} strokeWidth={RING_STROKE} strokeLinecap="round"
+            stroke={progress >= 1 ? '#22c55e' : '#34d399'} strokeWidth={RING_STROKE} strokeLinecap="round"
             strokeDasharray={perimeter} strokeDashoffset={perimeter * (1 - progress)}
             style={{ transition: 'stroke-dashoffset 0.5s ease, stroke 0.3s ease' }}
           />

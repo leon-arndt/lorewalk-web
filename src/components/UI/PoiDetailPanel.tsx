@@ -133,7 +133,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             marginTop: 12, fontSize: 13, fontWeight: 500,
-            color: '#6366f1', textDecoration: 'none',
+            color: '#059669', textDecoration: 'none',
           }}
         >
           {t('poi_learn_more')}
@@ -160,7 +160,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                   style={{
                     fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 10,
                     border: 'none', cursor: 'pointer',
-                    background: pickingFriend ? '#f1f5f9' : '#6366f1',
+                    background: pickingFriend ? '#f1f5f9' : '#059669',
                     color: pickingFriend ? '#64748b' : 'white',
                   }}
                 >
@@ -195,7 +195,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                   >
                     <div style={{
                       width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg,#818cf8,#c084fc)',
+                      background: 'linear-gradient(135deg,#34d399,#6ee7b7)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 14, fontWeight: 700, color: 'white',
                     }}>

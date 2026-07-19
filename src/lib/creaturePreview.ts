@@ -56,7 +56,7 @@ export async function getEggPreviewURL(tier: string): Promise<string> {
 
     const geo = new THREE.LatheGeometry(pts, 40)
     const mat = new THREE.MeshStandardMaterial({
-      color: isRare ? 0xfbbf24 : 0xa5b4fc,
+      color: isRare ? 0xfbbf24 : 0x6ee7b7,
       roughness: isRare ? 0.18 : 0.24,
       metalness: isRare ? 0.10 : 0.02,
     })

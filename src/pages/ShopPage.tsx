@@ -151,7 +151,7 @@ export function ShopPage() {
                 <span style={{
                   position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
                   fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase',
-                  background: pack.tagKey === 'shop_best_value' ? '#f59e0b' : '#6366f1', color: 'white',
+                  background: pack.tagKey === 'shop_best_value' ? '#f59e0b' : '#059669', color: 'white',
                   padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap',
                 }}>
                   {t(pack.tagKey)}
@@ -164,7 +164,7 @@ export function ShopPage() {
                 style={{
                   width: '100%', fontSize: 13, fontWeight: 700, padding: '9px', borderRadius: 12,
                   border: 'none', cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #818cf8, #c084fc)', color: 'white',
+                  background: 'linear-gradient(135deg, #34d399, #6ee7b7)', color: 'white',
                 }}
               >
                 {pack.price}

@@ -14,8 +14,8 @@ interface Props {
   isClosing?: boolean
 }
 
-const ACCENT = '#6366f1'
-const ACCENT_SOFT = 'rgba(99,102,241,0.1)'
+const ACCENT = '#059669'
+const ACCENT_SOFT = 'rgba(5,150,105,0.1)'
 
 const panelStyle = (isClosing: boolean) => ({
   position: 'absolute' as const, bottom: 0, left: 0, right: 0,
@@ -164,7 +164,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: done ? 'linear-gradient(135deg,#818cf8,#c084fc)' : '#f1f5f9',
+                    background: done ? 'linear-gradient(135deg,#34d399,#6ee7b7)' : '#f1f5f9',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 16,
                   }}>
@@ -196,10 +196,10 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
             onClick={handleClaim}
             style={{
               width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-              background: 'linear-gradient(135deg, #818cf8, #c084fc)',
+              background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
               color: 'white', fontSize: 16, fontWeight: 800,
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-              boxShadow: '0 4px 16px rgba(129,140,248,0.4)',
+              boxShadow: '0 4px 16px rgba(52,211,153,0.4)',
               animation: 'rewardPop 0.4s cubic-bezier(0.16,1,0.3,1)',
             }}
           >
@@ -326,13 +326,13 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         style={{
           width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
           background: hasTicket
-            ? `linear-gradient(135deg, ${ACCENT}, #a855f7)`
+            ? `linear-gradient(135deg, ${ACCENT}, #047857)`
             : '#e2e8f0',
           color: hasTicket ? 'white' : '#94a3b8',
           fontSize: 16, fontWeight: 800,
           cursor: hasTicket ? 'pointer' : 'default',
           WebkitTapHighlightColor: 'transparent',
-          boxShadow: hasTicket ? '0 4px 16px rgba(99,102,241,0.35)' : 'none',
+          boxShadow: hasTicket ? '0 4px 16px rgba(5,150,105,0.35)' : 'none',
         }}
       >
         {hasTicket ? 'Join party walk - 🎟️ 1 ticket' : 'Need a ticket to join'}
