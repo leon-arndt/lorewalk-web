@@ -4,6 +4,8 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { glassChrome, glassPanel } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
+import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
+import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
 
 const MOCK_FRIENDS = [
@@ -194,12 +196,15 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                     }}
                   >
                     <div style={{
-                      width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                      position: 'relative', width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
                       background: 'linear-gradient(135deg,#34d399,#6ee7b7)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 14, fontWeight: 700, color: 'white',
                     }}>
-                      {f.name[0]}
+                      <div style={{
+                        position: 'absolute', inset: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <PlayerFaceIcon appearance={deterministicAppearance(f.id)} size={24} />
+                      </div>
                     </div>
                     <span style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>{f.name}</span>
                   </button>

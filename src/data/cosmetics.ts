@@ -106,3 +106,29 @@ export const DEFAULT_APPEARANCE: PlayerAppearance = {
   shoesId: 'sneakers',
   headItemId: 'none',
 }
+
+function hashSeed(input: string): number {
+  let h = 2166136261
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+// A stable little face for players we don't have real customization data for
+// (friends, party members) - the same id always resolves to the same look, so
+// it stands in for a plain initial-letter avatar without needing synced data.
+export function deterministicAppearance(seed: string): PlayerAppearance {
+  const pick = <T extends { id: string }>(arr: T[], salt: string): T =>
+    arr[hashSeed(seed + salt) % arr.length]
+  return {
+    skinToneId: pick(SKIN_TONES, ':skin').id,
+    hairColorId: pick(HAIR_COLORS, ':hair').id,
+    eyeColorId: pick(EYE_COLORS, ':eye').id,
+    topId: pick(cosmeticItemsBySlot('top'), ':top').id,
+    bottomId: pick(cosmeticItemsBySlot('bottom'), ':bottom').id,
+    shoesId: pick(cosmeticItemsBySlot('shoes'), ':shoes').id,
+    headItemId: pick(cosmeticItemsBySlot('headItem'), ':head').id,
+  }
+}

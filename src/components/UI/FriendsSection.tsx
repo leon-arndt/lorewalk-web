@@ -3,6 +3,8 @@ import QRCode from 'qrcode'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useFriends } from '@/hooks/useFriends'
+import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
+import { deterministicAppearance } from '@/data/cosmetics'
 
 function formatAdded(iso: string): string {
   return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
@@ -193,12 +195,15 @@ export function FriendsSection() {
               boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
             }}>
               <div style={{
-                width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                position: 'relative', width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
                 background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 17, fontWeight: 700, color: 'white',
               }}>
-                {f.displayName.charAt(0).toUpperCase()}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <PlayerFaceIcon appearance={deterministicAppearance(f.playerId)} size={30} />
+                </div>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
