@@ -47,6 +47,7 @@ export function ProfilePage() {
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
   const [premiumFlash, setPremiumFlash] = useState<string | null>(null)
+  const [showChallengeInfo, setShowChallengeInfo] = useState(false)
 
   const xpNeeded = xpForNextLevel(profile.level)
   const xpPct = Math.min((profile.xp / xpNeeded) * 100, 100)
@@ -272,12 +273,26 @@ export function ProfilePage() {
                     <div style={{ fontSize: 11, color: '#94a3b8' }}>Walk {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps this month</div>
                   </div>
                 </div>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, color: '#78350f', padding: '3px 10px', borderRadius: 20,
-                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)', flexShrink: 0,
-                }}>
-                  Premium
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, color: '#78350f', padding: '3px 10px', borderRadius: 20,
+                    background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
+                  }}>
+                    Premium
+                  </span>
+                  <button
+                    onClick={() => setShowChallengeInfo(true)}
+                    aria-label="How the monthly challenge works"
+                    style={{
+                      width: 20, height: 20, borderRadius: '50%', border: '1px solid #fbbf24',
+                      background: 'white', color: '#b45309', fontSize: 12, fontWeight: 800,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', padding: 0, lineHeight: 1,
+                    }}
+                  >
+                    i
+                  </button>
+                </div>
               </div>
 
               <div style={{ height: 8, borderRadius: 4, background: '#f1f5f9', overflow: 'hidden', marginBottom: 6 }}>
@@ -605,6 +620,46 @@ export function ProfilePage() {
           </section>
         )}
       </div>
+
+      {showChallengeInfo && (
+        <div
+          onClick={() => setShowChallengeInfo(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,10,30,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px 20px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 340,
+              background: 'white', borderRadius: 20,
+              padding: '22px 20px', boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🏅</div>
+            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 800, color: '#1e293b' }}>
+              How the monthly challenge works
+            </h3>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#475569', lineHeight: 1.5 }}>
+              Finish this challenge to earn a real physical medal, which you can pick up at the next community event. Terms and conditions apply.
+            </p>
+            <button
+              onClick={() => setShowChallengeInfo(false)}
+              style={{
+                width: '100%', padding: '11px 0', borderRadius: 12, border: 'none',
+                background: 'linear-gradient(135deg, #fde68a, #f59e0b)', color: '#78350f',
+                fontSize: 14, fontWeight: 800, cursor: 'pointer',
+              }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
