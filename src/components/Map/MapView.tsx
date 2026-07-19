@@ -2,11 +2,12 @@ import { useEffect, useRef, type MutableRefObject } from 'react'
 import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
+import { addPlayerAvatarLayer, type PlayerAvatarLayerHandle } from '@/lib/mapPlayerAvatar'
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
 import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
-import type { Poi, PlayerPosition } from '@/types'
+import type { Poi, PlayerAppearance, PlayerPosition } from '@/types'
 
 // Map markers are built with raw DOM (MapLibre, not React) - this mirrors EmojiSprite's
 // emoji-fallback-then-3D-swap pattern for that imperative context.
@@ -297,6 +298,7 @@ function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
 
 interface MapViewProps {
   position: PlayerPosition | null
+  appearance: PlayerAppearance
   pois: Poi[]
   visitedPois: Set<string>
   onPoiClick: (poi: Poi) => void
@@ -313,11 +315,11 @@ interface MapViewProps {
   compassResetRef?: MutableRefObject<(() => void) | null>
 }
 
-export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef }: MapViewProps) {
+export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
-  const playerMarkerRef = useRef<maplibregl.Marker | null>(null)
+  const playerAvatarRef = useRef<PlayerAvatarLayerHandle | null>(null)
   const squadMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const claimMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const foodNodeMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
@@ -326,6 +328,8 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
   const poiPinsRef = useRef<PoiPinsHandle | null>(null)
   const companionsRef = useRef<CharacterSpec[]>(companions)
   companionsRef.current = companions
+  const appearanceRef = useRef<PlayerAppearance>(appearance)
+  appearanceRef.current = appearance
 
   // Kept in refs so map event handlers never capture stale closures.
   const poisRef = useRef<Poi[]>(pois)
@@ -475,26 +479,44 @@ export function MapView({ position, pois, visitedPois, onPoiClick, squadMarkers 
     else map.once('load', fit)
   }, [mode])
 
+  // Launch the player's own 3D avatar once the style is ready (mirrors the
+  // companion-character launch effect above).
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    let cancelled = false
+
+    const add = async () => {
+      const p = position ?? { longitude: 103.8198, latitude: 1.3521 }
+      const handle = await addPlayerAvatarLayer(map, {
+        position: [p.longitude, p.latitude],
+        appearance: appearanceRef.current,
+        modelScale: 4,
+      })
+      if (cancelled) { handle.remove(); return }
+      playerAvatarRef.current = handle
+    }
+
+    if (map.loaded()) add()
+    else map.once('load', add)
+
+    return () => {
+      cancelled = true
+      playerAvatarRef.current?.remove()
+      playerAvatarRef.current = null
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    playerAvatarRef.current?.setAppearance(appearance)
+  }, [appearance])
+
   useEffect(() => {
     const map = mapRef.current
     if (!map || !position || mode !== 'online') return
 
     const lngLat: [number, number] = [position.longitude, position.latitude]
-
-    if (!playerMarkerRef.current) {
-      const el = document.createElement('div')
-      el.style.cssText = `
-        width:18px;height:18px;border-radius:50%;
-        background:#6366f1;border:3px solid white;
-        box-shadow:0 0 0 5px rgba(99,102,241,0.25),0 2px 8px rgba(0,0,0,0.2);
-      `
-      playerMarkerRef.current = new maplibregl.Marker({ element: el })
-        .setLngLat(lngLat)
-        .addTo(map)
-    } else {
-      playerMarkerRef.current.setLngLat(lngLat)
-    }
-
+    playerAvatarRef.current?.setPosition(lngLat[0], lngLat[1])
     map.easeTo({ center: lngLat, duration: 500 })
   }, [position, mode])
 

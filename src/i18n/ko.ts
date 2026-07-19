@@ -119,4 +119,14 @@ export const ko: Translations = {
   shop_best_value: '최고의 가성비',
   shop_test_purchase: '✓ +{coins} 🪙 (테스트 구매)',
   shop_online_note: '실제 구매는 Google Play 결제 필요  -  테스트는 오프라인으로 전환하세요',
+
+  profile_customize: '커스터마이즈',
+  customize_title: '캐릭터 커스터마이즈',
+  customize_skin_tone: '피부색',
+  customize_hair_color: '머리 색상',
+  customize_eye_color: '눈 색상',
+  customize_top: '상의',
+  customize_bottom: '하의',
+  customize_shoes: '신발',
+  customize_head_item: '머리 아이템',
 }

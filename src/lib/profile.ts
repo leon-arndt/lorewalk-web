@@ -2,6 +2,7 @@ import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreat
 import type { FoodDef } from '@/data/foods'
 import { randomFood } from '@/data/foods'
 import { drawCreature, rollEggTier } from '@/data/creatures'
+import { DEFAULT_APPEARANCE } from '@/data/cosmetics'
 export { rollEggTier }
 
 // XP needed to go from level N to level N+1
@@ -584,6 +585,7 @@ export function loadProfile(): PlayerProfile {
         // rather than retroactively granting a chest for streak days already banked.
         streakChestMilestone: parsed.streakChestMilestone ?? streakChestMilestoneFor(parsed.streakDays ?? 0),
         streakFreezes: parsed.streakFreezes ?? 0,
+        appearance: parsed.appearance ?? DEFAULT_APPEARANCE,
       }
     }
   } catch { /* ignore */ }
@@ -626,6 +628,7 @@ export function loadProfile(): PlayerProfile {
     challengesNotifications: false,
     friendsAndGiftsNotifications: false,
     latestNewsNotifications: false,
+    appearance: DEFAULT_APPEARANCE,
   }
 }
 

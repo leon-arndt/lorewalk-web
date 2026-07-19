@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
+import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile, isPoiLocked,
@@ -26,6 +26,7 @@ interface ProfileContextValue {
   advanceEggsBySteps: (currentStepsToday: number) => void
   recordDailySteps: (dateKey: string, steps: number) => void
   setDisplayName: (name: string) => void
+  updateAppearance: (patch: Partial<PlayerAppearance>) => void
   hatchReadyEgg: (eggId: string) => HatchedCreature | null
   renameCreature: (creatureId: string, nickname: string) => void
   justReady: Egg[]
@@ -162,6 +163,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const updated = { ...profile, displayName: name.trim() || 'Explorer' }
     setProfile(updated)
     saveProfile(updated)
+  }
+
+  function updateAppearance(patch: Partial<PlayerAppearance>) {
+    persist({ ...profile, appearance: { ...profile.appearance, ...patch } })
   }
 
   // Rolls + applies a perfect-week streak chest's contents. Returns null if none
@@ -737,7 +742,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, visitedPois, addVisit, advanceEggsBySteps, recordDailySteps, setDisplayName, hatchReadyEgg, renameCreature, justReady, clearJustReady,
+      profile, visitedPois, addVisit, advanceEggsBySteps, recordDailySteps, setDisplayName, updateAppearance, hatchReadyEgg, renameCreature, justReady, clearJustReady,
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,

@@ -16,6 +16,7 @@ import { SquadsPage } from '@/pages/SquadsPage'
 import { ShopPage } from '@/pages/ShopPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { CharacterCustomizationPage } from '@/pages/CharacterCustomizationPage'
 
 class MapErrorBoundary extends Component<{ children: ReactNode }, { crashed: boolean }> {
   state = { crashed: false }
@@ -74,6 +75,7 @@ export default function App() {
                   <Route path="/shop" element={<ShopPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/customize" element={<CharacterCustomizationPage />} />
                 </Routes>
               </div>
               <CoinCapsule />

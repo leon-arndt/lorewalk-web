@@ -150,6 +150,17 @@ export interface PlayerProfile {
   challengesNotifications: boolean        // preference only; no push delivery wired up yet
   friendsAndGiftsNotifications: boolean   // preference only; no push delivery wired up yet
   latestNewsNotifications: boolean        // preference only; no push delivery wired up yet
+  appearance: PlayerAppearance
+}
+
+export interface PlayerAppearance {
+  skinToneId: string
+  hairColorId: string
+  eyeColorId: string
+  topId: string
+  bottomId: string
+  shoesId: string
+  headItemId: string   // 'none' is a valid id, always present in the catalog
 }
 
 export type NotificationPrefKey =

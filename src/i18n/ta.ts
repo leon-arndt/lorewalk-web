@@ -119,4 +119,14 @@ export const ta: Translations = {
   shop_best_value: 'சிறந்த மதிப்பு',
   shop_test_purchase: '✓ +{coins} 🪙 (சோதனை கொள்முதல்)',
   shop_online_note: 'உண்மையான கொள்முதல்களுக்கு Google Play தேவை  -  சோதனைக்கு இணையமின்றி மாறவும்',
+
+  profile_customize: 'தனிப்பயனாக்கு',
+  customize_title: 'கதாபாத்திரத்தை தனிப்பயனாக்கு',
+  customize_skin_tone: 'தோல் நிறம்',
+  customize_hair_color: 'முடி நிறம்',
+  customize_eye_color: 'கண் நிறம்',
+  customize_top: 'மேலாடை',
+  customize_bottom: 'கீழாடை',
+  customize_shoes: 'காலணிகள்',
+  customize_head_item: 'தலை பொருள்',
 }

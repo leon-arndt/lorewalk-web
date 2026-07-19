@@ -10,6 +10,7 @@ import { PostcardsSection } from '@/components/UI/PostcardsSection'
 import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
 import { StreakChestCard } from '@/components/UI/StreakChestCard'
+import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 
 const PREMIUM_BENEFITS = [
   { icon: '🔓', text: 'Every landmark unlocked' },
@@ -96,8 +97,16 @@ export function ProfilePage() {
       {/* Header card */}
       <div style={{ background: 'white', padding: '28px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Avatar - premium members get a shield-shaped background instead of a circle */}
-          <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+          {/* Avatar - premium members get a shield-shaped background instead of a circle. Tapping it opens character customization. */}
+          <button
+            onClick={() => navigate('/customize')}
+            aria-label={t('profile_customize')}
+            data-sfx="click"
+            style={{
+              position: 'relative', width: 64, height: 64, flexShrink: 0,
+              background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+            }}
+          >
             {profile.isPremium ? (
               <svg width={64} height={64} viewBox="0 0 100 100" style={{ filter: 'drop-shadow(0 4px 10px rgba(245,158,11,0.45))' }}>
                 <defs>
@@ -124,11 +133,10 @@ export function ProfilePage() {
             <div style={{
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28,
             }}>
-              🧭
+              <PlayerFaceIcon appearance={profile.appearance} size={48} />
             </div>
-          </div>
+          </button>
 
           <div style={{ flex: 1, minWidth: 0 }}>
             {editingName ? (
@@ -169,6 +177,20 @@ export function ProfilePage() {
                   }}
                 >
                   ✏️
+                </button>
+                <button
+                  onClick={() => navigate('/customize')}
+                  aria-label={t('profile_customize')}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#94a3b8', padding: 0,
+                    display: 'flex', alignItems: 'center',
+                  }}
+                >
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a4 4 0 0 0-4 4v2a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z" />
+                    <path d="M4 21c0-4 3-7 8-7s8 3 8 7" />
+                  </svg>
                 </button>
                 <button
                   onClick={() => navigate('/settings')}

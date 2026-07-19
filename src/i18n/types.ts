@@ -117,4 +117,14 @@ export interface Translations {
   shop_best_value: string
   shop_test_purchase: string
   shop_online_note: string
+
+  profile_customize: string
+  customize_title: string
+  customize_skin_tone: string
+  customize_hair_color: string
+  customize_eye_color: string
+  customize_top: string
+  customize_bottom: string
+  customize_shoes: string
+  customize_head_item: string
 }

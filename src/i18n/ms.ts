@@ -119,4 +119,14 @@ export const ms: Translations = {
   shop_best_value: 'Nilai terbaik',
   shop_test_purchase: '✓ +{coins} 🪙 (pembelian ujian)',
   shop_online_note: 'Pembelian sebenar memerlukan Google Play  -  tukar ke Luar Talian untuk ujian',
+
+  profile_customize: 'Sesuaikan',
+  customize_title: 'Sesuaikan Watak',
+  customize_skin_tone: 'Warna Kulit',
+  customize_hair_color: 'Warna Rambut',
+  customize_eye_color: 'Warna Mata',
+  customize_top: 'Baju Atas',
+  customize_bottom: 'Seluar',
+  customize_shoes: 'Kasut',
+  customize_head_item: 'Aksesori Kepala',
 }

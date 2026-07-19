@@ -46,6 +46,40 @@ Good sources (all CC0 / public domain):
 Extend `mapCharacters.ts` → add a `categoryModelUrl` map, load each via `GLTFLoader`,
 cache by category, and fall back to the procedural builder when absent.
 
+## Player avatar
+
+The player's own on-map character (`mapPlayerAvatar.ts`) renders a procedural blocky
+humanoid by default, colour-coded per `PlayerAppearance` (`src/types/index.ts`):
+skin tone, hair colour, eye colour, top/bottom/shoes colour, and an optional head
+item - no file needed, same "procedural placeholder" convention as the creature
+shapes above.
+
+### Replacing with a real CC0 rig
+
+Drop a rigged humanoid `.glb` here as `player-avatar.glb` and it's picked up
+automatically, no code changes required. It must be exported with:
+
+- **Materials named `Skin`, `Hair`, `Eyes`** - these get cloned and retinted per
+  `PlayerAppearance` (same technique as `Cat_Main`/`Cat_Secondary` retinting in
+  `creaturePreview.ts` - see the "Creature collection thumbnails" section above).
+- **Child mesh nodes prefixed `Top_`, `Bottom_`, `Shoes_`, `Head_`**, one per
+  cosmetic item id in `src/data/cosmetics.ts` (e.g. `Top_tee`, `Top_hoodie`,
+  `Bottom_jeans`, `Head_cap`) - only the node matching the equipped id is shown,
+  the rest are hidden.
+
+Good CC0 sources for a modular humanoid rig with tintable skin/eyes:
+
+- **Quaternius Universal Base Characters** - https://quaternius.com/packs/universalbasecharacters.html
+  (6 base proportions, 20 hairstyles, tintable skin/eyes, glTF, humanoid rig).
+- **Quaternius Modular Character Outfits** - https://quaternius.itch.io/modular-character-outfits-fantasy
+  (62 modular tops/bottoms/shoes/headwear pieces, CC0, glTF, retargets onto the
+  Universal Base Characters rig above).
+- **Kenney Modular Characters** - https://kenney.nl/assets/modular-characters
+  (CC0, 75+ skins, 40+ accessories).
+
+Both Quaternius packs are itch.io "name your own price" downloads (set to 0),
+so grab them manually and export/rename the pieces per the convention above.
+
 ## Animation clip naming
 
 The loader looks for clips whose name contains `idle` or `walk` (case-insensitive),

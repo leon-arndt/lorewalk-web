@@ -119,4 +119,14 @@ export const en: Translations = {
   shop_best_value: 'Best value',
   shop_test_purchase: '✓ +{coins} 🪙 (test purchase)',
   shop_online_note: 'Real purchases need Google Play Billing. Switch to Offline to test.',
+
+  profile_customize: 'Customize',
+  customize_title: 'Customize Character',
+  customize_skin_tone: 'Skin Tone',
+  customize_hair_color: 'Hair Color',
+  customize_eye_color: 'Eye Color',
+  customize_top: 'Top',
+  customize_bottom: 'Bottom',
+  customize_shoes: 'Shoes',
+  customize_head_item: 'Head Item',
 }

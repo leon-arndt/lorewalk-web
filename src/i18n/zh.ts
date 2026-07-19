@@ -119,4 +119,14 @@ export const zh: Translations = {
   shop_best_value: '最划算',
   shop_test_purchase: '✓ +{coins} 🪙（测试购买）',
   shop_online_note: '真实购买需要 Google Play  -  切换到离线模式进行测试',
+
+  profile_customize: '自定义',
+  customize_title: '自定义角色',
+  customize_skin_tone: '肤色',
+  customize_hair_color: '发色',
+  customize_eye_color: '眼睛颜色',
+  customize_top: '上衣',
+  customize_bottom: '下装',
+  customize_shoes: '鞋子',
+  customize_head_item: '头部饰品',
 }

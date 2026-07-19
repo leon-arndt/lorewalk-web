@@ -333,6 +333,7 @@ export function MapPage() {
     <div style={{ position: 'absolute', inset: 0 }}>
       <MapView
         position={position}
+        appearance={profile.appearance}
         pois={pois}
         visitedPois={visitedPois}
         onPoiClick={handlePoiClick}

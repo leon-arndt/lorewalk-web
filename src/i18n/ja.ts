@@ -119,4 +119,14 @@ export const ja: Translations = {
   shop_best_value: 'お得',
   shop_test_purchase: '✓ +{coins} 🪙（テスト購入）',
   shop_online_note: '実際の購入にはGoogle Play Billingが必要です  -  テストするにはオフラインに切り替えてください',
+
+  profile_customize: 'カスタマイズ',
+  customize_title: 'キャラクターをカスタマイズ',
+  customize_skin_tone: '肌の色',
+  customize_hair_color: '髪の色',
+  customize_eye_color: '目の色',
+  customize_top: 'トップス',
+  customize_bottom: 'ボトムス',
+  customize_shoes: '靴',
+  customize_head_item: '頭のアイテム',
 }

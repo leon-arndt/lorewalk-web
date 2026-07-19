@@ -76,6 +76,16 @@ html, body, #root {
   100% { transform: translate(-50%, -50%) translate(260px, -320px) rotate(20deg) scale(0.2);  opacity: 0; }
 }
 
+/* Gentle idle sway for the profile header's player face portrait */
+@keyframes faceIdleSway {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50%      { transform: rotate(2.5deg) translateY(-1.5px); }
+}
+.player-face-idle {
+  animation: faceIdleSway 3.4s ease-in-out infinite;
+  transform-origin: 50% 85%;
+}
+
 /* Streak chest wiggling right before it pops open */
 @keyframes chestShake {
   0%, 100% { transform: rotate(0deg) scale(1); }
