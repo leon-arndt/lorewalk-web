@@ -152,7 +152,7 @@ export function ShopPage() {
                 <span style={{
                   position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
                   fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase',
-                  background: pack.tagKey === 'shop_best_value' ? '#f59e0b' : '#059669', color: 'white',
+                  background: pack.tagKey === 'shop_best_value' ? '#f59e0b' : '#6366f1', color: 'white',
                   padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap',
                 }}>
                   {t(pack.tagKey)}

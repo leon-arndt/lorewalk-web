@@ -4,6 +4,8 @@ import { friendAchievementList, type FriendAchievement } from '@/lib/profile'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
 import { BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
+import { rewardGradient } from '@/lib/theme'
+import { pageBackground } from '@/lib/glass'
 
 interface Props {
   friend: Friend
@@ -34,7 +36,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 60%, #f5fdf8 100%)',
+          background: pageBackground,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
@@ -49,8 +51,8 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <div style={{
               position: 'relative', width: 76, height: 76, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
-              boxShadow: '0 4px 12px rgba(52,211,153,0.35)',
+              background: rewardGradient,
+              boxShadow: '0 4px 12px rgba(129,140,248,0.35)',
             }}>
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <PlayerFaceIcon appearance={deterministicAppearance(friend.playerId)} size={56} />
@@ -60,8 +62,8 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
               <span style={{ fontSize: 19, fontWeight: 800, color: '#1e293b' }}>{friend.displayName}</span>
               <span style={{
-                fontSize: 11, fontWeight: 700, color: '#047857',
-                background: '#d1fae5', borderRadius: 20, padding: '2px 9px',
+                fontSize: 11, fontWeight: 700, color: '#6366f1',
+                background: '#eef2ff', borderRadius: 20, padding: '2px 9px',
               }}>
                 Lv {friend.level}
               </span>

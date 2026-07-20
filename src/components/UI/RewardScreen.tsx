@@ -164,7 +164,7 @@ export function RewardScreen() {
             background: rewardGradient,
             color: 'white', fontSize: 17, fontWeight: 800,
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-            boxShadow: '0 4px 16px rgba(52,211,153,0.4)',
+            boxShadow: '0 4px 16px rgba(129,140,248,0.4)',
             letterSpacing: '0.01em',
           }}
         >

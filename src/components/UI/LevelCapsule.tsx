@@ -12,7 +12,7 @@ export function LevelCapsule({ level }: { level: number }) {
         ...glassChrome,
         borderRadius: 999,
         padding: '7px 14px',
-        fontSize: 14, fontWeight: 700, color: '#059669',
+        fontSize: 14, fontWeight: 700, color: '#6366f1',
         cursor: 'pointer',
         WebkitTapHighlightColor: 'transparent',
       }}

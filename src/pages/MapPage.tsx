@@ -441,7 +441,7 @@ export function MapPage() {
           background: rewardGradient,
           color: 'white', fontSize: 13, fontWeight: 600,
           padding: '10px 20px', borderRadius: 24,
-          boxShadow: '0 4px 16px rgba(52,211,153,0.45)',
+          boxShadow: '0 4px 16px rgba(129,140,248,0.45)',
           whiteSpace: 'nowrap', pointerEvents: 'none',
           animation: 'fadeInUp 0.3s ease',
         }}>
@@ -470,7 +470,7 @@ export function MapPage() {
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 14px', borderRadius: 22,
           background: profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed
-            ? 'linear-gradient(135deg, #059669, #047857)'
+            ? rewardGradient
             : 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.14)',

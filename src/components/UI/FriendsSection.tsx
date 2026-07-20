@@ -226,8 +226,8 @@ export function FriendsSection() {
                     {f.displayName}
                   </span>
                   <span style={{
-                    flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#047857',
-                    background: '#d1fae5', borderRadius: 20, padding: '1px 7px',
+                    flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#6366f1',
+                    background: '#eef2ff', borderRadius: 20, padding: '1px 7px',
                   }}>
                     Lv {f.level}
                   </span>

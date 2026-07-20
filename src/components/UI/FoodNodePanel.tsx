@@ -222,15 +222,15 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
                   style={{
                     position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                     padding: '8px 4px', borderRadius: 12, cursor: atMax ? 'default' : 'pointer',
-                    border: `2px solid ${isSel ? '#059669' : '#f1f5f9'}`,
-                    background: isSel ? 'rgba(5,150,105,0.08)' : 'white',
+                    border: `2px solid ${isSel ? '#6366f1' : '#f1f5f9'}`,
+                    background: isSel ? 'rgba(99,102,241,0.08)' : 'white',
                     opacity: atMax ? 0.4 : 1, WebkitTapHighlightColor: 'transparent',
                   }}
                 >
                   {isSel && (
                     <span style={{
                       position: 'absolute', top: 2, right: 2, width: 16, height: 16, borderRadius: '50%',
-                      background: '#059669', color: 'white', fontSize: 10, fontWeight: 700,
+                      background: '#6366f1', color: 'white', fontSize: 10, fontWeight: 700,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>✓</span>
                   )}

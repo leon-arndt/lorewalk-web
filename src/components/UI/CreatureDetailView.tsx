@@ -40,7 +40,7 @@ function CreatureScene({ creature, size, nomming, highlight }: {
         userSelect: 'none',
         padding: large ? '12px 32px 12px' : undefined,
         borderRadius: large ? 20 : undefined,
-        background: highlight ? 'rgba(5,150,105,0.08)' : undefined,
+        background: highlight ? 'rgba(99,102,241,0.08)' : undefined,
         transition: 'background 0.15s',
       }}
     >
@@ -132,7 +132,7 @@ function FoodChip({ item, onFed }: { item: FoodItem; onFed: () => void }) {
     const onZone = !!getZoneEl(cx, cy)
     setOverZone(onZone)
     g.style.boxShadow = onZone
-      ? '0 0 0 3px #34d399, 0 8px 28px rgba(5,150,105,0.35)'
+      ? '0 0 0 3px #818cf8, 0 8px 28px rgba(99,102,241,0.35)'
       : '0 8px 28px rgba(0,0,0,0.22)'
   }
 
@@ -183,7 +183,7 @@ function FoodChip({ item, onFed }: { item: FoodItem; onFed: () => void }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
         padding: '10px 14px', background: 'white', borderRadius: 18,
         boxShadow: '0 2px 10px rgba(0,0,0,0.10)',
-        border: `1.5px solid ${overZone ? '#34d399' : '#f1f5f9'}`,
+        border: `1.5px solid ${overZone ? '#818cf8' : '#f1f5f9'}`,
         cursor: 'grab', userSelect: 'none', touchAction: 'none', flexShrink: 0,
       }}
     >
@@ -191,7 +191,7 @@ function FoodChip({ item, onFed }: { item: FoodItem; onFed: () => void }) {
       <span style={{ fontSize: 10, fontWeight: 700, color: '#1e293b', textAlign: 'center', maxWidth: 72, lineHeight: 1.2 }}>
         {def.name}
       </span>
-      <span style={{ fontSize: 9, fontWeight: 700, color: '#059669', background: '#ecfdf5', borderRadius: 20, padding: '1px 7px' }}>
+      <span style={{ fontSize: 9, fontWeight: 700, color: '#6366f1', background: '#eef2ff', borderRadius: 20, padding: '1px 7px' }}>
         +{def.xp} XP
       </span>
     </div>
@@ -286,7 +286,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#34d399', marginTop: 4 }}>MAX LEVEL</div>
+            <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#818cf8', marginTop: 4 }}>MAX LEVEL</div>
           )}
 
           <div style={{ textAlign: 'center', padding: '8px 24px 0', fontSize: 12, color: '#94a3b8' }}>
@@ -307,8 +307,8 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
             </div>
           ) : (
             <div style={{ padding: '0 24px' }}>
-              <div style={{ padding: '12px 16px', background: '#ecfdf5', borderRadius: 12 }}>
-                <p style={{ margin: 0, fontSize: 13, color: '#059669' }}>
+              <div style={{ padding: '12px 16px', background: '#eef2ff', borderRadius: 12 }}>
+                <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
                   No food yet. Send a squad on an expedition to bring some back.
                 </p>
               </div>

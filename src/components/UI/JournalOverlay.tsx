@@ -113,9 +113,9 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
             disabled={busy}
             style={{
               aspectRatio: '1', borderRadius: 12, cursor: busy ? 'default' : 'pointer',
-              border: '2px dashed #a7f3d0', background: '#ecfdf5',
+              border: '2px dashed #c7d2fe', background: '#f5f7ff',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
-              color: '#059669', WebkitTapHighlightColor: 'transparent',
+              color: '#6366f1', WebkitTapHighlightColor: 'transparent',
             }}
           >
             <span style={{ fontSize: 26, lineHeight: 1 }}>{busy ? '⏳' : '📷'}</span>

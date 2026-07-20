@@ -200,7 +200,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
               background: rewardGradient,
               color: 'white', fontSize: 16, fontWeight: 800,
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-              boxShadow: '0 4px 16px rgba(52,211,153,0.4)',
+              boxShadow: '0 4px 16px rgba(129,140,248,0.4)',
               animation: 'rewardPop 0.4s cubic-bezier(0.16,1,0.3,1)',
             }}
           >
@@ -333,7 +333,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
           fontSize: 16, fontWeight: 800,
           cursor: hasTicket ? 'pointer' : 'default',
           WebkitTapHighlightColor: 'transparent',
-          boxShadow: hasTicket ? '0 4px 16px rgba(5,150,105,0.35)' : 'none',
+          boxShadow: hasTicket ? '0 4px 16px rgba(99,102,241,0.35)' : 'none',
         }}
       >
         {hasTicket ? 'Join party walk - 🎟️ 1 ticket' : 'Need a ticket to join'}

@@ -21,7 +21,7 @@ const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
 function typeColors(category: string) {
   return RARE_CATEGORIES.has(category)
     ? { bg: '#fef3c7', fg: '#b45309', ring: '#fbbf24' }
-    : { bg: '#d1fae5', fg: '#047857', ring: '#6ee7b7' }
+    : { bg: '#ede9fe', fg: '#7c3aed', ring: '#c4b5fd' }
 }
 
 function matchCount(squad: Squad, category: string, byId: Map<string, HatchedCreature>) {
@@ -65,7 +65,7 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
     }}>
       <span style={{
         position: 'absolute', top: 4, right: 4, fontSize: 8, fontWeight: 700,
-        color: 'white', background: '#059669', borderRadius: 6,
+        color: 'white', background: '#6366f1', borderRadius: 6,
         padding: '1px 4px', lineHeight: 1.4,
       }}>
         Lv.{creature.level}
@@ -117,7 +117,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
     <div style={{
       background: 'white', borderRadius: 18, padding: 16, marginBottom: 14,
       boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-      border: `2px solid ${isActive ? '#6ee7b7' : 'transparent'}`,
+      border: `2px solid ${isActive ? '#a5b4fc' : 'transparent'}`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <input
@@ -133,7 +133,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             border: 'none', borderBottom: '1px solid transparent', outline: 'none',
             background: 'transparent', padding: '2px 0',
           }}
-          onFocus={(e) => (e.target.style.borderBottomColor = '#a7f3d0')}
+          onFocus={(e) => (e.target.style.borderBottomColor = '#c7d2fe')}
         />
         <button
           onClick={() => setActiveSquad(squad.id)}
@@ -199,7 +199,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             </button>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#059669', fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: '#6366f1', fontVariantNumeric: 'tabular-nums' }}>
                 {formatCountdown(new Date(exp.returnsAt).getTime() - now)}
               </span>
               <button
