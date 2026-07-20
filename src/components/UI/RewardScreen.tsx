@@ -5,6 +5,7 @@ import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
 import type { RewardItem } from '@/types'
+import { accent, rewardGradient } from '@/lib/theme'
 
 const ITEM_META: Record<string, { icon: string; color: string; label: (item: RewardItem) => string }> = {
   xp:       { icon: '⭐', color: '#f59e0b', label: (i) => `+${i.amount} XP` },
@@ -115,7 +116,7 @@ export function RewardScreen() {
         </div>
 
         {/* Title */}
-        <h2 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 800, color: '#1e293b', lineHeight: 1.2 }}>
+        <h2 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 800, color: accent, lineHeight: 1.2 }}>
           {title}
         </h2>
         {subtitle && (
@@ -160,7 +161,7 @@ export function RewardScreen() {
           onClick={dismissReward}
           style={{
             width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-            background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
+            background: rewardGradient,
             color: 'white', fontSize: 17, fontWeight: 800,
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
             boxShadow: '0 4px 16px rgba(52,211,153,0.4)',

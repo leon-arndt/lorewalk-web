@@ -8,6 +8,7 @@ import {
   type ColorSwatch, type CosmeticSlot,
 } from '@/data/cosmetics'
 import type { PlayerAppearance } from '@/types'
+import { accent, accentSoft } from '@/lib/theme'
 
 function ColorSwatchRow({ swatches, selectedId, onSelect }: {
   swatches: ColorSwatch[]
@@ -25,8 +26,8 @@ function ColorSwatchRow({ swatches, selectedId, onSelect }: {
           style={{
             width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
             background: toCssColor(s.color),
-            border: selectedId === s.id ? '3px solid #059669' : '3px solid white',
-            boxShadow: selectedId === s.id ? '0 0 0 2px #059669' : '0 1px 4px rgba(0,0,0,0.15)',
+            border: selectedId === s.id ? `3px solid ${accent}` : '3px solid white',
+            boxShadow: selectedId === s.id ? `0 0 0 2px ${accent}` : '0 1px 4px rgba(0,0,0,0.15)',
           }}
         />
       ))}
@@ -50,8 +51,8 @@ function ItemRow({ slot, selectedId, onSelect }: {
           style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
             padding: '8px 10px', borderRadius: 12, cursor: 'pointer', flexShrink: 0,
-            background: selectedId === item.id ? '#ecfdf5' : 'white',
-            border: selectedId === item.id ? '2px solid #059669' : '2px solid transparent',
+            background: selectedId === item.id ? accentSoft : 'white',
+            border: selectedId === item.id ? `2px solid ${accent}` : '2px solid transparent',
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           }}
         >
@@ -162,7 +163,7 @@ export function CharacterCustomizationPage() {
         >
           ←
         </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('customize_title')}</h1>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: accent }}>{t('customize_title')}</h1>
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -171,37 +172,37 @@ export function CharacterCustomizationPage() {
         </div>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('customize_skin_tone')}</h2>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('customize_skin_tone')}</h2>
           <ColorSwatchRow swatches={SKIN_TONES} selectedId={appearance.skinToneId} onSelect={(id) => updateAppearance({ skinToneId: id })} />
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('customize_hair_color')}</h2>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('customize_hair_color')}</h2>
           <ColorSwatchRow swatches={HAIR_COLORS} selectedId={appearance.hairColorId} onSelect={(id) => updateAppearance({ hairColorId: id })} />
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('customize_eye_color')}</h2>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('customize_eye_color')}</h2>
           <ColorSwatchRow swatches={EYE_COLORS} selectedId={appearance.eyeColorId} onSelect={(id) => updateAppearance({ eyeColorId: id })} />
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('customize_top')}</h2>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('customize_top')}</h2>
           <ItemRow slot="top" selectedId={appearance.topId} onSelect={(id) => updateAppearance({ topId: id })} />
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('customize_bottom')}</h2>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('customize_bottom')}</h2>
           <ItemRow slot="bottom" selectedId={appearance.bottomId} onSelect={(id) => updateAppearance({ bottomId: id })} />
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('customize_shoes')}</h2>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('customize_shoes')}</h2>
           <ItemRow slot="shoes" selectedId={appearance.shoesId} onSelect={(id) => updateAppearance({ shoesId: id })} />
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('customize_head_item')}</h2>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('customize_head_item')}</h2>
           <ItemRow slot="headItem" selectedId={appearance.headItemId} onSelect={(id) => updateAppearance({ headItemId: id })} />
         </section>
       </div>

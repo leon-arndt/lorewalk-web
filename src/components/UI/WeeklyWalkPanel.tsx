@@ -7,6 +7,7 @@ import {
 } from '@/lib/profile'
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { accent, rewardGradient } from '@/lib/theme'
 
 interface Props {
   currentSteps: number
@@ -14,8 +15,8 @@ interface Props {
   isClosing?: boolean
 }
 
-const ACCENT = '#059669'
-const ACCENT_SOFT = 'rgba(5,150,105,0.1)'
+const REWARD_ACCENT = '#6366f1'
+const REWARD_ACCENT_SOFT = 'rgba(99,102,241,0.1)'
 
 const panelStyle = (isClosing: boolean) => ({
   position: 'absolute' as const, bottom: 0, left: 0, right: 0,
@@ -29,7 +30,7 @@ const panelStyle = (isClosing: boolean) => ({
     : 'panelSlideUp 0.38s cubic-bezier(0.16,1,0.3,1)',
 })
 
-function ProgressBar({ value, max, color = ACCENT }: { value: number; max: number; color?: string }) {
+function ProgressBar({ value, max, color = REWARD_ACCENT }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100)
   return (
     <div style={{ height: 8, borderRadius: 4, background: '#f1f5f9', overflow: 'hidden' }}>
@@ -86,7 +87,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🗓️</div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>Walk ended</h2>
+          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>Walk ended</h2>
           <p style={{ margin: '0 0 20px', fontSize: 13, color: '#94a3b8' }}>
             Last week's party walk has ended. A new one starts every Monday.
           </p>
@@ -95,7 +96,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
             data-sfx="close"
             style={{
               padding: '12px 28px', borderRadius: 14, border: 'none',
-              background: ACCENT, color: 'white', fontSize: 14, fontWeight: 700,
+              background: accent, color: 'white', fontSize: 14, fontWeight: 700,
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
             }}
           >
@@ -136,15 +137,15 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <EmojiSprite id="weekly_walk" emoji="🚶" size={40} />
           <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>Weekly Party Walk</h2>
+            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>Weekly Party Walk</h2>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Combined goal: {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps</p>
           </div>
         </div>
 
         {/* Overall progress */}
-        <div style={{ marginBottom: 20, padding: '14px 16px', borderRadius: 14, background: ACCENT_SOFT }}>
+        <div style={{ marginBottom: 20, padding: '14px 16px', borderRadius: 14, background: REWARD_ACCENT_SOFT }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>Party progress</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: REWARD_ACCENT }}>Party progress</span>
             <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b' }}>
               {formatSteps(Math.min(totalSteps, WEEKLY_WALK_TARGET_STEPS))} / {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps
             </span>
@@ -164,7 +165,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
                   <div style={{
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: done ? 'linear-gradient(135deg,#34d399,#6ee7b7)' : '#f1f5f9',
+                    background: done ? rewardGradient : '#f1f5f9',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 16,
                   }}>
@@ -184,7 +185,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
                 <ProgressBar
                   value={contributed}
                   max={m.targetSteps}
-                  color={done ? '#16a34a' : m.isPlayer ? ACCENT : '#94a3b8'}
+                  color={done ? '#16a34a' : m.isPlayer ? REWARD_ACCENT : '#94a3b8'}
                 />
               </div>
             )
@@ -196,7 +197,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
             onClick={handleClaim}
             style={{
               width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-              background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
+              background: rewardGradient,
               color: 'white', fontSize: 16, fontWeight: 800,
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
               boxShadow: '0 4px 16px rgba(52,211,153,0.4)',
@@ -225,7 +226,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 52, marginBottom: 12 }}>🏅</div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>Reward claimed!</h2>
+          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>Reward claimed!</h2>
           <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>New party walk starts next Monday.</p>
         </div>
       </div>
@@ -253,7 +254,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}>
           <EmojiSprite id="weekly_walk" emoji="🚶" size={52} />
         </div>
-        <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: '#1e293b' }}>Weekly Party Walk</h2>
+        <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: accent }}>Weekly Party Walk</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
           Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.
           Your own steps count toward the whole goal, so you can finish it solo if the rest of the party falls behind.
@@ -290,7 +291,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
       {/* Ticket status + join */}
       <div style={{
         padding: '14px 16px', borderRadius: 14,
-        background: hasTicket ? ACCENT_SOFT : 'rgba(248,250,252,0.9)',
+        background: hasTicket ? REWARD_ACCENT_SOFT : 'rgba(248,250,252,0.9)',
         marginBottom: 14,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -326,7 +327,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         style={{
           width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
           background: hasTicket
-            ? `linear-gradient(135deg, ${ACCENT}, #047857)`
+            ? `linear-gradient(135deg, ${REWARD_ACCENT}, #a855f7)`
             : '#e2e8f0',
           color: hasTicket ? 'white' : '#94a3b8',
           fontSize: 16, fontWeight: 800,

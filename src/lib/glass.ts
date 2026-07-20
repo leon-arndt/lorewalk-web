@@ -34,4 +34,4 @@ export const glassNav: CSSProperties = {
 }
 
 // Gradient background for non-map pages - gives glass chrome something to refract
-export const pageBackground = 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)'
+export const pageBackground = 'linear-gradient(160deg, #f6faf6 0%, #eaf6ec 55%, #f2faf3 100%)'

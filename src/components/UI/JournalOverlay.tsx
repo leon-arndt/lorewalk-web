@@ -6,6 +6,8 @@ import {
   addJournalPhoto, getJournalPhotos, getJournalPhotoDates, deleteJournalPhoto,
   fileToCompressedDataUrl, type JournalPhoto,
 } from '@/lib/journalDb'
+import { accent, accentAlpha } from '@/lib/theme'
+import { pageBackground } from '@/lib/glass'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -77,7 +79,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
             <span style={{ fontSize: 18 }}>{steps >= DAILY_STEP_GOAL ? '😄' : '👟'}</span>
           </StepRing>
           <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 800, color: '#1e293b' }}>{title}</h2>
+            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 800, color: accent }}>{title}</h2>
             <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>
               {steps.toLocaleString()} / {DAILY_STEP_GOAL.toLocaleString()} steps
             </p>
@@ -173,14 +175,14 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 50, overflowY: 'auto',
-      background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)',
+      background: pageBackground,
       animation: 'panelSlideUp 0.34s cubic-bezier(0.16,1,0.3,1)',
       paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '24px 20px 12px' }}>
         <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 800, color: '#1e293b' }}>Journal</h1>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 800, color: accent }}>Journal</h1>
           <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>Your daily steps and photo album.</p>
         </div>
         <button
@@ -236,7 +238,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                 padding: '6px 0', border: 'none', borderRadius: 12,
-                background: isToday ? 'rgba(5,150,105,0.10)' : 'transparent',
+                background: isToday ? accentAlpha(0.10) : 'transparent',
                 cursor: isFuture ? 'default' : 'pointer', opacity: isFuture ? 0.35 : 1,
                 WebkitTapHighlightColor: 'transparent',
               }}
@@ -244,7 +246,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
               <StepRing progress={steps / DAILY_STEP_GOAL} size={34} stroke={3.5}>
                 {goalMet
                   ? <span style={{ fontSize: 13 }}>😄</span>
-                  : <span style={{ fontSize: 11, fontWeight: 700, color: isToday ? '#059669' : '#475569' }}>{day}</span>}
+                  : <span style={{ fontSize: 11, fontWeight: 700, color: isToday ? accent : '#475569' }}>{day}</span>}
               </StepRing>
               <span style={{
                 width: 5, height: 5, borderRadius: '50%',
@@ -269,7 +271,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
 
 const navBtn: React.CSSProperties = {
   width: 36, height: 36, borderRadius: '50%', border: 'none',
-  background: 'white', color: '#059669', fontSize: 20, fontWeight: 700,
+  background: 'white', color: accent, fontSize: 20, fontWeight: 700,
   cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   WebkitTapHighlightColor: 'transparent',

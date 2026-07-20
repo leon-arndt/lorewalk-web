@@ -7,6 +7,7 @@ import { totalSteps as sumTotalSteps } from '@/lib/profile'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
 import { FriendProfileScreen } from '@/components/UI/FriendProfileScreen'
+import { accent, rewardGradient } from '@/lib/theme'
 
 function formatAdded(iso: string): string {
   return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
@@ -78,7 +79,7 @@ export function FriendsSection() {
 
   return (
     <section>
-      <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+      <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
         {loading ? '…' : t('friends_title', { n: friends.length })}
       </h2>
 
@@ -123,7 +124,7 @@ export function FriendsSection() {
               onClick={regenerate}
               style={{
                 marginTop: 8, width: '100%', fontSize: 12, fontWeight: 600,
-                color: '#059669', background: 'none',
+                color: accent, background: 'none',
                 border: '1px solid #d1fae5', borderRadius: 8,
                 padding: '6px 0', cursor: 'pointer',
               }}
@@ -161,7 +162,7 @@ export function FriendsSection() {
             disabled={adding || !input.trim()}
             style={{
               padding: '10px 18px', borderRadius: 10, border: 'none',
-              background: adding || !input.trim() ? '#f1f5f9' : '#059669',
+              background: adding || !input.trim() ? '#f1f5f9' : accent,
               color: adding || !input.trim() ? '#cbd5e1' : 'white',
               fontSize: 13, fontWeight: 700,
               cursor: adding || !input.trim() ? 'default' : 'pointer',
@@ -207,7 +208,7 @@ export function FriendsSection() {
             >
               <div style={{
                 position: 'relative', width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
+                background: rewardGradient,
               }}>
                 <div style={{
                   position: 'absolute', inset: 0,

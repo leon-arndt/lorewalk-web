@@ -3,6 +3,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { isEggReady } from '@/lib/profile'
 import { glassNav } from '@/lib/glass'
+import { accent, accentAlpha } from '@/lib/theme'
 
 const MapIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -77,12 +78,12 @@ export function BottomNav() {
             fontWeight: 600,
             letterSpacing: '0.04em',
             textTransform: 'uppercase' as const,
-            color: isActive ? '#059669' : 'rgba(100,116,139,0.70)',
+            color: isActive ? accent : 'rgba(100,116,139,0.70)',
             background: isActive
-              ? 'rgba(5,150,105,0.12)'
+              ? accentAlpha(0.12)
               : 'transparent',
             boxShadow: isActive
-              ? 'inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 rgba(5,150,105,0.10)'
+              ? `inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 ${accentAlpha(0.10)}`
               : 'none',
             transition: 'background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease',
             WebkitTapHighlightColor: 'transparent',

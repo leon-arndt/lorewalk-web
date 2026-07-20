@@ -2,6 +2,7 @@ import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
 import { currentMonthKey } from '@/lib/profile'
 import type { EarnedMedal } from '@/types'
+import { pageBackground } from '@/lib/glass'
 
 const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -33,7 +34,7 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 60%, #f5fdf8 100%)',
+          background: pageBackground,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

@@ -23,6 +23,7 @@ import { haversineDistance } from '@/lib/mapUtils'
 import { localDateKey, isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import type { Poi } from '@/types'
+import { accent, rewardGradient } from '@/lib/theme'
 
 const CHECKIN_RADIUS_M = 50
 
@@ -437,7 +438,7 @@ export function MapPage() {
       {toast && (
         <div style={{
           position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
+          background: rewardGradient,
           color: 'white', fontSize: 13, fontWeight: 600,
           padding: '10px 20px', borderRadius: 24,
           boxShadow: '0 4px 16px rgba(52,211,153,0.45)',
@@ -484,7 +485,7 @@ export function MapPage() {
         <span>Weekly Walk</span>
         {profile.tickets > 0 && !profile.weeklyWalk && (
           <span style={{
-            background: '#059669', color: 'white',
+            background: accent, color: 'white',
             borderRadius: 10, fontSize: 10, fontWeight: 800,
             padding: '1px 6px', marginLeft: 2,
           }}>

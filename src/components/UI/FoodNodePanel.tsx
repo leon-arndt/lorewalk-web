@@ -7,6 +7,7 @@ import { glassPanel, glassChrome } from '@/lib/glass'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { FoodNode, HatchedCreature, PlayerPosition } from '@/types'
+import { accent } from '@/lib/theme'
 
 function formatDuration(ms: number) {
   const total = Math.max(0, Math.ceil(ms / 1000))
@@ -123,7 +124,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
           <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={44} />
           <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>{def.name}</h2>
+            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>{def.name}</h2>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Near {node.poiName}</p>
           </div>
         </div>
@@ -172,7 +173,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={36} />
             <div style={{ minWidth: 0 }}>
-              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>{def.name}</h2>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>{def.name}</h2>
               <p style={{ margin: 0, fontSize: 11, color: '#94a3b8' }}>Select up to {MAX_FOOD_CREATURES} creatures</p>
             </div>
           </div>
@@ -192,7 +193,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
               style={{
                 fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999,
                 border: 'none', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-                background: sortKey === s.key ? '#059669' : '#f1f5f9',
+                background: sortKey === s.key ? accent : '#f1f5f9',
                 color: sortKey === s.key ? 'white' : '#64748b',
               }}
             >
@@ -270,7 +271,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
         <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={44} />
         <div style={{ minWidth: 0 }}>
-          <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>{def.name}</h2>
+          <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>{def.name}</h2>
           <p style={{ margin: '0 0 6px', fontSize: 12, color: '#94a3b8' }}>Near {node.poiName}</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: '#fef3c7', color: '#b45309' }}>

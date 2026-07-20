@@ -1,6 +1,7 @@
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { glassChrome } from '@/lib/glass'
+import { accent } from '@/lib/theme'
 
 export function ModeToggle() {
   const { mode, setMode } = useConnectionMode()
@@ -20,7 +21,7 @@ export function ModeToggle() {
         fontSize: 12,
         fontWeight: 600,
         ...glassChrome,
-        color: isOnline ? '#059669' : '#94a3b8',
+        color: isOnline ? accent : '#94a3b8',
         transition: 'color 0.15s ease',
         WebkitTapHighlightColor: 'transparent',
       }}

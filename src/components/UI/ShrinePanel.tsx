@@ -4,6 +4,7 @@ import { creaturePower, creatureName, MAX_SHRINE_CREATURES, SHRINE_DURATION_MS }
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { HatchedCreature, ShrineNode, PlayerPosition } from '@/types'
+import { accent } from '@/lib/theme'
 
 function formatDuration(ms: number) {
   const total = Math.max(0, Math.ceil(ms / 1000))
@@ -121,7 +122,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 52, marginBottom: 8 }}>⛩️</div>
-          <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: accent }}>
             {node.poiName}
           </h2>
           <p style={{ margin: '0 0 16px', fontSize: 12, color: '#94a3b8' }}>Guardian Shrine - Held</p>
@@ -146,7 +147,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
           <div style={{ fontSize: 44, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
           <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>
+            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
               {node.poiName}
             </h2>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Guardian Shrine</p>
@@ -213,7 +214,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
             <div style={{ minWidth: 0 }}>
-              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>Battle squad</h2>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>Battle squad</h2>
               <p style={{ margin: 0, fontSize: 11, color: '#94a3b8' }}>Up to {MAX_SHRINE_CREATURES} creatures</p>
             </div>
           </div>
@@ -315,7 +316,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
         <div style={{ fontSize: 52, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
         <div style={{ minWidth: 0 }}>
-          <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
             {node.poiName}
           </h2>
           <p style={{ margin: '0 0 8px', fontSize: 12, color: '#94a3b8' }}>Guardian Shrine</p>

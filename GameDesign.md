@@ -105,7 +105,12 @@ Pikmin Bloom uses steps (pedometer) to grow seedlings — web has no reliable st
 ## UI / UX Decisions
 
 - **Theme**: White background, pastel accents. No dark mode for now.
-- **Primary accent**: Indigo `#6366f1`.
+- **Color tokens live in `src/lib/theme.ts`** — don't hardcode hex for accent/reward colors, import from there:
+  - `accent` (`#166534`) / `accentSoft` (`#eaf6ec`) / `accentAlpha(n)` — the quiet green below.
+  - `rewardGradient` / `rewardGradientHorizontal` (`#818cf8` → `#c084fc`) — the indigo→purple rarity/premium family.
+  - The page background gradient itself is `pageBackground` in `src/lib/glass.ts` (frosted-glass surface tokens live there; brand accent colors live in `theme.ts`).
+- **Primary accent: quiet green, `accent` (`#166534`)** (added 2026-07-20). A deliberately muted, Geocaching-style green rather than Duolingo's saturated `#58CC02` — walking-to-real-places games read better quiet than punchy. Reference points pulled from the real brands: Duolingo primary `#58CC02` / secondary `#89E219` (bright, high-energy), Geocaching primary `#4A742C` (muted olive), Pikmin Bloom (no published hex, but reputationally soft pastel mint). Landed between Geocaching's quietness and a slightly cooler green. Covers: page background gradient (off-white → mint → sage), all `h1`/`h2`/`h3` headings (body text stays neutral slate `#1e293b`), navigation/selection controls (bottom nav, Settings pickers, tabs, sort pills, selection rings, "today" indicators, active-squad states), and solid-color CTA buttons (Send postcard, Add friend, Regenerate code, Save name, Send expedition, "Got it" dismiss). The one CTA left off-brand on purpose: the "Hatched!" reveal screen's rename Save button, which sits inside an all-violet dark reward scene — green would clash with that scene's own palette rather than the everyday white-background chrome the rest of the app uses.
+- **Indigo→purple stays as its own "reward/premium" language, not the accent**: egg XP bars, level-up screen, hatch reveal, MAX LEVEL badges, the "Collect reward"/"Claim reward"/"Join party walk" gradient buttons, and coin-pack purchase buttons. These are deliberately *not* accent green — they mark a reward/premium moment as visually distinct from ordinary navigation and everyday actions. Small text badges (XP pills, price/coin counts) also stay indigo for now, matching this family.
 - **Bottom navigation**: 4 tabs — Map, Creatures, Expeditions, Profile.
 - **POI detail**: Slide-up white panel from bottom with drag handle. Shows name, description, category badge, points badge, distance (online), learn-more link, and check-in button.
 - **Mode toggle**: Frosted-glass pill in the top-left of the map. Green dot = online, grey dot = offline.

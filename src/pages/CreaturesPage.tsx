@@ -8,6 +8,8 @@ import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
 import { CreatureDetailView, CreatureSceneCard } from '@/components/UI/CreatureDetailView'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { Egg, HatchedCreature } from '@/types'
+import { accent } from '@/lib/theme'
+import { pageBackground } from '@/lib/glass'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
 
@@ -187,8 +189,8 @@ function PantrySection() {
 
   return (
     <section style={{ padding: '0 16px 24px' }}>
-      <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
-        Pantry <span style={{ color: '#059669' }}>{foodInventory.length}</span>
+      <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
+        Pantry <span style={{ color: '#6366f1' }}>{foodInventory.length}</span>
       </h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {foodInventory.map((item) => {
@@ -240,9 +242,9 @@ export function CreaturesPage() {
   const slots: (Egg | null)[] = [...eggs, ...Array<null>(emptySlots).fill(null)]
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: pageBackground, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 20px' }}>
-        <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>
+        <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>
           {t('creatures_title')}
         </h1>
         <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
@@ -252,7 +254,7 @@ export function CreaturesPage() {
 
       {/* Egg slots */}
       <section style={{ padding: '0 16px 24px' }}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
           {t('creatures_hatching', { n: eggs.length, max: maxEggSlots })}
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
@@ -293,7 +295,7 @@ export function CreaturesPage() {
 
       {/* Collection */}
       <section style={{ padding: '0 16px 32px' }}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
           {t('creatures_collection')} <span style={{ color: full ? '#e11d48' : '#1e293b' }}>{hatchedCreatures.length} / {cap}</span>
         </h2>
         {full && (

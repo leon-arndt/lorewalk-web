@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { Postcard } from '@/types'
+import { accent } from '@/lib/theme'
 
 const CATEGORY_ICONS: Record<string, string> = {
   heritage: '🏛', nature: '🌿', religious: '🕌',
@@ -113,7 +114,7 @@ export function PostcardsSection() {
   return (
     <section>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: accent }}>
           Postcards{unread > 0 ? ` · ${unread} new` : ''}
         </h2>
         {import.meta.env.DEV && (
@@ -138,7 +139,7 @@ export function PostcardsSection() {
             style={{
               fontSize: 12, fontWeight: 700, padding: '6px 16px', borderRadius: 20,
               border: 'none', cursor: 'pointer',
-              background: tab === t ? '#059669' : '#f1f5f9',
+              background: tab === t ? accent : '#f1f5f9',
               color: tab === t ? 'white' : '#64748b',
             }}
           >

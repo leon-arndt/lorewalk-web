@@ -7,6 +7,7 @@ import { haversineDistance } from '@/lib/mapUtils'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
+import { accent, rewardGradient } from '@/lib/theme'
 
 const MOCK_FRIENDS = [
   { id: 'mock-1', name: 'Aisha' },
@@ -120,7 +121,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
         </button>
       </div>
 
-      <h2 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 700, color: '#1e293b', lineHeight: 1.3 }}>
+      <h2 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 700, color: accent, lineHeight: 1.3 }}>
         {poi.name}
       </h2>
       <p style={{ margin: 0, fontSize: 14, color: '#64748b', lineHeight: 1.6 }}>
@@ -135,7 +136,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             marginTop: 12, fontSize: 13, fontWeight: 500,
-            color: '#059669', textDecoration: 'none',
+            color: accent, textDecoration: 'none',
           }}
         >
           {t('poi_learn_more')}
@@ -162,7 +163,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                   style={{
                     fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 10,
                     border: 'none', cursor: 'pointer',
-                    background: pickingFriend ? '#f1f5f9' : '#059669',
+                    background: pickingFriend ? '#f1f5f9' : accent,
                     color: pickingFriend ? '#64748b' : 'white',
                   }}
                 >
@@ -197,7 +198,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                   >
                     <div style={{
                       position: 'relative', width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg,#34d399,#6ee7b7)',
+                      background: rewardGradient,
                     }}>
                       <div style={{
                         position: 'absolute', inset: 0,

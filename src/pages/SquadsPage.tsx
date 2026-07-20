@@ -7,6 +7,8 @@ import { hasReturned, expeditionDurationMs, claimPendingCoins, creatureName } fr
 import { haversineDistance } from '@/lib/mapUtils'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { ExpeditionTarget, HatchedCreature, Squad } from '@/types'
+import { accent, accentSoft, rewardGradient } from '@/lib/theme'
+import { pageBackground } from '@/lib/glass'
 
 // Where a squad sets out from when sending it on an expedition: the player's live
 // position, or Singapore's centre when GPS is unavailable (e.g. offline testing).
@@ -139,8 +141,8 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
           style={{
             fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20,
             border: 'none', cursor: isActive ? 'default' : 'pointer',
-            background: isActive ? '#059669' : '#ecfdf5',
-            color: isActive ? 'white' : '#059669',
+            background: isActive ? accent : accentSoft,
+            color: isActive ? 'white' : accent,
           }}
         >
           {isActive ? t('squads_active') : t('squads_set_active')}
@@ -162,8 +164,8 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             style={{
               marginTop: 12, width: '100%', textAlign: 'center',
               fontSize: 13, fontWeight: 600,
-              color: hasMembers ? '#059669' : '#94a3b8',
-              background: hasMembers ? '#ecfdf5' : '#f1f5f9',
+              color: hasMembers ? accent : '#94a3b8',
+              background: hasMembers ? accentSoft : '#f1f5f9',
               border: 'none', borderRadius: 10,
               padding: '10px 12px',
               cursor: hasMembers ? 'pointer' : 'not-allowed',
@@ -189,7 +191,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
               onClick={handleCollect}
               style={{
                 width: '100%', fontSize: 13, fontWeight: 700, color: 'white',
-                background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
+                background: rewardGradient,
                 border: 'none', borderRadius: 10, padding: '10px', cursor: 'pointer',
               }}
             >
@@ -248,7 +250,7 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>{title}</h3>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>{title}</h3>
           <button onClick={onClose} data-sfx="close" style={{ border: 'none', background: 'transparent', fontSize: 20, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
         </div>
         {children}
@@ -393,10 +395,10 @@ export function SquadsPage() {
     : SG_CENTRE
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: pageBackground, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('squads_title')}</h1>
+          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>{t('squads_title')}</h1>
           <button
             onClick={() => navigate('/shop#coins')}
             title="Get more coins"
@@ -432,7 +434,7 @@ function Holdings({ now }: { now: number }) {
   if (profile.claims.length === 0) {
     return (
       <div style={{ padding: '8px 16px 32px' }}>
-        <h2 style={{ margin: '4px 0 8px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('squads_holdings')}</h2>
+        <h2 style={{ margin: '4px 0 8px', fontSize: 15, fontWeight: 700, color: accent }}>{t('squads_holdings')}</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
           {t('squads_holdings_empty')}
         </p>
@@ -450,7 +452,7 @@ function Holdings({ now }: { now: number }) {
 
   return (
     <div style={{ padding: '8px 16px 32px' }}>
-      <h2 style={{ margin: '4px 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+      <h2 style={{ margin: '4px 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
         {t('squads_holdings_title', { n: profile.claims.length })}
       </h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

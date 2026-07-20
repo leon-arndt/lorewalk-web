@@ -8,6 +8,7 @@ import {
   CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   STREAK_FREEZE_MAX, STREAK_FREEZE_COST,
 } from '@/lib/profile'
+import { accent, rewardGradient } from '@/lib/theme'
 
 // Real money runs through Google Play Billing (Digital Goods API in a TWA). Until
 // that's wired, the buy buttons credit coins directly - clearly labelled as test.
@@ -83,7 +84,7 @@ export function ShopPage() {
         padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
       }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('shop_title')}</h1>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: accent }}>{t('shop_title')}</h1>
         <button
           onClick={scrollToCoins}
           title="Get more coins"
@@ -102,7 +103,7 @@ export function ShopPage() {
 
       {/* Upgrades */}
       <section style={{ padding: '8px 16px 8px' }}>
-        <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('shop_upgrades')}</h2>
+        <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('shop_upgrades')}</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {upgrades.map((it) => (
             <div key={it.key} style={{
@@ -134,7 +135,7 @@ export function ShopPage() {
 
       {/* Coins (real-money top-up) */}
       <section ref={coinsRef} id="coins" style={{ padding: '16px 16px 32px', scrollMarginTop: 8 }}>
-        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>{t('shop_coins_title')}</h2>
+        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: accent }}>{t('shop_coins_title')}</h2>
         <p style={{ margin: '0 0 12px', fontSize: 12, color: mode === 'offline' ? '#16a34a' : '#94a3b8' }}>
           {mode === 'offline' ? t('shop_coins_offline') : t('shop_coins_online')}
         </p>
@@ -164,7 +165,7 @@ export function ShopPage() {
                 style={{
                   width: '100%', fontSize: 13, fontWeight: 700, padding: '9px', borderRadius: 12,
                   border: 'none', cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #34d399, #6ee7b7)', color: 'white',
+                  background: rewardGradient, color: 'white',
                 }}
               >
                 {pack.price}

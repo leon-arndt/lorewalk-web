@@ -8,6 +8,7 @@ import { addMrtLayers } from '@/lib/mapMrt'
 import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
 import type { Poi, PlayerAppearance, PlayerPosition } from '@/types'
+import { accent, accentAlpha } from '@/lib/theme'
 
 // Map markers are built with raw DOM (MapLibre, not React) - this mirrors EmojiSprite's
 // emoji-fallback-then-3D-swap pattern for that imperative context.
@@ -199,8 +200,8 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
     display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
     width:42px;height:42px;padding:3px;border-radius:12px;
     background:white;box-sizing:border-box;
-    border:2.5px solid ${squad.isActive ? '#059669' : '#cbd5e1'};
-    box-shadow:0 2px 8px rgba(0,0,0,0.18)${squad.isActive ? ',0 0 0 4px rgba(5,150,105,0.2)' : ''};
+    border:2.5px solid ${squad.isActive ? accent : '#cbd5e1'};
+    box-shadow:0 2px 8px rgba(0,0,0,0.18)${squad.isActive ? `,0 0 0 4px ${accentAlpha(0.2)}` : ''};
     align-items:center;justify-items:center;
   `
   const filled = squad.emojis.slice(0, 4)

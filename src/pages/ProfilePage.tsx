@@ -14,6 +14,8 @@ import { getMedalConfig } from '@/data/medals'
 import { StreakChestCard } from '@/components/UI/StreakChestCard'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import type { Achievement, EarnedMedal } from '@/types'
+import { accent, rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
+import { pageBackground } from '@/lib/glass'
 
 const PREMIUM_BENEFITS = [
   { icon: '🔓', text: 'Every landmark unlocked' },
@@ -129,7 +131,7 @@ export function ProfilePage() {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 55%, #f5fdf8 100%)', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ height: '100%', overflowY: 'auto', background: pageBackground, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
 
       {/* Header card */}
       <div style={{ position: 'relative', background: 'white', padding: '44px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>
@@ -178,8 +180,8 @@ export function ProfilePage() {
             ) : (
               <div style={{
                 width: 64, height: 64, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #34d399 0%, #6ee7b7 100%)',
-                boxShadow: '0 4px 12px rgba(52,211,153,0.35)',
+                background: rewardGradient,
+                boxShadow: '0 4px 12px rgba(129,140,248,0.35)',
               }} />
             )}
             <div style={{
@@ -201,14 +203,14 @@ export function ProfilePage() {
                   maxLength={24}
                   style={{
                     flex: 1, fontSize: 18, fontWeight: 700, color: '#1e293b',
-                    border: '2px solid #059669', borderRadius: 10,
+                    border: `2px solid ${accent}`, borderRadius: 10,
                     padding: '4px 10px', outline: 'none',
                   }}
                 />
                 <button
                   onClick={handleNameSave}
                   style={{
-                    background: '#059669', color: 'white', border: 'none',
+                    background: accent, color: 'white', border: 'none',
                     borderRadius: 10, padding: '4px 14px', fontWeight: 600,
                     fontSize: 13, cursor: 'pointer',
                   }}
@@ -249,7 +251,7 @@ export function ProfilePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
-                background: 'linear-gradient(135deg, #34d399, #6ee7b7)',
+                background: rewardGradient,
                 color: 'white',
               }}>
                 Lv {profile.level}
@@ -274,7 +276,7 @@ export function ProfilePage() {
               <div style={{ height: 6, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', borderRadius: 3,
-                  background: 'linear-gradient(90deg, #34d399, #6ee7b7)',
+                  background: rewardGradientHorizontal,
                   width: `${xpPct}%`,
                   transition: 'width 0.4s ease',
                 }} />
@@ -315,7 +317,7 @@ export function ProfilePage() {
 
         {/* Premium */}
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
             👑 Lorewalk Premium
           </h2>
 
@@ -471,7 +473,7 @@ export function ProfilePage() {
 
         {/* Achievements */}
         <section>
-          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('profile_achievements')}
           </h2>
 
@@ -522,7 +524,7 @@ export function ProfilePage() {
 
         {/* Visit history */}
         <section>
-          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('profile_visit_history')}
           </h2>
 
@@ -716,7 +718,7 @@ export function ProfilePage() {
             }}
           >
             <div style={{ fontSize: 32, marginBottom: 8 }}>🏅</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 800, color: '#1e293b' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 800, color: accent }}>
               How the monthly challenge works
             </h3>
             <p style={{ margin: '0 0 16px', fontSize: 13, color: '#475569', lineHeight: 1.5 }}>

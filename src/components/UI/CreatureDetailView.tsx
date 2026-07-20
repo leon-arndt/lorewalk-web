@@ -3,6 +3,8 @@ import { getFoodDef } from '@/data/foods'
 import { getCreaturePreviewURL } from '@/lib/creaturePreview'
 import { creatureName, xpForCreatureLevel } from '@/lib/profile'
 import type { FoodItem, HatchedCreature } from '@/types'
+import { pageBackground } from '@/lib/glass'
+import { rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
 
 const DROPZONE = 'creature'
 
@@ -232,7 +234,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '88vh',
-          background: 'linear-gradient(160deg, #f7fdf9 0%, #eafaf1 60%, #f5fdf8 100%)',
+          background: pageBackground,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
@@ -260,7 +262,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-                background: creature.isShiny ? 'linear-gradient(135deg, #f59e0b, #fbbf24)' : 'linear-gradient(135deg, #34d399, #6ee7b7)',
+                background: creature.isShiny ? 'linear-gradient(135deg, #f59e0b, #fbbf24)' : rewardGradient,
                 color: 'white',
               }}>
                 Lv. {creature.level}
@@ -274,7 +276,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
               <div style={{ height: 6, borderRadius: 3, background: '#e2e8f0', overflow: 'hidden' }}>
                 <div style={{
                   height: '100%', borderRadius: 3,
-                  background: creature.isShiny ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #34d399, #6ee7b7)',
+                  background: creature.isShiny ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : rewardGradientHorizontal,
                   width: `${xpPct}%`, transition: 'width 0.4s ease',
                 }} />
               </div>

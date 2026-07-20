@@ -4,6 +4,7 @@ import type { Locale } from '@/contexts/LocaleContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { NotificationPrefKey } from '@/types'
+import { accent } from '@/lib/theme'
 
 const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_motivation' | 'settings_notif_party_walk' | 'settings_notif_challenges' | 'settings_notif_friends_gifts' | 'settings_notif_latest_news'; descKey: 'settings_daily_motivation_desc' | 'settings_notif_party_walk_desc' | 'settings_notif_challenges_desc' | 'settings_notif_friends_gifts_desc' | 'settings_notif_latest_news_desc' }[] = [
   { key: 'dailyMotivationNotifications', titleKey: 'settings_daily_motivation', descKey: 'settings_daily_motivation_desc' },
@@ -67,12 +68,12 @@ export function SettingsPage() {
         >
           ←
         </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1e293b' }}>{t('settings_title')}</h1>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: accent }}>{t('settings_title')}</h1>
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('profile_language')}
           </h2>
           <div style={{
@@ -87,7 +88,7 @@ export function SettingsPage() {
                 style={{
                   fontSize: 13, fontWeight: locale === code ? 700 : 500,
                   padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                  background: locale === code ? '#059669' : 'transparent',
+                  background: locale === code ? accent : 'transparent',
                   color: locale === code ? 'white' : '#475569',
                   transition: 'background 0.15s, color 0.15s',
                 }}
@@ -99,7 +100,7 @@ export function SettingsPage() {
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('settings_music_volume')}
           </h2>
           <div style={{
@@ -115,13 +116,13 @@ export function SettingsPage() {
               step={0.05}
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              style={{ flex: 1, accentColor: '#059669' }}
+              style={{ flex: 1, accentColor: accent }}
             />
           </div>
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('settings_sound_effects')}
           </h2>
           <div style={{
@@ -135,7 +136,7 @@ export function SettingsPage() {
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1e293b' }}>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('settings_notifications')}
           </h2>
           <div style={{
