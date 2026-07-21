@@ -144,6 +144,7 @@ export interface PlayerProfile {
   weeklyWalk: WeeklyPartyWalk | null
   dailySteps: Record<string, number>   // local date (YYYY-MM-DD) -> steps that day
   isPremium: boolean   // client-side only for now; not server-verified, see lib/profile.ts
+  premiumInterval: 'monthly' | 'yearly' | null   // billing cycle while isPremium; null when not subscribed
   medals: EarnedMedal[]   // one per completed monthly medal challenge, Premium only
   dailyMotivationNotifications: boolean   // preference only; no push delivery wired up yet
   partyWalkNotifications: boolean         // preference only; no push delivery wired up yet

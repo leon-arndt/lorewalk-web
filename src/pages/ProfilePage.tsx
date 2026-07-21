@@ -372,6 +372,16 @@ export function ProfilePage() {
                   🏅 Claim this month's medal
                 </button>
               ) : null}
+
+              <button
+                onClick={() => setShowPremiumModal(true)}
+                style={{
+                  width: '100%', marginTop: 12, padding: 0, border: 'none', background: 'none',
+                  fontSize: 11.5, fontWeight: 600, color: '#b45309', cursor: 'pointer', textAlign: 'center',
+                }}
+              >
+                Manage subscription
+              </button>
             </div>
           ) : (
             <button

@@ -9,20 +9,30 @@ const FEATURE_ROWS: { icon: string; label: string; basic: boolean; premium: stri
   { icon: '🏅', label: 'Monthly medal challenge', basic: false, premium: 'Real physical medal' },
 ]
 
+type Interval = 'monthly' | 'yearly'
+
+const PLANS: Record<Interval, { label: string; price: string; sub?: string; badge?: string }> = {
+  monthly: { label: 'Monthly', price: 'SGD 6.99/mo' },
+  yearly: { label: 'Yearly', price: 'SGD 59.99/yr', sub: '≈ SGD 5.00/mo', badge: 'Save 28%' },
+}
+
 interface PremiumModalProps {
   onClose: () => void
   context?: string
 }
 
 export function PremiumModal({ onClose, context }: PremiumModalProps) {
-  const { subscribePremium } = useProfile()
+  const { profile, subscribePremium, cancelPremium } = useProfile()
   const { mode } = useConnectionMode()
+  const [interval, setInterval] = useState<Interval>('yearly')
   const [flash, setFlash] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState(false)
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
+  const [cancelled, setCancelled] = useState(false)
 
   function handleSubscribe() {
     if (mode === 'offline') {
-      subscribePremium()
+      subscribePremium(interval)
       setSubscribed(true)
       setFlash('✅ Test purchase complete - Premium unlocked!')
       setTimeout(onClose, 1400)
@@ -31,6 +41,16 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
       setTimeout(() => setFlash(null), 2800)
     }
   }
+
+  function handleCancel() {
+    cancelPremium()
+    setCancelled(true)
+    setFlash('Premium cancelled. You can resubscribe anytime.')
+    setTimeout(onClose, 1400)
+  }
+
+  const isManaging = profile.isPremium
+  const currentPlan = profile.premiumInterval ? PLANS[profile.premiumInterval] : PLANS.monthly
 
   return (
     <div
@@ -79,9 +99,13 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
             }}>
               <span style={{ fontSize: 28 }}>👑</span>
             </div>
-            <div style={{ fontSize: 19, fontWeight: 800, color: '#1e293b' }}>Go Premium</div>
+            <div style={{ fontSize: 19, fontWeight: 800, color: '#1e293b' }}>
+              {isManaging ? "You're Premium" : 'Go Premium'}
+            </div>
             <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 2 }}>
-              {context ?? 'Unlock everything Lorewalk has to offer'}
+              {isManaging
+                ? `${currentPlan.label} plan · ${currentPlan.price}`
+                : (context ?? 'Unlock everything Lorewalk has to offer')}
             </div>
           </div>
 
@@ -123,24 +147,108 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
             Physical medals are earned monthly and picked up at the Singapore community event.
           </div>
 
-          <button
-            onClick={handleSubscribe}
-            disabled={subscribed}
-            style={{
-              width: '100%', marginTop: 18, padding: '14px 0', borderRadius: 14, border: 'none',
-              background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-              color: '#78350f', fontSize: 15, fontWeight: 800, cursor: subscribed ? 'default' : 'pointer',
-              boxShadow: '0 4px 14px rgba(245,158,11,0.35)', opacity: subscribed ? 0.7 : 1,
-            }}
-          >
-            {subscribed ? 'You\'re Premium!' : 'Subscribe - SGD 6.99/mo'}
-          </button>
-          <div style={{ fontSize: 10.5, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
-            Cancel anytime.
-          </div>
+          {isManaging ? (
+            <>
+              {confirmingCancel ? (
+                <div style={{
+                  marginTop: 18, borderRadius: 14, padding: 14,
+                  background: 'rgba(254,242,242,0.9)', border: '1px solid #fecaca',
+                }}>
+                  <p style={{ margin: '0 0 12px', fontSize: 12.5, color: '#991b1b', lineHeight: 1.5 }}>
+                    You'll lose access to Premium landmarks and this month's medal challenge right away.
+                    Medals you've already earned stay in your collection.
+                  </p>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => setConfirmingCancel(false)}
+                      style={{
+                        flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
+                        background: 'linear-gradient(135deg, #fde68a, #f59e0b)', color: '#78350f',
+                        fontSize: 13, fontWeight: 800,
+                      }}
+                    >
+                      Keep Premium
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      disabled={cancelled}
+                      style={{
+                        flex: 1, padding: '11px 0', borderRadius: 12, border: '1px solid #fca5a5', cursor: cancelled ? 'default' : 'pointer',
+                        background: 'white', color: '#b91c1c', fontSize: 13, fontWeight: 800,
+                        opacity: cancelled ? 0.6 : 1,
+                      }}
+                    >
+                      Yes, cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmingCancel(true)}
+                  style={{
+                    width: '100%', marginTop: 18, padding: '12px 0', borderRadius: 14,
+                    border: '1px solid #e2e8f0', background: 'transparent',
+                    color: '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  Cancel subscription
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+                {(Object.keys(PLANS) as Interval[]).map((key) => {
+                  const plan = PLANS[key]
+                  const selected = interval === key
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setInterval(key)}
+                      style={{
+                        flex: 1, position: 'relative', textAlign: 'left', cursor: 'pointer',
+                        borderRadius: 14, padding: '10px 12px',
+                        border: selected ? '2px solid #f59e0b' : '2px solid #e2e8f0',
+                        background: selected ? '#fffbeb' : 'white',
+                      }}
+                    >
+                      {plan.badge && (
+                        <span style={{
+                          position: 'absolute', top: -9, right: 10,
+                          fontSize: 9, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase',
+                          background: '#f59e0b', color: 'white', padding: '2px 7px', borderRadius: 20,
+                        }}>
+                          {plan.badge}
+                        </span>
+                      )}
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{plan.label}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#78350f', marginTop: 2 }}>{plan.price}</div>
+                      {plan.sub && <div style={{ fontSize: 10.5, color: '#94a3b8' }}>{plan.sub}</div>}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <button
+                onClick={handleSubscribe}
+                disabled={subscribed}
+                style={{
+                  width: '100%', marginTop: 12, padding: '14px 0', borderRadius: 14, border: 'none',
+                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
+                  color: '#78350f', fontSize: 15, fontWeight: 800, cursor: subscribed ? 'default' : 'pointer',
+                  boxShadow: '0 4px 14px rgba(245,158,11,0.35)', opacity: subscribed ? 0.7 : 1,
+                }}
+              >
+                {subscribed ? "You're Premium!" : `Subscribe - ${PLANS[interval].price}`}
+              </button>
+              <div style={{ fontSize: 10.5, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+                Cancel anytime from your Profile.
+              </div>
+            </>
+          )}
 
           {flash && (
-            <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: '#16a34a', textAlign: 'center' }}>
+            <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: cancelled ? '#b91c1c' : '#16a34a', textAlign: 'center' }}>
               {flash}
             </div>
           )}

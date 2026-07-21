@@ -58,7 +58,8 @@ interface ProfileContextValue {
   openStreakChest: () => StreakChestRewards | null
   toggleDevPremium: () => void
   toggleNotificationPref: (key: NotificationPrefKey) => void
-  subscribePremium: () => void
+  subscribePremium: (interval: 'monthly' | 'yearly') => void
+  cancelPremium: () => void
   claimMedal: () => EarnedMedal | null
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
@@ -559,16 +560,24 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   function toggleDevPremium() {
-    persist({ ...profile, isPremium: !profile.isPremium })
+    const isPremium = !profile.isPremium
+    persist({ ...profile, isPremium, premiumInterval: isPremium ? 'monthly' : null })
   }
 
   function toggleNotificationPref(key: NotificationPrefKey) {
     persist({ ...profile, [key]: !profile[key] })
   }
 
-  function subscribePremium() {
+  function subscribePremium(interval: 'monthly' | 'yearly') {
     if (profile.isPremium) return
-    persist({ ...profile, isPremium: true })
+    persist({ ...profile, isPremium: true, premiumInterval: interval })
+  }
+
+  // Only revokes eligibility going forward - medals already earned stay in
+  // profile.medals as history, same as parkrun keeps past results after a runner stops.
+  function cancelPremium() {
+    if (!profile.isPremium) return
+    persist({ ...profile, isPremium: false, premiumInterval: null })
   }
 
   function claimMedal(): EarnedMedal | null {
@@ -746,7 +755,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, subscribePremium, claimMedal,
+      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, subscribePremium, cancelPremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,
