@@ -9,6 +9,7 @@ import {
   STREAK_FREEZE_MAX, STREAK_FREEZE_COST,
 } from '@/lib/profile'
 import { accent, rewardGradient } from '@/lib/theme'
+import { PremiumModal } from '@/components/UI/PremiumModal'
 
 // Real money runs through Google Play Billing (Digital Goods API in a TWA). Until
 // that's wired, the buy buttons credit coins directly - clearly labelled as test.
@@ -28,6 +29,7 @@ export function ShopPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const coinsRef = useRef<HTMLDivElement>(null)
   const [flash, setFlash] = useState<string | null>(null)
+  const [showPremiumModal, setShowPremiumModal] = useState(false)
 
   const scrollToCoins = () => coinsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
@@ -100,6 +102,27 @@ export function ShopPage() {
       <p style={{ margin: 0, padding: '12px 16px 0', fontSize: 14, color: '#94a3b8' }}>
         {t('shop_subtitle')}
       </p>
+
+      {!profile.isPremium && (
+        <div style={{ padding: '14px 16px 0' }}>
+          <button
+            onClick={() => setShowPremiumModal(true)}
+            style={{
+              width: '100%', textAlign: 'left', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 12,
+              background: 'linear-gradient(160deg, #fffbeb 0%, #fff7ed 100%)',
+              border: '2px solid #fde68a', borderRadius: 16, padding: 14,
+            }}
+          >
+            <span style={{ fontSize: 26 }}>👑</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#78350f' }}>Go Premium</div>
+              <div style={{ fontSize: 12, color: '#92400e' }}>Every landmark unlocked & a monthly physical medal</div>
+            </div>
+            <span style={{ fontSize: 18, fontWeight: 800, color: '#b45309' }}>›</span>
+          </button>
+        </div>
+      )}
 
       {/* Upgrades */}
       <section style={{ padding: '8px 16px 8px' }}>
@@ -177,6 +200,8 @@ export function ShopPage() {
           <div style={{ marginTop: 12, fontSize: 13, fontWeight: 700, color: '#16a34a', textAlign: 'center' }}>{flash}</div>
         )}
       </section>
+
+      {showPremiumModal && <PremiumModal onClose={() => setShowPremiumModal(false)} />}
     </div>
   )
 }

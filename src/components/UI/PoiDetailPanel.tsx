@@ -5,6 +5,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { glassChrome, glassPanel } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
+import { PremiumModal } from '@/components/UI/PremiumModal'
 import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
 import { accent, rewardGradient } from '@/lib/theme'
@@ -32,6 +33,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
   const { sendPostcard } = useProfile()
   const [pickingFriend, setPickingFriend] = useState(false)
   const [sent, setSent] = useState<string | null>(null)
+  const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [plane, setPlane] = useState<{ x: number; y: number; key: number } | null>(null)
   const planeKeyRef = useRef(0)
 
@@ -215,13 +217,24 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           </div>
         ) : isLocked ? (
           <div style={{
-            padding: '12px 16px', borderRadius: 16, textAlign: 'center',
+            padding: '14px 16px', borderRadius: 16, textAlign: 'center',
             background: 'rgba(254,249,195,0.70)',
             backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#a16207', fontWeight: 500 }}>
+            <p style={{ margin: '0 0 10px', fontSize: 13, color: '#a16207', fontWeight: 500 }}>
               {t('poi_premium_locked_desc')}
             </p>
+            <button
+              onClick={() => setShowPremiumModal(true)}
+              style={{
+                width: '100%', padding: '11px 0', borderRadius: 12, border: 'none',
+                background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
+                color: '#78350f', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(245,158,11,0.30)',
+              }}
+            >
+              🛡️ Unlock with Premium
+            </button>
           </div>
         ) : mode === 'online' ? (
           <div style={{
@@ -250,6 +263,13 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
         >
           ✈️
         </span>
+      )}
+
+      {showPremiumModal && (
+        <PremiumModal
+          context={`Unlock ${poi.name} and every other Premium landmark`}
+          onClose={() => setShowPremiumModal(false)}
+        />
       )}
     </div>
   )

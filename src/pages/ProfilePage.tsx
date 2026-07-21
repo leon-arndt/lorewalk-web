@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
-import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { xpForNextLevel, currentMonthKey, monthLabel, recentMonthKeys, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS } from '@/lib/profile'
@@ -13,6 +12,7 @@ import { MedalHistoryScreen } from '@/components/UI/MedalHistoryScreen'
 import { getMedalConfig } from '@/data/medals'
 import { StreakChestCard } from '@/components/UI/StreakChestCard'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
+import { PremiumModal } from '@/components/UI/PremiumModal'
 import type { Achievement, EarnedMedal } from '@/types'
 import { accent, rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
 import { pageBackground } from '@/lib/glass'
@@ -20,7 +20,6 @@ import { pageBackground } from '@/lib/glass'
 const PREMIUM_BENEFITS = [
   { icon: '🔓', text: 'Every landmark unlocked' },
   { icon: '🏅', text: "Monthly challenge - earn a unique real physical medal" },
-  { icon: '🐣', text: 'Unlimited creatures & full evolution tree' },
 ]
 
 declare const __APP_VERSION__: string
@@ -45,14 +44,13 @@ function formatTime(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, addDevStreakDays, toggleDevPremium, subscribePremium, claimMedal } = useProfile()
-  const { mode } = useConnectionMode()
+  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, addDevStreakDays, toggleDevPremium, claimMedal } = useProfile()
   const { showReward } = useReward()
   const { t } = useLocale()
   const navigate = useNavigate()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
-  const [premiumFlash, setPremiumFlash] = useState<string | null>(null)
+  const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [showChallengeInfo, setShowChallengeInfo] = useState(false)
   const [badgeDetail, setBadgeDetail] = useState<{
     icon: ReactNode; name: string; description: string; status: string; statusColor: string
@@ -75,18 +73,6 @@ export function ProfilePage() {
     setEditingName(false)
   }
 
-  // Real money runs through Google Play Billing (Digital Goods API in a TWA), same
-  // as the coin shop. Until that's wired, offline mode grants Premium instantly as
-  // a clearly-labelled test purchase.
-  function handleSubscribe() {
-    if (mode === 'offline') {
-      subscribePremium()
-      setPremiumFlash('✅ Test purchase complete - Premium unlocked!')
-    } else {
-      setPremiumFlash('Real payments coming soon - switch to offline mode to test Premium.')
-    }
-    setTimeout(() => setPremiumFlash(null), 2800)
-  }
 
   function openAchievementDetail(a: Achievement) {
     setBadgeDetail({
@@ -388,10 +374,14 @@ export function ProfilePage() {
               ) : null}
             </div>
           ) : (
-            <div style={{
-              background: 'linear-gradient(160deg, #fffbeb 0%, #fff7ed 100%)',
-              border: '2px solid #fde68a', borderRadius: 18, padding: 18,
-            }}>
+            <button
+              onClick={() => setShowPremiumModal(true)}
+              style={{
+                width: '100%', textAlign: 'left', cursor: 'pointer',
+                background: 'linear-gradient(160deg, #fffbeb 0%, #fff7ed 100%)',
+                border: '2px solid #fde68a', borderRadius: 18, padding: 18,
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <span style={{ fontSize: 32 }}>🛡️</span>
                 <div>
@@ -408,24 +398,17 @@ export function ProfilePage() {
                 ))}
               </div>
 
-              <button
-                onClick={handleSubscribe}
+              <div
                 style={{
                   width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
                   background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                  color: '#78350f', fontSize: 15, fontWeight: 800, cursor: 'pointer',
+                  color: '#78350f', fontSize: 15, fontWeight: 800, textAlign: 'center',
                   boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
                 }}
               >
-                Subscribe - SGD 6.99/mo
-              </button>
-            </div>
-          )}
-
-          {premiumFlash && (
-            <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: '#16a34a', textAlign: 'center' }}>
-              {premiumFlash}
-            </div>
+                See what's included →
+              </div>
+            </button>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 4 }}>
@@ -757,6 +740,8 @@ export function ProfilePage() {
           onClose={() => setBadgeDetail(null)}
         />
       )}
+
+      {showPremiumModal && <PremiumModal onClose={() => setShowPremiumModal(false)} />}
     </div>
   )
 }
