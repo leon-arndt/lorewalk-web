@@ -1,7 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { pageBackground } from '@/lib/glass'
+import {
+  fetchPremiumOfferings, isBillingAvailable, playSubscriptionManagementUrl, purchasePremiumPackage,
+  type PremiumOfferings,
+} from '@/lib/billing'
+import type { PremiumInterval } from '@/types'
 
 const FEATURE_ROWS: { icon: string; label: string; basic: boolean; premium: string }[] = [
   { icon: '🗺️', label: 'Standard landmarks', basic: true, premium: 'All landmarks' },
@@ -9,9 +15,7 @@ const FEATURE_ROWS: { icon: string; label: string; basic: boolean; premium: stri
   { icon: '🏅', label: 'Monthly medal challenge', basic: false, premium: 'Real physical medal' },
 ]
 
-type Interval = 'monthly' | 'yearly'
-
-const PLANS: Record<Interval, { label: string; price: string; sub?: string; badge?: string }> = {
+const PLANS: Record<PremiumInterval, { label: string; price: string; sub?: string; badge?: string }> = {
   monthly: { label: 'Monthly', price: 'SGD 6.99/mo' },
   yearly: { label: 'Yearly', price: 'SGD 59.99/yr', sub: '≈ SGD 5.00/mo', badge: 'Save 28%' },
 }
@@ -24,25 +28,71 @@ interface PremiumModalProps {
 export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const { profile, subscribePremium, cancelPremium } = useProfile()
   const { mode } = useConnectionMode()
-  const [interval, setInterval] = useState<Interval>('yearly')
+  const [interval, setInterval] = useState<PremiumInterval>('yearly')
   const [flash, setFlash] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState(false)
+  const [purchasing, setPurchasing] = useState(false)
   const [confirmingCancel, setConfirmingCancel] = useState(false)
   const [cancelled, setCancelled] = useState(false)
+  const [offerings, setOfferings] = useState<PremiumOfferings | null>(null)
 
-  function handleSubscribe() {
-    if (mode === 'offline') {
+  // Live store pricing once a RevenueCat project + Play Console products exist.
+  // Until then this resolves to null and the hardcoded PLANS copy above is shown.
+  useEffect(() => {
+    if (!isBillingAvailable()) return
+    let cancelled = false
+    fetchPremiumOfferings(profile.id).then((o) => { if (!cancelled) setOfferings(o) })
+    return () => { cancelled = true }
+  }, [profile.id])
+
+  function planPrice(key: PremiumInterval): string {
+    return (key === 'monthly' ? offerings?.monthly : offerings?.yearly)?.product.priceString ?? PLANS[key].price
+  }
+
+  async function handleSubscribe() {
+    if (mode !== 'online') {
       subscribePremium(interval)
       setSubscribed(true)
       setFlash('✅ Test purchase complete - Premium unlocked!')
       setTimeout(onClose, 1400)
-    } else {
-      setFlash('Real payments coming soon - switch to offline mode to test Premium.')
+      return
+    }
+    if (!isBillingAvailable()) {
+      setFlash(Capacitor.isNativePlatform()
+        ? "Premium purchases aren't set up yet - check back soon."
+        : 'Real purchases require the installed Android app.')
+      setTimeout(() => setFlash(null), 2800)
+      return
+    }
+    const pkg = interval === 'monthly' ? offerings?.monthly : offerings?.yearly
+    if (!pkg) {
+      setFlash("This plan isn't available yet.")
+      setTimeout(() => setFlash(null), 2800)
+      return
+    }
+    setPurchasing(true)
+    const result = await purchasePremiumPackage(profile.id, pkg)
+    setPurchasing(false)
+    if (result.ok) {
+      // Optimistic local unlock for instant UI feedback; the RevenueCat webhook
+      // writes premium_entitlements, which ProfileContext reconciles against
+      // as the durable, server-verified source of truth on next load.
+      subscribePremium(interval)
+      setSubscribed(true)
+      setFlash('✅ Purchase complete - Premium unlocked!')
+      setTimeout(onClose, 1400)
+    } else if (!result.cancelled) {
+      setFlash(result.error ?? 'Purchase failed. Please try again.')
       setTimeout(() => setFlash(null), 2800)
     }
   }
 
   function handleCancel() {
+    if (mode === 'online') {
+      window.open(playSubscriptionManagementUrl(), '_blank', 'noopener')
+      setConfirmingCancel(false)
+      return
+    }
     cancelPremium()
     setCancelled(true)
     setFlash('Premium cancelled. You can resubscribe anytime.')
@@ -155,8 +205,9 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                   background: 'rgba(254,242,242,0.9)', border: '1px solid #fecaca',
                 }}>
                   <p style={{ margin: '0 0 12px', fontSize: 12.5, color: '#991b1b', lineHeight: 1.5 }}>
-                    You'll lose access to Premium landmarks and this month's medal challenge right away.
-                    Medals you've already earned stay in your collection.
+                    {mode === 'online'
+                      ? "Subscriptions bought through Google Play are cancelled there, not in the app. We'll open Play Store subscription settings for you."
+                      : "You'll lose access to Premium landmarks and this month's medal challenge right away. Medals you've already earned stay in your collection."}
                   </p>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button
@@ -167,7 +218,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                         fontSize: 13, fontWeight: 800,
                       }}
                     >
-                      Keep Premium
+                      {mode === 'online' ? 'Not now' : 'Keep Premium'}
                     </button>
                     <button
                       onClick={handleCancel}
@@ -178,7 +229,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                         opacity: cancelled ? 0.6 : 1,
                       }}
                     >
-                      Yes, cancel
+                      {mode === 'online' ? 'Open Google Play' : 'Yes, cancel'}
                     </button>
                   </div>
                 </div>
@@ -198,7 +249,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
           ) : (
             <>
               <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
-                {(Object.keys(PLANS) as Interval[]).map((key) => {
+                {(Object.keys(PLANS) as PremiumInterval[]).map((key) => {
                   const plan = PLANS[key]
                   const selected = interval === key
                   return (
@@ -222,7 +273,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                         </span>
                       )}
                       <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{plan.label}</div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#78350f', marginTop: 2 }}>{plan.price}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#78350f', marginTop: 2 }}>{planPrice(key)}</div>
                       {plan.sub && <div style={{ fontSize: 10.5, color: '#94a3b8' }}>{plan.sub}</div>}
                     </button>
                   )
@@ -231,15 +282,15 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
 
               <button
                 onClick={handleSubscribe}
-                disabled={subscribed}
+                disabled={subscribed || purchasing}
                 style={{
                   width: '100%', marginTop: 12, padding: '14px 0', borderRadius: 14, border: 'none',
                   background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                  color: '#78350f', fontSize: 15, fontWeight: 800, cursor: subscribed ? 'default' : 'pointer',
-                  boxShadow: '0 4px 14px rgba(245,158,11,0.35)', opacity: subscribed ? 0.7 : 1,
+                  color: '#78350f', fontSize: 15, fontWeight: 800, cursor: (subscribed || purchasing) ? 'default' : 'pointer',
+                  boxShadow: '0 4px 14px rgba(245,158,11,0.35)', opacity: (subscribed || purchasing) ? 0.7 : 1,
                 }}
               >
-                {subscribed ? "You're Premium!" : `Subscribe - ${PLANS[interval].price}`}
+                {subscribed ? "You're Premium!" : purchasing ? 'Processing...' : `Subscribe - ${planPrice(interval)}`}
               </button>
               <div style={{ fontSize: 10.5, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
                 Cancel anytime from your Profile.

@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useMemo, useCallback } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, ShrineCollectResult, SquadExpedition } from '@/types'
+import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
+import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { supabase } from '@/lib/supabase'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile, isPoiLocked,
@@ -79,6 +81,40 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<PlayerProfile>(loadProfile)
   const [justReady, setJustReady] = useState<Egg[]>([])
   const [pendingLevelUp, setPendingLevelUp] = useState<{ level: number; rewards: LevelReward[] } | null>(null)
+  const { mode } = useConnectionMode()
+
+  // Server-verified entitlement sync. premium_entitlements is written only by
+  // the revenuecat-webhook Edge Function after a real Google Play purchase -
+  // once online, it overrides whatever the local isPremium flag says, per
+  // CLAUDE.md's "must move to a server-verified entitlement" note. Offline
+  // mode keeps trusting the local flag, for the dev cheats / test-purchase flow.
+  useEffect(() => {
+    if (mode !== 'online') return
+    let cancelled = false
+    async function checkEntitlement() {
+      try {
+        const { data, error } = await supabase
+          .from('premium_entitlements')
+          .select('is_active, interval')
+          .eq('player_id', profile.id)
+          .maybeSingle()
+        if (cancelled) return
+        // A query failure (e.g. the premium_entitlements migration hasn't been
+        // applied to this Supabase project yet) is not the same as a real "not
+        // active" answer - leave the local flag alone rather than revoke on it.
+        if (error) { console.warn('premium_entitlements check failed', error.message); return }
+        const isActive = data?.is_active ?? false
+        const interval = isActive ? ((data?.interval as PremiumInterval | null) ?? null) : null
+        if (profile.isPremium === isActive && profile.premiumInterval === interval) return
+        persist({ ...profile, isPremium: isActive, premiumInterval: interval })
+      } catch (err) {
+        if (!cancelled) console.warn('premium_entitlements check failed', err)
+      }
+    }
+    checkEntitlement()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-check on going online or switching profiles, not every profile field change
+  }, [mode, profile.id])
 
   const visitedPois = useMemo(
     () => new Set(profile.visitHistory.map((v) => v.poiId)),
@@ -488,8 +524,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  // Credit purchased coins. NOTE: real money flows through Google Play Billing
-  // (Digital Goods API in a TWA); this just applies the granted amount.
+  // Credit purchased coins. NOTE: coin packs aren't wired to real payment yet
+  // (see src/lib/billing.ts, currently only used for Premium subscriptions);
+  // this just applies the granted amount from ShopPage's simulated purchase.
   function addCoins(amount: number) {
     persist({ ...profile, coins: profile.coins + amount })
   }

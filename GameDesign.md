@@ -148,9 +148,11 @@ Lives on the **Profile** tab. Spends the soft **coin** currency (earned from exp
 
 Real-money IAP is deferred; coins-only already closes the earn → spend loop. Costs are dev-tuned — rebalance with the duration/rate constants before launch.
 
-### Premium entitlement (implemented — gating only, no payment)
+### Premium entitlement (payment integration scaffolded, not live yet)
 
-`PlayerProfile.isPremium` (`src/types/index.ts`) gates `Poi.premiumOnly` landmarks via `isPoiLocked()` in `src/lib/profile.ts`: locked POIs show a lock badge in `PoiDetailPanel` and are skipped by both the online auto-check-in effect and the offline tap-to-check-in handler in `MapPage.tsx`. The flag is currently **client-side only** (toggleable from the dev cheats panel on Profile, dev builds only) — it is not server-verified and must not be trusted for anything of real value until it's backed by a Supabase-side entitlement check against an actual purchase.
+`PlayerProfile.isPremium` (`src/types/index.ts`) gates `Poi.premiumOnly` landmarks via `isPoiLocked()` in `src/lib/profile.ts`: locked POIs show a lock badge in `PoiDetailPanel` and are skipped by both the online auto-check-in effect and the offline tap-to-check-in handler in `MapPage.tsx`.
+
+Real money runs through **Google Play Billing via RevenueCat's Capacitor SDK** (`@revenuecat/purchases-capacitor`, `src/lib/billing.ts`) — chosen over a bare Play Billing integration or a Trusted Web Activity + Digital Goods API because the app already ships as a Capacitor-wrapped native Android app (`android/`), and RevenueCat's server-side receipt verification means Lorewalk doesn't need to host its own Google Play Developer API integration. `PremiumModal.tsx` drives the purchase (with a Monthly/Yearly plan picker) when running natively in online mode; in offline mode it stays the local test-purchase toggle used for dev/demo. A RevenueCat webhook (`supabase/functions/revenuecat-webhook`) verifies each purchase server-side and upserts `premium_entitlements` in Supabase, which `ProfileContext.tsx` reconciles `isPremium` against once online — that table, not the client flag, is the trusted source once this is live. See TODO.md's WIP entry for the exact Play Console / RevenueCat / Supabase setup still needed before a real purchase can complete.
 
 ---
 

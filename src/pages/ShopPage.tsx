@@ -11,9 +11,11 @@ import {
 import { accent, rewardGradient } from '@/lib/theme'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 
-// Real money runs through Google Play Billing (Digital Goods API in a TWA). Until
-// that's wired, the buy buttons credit coins directly - clearly labelled as test.
-// Priced in SGD - Singapore is the first launch market (see CLAUDE.md).
+// Real money runs through Google Play Billing via RevenueCat's Capacitor SDK
+// (see src/lib/billing.ts, used by PremiumModal for subscriptions). Coin packs
+// aren't wired to that yet - until they are, the buy buttons credit coins
+// directly, clearly labelled as test. Priced in SGD - Singapore is the first
+// launch market (see CLAUDE.md).
 const COIN_PACKS = [
   { coins: 100, price: 'S$0.79', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
   { coins: 600, price: 'S$3.49', tagKey: 'shop_popular' as const },
@@ -69,7 +71,8 @@ export function ShopPage() {
 
   function buyPack(pack: typeof COIN_PACKS[number]) {
     // Offline = sandbox: simulate a successful purchase and grant coins instantly.
-    // Online will route through Google Play Billing (Digital Goods API in a TWA).
+    // Online purchases aren't wired to RevenueCat yet (see src/lib/billing.ts,
+    // currently only used for Premium subscriptions).
     if (mode === 'offline') {
       addCoins(pack.coins)
       setFlash(t('shop_test_purchase', { coins: pack.coins }))

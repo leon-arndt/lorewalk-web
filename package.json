@@ -15,6 +15,7 @@
     "@capacitor/android": "^7.0.0",
     "@capacitor/core": "^7.0.0",
     "@devmaxime/capacitor-health-connect": "^1.1.0",
+    "@revenuecat/purchases-capacitor": "^11.3.2",
     "@supabase/supabase-js": "^2.108.2",
     "maplibre-gl": "^5.24.0",
     "qrcode": "^1.5.4",
