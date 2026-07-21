@@ -39,7 +39,7 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () =>
 
 export function SettingsPage() {
   const { t, locale, setLocale } = useLocale()
-  const { volume, setVolume, sfxEnabled, setSfxEnabled } = useMusic()
+  const { volume, setVolume, sfxVolume, setSfxVolume } = useMusic()
   const { profile, toggleNotificationPref } = useProfile()
   const navigate = useNavigate()
 
@@ -128,10 +128,18 @@ export function SettingsPage() {
           <div style={{
             background: 'white', borderRadius: 16, padding: '14px 16px',
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            display: 'flex', alignItems: 'center', gap: 12,
           }}>
-            <span style={{ fontSize: 18 }}>{sfxEnabled ? '🔊' : '🔇'}</span>
-            <ToggleSwitch checked={sfxEnabled} onChange={() => setSfxEnabled(!sfxEnabled)} />
+            <span style={{ fontSize: 18 }}>{sfxVolume === 0 ? '🔇' : '🔊'}</span>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={sfxVolume}
+              onChange={(e) => setSfxVolume(Number(e.target.value))}
+              style={{ flex: 1, accentColor: accent }}
+            />
           </div>
         </section>
 

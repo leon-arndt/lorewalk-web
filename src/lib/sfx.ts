@@ -1,10 +1,10 @@
-// Matches useBackgroundMusic.ts's SFX_STORAGE_KEY - same on/off toggle in Settings.
-const SFX_STORAGE_KEY = 'sfx-enabled'
-const SFX_VOLUME = 0.4 // was 0.5 - 20% quieter
+// Matches useBackgroundMusic.ts's SFX_STORAGE_KEY - same volume slider in Settings.
+const SFX_STORAGE_KEY = 'sfx-volume'
+const SFX_BASE_VOLUME = 0.4 // was 0.5 - 20% quieter; gain at the slider's full 1.0
 
-function sfxEnabled(): boolean {
+function sfxVolume(): number {
   const saved = localStorage.getItem(SFX_STORAGE_KEY)
-  return saved !== null ? saved === 'true' : true
+  return saved !== null ? Number(saved) : 1
 }
 
 let ctx: AudioContext | null = null
@@ -31,7 +31,8 @@ function loadBuffer(src: string): Promise<AudioBuffer> {
 // lowpass filter and a soft attack, instead of just volume/pitch - a raw click
 // sample plays back sharp and bright otherwise.
 async function play(src: string, { rate = 1, lowpassHz = 4000 }: { rate?: number; lowpassHz?: number } = {}) {
-  if (!sfxEnabled()) return
+  const volume = sfxVolume()
+  if (volume <= 0) return
   try {
     const context = getContext()
     const buffer = await loadBuffer(src)
@@ -47,7 +48,7 @@ async function play(src: string, { rate = 1, lowpassHz = 4000 }: { rate?: number
     const gain = context.createGain()
     const now = context.currentTime
     gain.gain.setValueAtTime(0, now)
-    gain.gain.linearRampToValueAtTime(SFX_VOLUME, now + 0.008)
+    gain.gain.linearRampToValueAtTime(SFX_BASE_VOLUME * volume, now + 0.008)
 
     source.connect(filter).connect(gain).connect(context.destination)
     source.start(now)
