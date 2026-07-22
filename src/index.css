@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
+@import "@fontsource-variable/nunito";
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -12,7 +13,7 @@ html, body, #root {
   padding: 0;
   overflow: hidden;
   background: #f8fdfa;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Nunito Variable', system-ui, -apple-system, sans-serif;
 }
 
 #root {
