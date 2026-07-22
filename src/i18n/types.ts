@@ -35,6 +35,9 @@ export interface Translations {
   profile_achievements: string
   profile_visit_history: string
   profile_no_visits: string
+  profile_visit_history_see_all: string
+  profile_visit_history_count: string
+  profile_visit_history_load_more: string
   profile_explorer_since: string
   profile_language: string
   profile_premium_badge: string
