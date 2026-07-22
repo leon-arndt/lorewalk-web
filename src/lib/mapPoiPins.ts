@@ -58,6 +58,21 @@ interface PinObjects {
   phase: number
 }
 
+// Placeholder primitive per category - swap for a real .glb per category later
+// (see buildCreature() in mapCharacters.ts for the same per-category GLB pattern).
+const PIN_HEIGHT = 1.1
+function buildPinGeometry(THREE: typeof T3, category: string): T3.BufferGeometry {
+  switch (category) {
+    case 'landmark':  return new THREE.BoxGeometry(0.42, PIN_HEIGHT, 0.42)
+    case 'arts':      return new THREE.OctahedronGeometry(PIN_HEIGHT / 2)
+    case 'religious': return new THREE.ConeGeometry(0.4, PIN_HEIGHT, 4)
+    case 'museum':    return new THREE.SphereGeometry(PIN_HEIGHT / 2, 24, 16)
+    case 'nature':    return new THREE.ConeGeometry(0.32, PIN_HEIGHT, 20)
+    case 'heritage':  return new THREE.CylinderGeometry(0.22, 0.22, PIN_HEIGHT, 24)
+    default:          return new THREE.CylinderGeometry(0.22, 0.22, PIN_HEIGHT, 24)
+  }
+}
+
 function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   const color = spec.visited ? VISITED_COLOR : (CATEGORY_COLORS[spec.category] ?? 0x94a3b8)
 
@@ -76,20 +91,18 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   ring.position.y = 0.05
   group.add(ring)
 
-  // Vertical cylinder - unvisited = orange, visited = green (VISITED_COLOR).
-  const CONE_HEIGHT = 1.1
-  const cylColor = spec.visited ? VISITED_COLOR : 0xf97316
-  const cylGeo = new THREE.CylinderGeometry(0.22, 0.22, CONE_HEIGHT, 24)
-  const cylMat = new THREE.MeshPhongMaterial({
-    color: cylColor, shininess: 80, transparent: true, opacity: 0.62,
+  // Category-shaped body - unvisited = category color, visited = green (VISITED_COLOR).
+  const bodyGeo = buildPinGeometry(THREE, spec.category)
+  const bodyMat = new THREE.MeshPhongMaterial({
+    color, shininess: 80, transparent: true, opacity: 0.62,
   })
-  const cone = new THREE.Mesh(cylGeo, cylMat)
-  cone.position.y = CONE_HEIGHT / 2
+  const cone = new THREE.Mesh(bodyGeo, bodyMat)
+  cone.position.y = PIN_HEIGHT / 2
   group.add(cone)
 
   // Head group: empty anchor for the bob animation (sprite removed).
   const head = new THREE.Group()
-  head.position.y = CONE_HEIGHT
+  head.position.y = PIN_HEIGHT
   group.add(head)
 
   // orb is null but kept in the interface for type compat - nothing added to head.
@@ -142,7 +155,7 @@ export async function addPoiPinsLayer(
 
       // Bob the whole head (cap + orb) + pulse the ground ring.
       for (const { head, ring, phase } of pinsMap.values()) {
-        head.position.y = 1.1 + Math.sin(t * 0.7 + phase) * 0.08
+        head.position.y = PIN_HEIGHT + Math.sin(t * 0.7 + phase) * 0.08
         ;(ring.material as T3.MeshBasicMaterial).opacity = 0.3 + Math.abs(Math.sin(t * 1.4 + phase)) * 0.25
         ring.scale.setScalar(1 + Math.sin(t * 1.4 + phase) * 0.12)
       }

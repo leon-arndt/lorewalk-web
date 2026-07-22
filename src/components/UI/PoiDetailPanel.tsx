@@ -18,6 +18,16 @@ const MOCK_FRIENDS = [
 
 const CHECKIN_RADIUS_M = 50
 
+// Same category set as the map pins (mapPoiPins.ts) and creature companions (mapCharacters.ts).
+const CATEGORY_META: Record<string, { icon: string; label: string; color: string; bg: string }> = {
+  heritage:  { icon: '🏛', label: 'Heritage',  color: '#b45309', bg: 'rgba(255,237,213,0.80)' },
+  landmark:  { icon: '📍', label: 'Landmark',  color: '#4338ca', bg: 'rgba(224,231,255,0.80)' },
+  arts:      { icon: '🎭', label: 'Arts',      color: '#9333ea', bg: 'rgba(250,245,255,0.80)' },
+  religious: { icon: '🕌', label: 'Religious', color: '#a16207', bg: 'rgba(254,249,195,0.80)' },
+  museum:    { icon: '🎨', label: 'Museum',    color: '#be185d', bg: 'rgba(253,242,248,0.80)' },
+  nature:    { icon: '🌿', label: 'Nature',    color: '#16a34a', bg: 'rgba(240,253,244,0.80)' },
+}
+
 interface PoiDetailPanelProps {
   poi: Poi
   isVisited: boolean
@@ -69,6 +79,17 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          {poi.category && CATEGORY_META[poi.category] && (
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              background: CATEGORY_META[poi.category].bg,
+              color: CATEGORY_META[poi.category].color,
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}>
+              {CATEGORY_META[poi.category].icon} {CATEGORY_META[poi.category].label}
+            </span>
+          )}
           <span style={{
             fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
             background: isPermanent ? 'rgba(255,237,213,0.80)' : 'rgba(250,245,255,0.80)',
