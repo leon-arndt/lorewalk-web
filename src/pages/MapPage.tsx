@@ -359,7 +359,7 @@ export function MapPage() {
         pointerEvents: 'none',
       }}>
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center',
+          display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-start',
         }}>
           <div style={{ pointerEvents: 'auto', justifySelf: 'start', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <LevelCapsule level={profile.level} />
