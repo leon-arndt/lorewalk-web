@@ -73,10 +73,10 @@ function AnimatedLevel({ level }: { level: number }) {
       fontSize: 96,
       fontWeight: 900,
       lineHeight: 1,
-      background: 'linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%)',
+      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #166534 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
-      filter: 'drop-shadow(0 0 28px rgba(192,132,252,0.55))',
+      filter: 'drop-shadow(0 0 28px rgba(34,197,94,0.55))',
       transform: ready ? 'scale(1)' : 'scale(0.1)',
       opacity: ready ? 1 : 0,
       transition: 'transform 0.65s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease',
@@ -106,8 +106,8 @@ function RewardCard({
         borderRadius: 18,
         padding: '20px 12px 16px',
         textAlign: 'center',
-        background: revealed ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.06)',
-        border: `2px solid ${revealed ? '#818cf8' : isNext ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
+        background: revealed ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.06)',
+        border: `2px solid ${revealed ? '#22c55e' : isNext ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
         boxShadow: isNext && !revealed ? '0 0 12px rgba(255,255,255,0.12)' : 'none',
         transition: 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
         transform: revealed ? 'scale(1)' : 'scale(0.88)',
@@ -179,7 +179,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
       <div style={{ textAlign: 'center' }}>
         <div style={{
           fontSize: 11, fontWeight: 800, letterSpacing: 5,
-          color: '#c4b5fd', textTransform: 'uppercase', marginBottom: 12,
+          color: '#86efac', textTransform: 'uppercase', marginBottom: 12,
         }}>
           Level Up!
         </div>
@@ -209,7 +209,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
       )}
 
       <div style={{
-        fontSize: 11, color: allRevealed ? '#818cf8' : '#475569',
+        fontSize: 11, color: allRevealed ? '#22c55e' : '#475569',
         fontWeight: allRevealed ? 700 : 400,
         marginTop: 4,
         transition: 'color 0.3s ease, font-weight 0.3s ease',

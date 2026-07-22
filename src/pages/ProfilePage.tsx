@@ -237,10 +237,10 @@ export function ProfilePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
-                background: rewardGradient,
+                background: accent,
                 color: 'white',
               }}>
-                Lv {profile.level}
+                {t('level_badge', { level: profile.level })}
               </span>
               {profile.isPremium && (
                 <span style={{

@@ -7,7 +7,7 @@ import { totalSteps as sumTotalSteps } from '@/lib/profile'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
 import { FriendProfileScreen } from '@/components/UI/FriendProfileScreen'
-import { accent, rewardGradient } from '@/lib/theme'
+import { accent, accentSoft, rewardGradient } from '@/lib/theme'
 
 function formatAdded(iso: string): string {
   return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
@@ -226,10 +226,10 @@ export function FriendsSection() {
                     {f.displayName}
                   </span>
                   <span style={{
-                    flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#6366f1',
-                    background: '#eef2ff', borderRadius: 20, padding: '1px 7px',
+                    flexShrink: 0, fontSize: 10, fontWeight: 700, color: accent,
+                    background: accentSoft, borderRadius: 20, padding: '1px 7px',
                   }}>
-                    Lv {f.level}
+                    {t('level_badge', { level: f.level })}
                   </span>
                 </div>
                 <div style={{

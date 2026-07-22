@@ -29,6 +29,7 @@ export const ja: Translations = {
 
   profile_xp_progress: 'XP進捗',
   profile_xp_to_level: 'レベル{level}まであと{xp}XP',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: '訪問済み',
   profile_stat_streak: '連続日数',
   profile_stat_total_xp: '合計XP',

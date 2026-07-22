@@ -29,6 +29,7 @@ export const de: Translations = {
 
   profile_xp_progress: 'XP-Fortschritt',
   profile_xp_to_level: '{xp} XP bis Level {level}',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: 'Besucht',
   profile_stat_streak: 'Tage in Folge',
   profile_stat_total_xp: 'Gesamt-XP',

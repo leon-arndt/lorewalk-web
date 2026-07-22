@@ -42,6 +42,7 @@ interface SlotProps {
 }
 
 function Slot({ creature, disabled, onTap }: SlotProps) {
+  const { t } = useLocale()
   if (!creature) {
     return (
       <button onClick={onTap} disabled={disabled} style={{
@@ -65,10 +66,10 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
     }}>
       <span style={{
         position: 'absolute', top: 4, right: 4, fontSize: 8, fontWeight: 700,
-        color: 'white', background: '#6366f1', borderRadius: 6,
+        color: 'white', background: accent, borderRadius: 6,
         padding: '1px 4px', lineHeight: 1.4,
       }}>
-        Lv.{creature.level}
+        {t('level_badge', { level: creature.level })}
       </span>
       <CreaturePreview species={creature.species} emoji={creature.emoji} isShiny={creature.isShiny} size={40} />
       <span style={{ fontSize: 8, fontWeight: 700, color: c.fg, textTransform: 'capitalize' }}>
@@ -107,7 +108,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
       const parts = [`+${r.xp} XP`, `+${r.coins} 🪙`]
       if (r.food) parts.push(`${r.food.emoji} ${r.food.name}!`)
       if (r.egg) parts.push('🥚 egg!')
-      r.levelUps.forEach(({ species, newLevel }) => parts.push(`⬆️ ${species} Lv.${newLevel}!`))
+      r.levelUps.forEach(({ species, newLevel }) => parts.push(`⬆️ ${species} ${t('level_badge', { level: newLevel })}!`))
       setFlash(parts.join('  '))
       setTimeout(() => setFlash(null), 3200)
     }
@@ -302,7 +303,7 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: used ? '#94a3b8' : '#1e293b' }}>{creatureName(c)}</div>
                 <div style={{ fontSize: 10, color: used ? '#94a3b8' : col.fg, textTransform: 'capitalize', fontWeight: 600 }}>
-                  {c.poiCategory} · Lv.{c.level}
+                  {c.poiCategory} · {t('level_badge', { level: c.level })}
                 </div>
                 {where && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>in {where}</div>}
               </div>

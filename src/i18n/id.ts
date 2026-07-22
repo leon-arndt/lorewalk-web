@@ -29,6 +29,7 @@ export const id: Translations = {
 
   profile_xp_progress: 'Kemajuan XP',
   profile_xp_to_level: '{xp} XP ke Level {level}',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: 'Dikunjungi',
   profile_stat_streak: 'Hari berturut',
   profile_stat_total_xp: 'Total XP',

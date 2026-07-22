@@ -8,7 +8,7 @@ import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
 import { CreatureDetailView, CreatureSceneCard } from '@/components/UI/CreatureDetailView'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { Egg, HatchedCreature } from '@/types'
-import { accent } from '@/lib/theme'
+import { accent, accentSoft } from '@/lib/theme'
 import { pageBackground } from '@/lib/glass'
 
 const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
@@ -117,12 +117,13 @@ function EmptyCreatureSlot() {
 }
 
 function CreatureCard({ creature, onTap }: { creature: HatchedCreature; onTap: () => void }) {
+  const { t } = useLocale()
   const isRare = RARE_CATEGORIES.has(creature.poiCategory)
   const xpNeeded = xpForCreatureLevel(creature.level)
   const xpPct = Math.min(1, creature.xp / xpNeeded) * 100
   const atCap = creature.level >= 20
-  const accentColor = creature.isShiny ? '#d97706' : isRare ? '#d97706' : '#6366f1'
-  const accentBg = creature.isShiny ? '#fef3c7' : isRare ? '#fde68a' : '#e0e7ff'
+  const accentColor = creature.isShiny ? '#d97706' : isRare ? '#d97706' : accent
+  const accentBg = creature.isShiny ? '#fef3c7' : isRare ? '#fde68a' : accentSoft
 
   return (
     <div
@@ -149,7 +150,7 @@ function CreatureCard({ creature, onTap }: { creature: HatchedCreature; onTap: (
         fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 20,
         letterSpacing: '0.03em',
       }}>
-        Lv.{creature.level}
+        {t('level_badge', { level: creature.level })}
       </div>
 
       {/* Animated creature scene */}

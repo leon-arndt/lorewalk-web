@@ -29,6 +29,7 @@ export const ms: Translations = {
 
   profile_xp_progress: 'Kemajuan XP',
   profile_xp_to_level: '{xp} XP ke Tahap {level}',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: 'Dilawati',
   profile_stat_streak: 'Hari berturut',
   profile_stat_total_xp: 'Jumlah XP',

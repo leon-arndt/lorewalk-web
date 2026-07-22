@@ -29,6 +29,7 @@ export const zh: Translations = {
 
   profile_xp_progress: '经验进度',
   profile_xp_to_level: '升至 {level} 级还需 {xp} 经验',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: '已到访',
   profile_stat_streak: '连续天数',
   profile_stat_total_xp: '总经验',

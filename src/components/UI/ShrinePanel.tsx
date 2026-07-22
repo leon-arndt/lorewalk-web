@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { creaturePower, creatureName, MAX_SHRINE_CREATURES, SHRINE_DURATION_MS } from '@/lib/profile'
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
@@ -53,6 +54,7 @@ const SHRINE_ACCENT = '#7c3aed'
 const SHRINE_BG = 'rgba(124,58,237,0.08)'
 
 export function ShrinePanel({ node, position: _position, onStart, onCollect, onClose, isClosing = false }: Props) {
+  const { t } = useLocale()
   const { profile, busyCreatureIds } = useProfile()
   const [now, setNow] = useState(Date.now())
   const [selecting, setSelecting] = useState(false)
@@ -60,8 +62,8 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
   const [sortKey, setSortKey] = useState<SortKey>('power')
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(t)
+    const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
   }, [])
 
   const byId = useMemo(
@@ -158,7 +160,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
           {members.map((m) => (
             <div key={m.id} style={{ textAlign: 'center' }}>
               <CreaturePreview species={m.species} emoji={m.emoji} creatureType={m.creatureType} isShiny={m.isShiny} size={48} />
-              <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>Lv.{m.level}</div>
+              <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>{t('level_badge', { level: m.level })}</div>
             </div>
           ))}
         </div>

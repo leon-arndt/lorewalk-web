@@ -11,7 +11,7 @@ const ITEM_META: Record<string, { icon: string; color: string; label: (item: Rew
   xp:       { icon: '⭐', color: '#f59e0b', label: (i) => `+${i.amount} XP` },
   coins:    { icon: '🪙', color: '#b45309', label: (i) => `+${i.amount} coins` },
   egg:      { icon: '🥚', color: '#16a34a', label: () => 'New egg - ready to hatch!' },
-  level_up: { icon: '✨', color: '#7c3aed', label: (i) => `${i.label} reached Lv. ${i.amount}!` },
+  level_up: { icon: '✨', color: '#16a34a', label: (i) => `${i.label} reached Lvl ${i.amount}!` },
   badge:    { icon: '🏅', color: '#ca8a04', label: (i) => i.label ?? 'New badge!' },
   food:     { icon: '🍽️', color: '#f59e0b', label: (i) => `${i.label} added to pantry` },
 }

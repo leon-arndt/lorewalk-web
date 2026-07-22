@@ -29,6 +29,7 @@ export const en: Translations = {
 
   profile_xp_progress: 'XP Progress',
   profile_xp_to_level: '{xp} XP to Level {level}',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: 'Visited',
   profile_stat_streak: 'Day streak',
   profile_stat_total_xp: 'Total XP',

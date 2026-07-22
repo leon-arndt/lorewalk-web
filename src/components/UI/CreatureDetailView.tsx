@@ -4,7 +4,8 @@ import { getCreaturePreviewURL } from '@/lib/creaturePreview'
 import { creatureName, xpForCreatureLevel } from '@/lib/profile'
 import type { FoodItem, HatchedCreature } from '@/types'
 import { pageBackground } from '@/lib/glass'
-import { rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
+import { accent, rewardGradientHorizontal } from '@/lib/theme'
+import { useLocale } from '@/contexts/LocaleContext'
 
 const DROPZONE = 'creature'
 
@@ -205,6 +206,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
   onRelease: () => void
   onClose: () => void
 }) {
+  const { t } = useLocale()
   const [nomming, setNomming] = useState(false)
   const [highlight, setHighlight] = useState(false)
   const [feedQueue, setFeedQueue] = useState(foodInventory)
@@ -262,10 +264,10 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
               <span style={{
                 fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-                background: creature.isShiny ? 'linear-gradient(135deg, #f59e0b, #fbbf24)' : rewardGradient,
+                background: creature.isShiny ? 'linear-gradient(135deg, #f59e0b, #fbbf24)' : accent,
                 color: 'white',
               }}>
-                Lv. {creature.level}
+                {t('level_badge', { level: creature.level })}
               </span>
               <span style={{ fontSize: 12, color: '#94a3b8' }}>{creature.poiCategory}</span>
             </div>

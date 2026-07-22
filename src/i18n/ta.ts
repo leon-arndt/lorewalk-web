@@ -29,6 +29,7 @@ export const ta: Translations = {
 
   profile_xp_progress: 'XP முன்னேற்றம்',
   profile_xp_to_level: '{level} நிலைக்கு {xp} XP தேவை',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: 'வருகை',
   profile_stat_streak: 'தொடர் நாட்கள்',
   profile_stat_total_xp: 'மொத்த XP',

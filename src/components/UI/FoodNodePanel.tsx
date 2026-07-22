@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { getFoodDef, foodPowerRequirement } from '@/data/foods'
 import { creaturePower, creatureName, foodExpeditionDurationMs, MAX_FOOD_CREATURES } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
@@ -45,6 +46,7 @@ const panelStyle = (isClosing: boolean) => ({
 })
 
 export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isClosing = false }: Props) {
+  const { t } = useLocale()
   const { profile, busyCreatureIds } = useProfile()
   const def = getFoodDef(node.foodId)
   const [now, setNow] = useState(Date.now())
@@ -53,8 +55,8 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
   const [sortKey, setSortKey] = useState<SortKey>('power')
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(t)
+    const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
   }, [])
 
   const requirement = foodPowerRequirement(node.foodId)
@@ -133,7 +135,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
           {members.map((m) => (
             <div key={m.id} style={{ textAlign: 'center' }}>
               <CreaturePreview species={m.species} emoji={m.emoji} creatureType={m.creatureType} isShiny={m.isShiny} size={48} />
-              <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>Lv.{m.level}</div>
+              <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>{t('level_badge', { level: m.level })}</div>
             </div>
           ))}
         </div>

@@ -4,7 +4,8 @@ import { friendAchievementList, type FriendAchievement } from '@/lib/profile'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
 import { BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
-import { rewardGradient } from '@/lib/theme'
+import { useLocale } from '@/contexts/LocaleContext'
+import { accent, accentSoft, rewardGradient } from '@/lib/theme'
 import { pageBackground } from '@/lib/glass'
 
 interface Props {
@@ -17,6 +18,7 @@ function formatSince(iso: string): string {
 }
 
 export function FriendProfileScreen({ friend, onClose }: Props) {
+  const { t } = useLocale()
   const [badge, setBadge] = useState<FriendAchievement | null>(null)
   const achievements = friendAchievementList(friend.achievementIds)
   const unlocked = achievements.filter((a) => a.unlocked)
@@ -62,10 +64,10 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
               <span style={{ fontSize: 19, fontWeight: 800, color: '#1e293b' }}>{friend.displayName}</span>
               <span style={{
-                fontSize: 11, fontWeight: 700, color: '#6366f1',
-                background: '#eef2ff', borderRadius: 20, padding: '2px 9px',
+                fontSize: 11, fontWeight: 700, color: accent,
+                background: accentSoft, borderRadius: 20, padding: '2px 9px',
               }}>
-                Lv {friend.level}
+                {t('level_badge', { level: friend.level })}
               </span>
             </div>
             <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>

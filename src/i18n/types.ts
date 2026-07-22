@@ -27,6 +27,7 @@ export interface Translations {
 
   profile_xp_progress: string
   profile_xp_to_level: string
+  level_badge: string
   profile_stat_visited: string
   profile_stat_streak: string
   profile_stat_total_xp: string

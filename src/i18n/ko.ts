@@ -29,6 +29,7 @@ export const ko: Translations = {
 
   profile_xp_progress: 'XP 진행도',
   profile_xp_to_level: '레벨 {level}까지 {xp} XP',
+  level_badge: 'Lvl {level}',
   profile_stat_visited: '방문',
   profile_stat_streak: '연속 일수',
   profile_stat_total_xp: '총 XP',
