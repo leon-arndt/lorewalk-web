@@ -4,6 +4,7 @@ import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { supabase } from '@/lib/supabase'
 import { getFoodDef } from '@/data/foods'
+import { addDevSteps as addDevStepsToHud } from '@/hooks/useStepCounter'
 import {
   loadProfile, saveProfile, isPoiLocked,
   currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
@@ -594,6 +595,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setProfile(updated)
     saveProfile(updated)
     if (newlyReady.length > 0) setJustReady(newlyReady)
+    addDevStepsToHud(n)
   }
 
   function toggleDevPremium() {

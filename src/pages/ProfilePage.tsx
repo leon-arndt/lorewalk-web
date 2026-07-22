@@ -650,7 +650,12 @@ export function ProfilePage() {
             </div>
             <div style={{ marginTop: 8 }}>
               <button
-                onClick={() => { localStorage.removeItem('lorewalk_profile'); window.location.reload() }}
+                onClick={() => {
+                  localStorage.removeItem('lorewalk_profile')
+                  localStorage.removeItem('lorewalk.steps')
+                  localStorage.removeItem('lorewalk.stepRingCelebratedDate')
+                  window.location.reload()
+                }}
                 style={{
                   width: '100%', padding: '8px 0', borderRadius: 10, border: 'none',
                   background: '#450a0a', color: '#fca5a5', fontWeight: 700, fontSize: 12,

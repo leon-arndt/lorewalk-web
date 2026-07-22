@@ -44,6 +44,19 @@ function load(timestamp: number): StepState {
   return { steps: 0, distanceM: 0 }
 }
 
+// Dev cheats panel lives on the Profile page, a different route/mount than the
+// HUD - it can't reach the hook's React state, so it writes storage directly.
+// The HUD picks this up next time useStepCounter mounts (i.e. on nav back to Map).
+export function addDevSteps(n: number) {
+  const current = load(Date.now())
+  const next = { steps: current.steps + n, distanceM: current.distanceM + n * STRIDE_M }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...next, date: todayKey(Date.now()) } satisfies StoredState))
+  } catch {
+    // ignore quota / private-mode failures
+  }
+}
+
 export function useStepCounter(position: PlayerPosition | null): StepState {
   const [state, setState] = useState<StepState>(() => load(Date.now()))
   const lastRef = useRef<PlayerPosition | null>(null)
