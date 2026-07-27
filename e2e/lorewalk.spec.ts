@@ -145,7 +145,16 @@ test.describe('Profile dev cheats', () => {
     await seedProfile(page, { coins: 0 })
     await page.goto('/profile')
     await page.getByRole('button', { name: /\+100.*🪙/i }).click()
-    // CoinCapsule in top-right shows the updated total
+    // Wait for saveProfile to write the new balance before navigating
+    await page.waitForFunction(() => {
+      const raw = localStorage.getItem('lorewalk_profile')
+      if (!raw) return false
+      return JSON.parse(raw).coins >= 100
+    })
+    // Coins left the profile page, and the map HUD's CoinCapsule needs hardware
+    // WebGL, so check the Squads coin chip. Navigate by link, not goto: a reload
+    // would re-run seedProfile's init script and wipe the cheat.
+    await page.getByRole('link', { name: 'Squads' }).click()
     await expect(page.getByRole('button', { name: /🪙.*100/i })).toBeVisible()
   })
 
