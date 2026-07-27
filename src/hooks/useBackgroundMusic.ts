@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 const STORAGE_KEY = 'music-volume'
-const DEFAULT_VOLUME = 0.35
+const DEFAULT_VOLUME = 0.18
 const SFX_STORAGE_KEY = 'sfx-volume'
 
 function readStoredVolume(): number {
