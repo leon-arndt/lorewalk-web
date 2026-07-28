@@ -1,91 +1,53 @@
 # Lorewalk Web
 
-A browser-based PWA companion to the Lorewalk Android game: walk to real-world Singapore landmarks, check in, hatch creatures, and grow your collection. Full game design lives in [GameDesign.md](GameDesign.md).
+A browser-based PWA companion to the Lorewalk Android game. Walk to real Singapore landmarks, check in, hatch creatures, and grow your collection.
 
-## Monthly Community Event (Singapore)
+The Android app uses Unity and ARCore. This web app drops the AR and keeps the map, the collection, and the expeditions. Chrome installs it to the home screen through "Add to Home Screen".
 
-Once a month, Lorewalk Premium runs a real-life meetup in Singapore, listed on [Meetup](https://www.meetup.com/):
+Read [GameDesign.md](GameDesign.md) for the full game design. Read [CLAUDE.md](CLAUDE.md) for the architecture notes and the cost numbers behind the monetisation.
 
-1. **Community 5k walk** together.
-2. **Free drinks** afterwards.
-3. **Medal pickup** — players who completed that month's in-app challenge show the QR code from their profile to collect their unique physical medal on the spot. Parkrun-style: the achievement is earned digitally, the medal is claimed in person, not mailed.
+## Quick start
 
-**Location:** [Temasek Shophouse](https://www.temasekshophouse.org.sg/) (Orchard Rd) or similar. It's next to Fort Canning Park, so the walk route loops through heritage/nature POIs before ending back at the venue for drinks and pickup. Not yet booked, just the leading candidate. See [CLAUDE.md](CLAUDE.md) for tradeoffs.
+1. Install the dependencies: `npm install`.
+2. Copy `.env.example` to `.env.local`.
+3. Fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from your Supabase project settings.
+4. Start the dev server: `npm run dev`. It listens on `localhost:8849`.
 
-See [GameDesign.md](GameDesign.md) for the full design rationale and [CLAUDE.md](CLAUDE.md) for the cost breakdown behind it.
+The map falls back to Singapore (1.3521, 103.8198) when the browser gives no GPS fix. Both the Geolocation API and PWA install need HTTPS. For a phone test, run `vite --host` and put a tunnel such as ngrok in front of it.
 
----
+## Commands
 
-# React + TypeScript + Vite
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Dev server on `localhost:8849` |
+| `npm run build` | Type-check with `tsc -b`, then build to `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npm run test:e2e` | Playwright end-to-end suite. Starts the dev server itself |
+| `npm run android` | Build, `cap sync`, then open Android Studio |
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Run `npm run test:e2e` before you commit a gameplay change.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+React 19 and TypeScript on Vite. MapLibre GL JS draws the map from OpenFreeMap "Liberty" vector tiles at a 45 degree pitch. three.js draws the creature companions, the POI pins, and the MRT lines as custom map layers. Supabase holds the backend, and the Unity client shares the same project. Capacitor 7 wraps the app for Android and reads step data through Health Connect. Tailwind CSS v4 handles styling, and `vite-plugin-pwa` handles the service worker.
 
-## React Compiler
+## Monthly community event (Singapore)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Once a month, Lorewalk Premium runs a real meetup in Singapore. The event appears on [Meetup](https://www.meetup.com/).
 
-## Expanding the ESLint configuration
+1. Walk the community 5k together.
+2. Drink for free afterwards.
+3. Collect the medal. A player who finished that month's in-app challenge shows the QR code from the profile screen and takes the medal on the spot.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The model follows parkrun: the player earns the achievement in the app, then claims the medal in person. Lorewalk does not mail medals.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Venue:** [Temasek Shophouse](https://www.temasekshophouse.org.sg/) on Orchard Road, or a similar site. It sits next to Fort Canning Park, so the walk route can loop through heritage and nature POIs and end back at the venue for drinks and pickup. Nobody has booked it yet. It is the leading candidate. [CLAUDE.md](CLAUDE.md) lists the tradeoffs.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Documentation style
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+The Markdown docs in this repo follow ASD-STE100 Simplified Technical English. The rules and the checker live in [.claude/skills/ste-writing/](.claude/skills/ste-writing/). Run the checker after you edit a doc:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+python3 .claude/skills/ste-writing/ste-lint.py README.md CLAUDE.md GameDesign.md TODO.md
 ```

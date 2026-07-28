@@ -1,18 +1,18 @@
-# Lorewalk — Game Design Document
+# Lorewalk: Game Design Document
 
-This document records all game design decisions for the Lorewalk PWA. Keep it updated as the design evolves. The Unity/Android game design lives in the parent project's CLAUDE.md.
+This document records every game design decision for the Lorewalk PWA. Keep it current as the design changes. The design for the Unity and Android game lives in the CLAUDE.md of the parent project.
 
 ---
 
 ## POI System
 
 ### Two modes
-- **Offline mode** — all 100 seeded Singapore POIs are shown on the map immediately, no GPS needed. Designed for local development and testing.
-- **Online mode** — POIs are fetched from Supabase via the `get_pois_near` RPC using the player's real GPS position (1km radius).
+- **Offline mode**: the map shows all 100 seeded Singapore POIs at once, with no GPS. This mode serves local development and testing.
+- **Online mode**: the `get_pois_near` RPC fetches POIs from Supabase around the real GPS position of the player, within a 1 km radius.
 
 ### POI types
-- **Permanent POIs** — fixed historical and cultural landmarks. Gold/orange marker ring (🏛).
-- **Temporary POIs** — time-bounded event POIs with an expiry. Purple marker ring (✨).
+- **Permanent POIs**: fixed historical and cultural landmarks. Gold and orange marker ring (🏛).
+- **Temporary POIs**: event POIs with an expiry time. Purple marker ring (✨).
 
 ### Marker visual states
 | State | Appearance |
@@ -25,47 +25,47 @@ This document records all game design decisions for the Lorewalk PWA. Keep it up
 
 ## Check-in Mechanic
 
-Inspired by geocaching. Players check in at POIs to mark them as visited and earn points.
+Geocaching inspires this mechanic. A player checks in at a POI to mark it as visited and to earn points.
 
 ### Offline mode
-- "Check in" button is always available in the POI detail panel.
-- No GPS proximity required — useful for testing and for players who want to log visits retroactively.
-- Visited state is persisted in `localStorage` (`lorewalk_visited_pois`).
+- The POI detail panel always shows the "Check in" button.
+- The check-in needs no GPS proximity. This helps testing, and it lets a player log a visit after the fact.
+- `localStorage` holds the visited state, under the key `lorewalk_visited_pois`.
 
 ### Online mode
-- Check-in is only available when the player's GPS position is within **50 metres** of the POI.
-- The detail panel shows the current distance and updates as the player moves.
-- Beyond 50m: "Get within 50m to check in (currently Xm away)" message.
-- Visited state will eventually sync to Supabase per-player (not yet implemented).
+- The player can check in only within **50 metres** of the POI.
+- The detail panel shows the current distance and updates it as the player moves.
+- Past 50 m, the panel shows "Get within 50m to check in (currently Xm away)".
+- The visited state will sync to Supabase per player later. Nobody has built that yet.
 
-### Post-check-in
-- Marker immediately updates to 😊 / green ring — no page reload.
-- Detail panel shows "😊 You visited this place!" confirmation state.
-- Points awarded (future: feed into creature planter slots).
+### After the check-in
+- The marker turns to a green ring with 😊 at once. The page does not reload.
+- The detail panel switches to the confirmation state: "😊 You visited this place!".
+- The player receives points. These points will feed the creature planter slots later.
 
 ---
 
 ## Map
 
-- **Default zoom**: 14 (wider view to show more POIs at once).
-- **Default centre**: Singapore (1.3521, 103.8198) when GPS is unavailable.
-- **Player marker**: Indigo dot with a soft halo ring.
-- **Tile source**: OpenFreeMap "Liberty" vector tiles (free, no key) — 3D buildings, transit POIs, tilted 45° for depth. Community-funded; self-host or use a paid provider for high-volume production.
+- **Default zoom**: 14. The wider view fits more POIs on screen.
+- **Default centre**: Singapore (1.3521, 103.8198), used when the browser has no GPS fix.
+- **Player marker**: an indigo dot with a soft halo ring.
+- **Tile source**: OpenFreeMap "Liberty" vector tiles. They are free, need no key, and carry 3D buildings and transit POIs. The map tilts 45 degrees for depth. The community funds the tiles, so self-host them or move to a paid provider for high-volume production.
 
 ---
 
-## Creature System (implemented in PWA)
+## Creature System (built in the PWA)
 
 ### Core loop
-1. **Check in at a POI** → receive an egg tied to that POI's category.
-2. **Walk** → steps accumulate and advance all incubating eggs (GPS-estimated, ~0.76 m/step).
-3. **Egg hatches** when it reaches its step requirement → creature added to your collection.
-4. **Toast notification** appears on the map when a creature hatches.
+1. **Check in at a POI.** The player receives an egg that carries the category of that POI.
+2. **Walk.** Steps accumulate and advance every incubating egg. The app estimates steps from GPS at about 0.76 m per step.
+3. **The egg hatches** once it reaches its step requirement. The creature joins the collection.
+4. **A toast appears** on the map when a creature hatches.
 
 ### Egg slots
-- Default **3 egg slots** (all incubate simultaneously).
-- A new egg is awarded on each check-in, as long as a slot is free.
-- If all 3 slots are full, the new check-in awards no new egg (walking still advances existing eggs).
+- The player starts with **3 egg slots**. All slots incubate at the same time.
+- Each check-in awards one egg, as long as a slot is free.
+- When all 3 slots hold an egg, a check-in awards nothing. Walking still advances the eggs already held.
 
 ### Egg tiers and step requirements
 | Tier | Steps to hatch | Categories |
@@ -85,94 +85,110 @@ Inspired by geocaching. Players check in at POIs to mark them as visited and ear
 | Museum | Archivist | 📜 | Epic |
 | Unknown | Wanderer | ✨ | Common |
 
-### Creature storage cap (Pikmin Bloom)
-- Collection size is capped: `creatureCap = 6 + (level − 1) × 2 + shopBonus`. Shown as **"Collection X / Y"** in the Creatures tab.
-- When an egg reaches its hatch threshold but storage is full, it **stays as a ready egg** (occupying an egg slot) and hatches once you make room.
-- **Release** a creature (✕ on its card, with confirm) to free a slot, or raise the cap by levelling up / buying storage in the shop. Creates curation decisions and a coin sink.
+### Creature storage cap (from Pikmin Bloom)
+- A cap limits the collection: `creatureCap = 6 + (level − 1) × 2 + shopBonus`. The Creatures tab shows it as **"Collection X / Y"**.
+- When an egg reaches its hatch threshold and storage is full, it **stays a ready egg** and holds its egg slot. It hatches once the player makes room.
+- To free a slot, **release** a creature through the ✕ on its card and confirm. To raise the cap instead, level up or buy storage in the shop. This creates curation decisions and a coin sink.
 
 ### Design rationale
-Pikmin Bloom uses steps (pedometer) to grow seedlings — web has no reliable step counter. We use **POI visits as the progress currency** instead. This fits the exploration theme better: visiting places is always the core action.
+Pikmin Bloom grows seedlings from pedometer steps. The web has no reliable step counter. Lorewalk uses **POI visits as the progress currency** instead. This fits the exploration theme better, because a visit to a place is always the core action.
 
 ### Future creature features
-- **Bonding XP**: visiting more POIs with a creature equipped levels up bond.
-- **Evolution**: bond level unlocks new visual forms.
+- **Bonding XP**: a visit to a POI with a creature equipped raises the bond level.
+- **Evolution**: a bond level unlocks a new visual form.
 - **Expeditions**: send creatures on timed away missions for extra rewards.
-- **Storage cap**: limit collection size to create curation decisions.
-- **Duplicate handling**: same species collected twice could merge bond XP.
+- **Storage cap**: limit the collection size to create curation decisions.
+- **Duplicate handling**: a second copy of a species could merge its bond XP into the first.
 
 ---
 
-## UI / UX Decisions
+## UI and UX Decisions
 
-- **Theme**: White background, pastel accents. No dark mode for now.
-- **Color tokens live in `src/lib/theme.ts`** — don't hardcode hex for accent/reward colors, import from there:
-  - `accent` (`#166534`) / `accentSoft` (`#eaf6ec`) / `accentAlpha(n)` — the quiet green below.
-  - `rewardGradient` / `rewardGradientHorizontal` (`#818cf8` → `#c084fc`) — the indigo→purple rarity/premium family.
-  - The page background gradient itself is `pageBackground` in `src/lib/glass.ts` (frosted-glass surface tokens live there; brand accent colors live in `theme.ts`).
-- **Primary accent: quiet green, `accent` (`#166534`)** (added 2026-07-20). A deliberately muted, Geocaching-style green rather than Duolingo's saturated `#58CC02` — walking-to-real-places games read better quiet than punchy. Reference points pulled from the real brands: Duolingo primary `#58CC02` / secondary `#89E219` (bright, high-energy), Geocaching primary `#4A742C` (muted olive), Pikmin Bloom (no published hex, but reputationally soft pastel mint). Landed between Geocaching's quietness and a slightly cooler green. Covers: page background gradient (off-white → mint → sage), all `h1`/`h2`/`h3` headings (body text stays neutral slate `#1e293b`), navigation/selection controls (bottom nav, Settings pickers, tabs, sort pills, selection rings, "today" indicators, active-squad states), and solid-color CTA buttons (Send postcard, Add friend, Regenerate code, Save name, Send expedition, "Got it" dismiss). The one CTA left off-brand on purpose: the "Hatched!" reveal screen's rename Save button, which sits inside an all-violet dark reward scene — green would clash with that scene's own palette rather than the everyday white-background chrome the rest of the app uses.
-- **Indigo→purple stays as its own "reward/premium" language, not the accent**: egg XP bars, level-up screen, hatch reveal, MAX LEVEL badges, the "Collect reward"/"Claim reward"/"Join party walk" gradient buttons, and coin-pack purchase buttons. These are deliberately *not* accent green — they mark a reward/premium moment as visually distinct from ordinary navigation and everyday actions. Small text badges (XP pills, price/coin counts) also stay indigo for now, matching this family.
-- **Bottom navigation**: 4 tabs — Map, Creatures, Expeditions, Profile.
-- **POI detail**: Slide-up white panel from bottom with drag handle. Shows name, description, category badge, points badge, distance (online), learn-more link, and check-in button.
-- **Mode toggle**: Frosted-glass pill in the top-left of the map. Green dot = online, grey dot = offline.
+- **Theme**: a white background with pastel accents. There is no dark mode for now.
+- **Colour tokens live in `src/lib/theme.ts`.** Import them. Do not hardcode a hex value for an accent or reward colour.
+  - `accent` (`#166534`), `accentSoft` (`#eaf6ec`), and `accentAlpha(n)` hold the quiet green described below.
+  - `rewardGradient` and `rewardGradientHorizontal` (`#818cf8` to `#c084fc`) hold the indigo-to-purple rarity and premium family.
+  - The page background gradient itself is `pageBackground` in `src/lib/glass.ts`. That file holds the frosted-glass surface tokens. `theme.ts` holds the brand accent colours.
+- **Primary accent: quiet green, `accent` (`#166534`)**, added 2026-07-20. The green is muted on purpose, closer to Geocaching than to the saturated Duolingo `#58CC02`. A game about walking to real places reads better quiet than punchy.
+  - Reference points from the real brands: Duolingo primary `#58CC02` and secondary `#89E219` (bright, high energy), Geocaching primary `#4A742C` (muted olive), and Pikmin Bloom (no published hex, but a soft pastel mint by reputation).
+  - Lorewalk landed between the quietness of Geocaching and a slightly cooler green.
+  - The accent covers the page background gradient (off-white to mint to sage), every `h1`, `h2`, and `h3` heading, the navigation and selection controls, and the solid-colour CTA buttons. Body text stays neutral slate `#1e293b`. The controls include the bottom nav, the Settings pickers, tabs, sort pills, selection rings, the "today" indicators, and the active-squad states. The CTA buttons include Send postcard, Add friend, Regenerate code, Save name, Send expedition, and the "Got it" dismiss.
+  - One CTA stays off-brand on purpose: the rename Save button on the "Hatched!" reveal screen. It sits inside an all-violet dark reward scene. Green would clash with the palette of that scene, which differs from the everyday white-background chrome of the rest of the app.
+- **Indigo to purple stays its own "reward and premium" language, separate from the accent.** It covers the egg XP bars, the level-up screen, the hatch reveal, the MAX LEVEL badges, the gradient buttons ("Collect reward", "Claim reward", "Join party walk"), and the coin-pack purchase buttons. These are *not* accent green on purpose. The contrast marks a reward or premium moment as different from ordinary navigation and everyday actions. Small text badges, such as XP pills and price and coin counts, also stay indigo and match this family.
+- **Bottom navigation**: 4 tabs. Map, Creatures, Squads, Profile. Squads replaced the old Expeditions tab. See "Squad against expedition" below.
+- **POI detail**: a white panel that slides up from the bottom, with a drag handle. It shows the name, the description, the category badge, the points badge, the distance when online, a learn-more link, and the check-in button.
+- **Mode toggle**: a frosted-glass pill in the top left of the map. A green dot means online. A grey dot means offline.
 
 ---
 
-## Monetisation (from Unity game — applies to PWA too)
+## Monetisation (from the Unity game, and it applies to the PWA too)
 
-- **Free tier**: Limited POI set, starter creatures only, basic evolution.
-- **Premium**: All POIs, unlimited creatures, full evolution tree, exclusive landmark creatures, plus the **monthly medal event** below.
-- **Coin shop (IAP)**: Cosmetics, extra planter/expedition slots, convenience items. Never pay-to-win.
+- **Free tier**: a limited POI set, starter creatures only, and basic evolution.
+- **Premium**: all POIs, unlimited creatures, the full evolution tree, exclusive landmark creatures, and the **monthly medal event** below.
+- **Coin shop (IAP)**: cosmetics, extra planter and expedition slots, and convenience items. Never pay-to-win.
 
-### Premium pricing (decided 2026-07-17, figures in SGD — Singapore is the first market)
+### Premium pricing (decided 2026-07-17, figures in SGD, Singapore is the first market)
 
-Anchored against Geocaching Premium (USD $39.99/yr ≈ SGD 54/yr ≈ SGD 4.50/mo, or USD $6.99/mo ≈ SGD 9.50/mo standalone) — but Geocaching's tier is digital-only, so its price doesn't have to cover physical fulfillment. Lorewalk's premium does, once the medal event ships, so pricing needs headroom over the digital-only 15 SGD/year figure this doc previously used. Exact price TBD pending a real medal supplier quote; see CLAUDE.md's "Monetisation costs" section for the landed-cost numbers (SGD 12-20/unit at low order volume, dropping toward SGD 6-10/unit at 250+ unit bulk import) that any price point has to clear.
+Geocaching Premium anchors the price. It costs USD 39.99 per year, about SGD 54 per year or SGD 4.50 per month. Its standalone monthly plan costs USD 6.99, about SGD 9.50 per month.
 
-### Monthly medal event (Premium's flagship perk)
+The Geocaching tier is digital only, so its price covers no physical fulfillment. Lorewalk Premium does cover fulfillment once the medal event ships. The price therefore needs headroom over the digital-only SGD 15 per year figure that this document used before.
 
-Each month, Premium subscribers get access to a themed **event** (e.g. a step goal, a set of landmarks to visit, a mini-challenge). Completing it earns a **unique, real physical medal** — "unique" meaning each month gets its own design, not one reused medal, which is the whole point of the value pitch ("earn a unique real physical medal" is the exact phrasing used in the Premium upsell copy in ProfilePage.tsx). That's a real production implication: a new design per month means a new production run per month, not one bulk order to draw down over the year.
+The exact price waits on a real medal supplier quote. CLAUDE.md's "Monetisation costs" section holds the landed-cost numbers that any price point has to clear. A medal costs SGD 12 to 20 per unit at low order volume. It falls toward SGD 6 to 10 per unit at a bulk import of 250 units or more.
 
-Medals are **not mailed**. They're picked up in person at a real-life monthly community event in Singapore, listed on Meetup:
+### Monthly medal event (the flagship Premium perk)
 
-1. **Community 5k walk** — a group walk, open to anyone (not gated behind Premium; the walk itself is the community draw, the medal is the Premium hook).
+Each month, a Premium subscriber gets access to a themed **event**, such as a step goal, a set of landmarks to visit, or a mini-challenge. A subscriber who finishes it earns a **unique, real, physical medal**. "Unique" means a fresh design each month, not one medal reused. That claim is the whole value pitch. The Premium upsell copy in `ProfilePage.tsx` uses the exact phrase "earn a unique real physical medal".
+
+The claim carries a real production cost. A new design each month means a new production run each month, not one bulk order drawn down across the year.
+
+Lorewalk does **not** mail medals. A player picks the medal up in person at a monthly community event in Singapore, listed on Meetup:
+
+1. **Community 5k walk.** The walk is open to anyone and is not gated behind Premium. The walk itself draws the community. The medal is the Premium hook.
 2. **Free drinks** afterwards.
-3. **Medal pickup** — players who completed that month's in-app challenge show the QR code from their profile to collect their medal on the spot. Same model as **parkrun**: the achievement is tracked digitally, but claiming the physical reward happens face-to-face at a recurring community meetup, not by mail.
+3. **Medal pickup.** A player who finished that month's in-app challenge shows the QR code from the profile screen and takes the medal on the spot. **parkrun** uses the same model: the app tracks the achievement, and the player claims the physical reward face to face at a recurring meetup, not by mail.
 
-- **Earned, not guaranteed-per-subscriber.** The subscription unlocks *eligibility* to attempt the event; the medal itself is only claimable by players who complete it. This is a deliberate cost control — producing a medal for every subscriber every month, at low subscriber counts, costs more than the subscription revenue covers (see CLAUDE.md cost breakdown). Completion-gating caps unit volume to actual finishers.
-- In-person pickup removes shipping and customs entirely (no address collection, no courier, no international fulfillment) but trades it for **event ops**: a monthly Meetup listing, a venue and walk route, and a drinks budget in Singapore. Medal ordering (print-on-demand/bulk) is still **not yet built** and needs a supplier chosen before it can go live.
-- App-side, this only needs: knowing a player is Premium-eligible, tracking their progress on the current month's event, and generating a **claimable QR code** once they complete it, for staff to scan at the event. The profile QR flow already exists for friend invites via the `qrcode` package — this reuses that pattern rather than building a new one.
+- **The player earns the medal. A subscription alone does not grant one.** The subscription unlocks *eligibility* to attempt the event. Only a player who finishes the event can claim the medal. This controls cost on purpose. At low subscriber counts, one medal per subscriber per month costs more than the subscription revenue covers. See the CLAUDE.md cost breakdown. A completion gate caps the unit volume at the real finishers.
+- In-person pickup removes shipping and customs completely. There is no address to collect, no courier, and no international fulfillment. It trades all of that for **event ops**: a monthly Meetup listing, a venue and a walk route, and a drinks budget in Singapore. Medal ordering, whether print-on-demand or bulk, is **still unbuilt** and needs a chosen supplier before it can go live.
+- On the app side, the event needs only three things. It needs to know that a player holds Premium eligibility. It needs to track that player's progress on the current month's event. It needs to generate a **claimable QR code** on completion, for staff to scan at the event. The profile QR flow for friend invites already uses the `qrcode` package, so the event reuses that pattern instead of a new one.
 
-### Shop (implemented — coins only so far)
-Lives on the **Profile** tab. Spends the soft **coin** currency (earned from expeditions + held landmarks):
-- **+3 creature slots** — cost `60 + 60 × (bonus / 3)` (escalates per purchase).
-- **+1 egg slot** — cost `120 × (slotsBought + 1)`, capped at `MAX_EGG_SLOTS_CAP` (6).
+### Shop (built, coins only so far)
 
-Real-money IAP is deferred; coins-only already closes the earn → spend loop. Costs are dev-tuned — rebalance with the duration/rate constants before launch.
+The shop lives at the `/shop` route. The player reaches it through the coin capsule in the map HUD, which opens `ShopPage` in a modal, or through the "+ coins" link on the Squads tab (`/shop#coins`). It spends the soft **coin** currency, which the player earns from expeditions and held landmarks.
+
+- **+3 creature slots**: costs `60 + 60 × (bonus / 3)`, which climbs with each purchase.
+- **+1 egg slot**: costs `120 × (slotsBought + 1)`, capped at `MAX_EGG_SLOTS_CAP` (6).
+
+Real-money IAP waits. A coins-only shop already closes the earn-and-spend loop. The current costs are tuned for development. Rebalance them together with the duration and rate constants before launch.
 
 ### Premium entitlement (payment integration scaffolded, not live yet)
 
-`PlayerProfile.isPremium` (`src/types/index.ts`) gates `Poi.premiumOnly` landmarks via `isPoiLocked()` in `src/lib/profile.ts`: locked POIs show a lock badge in `PoiDetailPanel` and are skipped by both the online auto-check-in effect and the offline tap-to-check-in handler in `MapPage.tsx`.
+`PlayerProfile.isPremium` in `src/types/index.ts` gates the `Poi.premiumOnly` landmarks through `isPoiLocked()` in `src/lib/profile.ts`. A locked POI shows a lock badge in `PoiDetailPanel`. Both the online auto-check-in effect and the offline tap-to-check-in handler in `MapPage.tsx` skip it.
 
-Real money runs through **Google Play Billing via RevenueCat's Capacitor SDK** (`@revenuecat/purchases-capacitor`, `src/lib/billing.ts`) — chosen over a bare Play Billing integration or a Trusted Web Activity + Digital Goods API because the app already ships as a Capacitor-wrapped native Android app (`android/`), and RevenueCat's server-side receipt verification means Lorewalk doesn't need to host its own Google Play Developer API integration. `PremiumModal.tsx` drives the purchase (with a Monthly/Yearly plan picker) when running natively in online mode; in offline mode it stays the local test-purchase toggle used for dev/demo. A RevenueCat webhook (`supabase/functions/revenuecat-webhook`) verifies each purchase server-side and upserts `premium_entitlements` in Supabase, which `ProfileContext.tsx` reconciles `isPremium` against once online — that table, not the client flag, is the trusted source once this is live. See TODO.md's WIP entry for the exact Play Console / RevenueCat / Supabase setup still needed before a real purchase can complete.
+Real money runs through **Google Play Billing, wrapped by RevenueCat's Capacitor SDK** (`@revenuecat/purchases-capacitor`, `src/lib/billing.ts`). Two reasons decided this over a bare Play Billing integration or a Trusted Web Activity with the Digital Goods API. The app already ships as a Capacitor-wrapped native Android app in `android/`. RevenueCat verifies receipts server-side, so Lorewalk does not have to host its own Google Play Developer API integration.
+
+`PremiumModal.tsx` drives the purchase and offers a Monthly and Yearly plan picker, but only when the app runs natively and online. In offline mode the same modal stays a local test-purchase toggle for development and demos.
+
+A RevenueCat webhook (`supabase/functions/revenuecat-webhook`) verifies each purchase server-side and upserts `premium_entitlements` in Supabase. `ProfileContext.tsx` reconciles `isPremium` against that table once online. Once this is live, the table is the trusted source, not the client flag. The TODO.md WIP entry lists the exact Play Console, RevenueCat, and Supabase setup that remains before a real purchase can complete.
 
 ---
 
 ## Player Profile
 
 ### Guest profile (offline)
-Stored in `localStorage` (`lorewalk_profile`). Auto-created on first launch with the name "Explorer". Name is editable in-app. No sign-in required.
+`localStorage` holds the profile under `lorewalk_profile`. The app creates it on first launch with the name "Explorer". The player can edit the name in-app. No sign-in is needed.
 
 ### Level system
-- XP is earned per POI check-in: equal to `poi.points` (5–10 XP each).
-- XP to reach the next level = `currentLevel × 100`. (Level 1→2: 100 XP, Level 2→3: 200 XP, etc.)
-- XP resets within the level on level-up; `totalXp` is cumulative and never resets.
+- Each POI check-in awards XP equal to `poi.points`, which is 5 to 10 XP.
+- The XP needed for the next level is `currentLevel × 100`. Level 1 to 2 costs 100 XP, level 2 to 3 costs 200 XP, and so on.
+- A level-up resets the XP inside the level. `totalXp` accumulates and never resets.
 
 ### Daily streak
-- Increments when the player checks in on consecutive calendar days.
-- Resets to 1 if a day is skipped.
-- Stored as `streakDays` + `lastVisitDate` on the profile.
+- The streak rises when the player checks in on consecutive calendar days.
+- It resets to 1 after a skipped day.
+- The profile stores it as `streakDays` and `lastVisitDate`.
 
 ### Achievements
-Unlocked automatically when conditions are met during a check-in. Current set:
+A check-in unlocks an achievement as soon as its condition holds. The current set:
 
 | ID | Name | Condition |
 |---|---|---|
@@ -192,20 +208,20 @@ Unlocked automatically when conditions are met during a check-in. Current set:
 | level_10 | Seasoned Explorer | Reach level 10 |
 
 ### Visit history
-Each check-in appends a `VisitRecord` (poiId, poiName, category, visitedAt ISO timestamp, xpEarned). Displayed as a chronological feed on the profile page.
+Each check-in appends a `VisitRecord`: `poiId`, `poiName`, `category`, the `visitedAt` ISO timestamp, and `xpEarned`. The profile page shows these records as a feed in date order.
 
 ---
 
-## What's Missing vs Pikmin Bloom (to build later)
+## Missing next to Pikmin Bloom (build later)
 
 | Feature | Priority | Notes |
 |---|---|---|
-| Memory cards | High | Postcard-style keepsake per visited landmark — emotional hook |
-| Category completion | High | "Visited 8/35 heritage sites" — the collect-them-all motivation |
+| Memory cards | High | A postcard-style keepsake per visited landmark. The emotional hook |
+| Category completion | High | "Visited 8/35 heritage sites". The collect-them-all motivation |
 | Push notifications | Medium | Expedition returns, daily streak reminder |
 | Friends / social feed | Medium | See where friends have explored |
 | Weekly challenges | Medium | "Visit 3 new landmarks this week" |
-| Step counting | Low | Web can't do this reliably; check-ins are our equivalent |
+| Step counting | Low | The web cannot do this reliably. Check-ins are the Lorewalk equivalent |
 | Events calendar | Low | Tied to temporary POIs and Singapore public holidays |
 
 ---
@@ -213,74 +229,75 @@ Each check-in appends a `VisitRecord` (poiId, poiName, category, visitedAt ISO t
 ## Squad System
 
 ### Concept
-Players assemble **squads** — small teams built from creatures they have already hatched — and station them on the map. A squad's value comes from **type affinity**: when its members' types match the kind of place the player visits, the squad amplifies the rewards from that check-in. There is **no combat** — squads never fight, and a player can never "lose" one. The decision the system creates is *"which team fits where I'm exploring today?"*
+A player assembles **squads**, small teams built from creatures the player has already hatched, and stations them on the map. The value of a squad comes from **type affinity**. When the types of its members match the kind of place the player visits, the squad amplifies the rewards of that check-in. There is **no combat**. A squad never fights, and a player can never lose one. The system asks one question: which team fits where I explore today?
 
-### Characters = creatures
-A squad slot holds one of the player's existing `HatchedCreature`s. A creature's **type is its `poiCategory`** (Heritage, Landmark, Arts, Religious, Museum, Nature). No separate character entity or type table is introduced — the 6 categories that already drive eggs and creatures *are* the type system.
+### Characters are creatures
+A squad slot holds one existing `HatchedCreature` of the player. The **type of a creature is its `poiCategory`**: Heritage, Landmark, Arts, Religious, Museum, or Nature. The design adds no separate character entity and no separate type table. The 6 categories that already drive eggs and creatures *are* the type system.
 
 ### Structure
-- **3 squads**, each with **4 slots** (12 slots total).
-- A creature may occupy **at most one slot across all squads** — assigning it elsewhere moves it.
-- Slots may be left empty.
-- One squad is the **active squad** (the equipped party). Only the active squad's affinity applies to check-ins.
+- There are **3 squads**, each with **4 slots**, so 12 slots in total.
+- A creature can hold **at most one slot across all squads**. An assignment elsewhere moves it.
+- A slot may stay empty.
+- One squad is the **active squad**, the equipped party. Only the affinity of the active squad applies to a check-in.
 
-### Affinity, and the home/away tradeoff
-A squad's value is type affinity, but it can only be in one of two states at a time:
+### Affinity, and the home-or-away tradeoff
+The value of a squad is type affinity, but a squad holds only one of two states at a time.
 
-- **Home (active):** the active squad boosts the player's *live* check-ins. On a check-in at a POI of category `C`, count active-squad members whose type equals `C` → `m` (0–4); the check-in's XP is multiplied by **`1 + 0.25 × m`** (a full 4-of-a-kind squad doubles XP). Non-matching members give no penalty.
-- **Away (on expedition):** the squad is sent to a place and earns an idle reward over time — but while away it gives **no live check-in boost**, even if it's the active squad.
+- **Home (active):** the active squad boosts the *live* check-ins of the player. On a check-in at a POI of category `C`, count the active-squad members whose type equals `C`. Call that count `m`, from 0 to 4. The check-in multiplies its XP by **`1 + 0.25 × m`**, so a full 4-of-a-kind squad doubles the XP. A member that does not match costs nothing.
+- **Away (on expedition):** the squad travels to a place and earns an idle reward over time. While away it gives **no live check-in boost**, even as the active squad.
 
-This is the core decision the system creates: *keep the squad home to amplify my own walking, or send it away for hands-off rewards?*
+This is the core decision of the system. Keep the squad home and amplify my own walking, or send it away for hands-off rewards?
 
 ### Expeditions (the "away" loop)
-- A squad is sent to a **visited POI** (the map already knows its coordinates). The expedition stores `startedAt` / `returnsAt`.
-- **Duration scales with distance** from the player's current position to the target (Singapore centre as fallback when GPS is off). `expeditionDurationMs = BASE (20s) + 8s/km`, capped at 6 min. DEV-tuned so nearby trips finish in ~half a minute; raise for production (idle reward over hours). The picker shows each destination's distance and ETA up front.
-- **Reward on collect (all scaled by affinity** to the *target's* category, so a Heritage-heavy squad sent to a Heritage site pays more):
-  - **XP** — `EXPEDITION_BASE_XP` (25) × affinity.
-  - **Coins** — `(10 + random 0–10)` × affinity. Coins are a soft currency (`profile.coins`); the coin shop in monetisation will spend them.
-  - **Egg** — `EXPEDITION_EGG_CHANCE` (40%) to also return an egg of the target's category, but **only if an egg slot is free**.
-- **Lifecycle:** *Send* → live countdown → **Collect** (awards the rewards, squad returns home) once returned, or **Recall** early for nothing. Roster editing is locked while away.
-- The expedition is **not** combat and cannot fail.
+- The player sends a squad to a **visited POI**, because the map already knows its coordinates. The expedition stores `startedAt` and `returnsAt`.
+- **Duration scales with distance** from the current position of the player to the target. With GPS off, the centre of Singapore acts as the fallback position. `expeditionDurationMs = BASE (20s) + 8s/km`, capped at 6 minutes. These values are tuned for development, so a nearby trip finishes in about half a minute. Raise them for production, where the reward should idle across hours. The picker shows the distance and the ETA of each destination up front.
+- **Rewards on collect.** Affinity to the category of the *target* scales all of them, so a Heritage-heavy squad sent to a Heritage site pays more.
+  - **XP**: `EXPEDITION_BASE_XP` (25) × affinity.
+  - **Coins**: `(10 + random 0 to 10)` × affinity. Coins are the soft currency in `profile.coins`. The coin shop under Monetisation spends them.
+  - **Egg**: `EXPEDITION_EGG_CHANCE` (40%) to also return an egg of the target category, but **only when an egg slot is free**.
+- **Lifecycle:** *Send*, then a live countdown, then **Collect** once the squad returns. Collect awards the rewards and brings the squad home. **Recall** ends the expedition early for nothing. Roster editing stays locked while the squad is away.
+- An expedition is **not** combat, and it cannot fail.
 
-### Squad vs. Expedition
-A **squad** is the team (a noun); an **expedition** is what a squad *does* (a verb). They are the same entities in two states — the squad you build is the thing you send. This is why the old standalone "Expeditions" tab was replaced by **Squads**: expeditions are now driven from the squad, not from lone creatures.
+### Squad against expedition
+A **squad** is the team, a noun. An **expedition** is what a squad does, a verb. They are the same entities in two states. The squad you build is the thing you send. This is why **Squads** replaced the old standalone "Expeditions" tab. The squad drives an expedition now, not a lone creature.
 
-### Companions on the map (Pikmin Bloom)
-- The **active squad's creatures** are rendered as 3D characters that idle and wander around the player's position — your party, made physical. Empty slots = fewer companions.
-- While the active squad is **away on an expedition**, no companions follow (they're at the landmark).
-- When the active squad is **empty**, a few neutral grey "ambient" wanderers show so the map is never lifeless; they're replaced by real members once you assign creatures.
-- Each companion's body colour reflects its creature's type/category. Currently a procedural placeholder; a Quaternius `.glb` at `public/models/character.glb` replaces it.
-- **Sizing**: characters keep a roughly constant on-screen size (Pikmin-Bloom style) rather than true-to-life metres, so they're visible at normal play zoom (~15+). At the whole-island offline view they're still tiny — zoom in to street level to see them.
+### Companions on the map (from Pikmin Bloom)
+- The app renders the **creatures of the active squad** as 3D characters that idle and wander around the position of the player. This makes the party physical. An empty slot means one companion fewer.
+- While the active squad is **away on an expedition**, no companion follows. They are all at the landmark.
+- While the active squad is **empty**, a few neutral grey "ambient" wanderers appear, so the map is never lifeless. Real members replace them once the player assigns creatures.
+- The body colour of a companion reflects the type and category of its creature. The current model is a procedural placeholder. A Quaternius `.glb` at `public/models/character.glb` replaces it.
+- **Sizing**: the characters hold a roughly constant on-screen size, in the Pikmin Bloom style, instead of true-to-life metres. This keeps them visible at normal play zoom, about 15 and above. At the whole-island offline view they stay tiny. Zoom to street level to see them.
 
 ### Squads on the map
-- A squad that's on an expedition shows a marker at the target POI: a 2×2 cluster of its member emojis.
-- The **active** squad's marker gets an indigo ring; a **returned** expedition shows a 🎁 badge.
-- Tapping a squad marker opens the Squads tab.
+- A squad on an expedition shows a marker at the target POI: a 2×2 cluster of the emojis of its members.
+- The marker of the **active** squad carries an indigo ring. A **returned** expedition carries a 🎁 badge.
+- A tap on a squad marker opens the Squads tab.
 
-### Claimed landmarks — light "areas of control" (Pokémon-gym, solo)
-Finishing an expedition **claims** that landmark for the player (held landmarks are listed under **Holdings** and flagged 🚩 on the map). The hook is *collect & hold the map*, not combat:
-- A held landmark **passively accrues coins over time**, scaled by the affinity captured when it was claimed (`CLAIM_COINS_PER_MIN`, currently 3/min for testing, capped at 150; raise for production).
-- Re-running an expedition to the same landmark refreshes its claim (and affinity snapshot).
-- **No PvP, no defending, no losing** — purely solo accumulation. Competitive territory (taking others' landmarks, leaderboards) is deferred; it needs auth + a real backend.
-- Coins are the soft currency (`profile.coins`) the future coin shop will spend.
+### Claimed landmarks: light areas of control (Pokemon gym, solo)
+A finished expedition **claims** that landmark for the player. **Holdings** lists the held landmarks, and the map flags each one with 🚩. The hook is collect and hold the map, not combat.
+
+- A held landmark **accrues coins over time**, scaled by the affinity captured at the moment of the claim. The rate is `CLAIM_COINS_PER_MIN`, currently 3 per minute for testing, capped at 150. Raise both for production.
+- A second expedition to the same landmark refreshes the claim and the affinity snapshot.
+- There is **no PvP, no defending, and no losing**. Accumulation is purely solo. Competitive territory, such as taking the landmarks of others or a leaderboard, waits. It needs auth and a real backend.
+- Coins are the soft currency in `profile.coins`. The future coin shop spends them.
 
 ### Persistence
-Squads live on `PlayerProfile` in `localStorage` alongside creatures. Three empty squads are created on first load. Older saved profiles without a `squads` field are migrated to three empty squads (same defensive pattern as `eggs`/`maxEggSlots`). `VisitRecord` now also stores `lat`/`lon` so visited POIs can be used as expedition targets.
+Squads live on `PlayerProfile` in `localStorage`, next to the creatures. The app creates three empty squads on first load. It migrates an older saved profile without a `squads` field to three empty squads. This follows the same defensive pattern as `eggs` and `maxEggSlots`. A `VisitRecord` now also stores `lat` and `lon`, so a visited POI can serve as an expedition target.
 
 ### Monetisation hook
-Default 3 squads / 4 slots. Extra squads or slots are a natural **coin-shop** item, consistent with the existing "extra planter/expedition slots" line — never pay-to-win, since affinity only amplifies the rewards the player already earns by walking.
+The player starts with 3 squads of 4 slots. An extra squad or slot fits the **coin shop** naturally, next to the existing "extra planter/expedition slots" line. It stays clear of pay-to-win, because affinity only amplifies the rewards that the player already earns by walking.
 
 ### Phasing
-- **Phase 1 (done, 2D):** squad data model, builder UI, active-squad affinity on check-in, the expedition home/away loop (send → countdown → collect/recall), and expedition markers on the map. Emoji/2D presentation only.
-- **Phase 2 (later):** 3D character viewer — a single Quaternius `.glb` rendered in an isolated `<canvas>` on the squad/creature detail screen (Three.js). Assets are CC0; lazy-loaded and excluded from the PWA precache.
-- **Phase 3 (later, gated on a Phase 2 perf check):** 3D squad models on the map itself via deck.gl `ScenegraphLayer`. Only if it benchmarks acceptably on a mid-range Android.
+- **Phase 1 (done, 2D):** the squad data model, the builder UI, active-squad affinity on check-in, the home-and-away expedition loop (send, countdown, collect or recall), and the expedition markers on the map. Emoji and 2D presentation only.
+- **Phase 2 (later):** a 3D character viewer. It renders a single Quaternius `.glb` in an isolated `<canvas>` on the squad and creature detail screen, through Three.js. The assets are CC0. The app lazy-loads them and excludes them from the PWA precache.
+- **Phase 3 (later, gated on a Phase 2 perf check):** 3D squad models on the map itself, through the deck.gl `ScenegraphLayer`. This ships only when it benchmarks acceptably on a mid-range Android device.
 
 ---
 
-## Future PWA Features (not yet designed)
+## Future PWA Features (not designed yet)
 
-- Auth (Supabase) — sync visited POIs, creatures, and points across devices.
-- Points → creature growth loop connected to check-ins.
+- Auth through Supabase, to sync visited POIs, creatures, and points across devices.
+- A loop that connects points to creature growth through check-ins.
 - Push notifications for expedition returns and daily discovery POIs.
-- Share a visited POI card (social).
-- Leaderboard by POIs visited / points earned.
+- A share card for a visited POI (social).
+- A leaderboard by POIs visited and points earned.
