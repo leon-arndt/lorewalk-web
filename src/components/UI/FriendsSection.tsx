@@ -98,7 +98,7 @@ export function FriendsSection() {
             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
             {qrUrl
-              ? <img src={qrUrl} alt="Friend QR code" width={92} height={92} />
+              ? <img src={qrUrl} alt={t('friends_qr_alt')} width={92} height={92} />
               : <span style={{ fontSize: 10, color: '#cbd5e1' }}>…</span>
             }
           </div>
@@ -106,7 +106,7 @@ export function FriendsSection() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <button
               onClick={copyCode}
-              title="Tap to copy"
+              title={t('friends_tap_to_copy')}
               style={{
                 display: 'block', width: '100%', textAlign: 'center',
                 fontSize: 20, fontWeight: 800, letterSpacing: 3, color: '#1e293b',

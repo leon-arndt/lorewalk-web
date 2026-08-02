@@ -81,7 +81,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
               boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
             }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>{friend.totalSteps.toLocaleString()}</div>
-              <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>Total steps</div>
+              <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{t('friend_total_steps')}</div>
             </div>
             <div style={{
               flex: 1, background: 'white', borderRadius: 14, padding: '12px 8px', textAlign: 'center',

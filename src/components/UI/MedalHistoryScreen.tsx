@@ -1,5 +1,6 @@
 import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
+import { useLocale } from '@/contexts/LocaleContext'
 import { currentMonthKey } from '@/lib/profile'
 import type { EarnedMedal } from '@/types'
 import { pageBackground } from '@/lib/glass'
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }: Props) {
+  const { t } = useLocale()
   const currentYear = new Date().getFullYear()
   const firstYear = new Date(createdAt).getFullYear()
   const years = Array.from({ length: currentYear - firstYear + 1 }, (_, i) => currentYear - i)
@@ -46,8 +48,8 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
         </div>
 
         <div style={{ flexShrink: 0, padding: '14px 20px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: '#1e293b' }}>Monthly medals</div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>All months, sorted by year</div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: '#1e293b' }}>{t('medal_history_title')}</div>
+          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{t('medal_history_subtitle')}</div>
         </div>
 
         <div style={{ overflowY: 'auto', padding: '4px 20px calc(28px + env(safe-area-inset-bottom))' }}>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { pageBackground } from '@/lib/glass'
 import {
   fetchPremiumOfferings, isBillingAvailable, playSubscriptionManagementUrl, purchasePremiumPackage,
@@ -9,15 +10,9 @@ import {
 } from '@/lib/billing'
 import type { PremiumInterval } from '@/types'
 
-const FEATURE_ROWS: { icon: string; label: string; basic: boolean; premium: string }[] = [
-  { icon: '🗺️', label: 'Standard landmarks', basic: true, premium: 'All landmarks' },
-  { icon: '🔓', label: 'Premium-only landmarks', basic: false, premium: 'Unlocked' },
-  { icon: '🏅', label: 'Monthly medal challenge', basic: false, premium: 'Real physical medal' },
-]
-
-const PLANS: Record<PremiumInterval, { label: string; price: string; sub?: string; badge?: string }> = {
-  monthly: { label: 'Monthly', price: 'SGD 6.99/mo' },
-  yearly: { label: 'Yearly', price: 'SGD 59.99/yr', sub: '≈ SGD 5.00/mo', badge: 'Save 28%' },
+const PLAN_PRICES: Record<PremiumInterval, { price: string; subPrice?: string; savePct?: number }> = {
+  monthly: { price: 'SGD 6.99/mo' },
+  yearly: { price: 'SGD 59.99/yr', subPrice: 'SGD 5.00', savePct: 28 },
 }
 
 interface PremiumModalProps {
@@ -28,6 +23,20 @@ interface PremiumModalProps {
 export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const { profile, subscribePremium, cancelPremium } = useProfile()
   const { mode } = useConnectionMode()
+  const { t } = useLocale()
+  const FEATURE_ROWS: { icon: string; label: string; basic: boolean; premium: string }[] = [
+    { icon: '🗺️', label: t('premium_feature_standard_landmarks'), basic: true, premium: t('premium_feature_all_landmarks') },
+    { icon: '🔓', label: t('premium_feature_premium_landmarks'), basic: false, premium: t('premium_feature_unlocked') },
+    { icon: '🏅', label: t('premium_feature_medal_challenge'), basic: false, premium: t('premium_feature_real_medal') },
+  ]
+  const PLANS: Record<PremiumInterval, { label: string; price: string; sub?: string; badge?: string }> = {
+    monthly: { label: t('premium_plan_monthly'), price: PLAN_PRICES.monthly.price },
+    yearly: {
+      label: t('premium_plan_yearly'), price: PLAN_PRICES.yearly.price,
+      sub: t('premium_approx_per_month', { price: PLAN_PRICES.yearly.subPrice! }),
+      badge: t('premium_save_badge', { pct: PLAN_PRICES.yearly.savePct! }),
+    },
+  }
   const [interval, setInterval] = useState<PremiumInterval>('yearly')
   const [flash, setFlash] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState(false)
@@ -53,20 +62,20 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
     if (mode !== 'online') {
       subscribePremium(interval)
       setSubscribed(true)
-      setFlash('✅ Test purchase complete - Premium unlocked!')
+      setFlash(t('premium_test_purchase_complete'))
       setTimeout(onClose, 1400)
       return
     }
     if (!isBillingAvailable()) {
       setFlash(Capacitor.isNativePlatform()
-        ? "Premium purchases aren't set up yet - check back soon."
-        : 'Real purchases require the installed Android app.')
+        ? t('premium_not_setup_native')
+        : t('premium_not_setup_web'))
       setTimeout(() => setFlash(null), 2800)
       return
     }
     const pkg = interval === 'monthly' ? offerings?.monthly : offerings?.yearly
     if (!pkg) {
-      setFlash("This plan isn't available yet.")
+      setFlash(t('premium_plan_unavailable'))
       setTimeout(() => setFlash(null), 2800)
       return
     }
@@ -79,10 +88,10 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
       // as the durable, server-verified source of truth on next load.
       subscribePremium(interval)
       setSubscribed(true)
-      setFlash('✅ Purchase complete - Premium unlocked!')
+      setFlash(t('premium_purchase_complete'))
       setTimeout(onClose, 1400)
     } else if (!result.cancelled) {
-      setFlash(result.error ?? 'Purchase failed. Please try again.')
+      setFlash(result.error ?? t('premium_purchase_failed'))
       setTimeout(() => setFlash(null), 2800)
     }
   }
@@ -95,7 +104,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
     }
     cancelPremium()
     setCancelled(true)
-    setFlash('Premium cancelled. You can resubscribe anytime.')
+    setFlash(t('premium_cancelled_msg'))
     setTimeout(onClose, 1400)
   }
 
@@ -130,7 +139,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
         <button
           onClick={onClose}
           data-sfx="close"
-          aria-label="Close"
+          aria-label={t('common_close')}
           style={{
             position: 'absolute', top: 12, right: 14, border: 'none', background: 'transparent',
             fontSize: 20, color: '#94a3b8', cursor: 'pointer', lineHeight: 1, padding: 4,
@@ -150,12 +159,12 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
               <span style={{ fontSize: 28 }}>👑</span>
             </div>
             <div style={{ fontSize: 19, fontWeight: 800, color: '#1e293b' }}>
-              {isManaging ? "You're Premium" : 'Go Premium'}
+              {isManaging ? t('premium_youre_premium') : t('premium_go_premium')}
             </div>
             <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 2 }}>
               {isManaging
-                ? `${currentPlan.label} plan · ${currentPlan.price}`
-                : (context ?? 'Unlock everything Lorewalk has to offer')}
+                ? t('premium_plan_summary', { label: currentPlan.label, price: currentPlan.price })
+                : (context ?? t('premium_unlock_everything'))}
             </div>
           </div>
 
@@ -169,8 +178,8 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
               borderBottom: '1px solid #f1f5f9',
             }}>
               <span />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textAlign: 'center' }}>Basic</span>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#b45309', textAlign: 'center' }}>Premium</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textAlign: 'center' }}>{t('premium_basic_col')}</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#b45309', textAlign: 'center' }}>{t('premium_premium_col')}</span>
             </div>
 
             {FEATURE_ROWS.map((row, i) => (
@@ -194,7 +203,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
           </div>
 
           <div style={{ fontSize: 10.5, color: '#94a3b8', textAlign: 'center', margin: '8px 6px 0' }}>
-            Physical medals are earned monthly and picked up at the Singapore community event.
+            {t('premium_medal_note')}
           </div>
 
           {isManaging ? (
@@ -206,8 +215,8 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                 }}>
                   <p style={{ margin: '0 0 12px', fontSize: 12.5, color: '#991b1b', lineHeight: 1.5 }}>
                     {mode === 'online'
-                      ? "Subscriptions bought through Google Play are cancelled there, not in the app. We'll open Play Store subscription settings for you."
-                      : "You'll lose access to Premium landmarks and this month's medal challenge right away. Medals you've already earned stay in your collection."}
+                      ? t('premium_cancel_confirm_online')
+                      : t('premium_cancel_confirm_offline')}
                   </p>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button
@@ -218,7 +227,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                         fontSize: 13, fontWeight: 800,
                       }}
                     >
-                      {mode === 'online' ? 'Not now' : 'Keep Premium'}
+                      {mode === 'online' ? t('premium_not_now') : t('premium_keep_premium')}
                     </button>
                     <button
                       onClick={handleCancel}
@@ -229,7 +238,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                         opacity: cancelled ? 0.6 : 1,
                       }}
                     >
-                      {mode === 'online' ? 'Open Google Play' : 'Yes, cancel'}
+                      {mode === 'online' ? t('premium_open_play') : t('premium_yes_cancel')}
                     </button>
                   </div>
                 </div>
@@ -242,7 +251,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                     color: '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                   }}
                 >
-                  Cancel subscription
+                  {t('premium_cancel_subscription')}
                 </button>
               )}
             </>
@@ -290,10 +299,10 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                   boxShadow: '0 4px 14px rgba(245,158,11,0.35)', opacity: (subscribed || purchasing) ? 0.7 : 1,
                 }}
               >
-                {subscribed ? "You're Premium!" : purchasing ? 'Processing...' : `Subscribe - ${planPrice(interval)}`}
+                {subscribed ? t('premium_youre_premium_exclaim') : purchasing ? t('premium_processing') : t('premium_subscribe_btn', { price: planPrice(interval) })}
               </button>
               <div style={{ fontSize: 10.5, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
-                Cancel anytime from your Profile.
+                {t('premium_cancel_anytime')}
               </div>
             </>
           )}

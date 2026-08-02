@@ -61,7 +61,7 @@ export function ShopPage() {
     },
     {
       key: 'streakFreeze', icon: '🧊',
-      title: 'Streak freeze',
+      title: t('shop_streak_freeze'),
       sub: streakFreezeMaxed
         ? `Maxed (${STREAK_FREEZE_MAX} held)`
         : `Covers a missed day - ${profile.streakFreezes}/${STREAK_FREEZE_MAX} held`,
@@ -92,7 +92,7 @@ export function ShopPage() {
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: accent }}>{t('shop_title')}</h1>
         <button
           onClick={scrollToCoins}
-          title="Get more coins"
+          title={t('shop_get_more_coins')}
           style={{
             flexShrink: 0, fontSize: 14, fontWeight: 700, color: '#b45309', cursor: 'pointer',
             background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20, padding: '6px 14px',
@@ -119,8 +119,8 @@ export function ShopPage() {
           >
             <span style={{ fontSize: 26 }}>👑</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: '#78350f' }}>Go Premium</div>
-              <div style={{ fontSize: 12, color: '#92400e' }}>Every landmark unlocked & a monthly physical medal</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#78350f' }}>{t('premium_go_premium')}</div>
+              <div style={{ fontSize: 12, color: '#92400e' }}>{t('premium_shop_teaser')}</div>
             </div>
             <span style={{ fontSize: 18, fontWeight: 800, color: '#b45309' }}>›</span>
           </button>

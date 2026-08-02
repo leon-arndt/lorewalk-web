@@ -19,11 +19,6 @@ import type { Achievement, EarnedMedal } from '@/types'
 import { accent, rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
 import { pageBackground } from '@/lib/glass'
 
-const PREMIUM_BENEFITS = [
-  { icon: '🔓', text: 'Every landmark unlocked' },
-  { icon: '🏅', text: "Monthly challenge - earn a unique real physical medal" },
-]
-
 declare const __APP_VERSION__: string
 declare const __GIT_COMMIT__: string
 declare const __BUILD_DATE__: string
@@ -43,6 +38,10 @@ export function ProfilePage() {
   const [nameInput, setNameInput] = useState(profile.displayName)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [showChallengeInfo, setShowChallengeInfo] = useState(false)
+  const premiumBenefits = [
+    { icon: '🔓', text: t('premium_benefit_landmarks') },
+    { icon: '🏅', text: t('premium_benefit_medal') },
+  ]
   const [badgeDetail, setBadgeDetail] = useState<{
     icon: ReactNode; name: string; description: string; status: string; statusColor: string
   } | null>(null)
@@ -101,7 +100,7 @@ export function ProfilePage() {
     if (!medal) return
     showReward({
       emoji: '🏅',
-      title: 'Medal earned!',
+      title: t('medal_earned_title'),
       subtitle: `You completed the ${monthLabel(medal.monthKey)} challenge.`,
       items: [{ type: 'badge', label: medal.title }],
       medalMonthKey: medal.monthKey,
@@ -322,7 +321,7 @@ export function ProfilePage() {
                   </span>
                   <button
                     onClick={() => setShowChallengeInfo(true)}
-                    aria-label="How the monthly challenge works"
+                    aria-label={t('medal_challenge_info_aria')}
                     style={{
                       width: 20, height: 20, borderRadius: '50%', border: '1px solid #fbbf24',
                       background: 'white', color: '#b45309', fontSize: 12, fontWeight: 800,
@@ -372,7 +371,7 @@ export function ProfilePage() {
                   fontSize: 11.5, fontWeight: 600, color: '#b45309', cursor: 'pointer', textAlign: 'center',
                 }}
               >
-                Manage subscription
+                {t('premium_manage_subscription')}
               </button>
             </div>
           ) : (
@@ -387,13 +386,13 @@ export function ProfilePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <span style={{ fontSize: 32 }}>🛡️</span>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: '#78350f' }}>Go Premium</div>
-                  <div style={{ fontSize: 12, color: '#92400e' }}>Unlock everything Lorewalk has to offer</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: '#78350f' }}>{t('premium_go_premium')}</div>
+                  <div style={{ fontSize: 12, color: '#92400e' }}>{t('premium_unlock_everything')}</div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
-                {PREMIUM_BENEFITS.map((b) => (
+                {premiumBenefits.map((b) => (
                   <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#78350f', fontWeight: 600 }}>
                     <span style={{ fontSize: 16 }}>{b.icon}</span> {b.text}
                   </div>
@@ -408,16 +407,16 @@ export function ProfilePage() {
                   boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
                 }}
               >
-                See what's included →
+                {t('premium_see_included')}
               </div>
             </button>
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#78350f' }}>Monthly medals</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#78350f' }}>{t('medal_history_title')}</span>
             <button
               onClick={() => setShowMedalHistory(true)}
-              aria-label="View all monthly medals"
+              aria-label={t('medal_view_all_aria')}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: '#b45309', fontSize: 18, fontWeight: 800, padding: 4, lineHeight: 1,

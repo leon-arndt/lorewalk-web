@@ -4,7 +4,7 @@ export function ExpeditionsPage() {
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', padding: 20 }}>
       <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>Expeditions</h1>
-      <p style={{ margin: '0 0 24px', fontSize: 14, color: '#94a3b8' }}>Send creatures out to explore</p>
+      <p style={{ margin: '0 0 24px', fontSize: 14, color: '#94a3b8' }}>Send creatures out to explore</p> {/* i18n-ignore: unrouted, unimported dead code, see CLAUDE.md project structure notes */}
       <div style={{
         background: '#fff', borderRadius: 16, padding: 24,
         boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center',

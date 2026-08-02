@@ -127,7 +127,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
           <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: accent }}>
             {node.poiName}
           </h2>
-          <p style={{ margin: '0 0 16px', fontSize: 12, color: '#94a3b8' }}>Guardian Shrine - Held</p>
+          <p style={{ margin: '0 0 16px', fontSize: 12, color: '#94a3b8' }}>{t('shrine_held')}</p>
           <div style={{
             display: 'inline-block', padding: '8px 20px', borderRadius: 12,
             background: SHRINE_BG, color: SHRINE_ACCENT, fontSize: 13, fontWeight: 700,
@@ -152,7 +152,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
             <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
               {node.poiName}
             </h2>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Guardian Shrine</p>
+            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>{t('shrine_guardian_shrine')}</p>
           </div>
         </div>
 
@@ -216,7 +216,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
             <div style={{ minWidth: 0 }}>
-              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>Battle squad</h2>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>{t('shrine_battle_squad')}</h2>
               <p style={{ margin: 0, fontSize: 11, color: '#94a3b8' }}>Up to {MAX_SHRINE_CREATURES} creatures</p>
             </div>
           </div>
@@ -321,7 +321,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
           <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
             {node.poiName}
           </h2>
-          <p style={{ margin: '0 0 8px', fontSize: 12, color: '#94a3b8' }}>Guardian Shrine</p>
+          <p style={{ margin: '0 0 8px', fontSize: 12, color: '#94a3b8' }}>{t('shrine_guardian_shrine')}</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <span style={{
               fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,

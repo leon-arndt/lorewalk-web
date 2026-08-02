@@ -275,12 +275,12 @@ export function CreaturesPage() {
         {/* Category hint */}
         <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {[
-            { label: 'Heritage 🗿', tier: 'common', steps: 100 },
-            { label: 'Landmark 🧭', tier: 'common', steps: 100 },
-            { label: 'Arts 🎨',     tier: 'common', steps: 100 },
-            { label: 'Religious 🌟', tier: 'rare',  steps: 1000 },
-            { label: 'Nature 🌿',   tier: 'rare',   steps: 1000 },
-            { label: 'Museum 📜',   tier: 'epic',   steps: 5000 },
+            { label: `${t('category_heritage')} 🗿`, tier: 'common', steps: 100 },
+            { label: `${t('poi_landmark')} 🧭`, tier: 'common', steps: 100 },
+            { label: `${t('category_arts')} 🎨`,     tier: 'common', steps: 100 },
+            { label: `${t('category_religious')} 🌟`, tier: 'rare',  steps: 1000 },
+            { label: `${t('category_nature')} 🌿`,   tier: 'rare',   steps: 1000 },
+            { label: `${t('category_museum')} 📜`,   tier: 'epic',   steps: 5000 },
           ].map(({ label, tier, steps }) => (
             <span key={label} style={{
               fontSize: 10, padding: '3px 8px', borderRadius: 20,

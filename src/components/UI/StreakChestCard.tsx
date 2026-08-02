@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { STREAK_CHEST_INTERVAL } from '@/lib/profile'
 import type { RewardItem } from '@/types'
 
@@ -11,6 +12,7 @@ const SHAKE_MS = 420
 export function StreakChestCard() {
   const { profile, openStreakChest } = useProfile()
   const { showReward } = useReward()
+  const { t } = useLocale()
   const [shaking, setShaking] = useState(false)
 
   if (!profile.pendingStreakChest) return null
@@ -30,7 +32,7 @@ export function StreakChestCard() {
       if (rewards.egg) items.push({ type: 'egg' })
       showReward({
         emoji: '🎁',
-        title: 'Perfect Week!',
+        title: t('streak_chest_title'),
         subtitle: `${STREAK_CHEST_INTERVAL}-day streak chest`,
         items,
       })
@@ -57,8 +59,8 @@ export function StreakChestCard() {
           🎁
         </span>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#78350f' }}>Perfect week streak!</div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>Tap to open your reward chest</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#78350f' }}>{t('streak_chest_card_title')}</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>{t('streak_chest_card_sub')}</div>
         </div>
       </button>
     </section>

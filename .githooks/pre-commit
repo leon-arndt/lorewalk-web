@@ -1,0 +1,6 @@
+#!/bin/sh
+# Blocks a commit that adds hardcoded, untranslated UI text.
+# Enable once per clone: git config core.hooksPath .githooks
+# See .claude/skills/translate/SKILL.md for the workflow this enforces.
+
+python3 "$(git rev-parse --show-toplevel)/.claude/skills/translate/translate-lint.py"

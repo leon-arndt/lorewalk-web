@@ -267,13 +267,13 @@ export function MapPage() {
         ]
         if (result.egg) items.push({ type: 'egg' })
         result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
-        showReward({ emoji: '⛩️', title: 'Shrine Claimed!', subtitle: 'Your creatures defeated the guardian.', items })
+        showReward({ emoji: '⛩️', title: t('shrine_claimed_title'), subtitle: t('shrine_claimed_subtitle'), items })
       } else {
         setToast('💀 Defeated. Send stronger creatures next time.')
       }
     }
     handleShrinePanelClose()
-  }, [selectedShrineNodeId, collectShrineNode, handleShrinePanelClose, showReward])
+  }, [selectedShrineNodeId, collectShrineNode, handleShrinePanelClose, showReward, t])
 
   const handleWeeklyWalkOpen = useCallback(() => {
     if (weeklyWalkCloseTimer.current) { clearTimeout(weeklyWalkCloseTimer.current); weeklyWalkCloseTimer.current = null }
@@ -303,13 +303,13 @@ export function MapPage() {
       result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
       showReward({
         emoji: result.food.emoji,
-        title: 'Expedition Complete!',
+        title: t('food_expedition_complete_title'),
         subtitle: `Your creatures brought back ${result.food.name}.`,
         items,
       })
     }
     handleFoodPanelClose()
-  }, [selectedFoodNodeId, collectFoodNode, handleFoodPanelClose, showReward])
+  }, [selectedFoodNodeId, collectFoodNode, handleFoodPanelClose, showReward, t])
   // Advance egg incubation as the player walks, and log today's steps for the journal.
   useEffect(() => {
     if (steps > 0) {
@@ -407,7 +407,7 @@ export function MapPage() {
           }}>
           <button
             onClick={() => compassResetRef.current?.()}
-            title="Reset to north"
+            title={t('map_reset_to_north')}
             style={{
               width: 44, height: 44, borderRadius: 14, padding: 0,
               ...glassChrome,
@@ -482,7 +482,7 @@ export function MapPage() {
         }}
       >
         <span style={{ fontSize: 18 }}>🚶</span>
-        <span>Weekly Walk</span>
+        <span>{t('weekly_walk_button')}</span>
         {profile.tickets > 0 && !profile.weeklyWalk && (
           <span style={{
             background: accent, color: 'white',

@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { useLocale } from '@/contexts/LocaleContext'
 import type { LevelReward } from '@/lib/profile'
+import type { Translations } from '@/i18n/types'
 
 const BURST_COLORS = ['#818cf8','#c084fc','#34d399','#fbbf24','#f472b6','#60a5fa','#fb923c']
 
-function rewardInfo(r: LevelReward): { emoji: string; title: string; sub: string } {
-  if (r.type === 'coins')          return { emoji: '🪙', title: `${r.amount} Coins`,          sub: 'Added to wallet' }
-  if (r.type === 'egg_slot')       return { emoji: '🥚', title: 'Egg Slot',                   sub: '+1 incubation slot' }
-  return                                  { emoji: '🐾', title: `+${r.amount} Creature Slots`, sub: 'Carry more companions' }
+function rewardInfo(
+  r: LevelReward,
+  t: (key: keyof Translations, vars?: Record<string, string | number>) => string,
+): { emoji: string; title: string; sub: string } {
+  if (r.type === 'coins')          return { emoji: '🪙', title: t('levelup_coins_title', { amount: r.amount }), sub: t('levelup_coins_sub') }
+  if (r.type === 'egg_slot')       return { emoji: '🥚', title: t('levelup_egg_slot_title'),                    sub: t('levelup_egg_slot_sub') }
+  return                                  { emoji: '🐾', title: t('levelup_creature_slots_title', { amount: r.amount }), sub: t('levelup_creature_slots_sub') }
 }
 
 function ParticleBurst({ cx, cy }: { cx: number; cy: number }) {
@@ -97,7 +102,8 @@ function RewardCard({
   isNext: boolean
   cardRef: (el: HTMLDivElement | null) => void
 }) {
-  const info = rewardInfo(reward)
+  const { t } = useLocale()
+  const info = rewardInfo(reward, t)
   return (
     <div
       ref={cardRef}
@@ -133,6 +139,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
   rewards: LevelReward[]
   onDismiss: () => void
 }) {
+  const { t } = useLocale()
   const [revealed, setRevealed] = useState(0)
   const [burst, setBurst] = useState<{ key: number; cx: number; cy: number } | null>(null)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -181,18 +188,18 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
           fontSize: 11, fontWeight: 800, letterSpacing: 5,
           color: '#86efac', textTransform: 'uppercase', marginBottom: 12,
         }}>
-          Level Up!
+          {t('levelup_title')}
         </div>
         <AnimatedLevel level={level} />
         <div style={{ fontSize: 13, color: '#64748b', marginTop: 10, fontWeight: 500 }}>
-          You are now a Level {level} Explorer
+          {t('levelup_subtitle', { level })}
         </div>
       </div>
 
       {rewards.length > 0 && (
         <>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', letterSpacing: 1, textTransform: 'uppercase' }}>
-            Rewards
+            {t('levelup_rewards')}
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', padding: '0 24px' }}>
             {rewards.map((r, i) => (
@@ -214,7 +221,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
         marginTop: 4,
         transition: 'color 0.3s ease, font-weight 0.3s ease',
       }}>
-        {allRevealed ? 'Tap anywhere to continue' : 'Tap to reveal your rewards'}
+        {allRevealed ? t('levelup_tap_continue') : t('levelup_tap_reveal')}
       </div>
     </div>
   )

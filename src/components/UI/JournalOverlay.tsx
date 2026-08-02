@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { DAILY_STEP_GOAL, localDateKey } from '@/lib/profile'
 import { StepRing } from '@/components/UI/StepRing'
 import {
@@ -18,6 +19,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
   onClose: () => void
   onPhotosChanged: () => void
 }) {
+  const { t } = useLocale()
   const [photos, setPhotos] = useState<JournalPhoto[]>([])
   const [busy, setBusy] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -103,7 +105,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   WebkitTapHighlightColor: 'transparent',
                 }}
-                aria-label="Delete photo"
+                aria-label={t('journal_delete_photo')}
               >×</button>
             </div>
           ))}
@@ -138,6 +140,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
 }
 
 export function JournalOverlay({ onClose }: { onClose: () => void }) {
+  const { t } = useLocale()
   const { profile } = useProfile()
   const dailySteps = profile.dailySteps ?? {}
   const [cursor, setCursor] = useState(() => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1) })
@@ -183,7 +186,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '24px 20px 12px' }}>
         <div>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 800, color: accent }}>Journal</h1>
-          <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>Your daily steps and photo album.</p>
+          <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>{t('journal_subtitle')}</p>
         </div>
         <button
           onClick={onClose}
@@ -194,7 +197,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             WebkitTapHighlightColor: 'transparent',
           }}
-          aria-label="Close journal"
+          aria-label={t('journal_close')}
           data-sfx="close"
         >×</button>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import {
   WEEKLY_WALK_TARGET_STEPS, TICKET_COST_COINS,
   mockMemberProgressSteps, playerProgressSteps, partyTotalSteps, isWalkComplete, isWalkExpired,
@@ -49,6 +50,7 @@ function formatSteps(steps: number) {
 export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Props) {
   const { profile, buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale } = useProfile()
   const { showReward } = useReward()
+  const { t } = useLocale()
   const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🗓️</div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>Walk ended</h2>
+          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_walk_ended')}</h2>
           <p style={{ margin: '0 0 20px', fontSize: 13, color: '#94a3b8' }}>
             Last week's party walk has ended. A new one starts every Monday.
           </p>
@@ -117,13 +119,13 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
       if (!result) return
       showReward({
         emoji: '🎉',
-        title: 'Party Walk Complete!',
+        title: t('weekly_walk_complete_title'),
         subtitle: `Your party walked ${WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps together this week.`,
         items: [
           { type: 'xp', amount: 75 },
           { type: 'coins', amount: result.coins },
           { type: 'egg' },
-          { type: 'badge', label: 'Weekly Walker' },
+          { type: 'badge', label: t('weekly_walker_label') },
         ],
       })
       onClose()
@@ -137,7 +139,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <EmojiSprite id="weekly_walk" emoji="🚶" size={40} />
           <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>Weekly Party Walk</h2>
+            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_party_walk_title')}</h2>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Combined goal: {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps</p>
           </div>
         </div>
@@ -145,7 +147,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         {/* Overall progress */}
         <div style={{ marginBottom: 20, padding: '14px 16px', borderRadius: 14, background: REWARD_ACCENT_SOFT }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: REWARD_ACCENT }}>Party progress</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: REWARD_ACCENT }}>{t('weekly_party_progress')}</span>
             <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b' }}>
               {formatSteps(Math.min(totalSteps, WEEKLY_WALK_TARGET_STEPS))} / {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps
             </span>
@@ -226,8 +228,8 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 52, marginBottom: 12 }}>🏅</div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>Reward claimed!</h2>
-          <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>New party walk starts next Monday.</p>
+          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_reward_claimed')}</h2>
+          <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>{t('weekly_next_starts_monday')}</p>
         </div>
       </div>
     )
@@ -254,7 +256,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}>
           <EmojiSprite id="weekly_walk" emoji="🚶" size={52} />
         </div>
-        <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: accent }}>Weekly Party Walk</h2>
+        <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: accent }}>{t('weekly_party_walk_title')}</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
           Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.
           Your own steps count toward the whole goal, so you can finish it solo if the rest of the party falls behind.
@@ -273,8 +275,8 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
           {[
             { icon: '⭐', text: '+75 XP' },
             { icon: '🪙', text: '80-120 coins' },
-            { icon: '🥚', text: 'Rare egg' },
-            { icon: '🏅', text: 'Weekly Walker badge' },
+            { icon: '🥚', text: t('weekly_rare_egg') },
+            { icon: '🏅', text: t('weekly_walker_badge') },
           ].map((r) => (
             <div key={r.text} style={{
               display: 'flex', alignItems: 'center', gap: 5,

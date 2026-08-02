@@ -121,6 +121,110 @@ export interface Translations {
   shop_best_value: string
   shop_test_purchase: string
   shop_online_note: string
+  shop_get_more_coins: string
+
+  premium_go_premium: string
+  premium_youre_premium: string
+  premium_unlock_everything: string
+  premium_benefit_landmarks: string
+  premium_benefit_medal: string
+  premium_see_included: string
+  premium_manage_subscription: string
+  premium_shop_teaser: string
+  premium_feature_standard_landmarks: string
+  premium_feature_premium_landmarks: string
+  premium_feature_medal_challenge: string
+  premium_feature_all_landmarks: string
+  premium_feature_unlocked: string
+  premium_feature_real_medal: string
+  premium_plan_monthly: string
+  premium_plan_yearly: string
+  premium_plan_summary: string
+  premium_approx_per_month: string
+  premium_save_badge: string
+  premium_basic_col: string
+  premium_premium_col: string
+  premium_medal_note: string
+  premium_cancel_confirm_online: string
+  premium_cancel_confirm_offline: string
+  premium_not_now: string
+  premium_keep_premium: string
+  premium_open_play: string
+  premium_yes_cancel: string
+  premium_cancel_subscription: string
+  premium_subscribe_btn: string
+  premium_processing: string
+  premium_youre_premium_exclaim: string
+  premium_cancel_anytime: string
+  premium_test_purchase_complete: string
+  premium_purchase_complete: string
+  premium_not_setup_native: string
+  premium_not_setup_web: string
+  premium_plan_unavailable: string
+  premium_purchase_failed: string
+  premium_cancelled_msg: string
+  common_close: string
+
+  journal_delete_photo: string
+  journal_subtitle: string
+  journal_close: string
+
+  category_heritage: string
+  category_arts: string
+  category_religious: string
+  category_nature: string
+  category_museum: string
+
+  levelup_title: string
+  levelup_subtitle: string
+  levelup_rewards: string
+  levelup_tap_continue: string
+  levelup_tap_reveal: string
+  levelup_coins_title: string
+  levelup_coins_sub: string
+  levelup_egg_slot_title: string
+  levelup_egg_slot_sub: string
+  levelup_creature_slots_title: string
+  levelup_creature_slots_sub: string
+
+  creature_next_level: string
+  creature_max_level: string
+  creature_drag_food: string
+
+  weekly_walk_button: string
+  weekly_walk_ended: string
+  weekly_walk_complete_title: string
+  weekly_walker_label: string
+  weekly_party_walk_title: string
+  weekly_party_progress: string
+  weekly_reward_claimed: string
+  weekly_next_starts_monday: string
+  weekly_rare_egg: string
+  weekly_walker_badge: string
+
+  friends_qr_alt: string
+  friends_tap_to_copy: string
+  friend_total_steps: string
+
+  shrine_held: string
+  shrine_guardian_shrine: string
+  shrine_battle_squad: string
+  shrine_claimed_title: string
+  shrine_claimed_subtitle: string
+
+  medal_history_title: string
+  medal_history_subtitle: string
+  medal_earned_title: string
+  medal_challenge_info_aria: string
+  medal_view_all_aria: string
+
+  streak_chest_title: string
+  streak_chest_card_title: string
+  streak_chest_card_sub: string
+
+  food_expedition_complete_title: string
+  map_reset_to_north: string
+  shop_streak_freeze: string
 
   profile_customize: string
   customize_title: string

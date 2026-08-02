@@ -284,11 +284,11 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: '#94a3b8' }}>
                 <span>{creature.xp} / {xpNeeded} XP</span>
-                <span>Next level</span>
+                <span>{t('creature_next_level')}</span>
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#818cf8', marginTop: 4 }}>MAX LEVEL</div>
+            <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#818cf8', marginTop: 4 }}>{t('creature_max_level')}</div>
           )}
 
           <div style={{ textAlign: 'center', padding: '8px 24px 0', fontSize: 12, color: '#94a3b8' }}>
@@ -300,7 +300,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
           {feedQueue.length > 0 ? (
             <div style={{ padding: '0 24px' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Feed</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 14 }}>Drag a food onto the creature</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 14 }}>{t('creature_drag_food')}</div>
               <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
                 {feedQueue.map((item) => (
                   <FoodChip key={item.id} item={item} onFed={() => handleFed(item.id)} />

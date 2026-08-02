@@ -402,7 +402,7 @@ export function SquadsPage() {
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>{t('squads_title')}</h1>
           <button
             onClick={() => navigate('/shop#coins')}
-            title="Get more coins"
+            title={t('shop_get_more_coins')}
             style={{
               flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#b45309', cursor: 'pointer',
               background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20,

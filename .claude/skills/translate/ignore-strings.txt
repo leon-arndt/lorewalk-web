@@ -1,0 +1,7 @@
+# One substring per line. translate-lint.py skips any match that contains
+# one of these substrings. Use this for strings that are correctly hardcoded
+# in English: dev-only text, log messages, third-party brand names in a
+# context that should not be translated, etc. Prefer a "// i18n-ignore"
+# comment on the line itself for a one-off exception instead of adding here.
+
+Wei Ling

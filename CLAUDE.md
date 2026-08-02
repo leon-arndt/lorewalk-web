@@ -218,3 +218,22 @@ The web code follows the same conventions as the Unity project:
 - No `#region` blocks. No barrel `index.ts` re-exports unless one is genuinely needed.
 - Prefer Tailwind utility classes over custom CSS. Reach for custom CSS only when Tailwind cannot express the rule.
 - Never put an em dash in a UI-facing string. Use a period, a colon, or a hyphen instead. The same rule applies to the Markdown docs, per the Documentation style section.
+
+## Localization
+
+Lorewalk Web ships in 8 languages (`src/i18n/`: en, de, ja, ko, zh, ms, id, ta). No player-facing string may live as a literal in a component. Read the `translate` skill at [.claude/skills/translate/SKILL.md](.claude/skills/translate/SKILL.md) before you add or change UI text. It has the key-naming convention and the per-locale translation steps.
+
+A pre-commit hook blocks a commit that adds hardcoded UI text. Enable it once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Run the checker by hand at any time:
+
+```bash
+python3 .claude/skills/translate/translate-lint.py         # staged diff only, what the hook runs
+python3 .claude/skills/translate/translate-lint.py --all    # every file in scope, for an audit
+```
+
+It is a heuristic, not a parser. Read its hits before you act on them.
