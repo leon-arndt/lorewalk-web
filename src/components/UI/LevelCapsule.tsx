@@ -11,11 +11,11 @@ export function LevelCapsule({ level }: { level: number }) {
     <button
       onClick={() => navigate('/profile')}
       style={{
-        display: 'flex', alignItems: 'center', gap: 6,
+        display: 'flex', alignItems: 'center', gap: 5,
         ...glassChrome,
         borderRadius: 999,
-        padding: '7px 14px',
-        fontSize: 14, fontWeight: 700, color: accent,
+        padding: '6px 13px',
+        fontSize: 13, fontWeight: 700, color: accent,
         cursor: 'pointer',
         WebkitTapHighlightColor: 'transparent',
       }}

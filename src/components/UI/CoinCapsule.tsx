@@ -12,14 +12,14 @@ export function CoinCapsule() {
       <button
         onClick={() => setOpen(true)}
         style={{
-          display: 'flex', alignItems: 'center', gap: 6,
+          display: 'flex', alignItems: 'center', gap: 5,
           background: 'rgba(255,251,235,0.80)',
           backdropFilter: 'blur(40px) saturate(200%) brightness(1.04)',
           WebkitBackdropFilter: 'blur(40px) saturate(200%) brightness(1.04)',
           border: '1px solid rgba(253,230,138,0.70)',
           borderRadius: 999,
-          padding: '7px 14px',
-          fontSize: 14, fontWeight: 700, color: '#b45309',
+          padding: '6px 13px',
+          fontSize: 13, fontWeight: 700, color: '#b45309',
           boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -0.5px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(180,83,9,0.12), 0 1px 4px rgba(180,83,9,0.06)',
           cursor: 'pointer',
           WebkitTapHighlightColor: 'transparent',
