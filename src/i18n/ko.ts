@@ -171,6 +171,18 @@ export const ko: Translations = {
   journal_subtitle: '매일의 걸음 수와 사진 앨범.',
   journal_close: '저널 닫기',
 
+  news_title: '소식',
+  news_subtitle: '업데이트, 이벤트, 커뮤니티 소식입니다.',
+  news_open: '소식 열기',
+  news_close: '소식 닫기',
+  news_empty: '아직 소식이 없습니다. 나중에 다시 확인해 주세요.',
+  news_loading: '소식을 불러오는 중…',
+  news_error: '지금은 소식을 볼 수 없습니다.',
+  news_new_badge: '새 소식',
+  news_category_update: '업데이트',
+  news_category_event: '이벤트',
+  news_category_community: '커뮤니티',
+
   category_heritage: '유산',
   category_arts: '예술',
   category_religious: '종교',

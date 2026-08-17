@@ -171,6 +171,18 @@ export const de: Translations = {
   journal_subtitle: 'Deine täglichen Schritte und dein Fotoalbum.',
   journal_close: 'Journal schließen',
 
+  news_title: 'Neuigkeiten',
+  news_subtitle: 'Updates, Events und Beiträge aus der Community.',
+  news_open: 'Neuigkeiten öffnen',
+  news_close: 'Neuigkeiten schließen',
+  news_empty: 'Noch keine Neuigkeiten. Schau bald wieder vorbei.',
+  news_loading: 'Neuigkeiten werden geladen…',
+  news_error: 'Neuigkeiten sind gerade nicht verfügbar.',
+  news_new_badge: 'Neu',
+  news_category_update: 'Update',
+  news_category_event: 'Event',
+  news_category_community: 'Community',
+
   category_heritage: 'Kulturerbe',
   category_arts: 'Kunst',
   category_religious: 'Religiös',

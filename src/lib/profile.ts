@@ -592,6 +592,7 @@ export function loadProfile(): PlayerProfile {
         challengesNotifications: parsed.challengesNotifications ?? false,
         friendsAndGiftsNotifications: parsed.friendsAndGiftsNotifications ?? false,
         latestNewsNotifications: parsed.latestNewsNotifications ?? false,
+        lastReadNewsAt: parsed.lastReadNewsAt ?? null,
         pendingStreakChest: parsed.pendingStreakChest ?? false,
         // Saves from before this feature existed start at their current milestone
         // rather than retroactively granting a chest for streak days already banked.
@@ -641,6 +642,7 @@ export function loadProfile(): PlayerProfile {
     challengesNotifications: false,
     friendsAndGiftsNotifications: false,
     latestNewsNotifications: false,
+    lastReadNewsAt: null,
     appearance: DEFAULT_APPEARANCE,
   }
 }

@@ -171,6 +171,18 @@ export const en: Translations = {
   journal_subtitle: 'Your daily steps and photo album.',
   journal_close: 'Close journal',
 
+  news_title: 'News',
+  news_subtitle: 'Updates, events, and community posts.',
+  news_open: 'Open news',
+  news_close: 'Close news',
+  news_empty: 'No news yet. Check back soon.',
+  news_loading: 'Loading news…',
+  news_error: 'News is unavailable right now.',
+  news_new_badge: 'New',
+  news_category_update: 'Update',
+  news_category_event: 'Event',
+  news_category_community: 'Community',
+
   category_heritage: 'Heritage',
   category_arts: 'Arts',
   category_religious: 'Religious',

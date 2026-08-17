@@ -171,6 +171,18 @@ export const zh: Translations = {
   journal_subtitle: '你的每日步数和照片相册。',
   journal_close: '关闭日志',
 
+  news_title: '最新消息',
+  news_subtitle: '更新、活动与社区动态。',
+  news_open: '打开最新消息',
+  news_close: '关闭最新消息',
+  news_empty: '暂无消息，请稍后再来。',
+  news_loading: '正在加载消息…',
+  news_error: '暂时无法显示消息。',
+  news_new_badge: '新',
+  news_category_update: '更新',
+  news_category_event: '活动',
+  news_category_community: '社区',
+
   category_heritage: '文化遗产',
   category_arts: '艺术',
   category_religious: '宗教',

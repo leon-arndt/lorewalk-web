@@ -61,6 +61,7 @@ interface ProfileContextValue {
   openStreakChest: () => StreakChestRewards | null
   toggleDevPremium: () => void
   toggleNotificationPref: (key: NotificationPrefKey) => void
+  markNewsRead: (publishedAt: string) => void
   subscribePremium: (interval: 'monthly' | 'yearly') => void
   cancelPremium: () => void
   claimMedal: () => EarnedMedal | null
@@ -607,6 +608,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, [key]: !profile[key] })
   }
 
+  // Only ever moves forward, so an older post arriving late cannot re-mark
+  // newer ones unread.
+  function markNewsRead(publishedAt: string) {
+    if (profile.lastReadNewsAt && profile.lastReadNewsAt >= publishedAt) return
+    persist({ ...profile, lastReadNewsAt: publishedAt })
+  }
+
   function subscribePremium(interval: 'monthly' | 'yearly') {
     if (profile.isPremium) return
     persist({ ...profile, isPremium: true, premiumInterval: interval })
@@ -794,7 +802,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, subscribePremium, cancelPremium, claimMedal,
+      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, markNewsRead, subscribePremium, cancelPremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

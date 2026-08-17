@@ -169,6 +169,18 @@ export interface Translations {
   journal_subtitle: string
   journal_close: string
 
+  news_title: string
+  news_subtitle: string
+  news_open: string
+  news_close: string
+  news_empty: string
+  news_loading: string
+  news_error: string
+  news_new_badge: string
+  news_category_update: string
+  news_category_event: string
+  news_category_community: string
+
   category_heritage: string
   category_arts: string
   category_religious: string

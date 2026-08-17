@@ -8,6 +8,7 @@ import { ShrinePanel } from '@/components/UI/ShrinePanel'
 import { WeeklyWalkPanel } from '@/components/UI/WeeklyWalkPanel'
 import { WeekStrip } from '@/components/UI/WeekStrip'
 import { JournalOverlay } from '@/components/UI/JournalOverlay'
+import { NewsOverlay } from '@/components/UI/NewsOverlay'
 import { useReward } from '@/contexts/RewardContext'
 import { ModeToggle } from '@/components/UI/ModeToggle'
 import { StepCounter } from '@/components/UI/StepCounter'
@@ -16,6 +17,7 @@ import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useStepCounter } from '@/hooks/useStepCounter'
 import { usePois } from '@/hooks/usePois'
+import { useNews, unreadCount } from '@/hooks/useNews'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { glassChrome } from '@/lib/glass'
@@ -45,6 +47,7 @@ export function MapPage() {
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
   const { steps, distanceM } = useStepCounter(position)
   const { pois } = usePois(position)
+  const { posts: newsPosts } = useNews()
   const { profile, visitedPois, addVisit, advanceEggsBySteps, recordDailySteps, justReady, clearJustReady, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
   const { showReward } = useReward()
   const { mode } = useConnectionMode()
@@ -63,6 +66,7 @@ export function MapPage() {
   const weeklyWalkCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [journalOpen, setJournalOpen] = useState(false)
+  const [newsOpen, setNewsOpen] = useState(false)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
 
@@ -494,6 +498,34 @@ export function MapPage() {
         )}
       </button>
 
+      {/* News - bottom right, mirroring the weekly walk button on the left.
+          Kept as a compact icon so a long localized "Weekly Walk" label can
+          never collide with it. */}
+      <button
+        onClick={() => setNewsOpen(true)}
+        aria-label={t('news_open')}
+        style={{
+          position: 'absolute',
+          bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
+          right: 16,
+          width: 44, height: 44, borderRadius: 22, padding: 0,
+          ...glassChrome,
+          cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          WebkitTapHighlightColor: 'transparent',
+          zIndex: 8,
+        }}
+      >
+        <span style={{ fontSize: 20, lineHeight: 1 }}>📰</span>
+        {unreadCount(newsPosts, profile.lastReadNewsAt) > 0 && (
+          <span style={{
+            position: 'absolute', top: 6, right: 6,
+            width: 9, height: 9, borderRadius: '50%',
+            background: '#ef4444', border: '1.5px solid white',
+          }} />
+        )}
+      </button>
+
       {selectedShrineNode && (
         <ShrinePanel
           node={selectedShrineNode}
@@ -525,6 +557,8 @@ export function MapPage() {
       )}
 
       {journalOpen && <JournalOverlay onClose={() => setJournalOpen(false)} />}
+
+      {newsOpen && <NewsOverlay onClose={() => setNewsOpen(false)} />}
     </div>
   )
 }

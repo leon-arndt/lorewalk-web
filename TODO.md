@@ -1,6 +1,7 @@
 ## WIP
 
 - **favicon**: another chat updates this. Do not touch it.
+- **news**: an in-app News overlay, opened from a button on the map HUD (bottom right, mirrors the weekly walk button). `NewsOverlay.tsx` renders the list and the post detail. `useNews.ts` reads the `news_posts` table when online and falls back to `src/data/news.ts` when offline, the same way `usePois` falls back to `singapore-pois.ts`. Post title and body are per-locale `jsonb`, with an English fallback. Nobody has applied the migration (`supabase/migrations/20260817000000_news_posts.sql`) or authored a real post yet. The public website that reads the same table is a separate, later job.
 - **postcards**: a Pikmin Bloom-style keepsake per visited POI. The types and the context methods (`sendPostcard`, `openPostcard`, `seedMockPostcard`) exist, and so does the `PostcardsSection` component. The send flow plays a paper-plane animation (`PoiDetailPanel.tsx`, plus the `postcardPlaneOut` keyframe in `index.css`). Journal integration remains unbuilt.
 - **premium payment**: the client and the server both have scaffolding, but the flow is not live.
   - Client: `src/lib/billing.ts` wraps RevenueCat's `@revenuecat/purchases-capacitor` SDK. `PremiumModal.tsx` calls it when the app runs native and online.

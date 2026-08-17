@@ -171,6 +171,18 @@ export const ta: Translations = {
   journal_subtitle: 'உங்கள் தினசரி அடிகள் மற்றும் புகைப்பட ஆல்பம்.',
   journal_close: 'பத்திரிகையை மூடு',
 
+  news_title: 'செய்திகள்',
+  news_subtitle: 'புதுப்பிப்புகள், நிகழ்வுகள், சமூகப் பதிவுகள்.',
+  news_open: 'செய்திகளைத் திற',
+  news_close: 'செய்திகளை மூடு',
+  news_empty: 'இதுவரை செய்திகள் இல்லை. பிறகு பாருங்கள்.',
+  news_loading: 'செய்திகள் ஏற்றப்படுகின்றன…',
+  news_error: 'தற்போது செய்திகளைக் காட்ட முடியவில்லை.',
+  news_new_badge: 'புதியது',
+  news_category_update: 'புதுப்பிப்பு',
+  news_category_event: 'நிகழ்வு',
+  news_category_community: 'சமூகம்',
+
   category_heritage: 'பாரம்பரியம்',
   category_arts: 'கலை',
   category_religious: 'மத',

@@ -171,6 +171,18 @@ export const id: Translations = {
   journal_subtitle: 'Langkah harian dan album foto kamu.',
   journal_close: 'Tutup jurnal',
 
+  news_title: 'Berita',
+  news_subtitle: 'Pembaruan, acara, dan pos komunitas.',
+  news_open: 'Buka berita',
+  news_close: 'Tutup berita',
+  news_empty: 'Belum ada berita. Cek lagi nanti.',
+  news_loading: 'Memuat berita…',
+  news_error: 'Berita tidak tersedia saat ini.',
+  news_new_badge: 'Baru',
+  news_category_update: 'Pembaruan',
+  news_category_event: 'Acara',
+  news_category_community: 'Komunitas',
+
   category_heritage: 'Warisan',
   category_arts: 'Seni',
   category_religious: 'Keagamaan',

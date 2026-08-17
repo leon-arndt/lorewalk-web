@@ -114,6 +114,20 @@ export interface Achievement {
 
 export type PremiumInterval = 'monthly' | 'yearly'
 
+export type NewsCategory = 'update' | 'event' | 'community'
+
+// Title and body are keyed by locale code. Only 'en' is guaranteed: news copy
+// is authored after ship, so a post can carry fewer locales than the UI does.
+// Read them through newsText(), which falls back to English.
+export interface NewsPost {
+  id: string
+  publishedAt: string   // ISO
+  category: NewsCategory
+  heroUrl: string | null
+  title: Record<string, string>
+  body: Record<string, string>
+}
+
 export interface PlayerProfile {
   id: string
   displayName: string
@@ -153,6 +167,7 @@ export interface PlayerProfile {
   challengesNotifications: boolean        // preference only; no push delivery wired up yet
   friendsAndGiftsNotifications: boolean   // preference only; no push delivery wired up yet
   latestNewsNotifications: boolean        // preference only; no push delivery wired up yet
+  lastReadNewsAt: string | null   // publishedAt of the newest post already seen; null = nothing read
   appearance: PlayerAppearance
 }
 

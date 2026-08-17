@@ -171,6 +171,18 @@ export const ja: Translations = {
   journal_subtitle: '毎日の歩数とフォトアルバム。',
   journal_close: 'ジャーナルを閉じる',
 
+  news_title: 'お知らせ',
+  news_subtitle: 'アップデート、イベント、コミュニティの投稿。',
+  news_open: 'お知らせを開く',
+  news_close: 'お知らせを閉じる',
+  news_empty: 'まだお知らせはありません。またご確認ください。',
+  news_loading: 'お知らせを読み込み中…',
+  news_error: '現在お知らせを表示できません。',
+  news_new_badge: '新着',
+  news_category_update: 'アップデート',
+  news_category_event: 'イベント',
+  news_category_community: 'コミュニティ',
+
   category_heritage: '史跡',
   category_arts: 'アート',
   category_religious: '宗教',
