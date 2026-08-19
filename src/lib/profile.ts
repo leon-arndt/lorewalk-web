@@ -763,7 +763,7 @@ export function isWalkExpired(walk: WeeklyPartyWalk, now = Date.now()): boolean 
 // journal calendar), so there's nothing to expire and nothing to lose by
 // subscribing mid-month. claimMedal() in ProfileContext is the only write.
 
-export const MEDAL_EVENT_TARGET_STEPS = 60_000
+export const MEDAL_EVENT_TARGET_STEPS = 100_000
 
 export function currentMonthKey(now = Date.now()): string {
   const d = new Date(now)
