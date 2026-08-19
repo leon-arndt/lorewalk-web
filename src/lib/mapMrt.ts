@@ -400,17 +400,6 @@ export function addMrtLayers(map: maplibregl.Map): void {
     paint:  { 'line-color': ['get', 'color'], 'line-width': 3 },
   })
 
-  // Station dot - white fill, coloured ring.
-  map.addLayer({
-    id: 'mrt-stations-dot', type: 'circle', source: 'mrt-stations',
-    paint: {
-      'circle-radius': 4,
-      'circle-color': '#ffffff',
-      'circle-stroke-color': ['get', 'color'],
-      'circle-stroke-width': 2,
-    },
-  })
-
   // SMRT-style pill labels - canvas icons, visible from zoom 12.
   map.addLayer({
     id: 'mrt-station-labels', type: 'symbol', source: 'mrt-stations',
@@ -418,7 +407,6 @@ export function addMrtLayers(map: maplibregl.Map): void {
     layout: {
       'icon-image':          ['get', 'labelKey'],
       'icon-anchor':         'left',
-      'icon-offset':         [6, 0],
       'icon-allow-overlap':  false,
       'icon-optional':       true,
     },

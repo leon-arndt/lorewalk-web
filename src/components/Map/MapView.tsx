@@ -180,13 +180,15 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
 // extrusions, crisp labels, and transit POIs (bus/rail/MRT) out of the box.
 const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
-// Bounding box that fits all Singapore POIs with a small margin.
-const SINGAPORE_BOUNDS: maplibregl.LngLatBoundsLike = [
-  [103.62, 1.15],  // SW
-  [104.02, 1.48],  // NE
-]
+// Singapore, used until a GPS fix lands.
+const DEFAULT_CENTER: [number, number] = [103.8198, 1.3521]
 
-// Tap radius in screen pixels: at 60° pitch a tapped POI pin won't project to
+// Street-level zoom every camera move settles at: the initial view, the first
+// GPS fix, and the offline framing. The Liberty building extrusions only render
+// from zoom 12, so anything wider loses the 3D depth the tilted camera is for.
+const PLAYER_ZOOM = 16.5
+
+// Tap radius in screen pixels: at 70° pitch a tapped POI pin won't project to
 // exactly its coordinate, so we find the closest POI within this threshold.
 const TAP_RADIUS_PX = 48
 
@@ -327,6 +329,9 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   const shrineMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const charLayerRef = useRef<CharacterLayerHandle | null>(null)
   const poiPinsRef = useRef<PoiPinsHandle | null>(null)
+  const hasZoomedToPlayerRef = useRef(false)
+  const positionRef = useRef(position)
+  positionRef.current = position
   const companionsRef = useRef<CharacterSpec[]>(companions)
   companionsRef.current = companions
   const appearanceRef = useRef<PlayerAppearance>(appearance)
@@ -349,9 +354,9 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_STYLE,
-      center: [103.8198, 1.3521],
-      zoom: 11,
-      pitch: 60,
+      center: DEFAULT_CENTER,
+      zoom: PLAYER_ZOOM,
+      pitch: 70,
       maxPitch: 80,
     })
 
@@ -475,9 +480,13 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   useEffect(() => {
     const map = mapRef.current
     if (!map || mode !== 'offline') return
-    const fit = () => map.fitBounds(SINGAPORE_BOUNDS, { padding: 24, duration: 0 })
-    if (map.loaded()) fit()
-    else map.once('load', fit)
+    // Offline moved the camera itself, so going back online must re-frame it.
+    hasZoomedToPlayerRef.current = false
+    const p = positionRef.current
+    const center: [number, number] = p ? [p.longitude, p.latitude] : DEFAULT_CENTER
+    const frame = () => map.jumpTo({ center, zoom: PLAYER_ZOOM })
+    if (map.loaded()) frame()
+    else map.once('load', frame)
   }, [mode])
 
   // Launch the player's own 3D avatar once the style is ready (mirrors the
@@ -518,7 +527,15 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
 
     const lngLat: [number, number] = [position.longitude, position.latitude]
     playerAvatarRef.current?.setPosition(lngLat[0], lngLat[1])
-    map.easeTo({ center: lngLat, duration: 500 })
+
+    // First fix drops the camera to street level, where the 3D buildings render
+    // and the tilt reads as tilt. Later fixes only pan.
+    if (!hasZoomedToPlayerRef.current) {
+      hasZoomedToPlayerRef.current = true
+      map.easeTo({ center: lngLat, zoom: PLAYER_ZOOM, duration: 1200 })
+    } else {
+      map.easeTo({ center: lngLat, duration: 500 })
+    }
   }, [position, mode])
 
   useEffect(() => {

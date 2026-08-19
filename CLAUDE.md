@@ -70,7 +70,7 @@ The design keeps its tensions simple on purpose. There is no combat, no PvP, and
 ## Tech Stack
 
 - **Framework**: React 19 and TypeScript on Vite
-- **Map**: MapLibre GL JS with OpenFreeMap "Liberty" vector tiles (3D buildings, transit POIs), tilted 45 degrees
+- **Map**: MapLibre GL JS with OpenFreeMap "Liberty" vector tiles (3D buildings, transit POIs), tilted 70 degrees
 - **3D**: three.js. Custom MapLibre layers draw the animated creature companions, the POI pins, and the MRT lines (`mapCharacters.ts`, `mapPoiPins.ts`, `mapMrt.ts`)
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`), against the same Supabase project as the Unity client
 - **Native**: a Capacitor 7 Android wrapper. `@devmaxime/capacitor-health-connect` reads step data. `qrcode` renders the friend-invite QR. `@revenuecat/purchases-capacitor` handles Play Billing for Premium subscriptions (see `src/lib/billing.ts`)
@@ -181,7 +181,7 @@ create policy "anyone can update" on player_public_stats for update using (true)
 ## Map
 
 - **Tile source**: the OpenFreeMap "Liberty" vector style at `https://tiles.openfreemap.org/styles/liberty`. It is free, needs no API key, and includes 3D building extrusions and transit POIs. The community funds it and it carries no SLA. Self-host the tiles or move to a paid provider before any high-volume public launch. The map used flat raster OSM before. The web map no longer matches the 2D look of the Unity client, which was a deliberate aesthetic choice.
-- **3D and pitch**: the map starts at `pitch: 45`, so Liberty's building extrusions read as depth. `maxPitch` is 70.
+- **3D and pitch**: the map starts at `pitch: 70`, so Liberty's building extrusions read as depth. `maxPitch` is 80. The first GPS fix eases the camera to zoom 16.5, because the extrusions start at zoom 12 and the tilt reads as flat above that.
 - **Default centre**: Singapore (1.3521, 103.8198), used when the browser has no GPS fix.
 - **POI colours**: gold `#f59e0b` marks a permanent POI, purple `#a855f7` marks a temporary one. The Unity uGUI markers follow the same convention.
 
