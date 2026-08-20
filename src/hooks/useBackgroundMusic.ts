@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { resolveEvent } from '@/lib/sfx'
 
 const STORAGE_KEY = 'music-volume'
 const DEFAULT_VOLUME = 0.18
@@ -14,43 +15,59 @@ function readStoredSfxVolume(): number {
   return saved !== null ? Number(saved) : 1
 }
 
-export function useBackgroundMusic(src: string) {
+export function useBackgroundMusic(eventId: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const startedRef = useRef(false)
+  const gainRef = useRef(1)
   const [volume, setVolumeState] = useState(readStoredVolume)
   const [sfxVolume, setSfxVolumeState] = useState(readStoredSfxVolume)
 
   useEffect(() => {
-    const audio = new Audio(src)
-    audio.loop = true
+    let audio: HTMLAudioElement | null = null
+    let cancelled = false
+    let tryPlay = () => {}
 
-    const initialVolume = readStoredVolume()
-    audio.volume = initialVolume
-    audioRef.current = audio
+    // The track and its level come from the soundbank, so the soundbank editor
+    // can swap the music the same way it swaps a UI sound.
+    resolveEvent(eventId).then((resolved) => {
+      if (cancelled || !resolved) return
+      gainRef.current = resolved.event.gain ?? 1
+      audio = new Audio(resolved.url)
+      audio.loop = resolved.event.loop ?? true
 
-    if (initialVolume > 0) {
-      const tryPlay = () => {
+      const initialVolume = readStoredVolume()
+      audio.volume = Math.min(1, initialVolume * gainRef.current)
+      audioRef.current = audio
+
+      if (initialVolume <= 0) return
+      const element = audio
+      tryPlay = () => {
         if (startedRef.current) return
-        audio.play().then(() => { startedRef.current = true }).catch(() => {})
+        element.play().then(() => { startedRef.current = true }).catch(() => {})
       }
-      audio.play()
+      element.play()
         .then(() => { startedRef.current = true })
         .catch(() => {
           // Autoplay blocked - wait for first touch/click then start
           document.addEventListener('pointerdown', tryPlay, { once: true })
         })
-    }
+    })
 
     return () => {
-      audio.pause()
-      audio.src = ''
+      cancelled = true
+      document.removeEventListener('pointerdown', tryPlay)
+      if (audio) {
+        audio.pause()
+        audio.src = ''
+      }
+      audioRef.current = null
     }
-  }, [src])
+  }, [eventId])
 
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
-    audio.volume = volume
+    audio.volume = Math.min(1, volume * gainRef.current)
     if (volume > 0 && !startedRef.current) {
       audio.play().then(() => { startedRef.current = true }).catch(() => {})
     }

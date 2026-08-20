@@ -1,0 +1,21 @@
+{
+  "id": "default",
+  "name": "Lorewalk Default",
+  "author": "Breviceps (freesound.org)",
+  "license": "CC0",
+  "attribution": "See CREDITS.md. CC0, no attribution required, credited anyway.",
+  "samples": [
+    {
+      "file": "click.mp3",
+      "label": "Wet Click"
+    },
+    {
+      "file": "close.mp3",
+      "label": "Plop!"
+    },
+    {
+      "file": "town-theme.mp3",
+      "label": "Town theme (background music)"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "pack": "default",
+  "masterGain": 0.4,
+  "events": {
+    "ui/click": {
+      "label": "UI click",
+      "samples": [
+        {
+          "file": "click.mp3",
+          "weight": 1
+        }
+      ],
+      "gain": 1,
+      "rate": [
+        0.85,
+        0.85
+      ],
+      "lowpassHz": 3800,
+      "cooldownMs": 0,
+      "maxVoices": 8
+    },
+    "ui/close": {
+      "label": "UI close / back",
+      "samples": [
+        {
+          "file": "close.mp3",
+          "weight": 1
+        }
+      ],
+      "gain": 1,
+      "rate": [
+        0.72,
+        0.72
+      ],
+      "lowpassHz": 500,
+      "cooldownMs": 0,
+      "maxVoices": 8
+    },
+    "music/town-theme": {
+      "label": "Town theme",
+      "bus": "music",
+      "loop": true,
+      "samples": [
+        {
+          "file": "town-theme.mp3",
+          "weight": 1
+        }
+      ],
+      "gain": 0.5
+    }
+  }
+}

@@ -1,0 +1,119 @@
+:root { color-scheme: light dark; }
+
+body {
+  margin: 0;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.bank-field { display: flex; align-items: center; gap: 6px; }
+.bank-field label { opacity: 0.75; }
+.spacer { flex: 1; }
+#status { opacity: 0.7; font-size: 0.9em; }
+
+main { flex: 1; display: flex; min-height: 0; }
+
+aside {
+  width: 260px;
+  border-right: 1px solid var(--vscode-panel-border);
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+aside h2 { margin: 0; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.6; }
+
+#events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+
+#events li {
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#events li:hover { background: var(--vscode-list-hoverBackground); }
+#events li.active { background: var(--vscode-list-activeSelectionBackground); color: var(--vscode-list-activeSelectionForeground); }
+.ev-id { font-family: var(--vscode-editor-font-family); }
+.ev-label { font-size: 0.85em; opacity: 0.7; }
+#pack-meta { margin-top: auto; font-size: 0.8em; opacity: 0.6; line-height: 1.4; }
+
+section#detail { flex: 1; padding: 16px 20px; overflow-y: auto; max-width: 620px; }
+.empty { opacity: 0.6; }
+
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.field > label { font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.6; }
+
+.row { display: flex; align-items: center; gap: 8px; }
+.slider { display: flex; align-items: center; gap: 10px; }
+.slider input[type='range'] { flex: 1; }
+output { min-width: 3ch; font-variant-numeric: tabular-nums; opacity: 0.8; }
+
+.samples { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.sample-row { display: flex; gap: 6px; width: 100%; align-items: center; }
+.sample-row select { flex: 1; }
+.weight { width: 70px; }
+
+.wave {
+  width: 100%;
+  height: 76px;
+  display: block;
+  background: var(--vscode-editorWidget-background, rgba(127, 127, 127, 0.08));
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+
+.hint { font-size: 0.8em; opacity: 0.55; margin: 6px 0 0; }
+
+input, select {
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border, transparent);
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input[type='range'] { padding: 0; border: none; background: none; }
+
+button {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 3px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+button:hover { background: var(--vscode-button-hoverBackground); }
+
+button.ghost {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+button.ghost:hover { background: var(--vscode-button-secondaryHoverBackground); }
+button.danger { color: var(--vscode-errorForeground); }

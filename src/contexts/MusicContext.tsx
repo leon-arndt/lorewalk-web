@@ -13,7 +13,7 @@ const MusicContext = createContext<MusicContextValue>({
 })
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
-  const { volume, setVolume, sfxVolume, setSfxVolume } = useBackgroundMusic('/music/town-theme.mp3')
+  const { volume, setVolume, sfxVolume, setSfxVolume } = useBackgroundMusic('music/town-theme')
   return <MusicContext.Provider value={{ volume, setVolume, sfxVolume, setSfxVolume }}>{children}</MusicContext.Provider>
 }
 

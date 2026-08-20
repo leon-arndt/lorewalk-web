@@ -1,0 +1,20 @@
+{
+  "name": "lorewalk-soundbank",
+  "displayName": "Lorewalk Soundbank",
+  "description": "Event-and-sound editor for Lorewalk Web, in the vein of FMOD.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "lorewalk",
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "lorewalk.soundbank.open",
+        "title": "Lorewalk: Open Soundbank Editor",
+        "category": "Lorewalk"
+      }
+    ]
+  }
+}

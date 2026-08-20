@@ -119,7 +119,12 @@ src/
   index.css                # Tailwind import + MapLibre CSS + mobile reset
 public/
   models/                 # CC0 .glb creature models per POI category (procedural fallback)
+  sounds/
+    soundbank.json        # event -> sample map, read at runtime by lib/sfx.ts
+    packs/<pack-id>/      # sample files + pack.json (name, author, license)
 e2e/                      # Playwright specs + profile-seed helper
+tools/
+  vscode-soundbank/       # VSCode extension: the sound event editor
 ```
 
 ## Environment
@@ -184,6 +189,32 @@ create policy "anyone can update" on player_public_stats for update using (true)
 - **3D and pitch**: the map starts at `pitch: 70`, so Liberty's building extrusions read as depth. `maxPitch` is 80. The first GPS fix eases the camera to zoom 16.5, because the extrusions start at zoom 12 and the tilt reads as flat above that.
 - **Default centre**: Singapore (1.3521, 103.8198), used when the browser has no GPS fix.
 - **POI colours**: gold `#f59e0b` marks a permanent POI, purple `#a855f7` marks a temporary one. The Unity uGUI markers follow the same convention.
+
+## Sound
+
+`src/lib/sfx.ts` plays every UI sound. It holds no file path and no tuning value
+of its own. It fetches `public/sounds/soundbank.json` and plays an event by id,
+such as `ui/click`. A per-event record holds the candidate samples with a weight,
+the gain, a min and max playback rate, the lowpass cutoff, a retrigger cooldown,
+and a voice cap. If the fetch fails, a small fallback bank in the file keeps the
+two original UI sounds alive.
+
+The background music is an event too. `music/town-theme` carries `bus: "music"`
+and `loop: true`. `useBackgroundMusic` reads the track and the gain from the same
+bank, then streams the file through an audio element. The music volume slider in
+Settings still controls it, because the bus selects the slider.
+
+One delegated click handler in `App.tsx` covers the whole app. An element with
+`data-sfx="close"` gets `ui/close`. A `data-sfx` value with a slash names a full
+event id.
+
+A sound pack is a directory below `public/sounds/packs/`. It holds every sample,
+the music included, and a `pack.json` with the name, the author, and the license. Only CC0 assets go
+in, as with the models.
+
+Edit the bank with the VSCode extension in `tools/vscode-soundbank/`. Press F5
+and run "Lorewalk: Open Soundbank Editor". Do not hand-edit an event value if the
+editor can set it. See `tools/vscode-soundbank/README.md`.
 
 ## PWA Notes
 
