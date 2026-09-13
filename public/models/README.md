@@ -13,6 +13,54 @@ one model per coat variant.
 
 Animation clips: Idle, Walk, Jump, Dance, Bite_Front, HitRecieve, Death, Yes, No.
 
+# POI pin models
+
+`mapPoiPins.ts` draws each landmark on the map as a small 3D pin. The
+`PIN_MODELS` map in that file names one model per category. Each entry is a
+`.glb` file in this folder or a procedural builder in the code. If a file fails
+to load, the pin keeps its old primitive shape.
+
+| Category  | Model                     | Source                                                                 |
+|-----------|---------------------------|------------------------------------------------------------------------|
+| nature    | `pin-nature.glb`          | `tree_oak` from the [Kenney Nature Kit](https://kenney.nl/assets/nature-kit), CC0 |
+| heritage  | `pin-heritage.glb`        | [Building](https://poly.pizza/m/qOhhGLftam) by Kay Lousberg, CC0       |
+| landmark  | `pin-landmark.glb`        | [Light House](https://poly.pizza/m/KRebJXIRb8) by MaverickFX, CC0      |
+| museum    | `buildMuseum()` in code   | A columned facade with a pediment                                      |
+| religious | `buildTemple()` in code   | Stacked tiers under flared roofs                                       |
+| arts      | `buildEasel()` in code    | An easel with a painted canvas                                         |
+
+Three categories use procedural models, because no CC0 download fit them:
+
+- **museum**: no CC0 classical museum exists on Poly Pizza or Kenney.
+- **religious**: most of the religious landmarks in Singapore are Hindu or
+  Chinese temples. A church or mosque model would misrepresent them. Stacked
+  tiers read as both a pagoda and a gopuram.
+- **arts**: the CC0 easels were too thin to read at pin size.
+
+The loader fits each model into a cube of the pin height, by its largest side,
+and centres its footprint on the pin. It replaces the model materials with flat
+Lambert materials, because many exports set `metallicFactor` to 1 and render
+near-black without an environment map. The Lambert materials keep the colour,
+the texture, and the vertex colours of the model.
+
+Materials named in `PIN_TINTED_MATERIALS` take the category colour: the tree
+foliage (`leafsGreen`) and the procedural roofs and canvas (`pinAccent`). On a
+visited pin, those materials turn green and all other colours get a pale green
+wash.
+
+To add or replace a model:
+1. Get a small CC0 `.glb` whose front faces +z. The default camera looks north,
+   so +z (south) faces the player.
+2. Shrink its textures to 256 px and quantize it. A pin covers about 40 pixels,
+   so a 2048 px texture only costs GPU memory:
+   `npx -p sharp -p @gltf-transform/cli gltf-transform optimize in.glb out.glb --compress quantize --texture-size 256`
+3. Save it here as `pin-<category>.glb` and point `PIN_MODELS` at it.
+4. To tint a part with the category colour, add its material name to
+   `PIN_TINTED_MATERIALS`.
+
+The Kenney Nature Kit also holds GLB and OBJ files for rocks, flowers, bushes,
+and about 40 other trees, such as palms and pines.
+
 # Map character models
 
 Each creature category renders its own procedural 3D shape by default, and this

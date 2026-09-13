@@ -58,9 +58,107 @@ interface PinObjects {
   phase: number
 }
 
-// Placeholder primitive per category - swap for a real .glb per category later
-// (see buildCreature() in mapCharacters.ts for the same per-category GLB pattern).
 const PIN_HEIGHT = 1.1
+
+// Every model keeps its own colours (texture, vertex colours, or flat
+// materials). Materials named here take the pin colour instead, so a category
+// still reads by colour: the tree foliage and the procedural roofs.
+const PIN_ACCENT = 'pinAccent'
+const PIN_TINTED_MATERIALS = new Set(['leafsGreen', PIN_ACCENT])
+// A visited pin multiplies its other colours by this pale green.
+const VISITED_WASH = 0xbbf7d0
+
+// No CC0 download fits a museum, a multi-faith place of worship, or an easel
+// that reads at pin size, so these are built from primitives in the same flat
+// low-poly style.
+function buildMuseum(THREE: typeof T3): T3.Object3D {
+  const stone = new THREE.MeshLambertMaterial({ color: 0xf1f5f9 })
+  const accent = new THREE.MeshLambertMaterial({ name: PIN_ACCENT })
+  const g = new THREE.Group()
+  const box = (w: number, h: number, d: number, y: number, z: number, mat: T3.Material) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat)
+    m.position.set(0, y + h / 2, z)
+    g.add(m)
+  }
+  box(1.0, 0.07, 0.72, 0, 0, stone)
+  box(0.9, 0.07, 0.64, 0.07, 0, stone)
+  box(0.74, 0.4, 0.34, 0.14, -0.1, stone)
+  for (const x of [-0.33, -0.11, 0.11, 0.33]) {
+    const column = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.4, 8), stone)
+    column.position.set(x, 0.34, 0.2)
+    g.add(column)
+  }
+  box(0.9, 0.07, 0.64, 0.54, 0, accent)
+  const gable = new THREE.Shape([new THREE.Vector2(-0.47, 0), new THREE.Vector2(0.47, 0), new THREE.Vector2(0, 0.2)])
+  const pediment = new THREE.Mesh(new THREE.ExtrudeGeometry(gable, { depth: 0.64, bevelEnabled: false }), accent)
+  pediment.position.set(0, 0.61, -0.32)
+  g.add(pediment)
+  return g
+}
+
+// Stacked tiers under flared roofs: reads as a pagoda and as a gopuram, which
+// covers most of Singapore's temples without picking one faith.
+function buildTemple(THREE: typeof T3): T3.Object3D {
+  const stone = new THREE.MeshLambertMaterial({ color: 0xfef3c7 })
+  const accent = new THREE.MeshLambertMaterial({ name: PIN_ACCENT })
+  const g = new THREE.Group()
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.1, 0.72), stone)
+  plinth.position.y = 0.05
+  g.add(plinth)
+  let y = 0.1
+  for (const w of [0.52, 0.42, 0.32, 0.22]) {
+    const tier = new THREE.Mesh(new THREE.BoxGeometry(w, 0.16, w), stone)
+    tier.position.y = y + 0.08
+    g.add(tier)
+    y += 0.16
+    // A 4-sided frustum turned 45 degrees lines up with the square tier.
+    const roof = new THREE.Mesh(new THREE.CylinderGeometry(w * 0.55, w * 0.9, 0.07, 4), accent)
+    roof.rotation.y = Math.PI / 4
+    roof.position.y = y + 0.035
+    g.add(roof)
+    y += 0.07
+  }
+  const spire = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.16, 6), accent)
+  spire.position.y = y + 0.08
+  g.add(spire)
+  return g
+}
+
+// An easel whose painted canvas faces the default camera (+z, south).
+function buildEasel(THREE: typeof T3): T3.Object3D {
+  const wood = new THREE.MeshLambertMaterial({ color: 0xc2853f })
+  const canvas = new THREE.MeshLambertMaterial({ color: 0xf8fafc })
+  const accent = new THREE.MeshLambertMaterial({ name: PIN_ACCENT })
+  const g = new THREE.Group()
+  const part = (w: number, h: number, d: number, mat: T3.Material, x: number, y: number, z: number, rx = 0, rz = 0) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat)
+    m.position.set(x, y, z)
+    m.rotation.set(rx, 0, rz)
+    g.add(m)
+  }
+  const lean = -0.15
+  part(0.04, 1.0, 0.04, wood, -0.2, 0.5, 0, lean, -0.12)
+  part(0.04, 1.0, 0.04, wood, 0.2, 0.5, 0, lean, 0.12)
+  part(0.04, 0.95, 0.04, wood, 0, 0.46, -0.2, 0.35)
+  part(0.52, 0.04, 0.1, wood, 0, 0.4, 0.07)
+  part(0.62, 0.48, 0.03, canvas, 0, 0.68, 0.07, lean)
+  part(0.52, 0.38, 0.01, accent, 0, 0.68, 0.09, lean)
+  return g
+}
+
+// One model per category (see public/models/README.md for the sources). A
+// category whose file fails to load keeps its primitive below.
+type PinModelSource = { url: string } | { build: (THREE: typeof T3) => T3.Object3D }
+const PIN_MODELS: Record<string, PinModelSource> = {
+  nature:    { url: '/models/pin-nature.glb' },
+  heritage:  { url: '/models/pin-heritage.glb' },
+  landmark:  { url: '/models/pin-landmark.glb' },
+  arts:      { build: buildEasel },
+  museum:    { build: buildMuseum },
+  religious: { build: buildTemple },
+}
+
+// Placeholder primitive per category, used until the category has a model.
 function buildPinGeometry(THREE: typeof T3, category: string): T3.BufferGeometry {
   switch (category) {
     case 'landmark':  return new THREE.BoxGeometry(0.42, PIN_HEIGHT, 0.42)
@@ -73,7 +171,68 @@ function buildPinGeometry(THREE: typeof T3, category: string): T3.BufferGeometry
   }
 }
 
-function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
+// Fit the model into a PIN_HEIGHT cube by its largest side, so a wide museum
+// does not outgrow a tall tree, and stand it centred on the pin.
+function normalizePinModel(THREE: typeof T3, obj: T3.Object3D): T3.Object3D {
+  const model = new THREE.Group()
+  model.add(obj)
+  const box = new THREE.Box3().setFromObject(model)
+  const size = box.getSize(new THREE.Vector3())
+  const center = box.getCenter(new THREE.Vector3())
+  obj.position.x -= center.x
+  obj.position.z -= center.z
+  obj.position.y -= box.min.y
+  model.scale.setScalar(PIN_HEIGHT / Math.max(size.x, size.y, size.z))
+  return model
+}
+
+function buildProceduralPinModels(THREE: typeof T3): Map<string, T3.Object3D> {
+  const models = new Map<string, T3.Object3D>()
+  for (const [category, src] of Object.entries(PIN_MODELS)) {
+    if ('build' in src) models.set(category, normalizePinModel(THREE, src.build(THREE)))
+  }
+  return models
+}
+
+async function loadPinModels(THREE: typeof T3): Promise<Map<string, T3.Object3D>> {
+  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
+  const loader = new GLTFLoader()
+  const models = new Map<string, T3.Object3D>()
+  await Promise.all(Object.entries(PIN_MODELS).map(async ([category, src]) => {
+    if (!('url' in src)) return
+    try {
+      const { scene } = await loader.loadAsync(src.url)
+      models.set(category, normalizePinModel(THREE, scene))
+    } catch (err) {
+      console.warn(`POI pin model for "${category}" failed to load, using the primitive`, err)
+    }
+  }))
+  return models
+}
+
+// Downloaded exports often set metallicFactor 1, which renders near-black
+// without an environment map, so each mesh gets a flat Lambert material that
+// keeps its colour, texture, and vertex colours.
+function buildModelBody(THREE: typeof T3, model: T3.Object3D, color: number, visited: boolean): T3.Object3D {
+  const body = model.clone(true)
+  body.traverse((obj) => {
+    const mesh = obj as T3.Mesh
+    if (!mesh.isMesh) return
+    const src = mesh.material as T3.MeshStandardMaterial
+    const tinted = PIN_TINTED_MATERIALS.has(src.name)
+    const base = tinted ? new THREE.Color(color) : src.color.clone()
+    if (visited && !tinted) base.multiply(new THREE.Color(VISITED_WASH))
+    mesh.material = new THREE.MeshLambertMaterial({
+      color: base,
+      map: src.map ?? null,
+      vertexColors: 'color' in mesh.geometry.attributes,
+      flatShading: true,
+    })
+  })
+  return body
+}
+
+function buildPin(THREE: typeof T3, spec: PoiPinSpec, models: Map<string, T3.Object3D>): PinObjects {
   const color = spec.visited ? VISITED_COLOR : (CATEGORY_COLORS[spec.category] ?? 0x94a3b8)
 
   const group = new THREE.Group()
@@ -92,13 +251,18 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec): PinObjects {
   group.add(ring)
 
   // Category-shaped body - unvisited = category color, visited = green (VISITED_COLOR).
-  const bodyGeo = buildPinGeometry(THREE, spec.category)
-  const bodyMat = new THREE.MeshPhongMaterial({
-    color, shininess: 80, transparent: true, opacity: 0.62,
-  })
-  const cone = new THREE.Mesh(bodyGeo, bodyMat)
-  cone.position.y = PIN_HEIGHT / 2
-  group.add(cone)
+  const model = models.get(spec.category)
+  if (model) {
+    group.add(buildModelBody(THREE, model, color, spec.visited))
+  } else {
+    const bodyGeo = buildPinGeometry(THREE, spec.category)
+    const bodyMat = new THREE.MeshPhongMaterial({
+      color, shininess: 80, transparent: true, opacity: 0.62,
+    })
+    const cone = new THREE.Mesh(bodyGeo, bodyMat)
+    cone.position.y = PIN_HEIGHT / 2
+    group.add(cone)
+  }
 
   // Head group: empty anchor for the bob animation (sprite removed).
   const head = new THREE.Group()
@@ -125,18 +289,28 @@ export async function addPoiPinsLayer(
   scene.add(dirLight)
 
   const pinsMap = new Map<string, PinObjects>()
+  const models = buildProceduralPinModels(THREE)
+  let currentSpecs = initial
 
   function rebuild(specs: PoiPinSpec[]) {
+    currentSpecs = specs
     for (const { group } of pinsMap.values()) scene.remove(group)
     pinsMap.clear()
     for (const spec of specs) {
-      const pin = buildPin(THREE, spec)
+      const pin = buildPin(THREE, spec, models)
       scene.add(pin.group)
       pinsMap.set(spec.id, pin)
     }
   }
 
+  // Pins show their primitive at once, then swap to the downloaded model once it loads.
   rebuild(initial)
+  void loadPinModels(THREE).then((loaded) => {
+    if (loaded.size === 0) return
+    for (const [category, model] of loaded) models.set(category, model)
+    rebuild(currentSpecs)
+    map.triggerRepaint()
+  })
 
   let renderer: T3.WebGLRenderer | null = null
 
