@@ -74,7 +74,9 @@ test.describe('Map and navigation', () => {
     await expect(page).toHaveURL('/squads')
     await page.getByRole('link', { name: 'Profile' }).click()
     await expect(page).toHaveURL('/profile')
-    await page.getByRole('link', { name: 'Map' }).click()
+    // Exact: the map stays mounted under every tab, so its attribution links
+    // (MapLibre, OpenStreetMap) also match a substring search for "Map".
+    await page.getByRole('link', { name: 'Map', exact: true }).click()
     await expect(page).toHaveURL('/')
   })
 })
