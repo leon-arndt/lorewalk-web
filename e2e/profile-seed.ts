@@ -31,7 +31,6 @@ export function makeProfile(overrides: Record<string, unknown> = {}) {
     foodInventory: [],
     foodNodes: [],
     shrineNodes: [],
-    stepsAppliedToEggs: 0,
     maxEggSlots: 3,
     bonusCreatureSlots: 0,
     squads: DEFAULT_SQUADS,

@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { haversineDistance } from '@/lib/mapUtils'
+import { localDateKey } from '@/lib/profile'
 import type { PlayerPosition } from '@/types'
 
 // Browsers expose no pedometer, so we estimate steps from GPS displacement.
@@ -22,19 +23,17 @@ interface StepState {
 }
 
 interface StoredState extends StepState {
-  date: string // YYYY-MM-DD - resets the count each day
+  // Local date, the same key profile.dailySteps uses. A UTC key would roll the
+  // count over at 08:00 in Singapore and credit yesterday's steps to today.
+  date: string
 }
 
-function todayKey(timestamp: number): string {
-  return new Date(timestamp).toISOString().slice(0, 10)
-}
-
-function load(timestamp: number): StepState {
+function load(day: string): StepState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const stored = JSON.parse(raw) as StoredState
-      if (stored.date === todayKey(timestamp)) {
+      if (stored.date === day) {
         return { steps: stored.steps, distanceM: stored.distanceM }
       }
     }
@@ -44,28 +43,23 @@ function load(timestamp: number): StepState {
   return { steps: 0, distanceM: 0 }
 }
 
-// Dev cheats panel lives on the Profile page, a different route/mount than the
-// HUD - it can't reach the hook's React state, so it writes storage directly.
-// The HUD picks this up next time useStepCounter mounts (i.e. on nav back to Map).
-export function addDevSteps(n: number) {
-  const current = load(Date.now())
-  const next = { steps: current.steps + n, distanceM: current.distanceM + n * STRIDE_M }
+function save(state: StepState, day: string) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...next, date: todayKey(Date.now()) } satisfies StoredState))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, date: day } satisfies StoredState))
   } catch {
     // ignore quota / private-mode failures
   }
 }
 
-export function useStepCounter(position: PlayerPosition | null): StepState {
-  const [state, setState] = useState<StepState>(() => load(Date.now()))
+export function useStepCounter(position: PlayerPosition | null): StepState & { addSteps: (n: number) => void } {
+  const [state, setState] = useState<StepState>(() => load(localDateKey(new Date())))
   const lastRef = useRef<PlayerPosition | null>(null)
 
   useEffect(() => {
     if (!position) return
 
     // Roll the count over at midnight.
-    const day = todayKey(position.timestamp)
+    const day = localDateKey(new Date(position.timestamp))
     let base = state
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -96,13 +90,18 @@ export function useStepCounter(position: PlayerPosition | null): StepState {
     const distanceM = base.distanceM + d
     const next = { steps: Math.round(distanceM / STRIDE_M), distanceM }
     setState(next)
-
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...next, date: day } satisfies StoredState))
-    } catch {
-      // ignore quota / private-mode failures
-    }
+    save(next, day)
   }, [position]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  return state
+  // Dev cheat: adds steps through the same state the GPS path feeds, so eggs,
+  // the journal, and the medal all pick them up the same way as real walking.
+  const addSteps = useCallback((n: number) => {
+    setState((prev) => {
+      const next = { steps: prev.steps + n, distanceM: prev.distanceM + n * STRIDE_M }
+      save(next, localDateKey(new Date()))
+      return next
+    })
+  }, [])
+
+  return { ...state, addSteps }
 }

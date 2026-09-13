@@ -95,7 +95,7 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
             }} />
           </div>
           <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 4, display: 'block', textAlign: 'center' }}>
-            {t('creatures_visits_left', { n: remaining })}
+            {t('creatures_steps_left', { n: remaining })}
           </span>
         </div>
       )}

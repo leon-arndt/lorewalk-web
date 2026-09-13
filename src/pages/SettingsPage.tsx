@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
 import type { Locale } from '@/contexts/LocaleContext'
 import { useMusic } from '@/contexts/MusicContext'
+import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { NotificationPrefKey } from '@/types'
 import { accent } from '@/lib/theme'
@@ -41,6 +42,7 @@ export function SettingsPage() {
   const { t, locale, setLocale } = useLocale()
   const { volume, setVolume, sfxVolume, setSfxVolume } = useMusic()
   const { profile, toggleNotificationPref } = useProfile()
+  const { mode, setMode } = useConnectionMode()
   const navigate = useNavigate()
 
   async function handleToggleNotifications(key: NotificationPrefKey) {
@@ -140,6 +142,27 @@ export function SettingsPage() {
               onChange={(e) => setSfxVolume(Number(e.target.value))}
               style={{ flex: 1, accentColor: accent }}
             />
+          </div>
+        </section>
+
+        <section>
+          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
+            {t('settings_connection')}
+          </h2>
+          <div style={{
+            background: 'white', borderRadius: 16, padding: '14px 16px',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
+                {t('settings_online_mode')}
+              </div>
+              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                {t('settings_online_mode_desc')}
+              </div>
+            </div>
+            <ToggleSwitch checked={mode === 'online'} onChange={() => setMode(mode === 'online' ? 'offline' : 'online')} />
           </div>
         </section>
 

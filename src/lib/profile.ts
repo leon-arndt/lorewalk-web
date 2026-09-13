@@ -572,7 +572,6 @@ export function loadProfile(): PlayerProfile {
           typeof n.lat === 'number' && isFinite(n.lat) &&
           typeof n.lon === 'number' && isFinite(n.lon),
         ),
-        stepsAppliedToEggs: parsed.stepsAppliedToEggs ?? 0,
         maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
         bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
         squads,
@@ -622,7 +621,6 @@ export function loadProfile(): PlayerProfile {
     foodInventory: [],
     foodNodes: [],
     shrineNodes: [],
-    stepsAppliedToEggs: 0,
     maxEggSlots: MAX_EGG_SLOTS,
     bonusCreatureSlots: 0,
     squads: createEmptySquads(),

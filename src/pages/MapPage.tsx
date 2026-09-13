@@ -10,21 +10,19 @@ import { WeekStrip } from '@/components/UI/WeekStrip'
 import { JournalOverlay } from '@/components/UI/JournalOverlay'
 import { NewsOverlay } from '@/components/UI/NewsOverlay'
 import { useReward } from '@/contexts/RewardContext'
-import { ModeToggle } from '@/components/UI/ModeToggle'
 import { StepCounter } from '@/components/UI/StepCounter'
 import { LevelCapsule } from '@/components/UI/LevelCapsule'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
-import { useGeolocation } from '@/hooks/useGeolocation'
-import { useStepCounter } from '@/hooks/useStepCounter'
+import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
 import { usePois } from '@/hooks/usePois'
 import { useNews, unreadCount } from '@/hooks/useNews'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
-import { localDateKey, isPoiLocked } from '@/lib/profile'
+import { isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
-import type { Poi } from '@/types'
+import type { Poi, RewardItem } from '@/types'
 import { accent, rewardGradient } from '@/lib/theme'
 
 const CHECKIN_RADIUS_M = 50
@@ -44,12 +42,11 @@ function categoryColor(category?: string): number {
 
 export function MapPage() {
   const { t } = useLocale()
-  const { position, error: gpsError, loading: gpsLoading } = useGeolocation()
-  const { steps, distanceM } = useStepCounter(position)
+  const { position, gpsError, gpsLoading, steps, distanceM } = usePlayerLocation()
   const { pois } = usePois(position)
   const { posts: newsPosts } = useNews()
-  const { profile, visitedPois, addVisit, advanceEggsBySteps, recordDailySteps, justReady, clearJustReady, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
-  const { showReward } = useReward()
+  const { profile, visitedPois, addVisit, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
+  const { showReward, showToast } = useReward()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
@@ -64,7 +61,6 @@ export function MapPage() {
   const [weeklyWalkOpen, setWeeklyWalkOpen] = useState(false)
   const [isWeeklyWalkClosing, setIsWeeklyWalkClosing] = useState(false)
   const weeklyWalkCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
   const [journalOpen, setJournalOpen] = useState(false)
   const [newsOpen, setNewsOpen] = useState(false)
   const [bearing, setBearing] = useState(0)
@@ -172,6 +168,14 @@ export function MapPage() {
   // while position keeps updating inside the radius.
   const autoCheckedRef = useRef<Set<string>>(new Set())
 
+  const checkIn = useCallback((poi: Poi) => {
+    const result = addVisit(poi)
+    if (!result) return
+    const items: RewardItem[] = [{ type: 'xp', amount: result.xp }]
+    if (result.egg) items.push({ type: 'egg' })
+    showReward({ emoji: '📍', title: t('checkin_reward_title'), subtitle: poi.name, items })
+  }, [addVisit, showReward, t])
+
   // Online: auto check-in whenever position enters 50 m of an unvisited POI.
   useEffect(() => {
     if (mode !== 'online' || !position) return
@@ -181,11 +185,13 @@ export function MapPage() {
       if (d <= CHECKIN_RADIUS_M) {
         autoCheckedRef.current.add(poi.id)
         if (isPoiLocked(poi, profile)) {
-          setToast(`🔒 ${poi.name} is a Premium landmark`)
+          showToast(t('toast_poi_premium_locked', { name: poi.name }))
           continue
         }
-        addVisit(poi)
-        setToast(`✅ Checked in at ${poi.name}!`)
+        // One per fix: a second addVisit from the same profile snapshot would
+        // overwrite the first. The next fix picks up any other POI in range.
+        checkIn(poi)
+        break
       }
     }
   }, [position, pois]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -200,9 +206,9 @@ export function MapPage() {
     if (foodPanelCloseTimer.current) { clearTimeout(foodPanelCloseTimer.current); foodPanelCloseTimer.current = null }
     // Offline: no GPS, so check-in fires on tap instead of on proximity.
     if (mode === 'offline' && !visitedPois.has(poi.id) && !isPoiLocked(poi, profile)) {
-      addVisit(poi)
+      checkIn(poi)
     }
-  }, [mode, visitedPois, addVisit, profile])
+  }, [mode, visitedPois, checkIn, profile])
 
   const handleClose = useCallback(() => {
     setIsPanelClosing(true)
@@ -264,17 +270,15 @@ export function MapPage() {
     if (!selectedShrineNodeId) return
     const result = collectShrineNode(selectedShrineNodeId)
     if (result) {
-      if (result.won) {
-        const items: Array<{ type: 'xp' | 'coins' | 'egg' | 'level_up'; amount?: number; label?: string }> = [
-          { type: 'xp', amount: result.xp },
-          { type: 'coins', amount: result.coins },
-        ]
-        if (result.egg) items.push({ type: 'egg' })
-        result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
-        showReward({ emoji: '⛩️', title: t('shrine_claimed_title'), subtitle: t('shrine_claimed_subtitle'), items })
-      } else {
-        setToast('💀 Defeated. Send stronger creatures next time.')
-      }
+      const items: RewardItem[] = [
+        { type: 'xp', amount: result.xp },
+        { type: 'coins', amount: result.coins },
+      ]
+      if (result.egg) items.push({ type: 'egg' })
+      result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
+      showReward(result.won
+        ? { emoji: '⛩️', title: t('shrine_claimed_title'), subtitle: t('shrine_claimed_subtitle'), items }
+        : { emoji: '⛩️', title: t('shrine_defeated_title'), subtitle: t('shrine_defeated_subtitle'), items })
     }
     handleShrinePanelClose()
   }, [selectedShrineNodeId, collectShrineNode, handleShrinePanelClose, showReward, t])
@@ -301,41 +305,19 @@ export function MapPage() {
     if (!selectedFoodNodeId) return
     const result = collectFoodNode(selectedFoodNodeId)
     if (result) {
-      const items: Array<{ type: 'food' | 'level_up'; amount?: number; label?: string; emoji?: string }> = [
+      const items: RewardItem[] = [
         { type: 'food', label: result.food.name, emoji: result.food.emoji },
       ]
       result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
       showReward({
         emoji: result.food.emoji,
         title: t('food_expedition_complete_title'),
-        subtitle: `Your creatures brought back ${result.food.name}.`,
+        subtitle: t('food_expedition_complete_subtitle', { food: result.food.name }),
         items,
       })
     }
     handleFoodPanelClose()
   }, [selectedFoodNodeId, collectFoodNode, handleFoodPanelClose, showReward, t])
-  // Advance egg incubation as the player walks, and log today's steps for the journal.
-  useEffect(() => {
-    if (steps > 0) {
-      advanceEggsBySteps(steps)
-      recordDailySteps(localDateKey(new Date()), steps)
-    }
-  }, [steps]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Show "egg ready" toast
-  useEffect(() => {
-    if (justReady.length === 0) return
-    const msg = justReady.length === 1
-      ? `🥚 Egg from ${justReady[0].poiName} is ready to hatch. Check Creatures →`
-      : `🥚 ${justReady.length} eggs are ready to hatch. Check Creatures →`
-    setToast(msg)
-    const t = setTimeout(() => {
-      setToast(null)
-      clearJustReady()
-    }, 4000)
-    return () => clearTimeout(t)
-  }, [justReady, clearJustReady])
-
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       <MapView
@@ -365,9 +347,8 @@ export function MapPage() {
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'flex-start',
         }}>
-          <div style={{ pointerEvents: 'auto', justifySelf: 'start', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ pointerEvents: 'auto', justifySelf: 'start' }}>
             <LevelCapsule level={profile.level} />
-            <ModeToggle />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
             <StepCounter steps={steps} distanceM={distanceM} />
@@ -437,21 +418,6 @@ export function MapPage() {
           </div>
         )}
       </div>
-
-      {/* Hatching toast */}
-      {toast && (
-        <div style={{
-          position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-          background: rewardGradient,
-          color: 'white', fontSize: 13, fontWeight: 600,
-          padding: '10px 20px', borderRadius: 24,
-          boxShadow: '0 4px 16px rgba(129,140,248,0.45)',
-          whiteSpace: 'nowrap', pointerEvents: 'none',
-          animation: 'fadeInUp 0.3s ease',
-        }}>
-          {toast}
-        </div>
-      )}
 
       {selectedPoi && (
         <PoiDetailPanel

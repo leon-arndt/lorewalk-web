@@ -81,7 +81,7 @@ export interface Translations {
   creatures_subtitle: string
   creatures_hatching: string
   creatures_visit_landmark: string
-  creatures_visits_left: string
+  creatures_steps_left: string
   creatures_egg_hint: string
   creatures_collection: string
   creatures_storage_full: string
@@ -247,4 +247,24 @@ export interface Translations {
   customize_bottom: string
   customize_shoes: string
   customize_head_item: string
+  checkin_reward_title: string
+  toast_poi_premium_locked: string
+  toast_egg_ready_one: string
+  toast_egg_ready_many: string
+  toast_coins_collected: string
+  food_expedition_complete_subtitle: string
+  shrine_defeated_title: string
+  shrine_defeated_subtitle: string
+  squads_expedition_reward_title: string
+  squads_expedition_reward_subtitle: string
+  reward_item_xp: string
+  reward_item_coins: string
+  reward_item_egg: string
+  reward_item_level_up: string
+  reward_item_badge: string
+  reward_item_food: string
+  reward_collect: string
+  settings_connection: string
+  settings_online_mode: string
+  settings_online_mode_desc: string
 }

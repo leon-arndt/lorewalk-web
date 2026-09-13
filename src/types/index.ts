@@ -147,7 +147,6 @@ export interface PlayerProfile {
   foodInventory: FoodItem[]
   foodNodes: FoodNode[]
   shrineNodes: ShrineNode[]
-  stepsAppliedToEggs: number
   maxEggSlots: number
   bonusCreatureSlots: number   // extra creature storage bought in the shop
   squads: Squad[]

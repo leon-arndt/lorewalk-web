@@ -4,15 +4,17 @@ import { ConnectionModeProvider } from '@/contexts/ConnectionModeContext'
 import { ProfileProvider, useProfile } from '@/contexts/ProfileContext'
 import { LocaleProvider } from '@/contexts/LocaleContext'
 import { MusicProvider } from '@/contexts/MusicContext'
-import { RewardProvider } from '@/contexts/RewardContext'
+import { RewardProvider, useReward } from '@/contexts/RewardContext'
+import { PlayerLocationProvider } from '@/contexts/PlayerLocationContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { playSfx } from '@/lib/sfx'
 import { BottomNav } from '@/components/UI/BottomNav'
 import { LevelUpScreen } from '@/components/UI/LevelUpScreen'
 import { RewardScreen } from '@/components/UI/RewardScreen'
+import { Toast } from '@/components/UI/Toast'
 import { MapPage } from '@/pages/MapPage'
 import { CreaturesPage } from '@/pages/CreaturesPage'
 import { SquadsPage } from '@/pages/SquadsPage'
-import { ShopPage } from '@/pages/ShopPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { CharacterCustomizationPage } from '@/pages/CharacterCustomizationPage'
@@ -35,6 +37,24 @@ function LevelUpOverlay() {
   const { pendingLevelUp, dismissLevelUp } = useProfile()
   if (!pendingLevelUp) return null
   return <LevelUpScreen level={pendingLevelUp.level} rewards={pendingLevelUp.rewards} onDismiss={dismissLevelUp} />
+}
+
+// Steps count on every tab, so the "egg ready" notice lives here, not on the map.
+function EggReadyToast() {
+  const { justReady, clearJustReady } = useProfile()
+  const { showToast } = useReward()
+  const { t } = useLocale()
+  useEffect(() => {
+    if (justReady.length === 0) return
+    showToast(
+      justReady.length === 1
+        ? t('toast_egg_ready_one', { name: justReady[0].poiName })
+        : t('toast_egg_ready_many', { n: justReady.length }),
+      { to: '/creatures' },
+    )
+    clearJustReady()
+  }, [justReady, clearJustReady, showToast, t])
+  return null
 }
 
 // One delegated listener covers every button/link in the app, including ones
@@ -64,6 +84,7 @@ export default function App() {
     <MusicProvider>
     <ConnectionModeProvider>
       <ProfileProvider>
+        <PlayerLocationProvider>
         <RewardProvider>
           <BrowserRouter>
             <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
@@ -72,7 +93,6 @@ export default function App() {
                   <Route path="/" element={<MapErrorBoundary><MapPage /></MapErrorBoundary>} />
                   <Route path="/creatures" element={<CreaturesPage />} />
                   <Route path="/squads" element={<SquadsPage />} />
-                  <Route path="/shop" element={<ShopPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/customize" element={<CharacterCustomizationPage />} />
@@ -82,8 +102,11 @@ export default function App() {
             <BottomNav />
             <LevelUpOverlay />
             <RewardScreen />
+            <Toast />
+            <EggReadyToast />
           </BrowserRouter>
         </RewardProvider>
+        </PlayerLocationProvider>
       </ProfileProvider>
     </ConnectionModeProvider>
     </MusicProvider>

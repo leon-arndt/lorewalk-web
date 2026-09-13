@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
+import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { xpForNextLevel, currentMonthKey, monthLabel, recentMonthKeys, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
@@ -30,7 +31,8 @@ function formatDate(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevSteps, addDevStreakDays, toggleDevPremium, claimMedal } = useProfile()
+  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevStreakDays, toggleDevPremium, claimMedal } = useProfile()
+  const { addDevSteps } = usePlayerLocation()
   const { showReward } = useReward()
   const { t } = useLocale()
   const navigate = useNavigate()
@@ -243,9 +245,6 @@ export function ProfilePage() {
                   👑 {t('profile_premium_badge')}
                 </span>
               )}
-              <span style={{ fontSize: 12, color: '#94a3b8' }}>
-                {profile.totalXp} {t('profile_stat_total_xp')}
-              </span>
             </div>
 
             {/* XP bar - grouped under the level, constrained to the name column */}

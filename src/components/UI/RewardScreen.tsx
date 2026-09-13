@@ -1,19 +1,32 @@
 import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import { useReward } from '@/contexts/RewardContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
-import type { RewardItem } from '@/types'
+import type { RewardItem, RewardItemType } from '@/types'
+import type { Translations } from '@/i18n/types'
 import { accent, rewardGradient } from '@/lib/theme'
 
-const ITEM_META: Record<string, { icon: string; color: string; label: (item: RewardItem) => string }> = {
-  xp:       { icon: '⭐', color: '#f59e0b', label: (i) => `+${i.amount} XP` },
-  coins:    { icon: '🪙', color: '#b45309', label: (i) => `+${i.amount} coins` },
-  egg:      { icon: '🥚', color: '#16a34a', label: () => 'New egg - ready to hatch!' },
-  level_up: { icon: '✨', color: '#16a34a', label: (i) => `${i.label} reached Lvl ${i.amount}!` },
-  badge:    { icon: '🏅', color: '#ca8a04', label: (i) => i.label ?? 'New badge!' },
-  food:     { icon: '🍽️', color: '#f59e0b', label: (i) => `${i.label} added to pantry` },
+const ITEM_META: Record<RewardItemType, { icon: string; color: string }> = {
+  xp:       { icon: '⭐', color: '#f59e0b' },
+  coins:    { icon: '🪙', color: '#b45309' },
+  egg:      { icon: '🥚', color: '#16a34a' },
+  level_up: { icon: '✨', color: '#16a34a' },
+  badge:    { icon: '🏅', color: '#ca8a04' },
+  food:     { icon: '🍽️', color: '#f59e0b' },
+}
+
+function itemLabel(item: RewardItem, t: (key: keyof Translations, vars?: Record<string, string | number>) => string): string {
+  switch (item.type) {
+    case 'xp': return t('reward_item_xp', { n: item.amount ?? 0 })
+    case 'coins': return t('reward_item_coins', { n: item.amount ?? 0 })
+    case 'egg': return t('reward_item_egg')
+    case 'level_up': return t('reward_item_level_up', { name: item.label ?? '', level: item.amount ?? 0 })
+    case 'badge': return item.label ?? t('reward_item_badge')
+    case 'food': return t('reward_item_food', { name: item.label ?? '' })
+  }
 }
 
 const FW_COLORS = ['#818cf8', '#c084fc', '#34d399', '#fbbf24', '#f472b6', '#60a5fa', '#fb923c']
@@ -73,6 +86,7 @@ function Fireworks() {
 
 export function RewardScreen() {
   const { pendingReward, dismissReward } = useReward()
+  const { t } = useLocale()
   if (!pendingReward) return null
 
   const { emoji, title, subtitle, items, medalMonthKey } = pendingReward
@@ -149,7 +163,7 @@ export function RewardScreen() {
                     <EmojiSprite id={item.emoji ?? item.type} emoji={item.emoji ?? meta.icon} size={22} />
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textAlign: 'left' }}>
-                    {meta.label(item)}
+                    {itemLabel(item, t)}
                   </span>
                 </div>
               )
@@ -168,7 +182,7 @@ export function RewardScreen() {
             letterSpacing: '0.01em',
           }}
         >
-          Collect!
+          {t('reward_collect')}
         </button>
       </div>
 

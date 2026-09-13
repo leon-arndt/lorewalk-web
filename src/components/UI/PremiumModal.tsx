@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useReward } from '@/contexts/RewardContext'
 import { pageBackground } from '@/lib/glass'
 import {
   fetchPremiumOfferings, isBillingAvailable, playSubscriptionManagementUrl, purchasePremiumPackage,
@@ -24,6 +25,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const { profile, subscribePremium, cancelPremium } = useProfile()
   const { mode } = useConnectionMode()
   const { t } = useLocale()
+  const { showToast } = useReward()
   const FEATURE_ROWS: { icon: string; label: string; basic: boolean; premium: string }[] = [
     { icon: '🗺️', label: t('premium_feature_standard_landmarks'), basic: true, premium: t('premium_feature_all_landmarks') },
     { icon: '🔓', label: t('premium_feature_premium_landmarks'), basic: false, premium: t('premium_feature_unlocked') },
@@ -38,7 +40,6 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
     },
   }
   const [interval, setInterval] = useState<PremiumInterval>('yearly')
-  const [flash, setFlash] = useState<string | null>(null)
   const [subscribed, setSubscribed] = useState(false)
   const [purchasing, setPurchasing] = useState(false)
   const [confirmingCancel, setConfirmingCancel] = useState(false)
@@ -62,21 +63,19 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
     if (mode !== 'online') {
       subscribePremium(interval)
       setSubscribed(true)
-      setFlash(t('premium_test_purchase_complete'))
+      showToast(t('premium_test_purchase_complete'))
       setTimeout(onClose, 1400)
       return
     }
     if (!isBillingAvailable()) {
-      setFlash(Capacitor.isNativePlatform()
+      showToast(Capacitor.isNativePlatform()
         ? t('premium_not_setup_native')
         : t('premium_not_setup_web'))
-      setTimeout(() => setFlash(null), 2800)
       return
     }
     const pkg = interval === 'monthly' ? offerings?.monthly : offerings?.yearly
     if (!pkg) {
-      setFlash(t('premium_plan_unavailable'))
-      setTimeout(() => setFlash(null), 2800)
+      showToast(t('premium_plan_unavailable'))
       return
     }
     setPurchasing(true)
@@ -88,11 +87,10 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
       // as the durable, server-verified source of truth on next load.
       subscribePremium(interval)
       setSubscribed(true)
-      setFlash(t('premium_purchase_complete'))
+      showToast(t('premium_purchase_complete'))
       setTimeout(onClose, 1400)
     } else if (!result.cancelled) {
-      setFlash(result.error ?? t('premium_purchase_failed'))
-      setTimeout(() => setFlash(null), 2800)
+      showToast(result.error ?? t('premium_purchase_failed'))
     }
   }
 
@@ -104,7 +102,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
     }
     cancelPremium()
     setCancelled(true)
-    setFlash(t('premium_cancelled_msg'))
+    showToast(t('premium_cancelled_msg'))
     setTimeout(onClose, 1400)
   }
 
@@ -305,12 +303,6 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                 {t('premium_cancel_anytime')}
               </div>
             </>
-          )}
-
-          {flash && (
-            <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: cancelled ? '#b91c1c' : '#16a34a', textAlign: 'center' }}>
-              {flash}
-            </div>
           )}
         </div>
       </div>

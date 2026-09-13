@@ -41,6 +41,7 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 ### After the check-in
 - The marker turns to a green ring with 😊 at once. The page does not reload.
 - The detail panel switches to the confirmation state: "😊 You visited this place!".
+- The reward screen shows the XP and, when an egg slot is free, the new egg.
 - The player receives points. These points will feed the creature planter slots later.
 
 ---
@@ -58,9 +59,9 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 
 ### Core loop
 1. **Check in at a POI.** The player receives an egg that carries the category of that POI.
-2. **Walk.** Steps accumulate and advance every incubating egg. The app estimates steps from GPS at about 0.76 m per step.
-3. **The egg hatches** once it reaches its step requirement. The creature joins the collection.
-4. **A toast appears** on the map when a creature hatches.
+2. **Walk.** Steps accumulate and advance every incubating egg. The app estimates steps from GPS at about 0.76 m per step, on every tab while the app is open.
+3. **The egg becomes ready** once it reaches its step requirement.
+4. **A toast appears** on any tab. A tap on the toast opens the Creatures tab. The player taps the egg there to hatch it.
 
 ### Egg slots
 - The player starts with **3 egg slots**. All slots incubate at the same time.
@@ -91,7 +92,7 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 - To free a slot, **release** a creature through the ✕ on its card and confirm. To raise the cap instead, level up or buy storage in the shop. This creates curation decisions and a coin sink.
 
 ### Design rationale
-Pikmin Bloom grows seedlings from pedometer steps. The web has no reliable step counter. Lorewalk uses **POI visits as the progress currency** instead. This fits the exploration theme better, because a visit to a place is always the core action.
+Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress in two. A **visit** to a place gives the egg, because a visit is the core action. **Steps** hatch the egg and count toward the monthly medal. The web has no pedometer, so the app estimates steps from GPS while it is open. On Android, the Health Connect wrapper in `src/lib/health.ts` can replace that estimate, but nothing calls it yet.
 
 ### Future creature features
 - **Bonding XP**: a visit to a POI with a creature equipped raises the bond level.
@@ -117,7 +118,11 @@ Pikmin Bloom grows seedlings from pedometer steps. The web has no reliable step 
 - **Indigo to purple stays its own "reward and premium" language, separate from the accent.** It covers the egg XP bars, the level-up screen, the hatch reveal, the MAX LEVEL badges, the gradient buttons ("Collect reward", "Claim reward", "Join party walk"), and the coin-pack purchase buttons. These are *not* accent green on purpose. The contrast marks a reward or premium moment as different from ordinary navigation and everyday actions. Small text badges, such as XP pills and price and coin counts, also stay indigo and match this family.
 - **Bottom navigation**: 4 tabs. Map, Creatures, Squads, Profile. Squads replaced the old Expeditions tab. See "Squad against expedition" below.
 - **POI detail**: a white panel that slides up from the bottom, with a drag handle. It shows the name, the description, the category badge, the points badge, the distance when online, a learn-more link, and the check-in button.
-- **Mode toggle**: a frosted-glass pill in the top left of the map. A green dot means online. A grey dot means offline.
+- **Mode toggle**: an "Online mode" switch in Settings, under Connection. `localStorage` keeps the choice. Offline mode is a test mode: a tap on a landmark checks in, and purchases are simulated. The switch stays off the map, so a player does not see a test tool on the main screen.
+- **Feedback**: the app uses two patterns only.
+  - The **reward screen** (`showReward`) shows a real payout: a check-in, an expedition, a shrine, a food node, a medal, or a chest.
+  - The **toast** (`showToast`) shows a small update: held-landmark coins, a purchase message, a locked landmark, or a ready egg. A toast can carry a route, and a tap on it opens that route.
+  - Do not add a local flash message or a one-off toast.
 
 ---
 
@@ -153,7 +158,7 @@ Lorewalk does **not** mail medals. A player picks the medal up in person at a mo
 
 ### Shop (built, coins only so far)
 
-The shop lives at the `/shop` route. The player reaches it through the coin capsule in the map HUD, which opens `ShopPage` in a modal, or through the "+ coins" link on the Squads tab (`/shop#coins`). It spends the soft **coin** currency, which the player earns from expeditions and held landmarks.
+The shop has one entry point: the coin capsule. The map HUD and the Squads tab both show it, and it opens `ShopPage` as a bottom sheet. The shop has no route. It spends the soft **coin** currency, which the player earns from expeditions and held landmarks.
 
 - **+3 creature slots**: costs `60 + 60 × (bonus / 3)`, which climbs with each purchase.
 - **+1 egg slot**: costs `120 × (slotsBought + 1)`, capped at `MAX_EGG_SLOTS_CAP` (6).

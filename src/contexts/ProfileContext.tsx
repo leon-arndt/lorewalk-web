@@ -4,7 +4,6 @@ import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { supabase } from '@/lib/supabase'
 import { getFoodDef } from '@/data/foods'
-import { addDevSteps as addDevStepsToHud } from '@/hooks/useStepCounter'
 import {
   loadProfile, saveProfile, isPoiLocked,
   currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
@@ -25,9 +24,8 @@ import {
 interface ProfileContextValue {
   profile: PlayerProfile
   visitedPois: Set<string>
-  addVisit: (poi: Poi) => void
-  advanceEggsBySteps: (currentStepsToday: number) => void
-  recordDailySteps: (dateKey: string, steps: number) => void
+  addVisit: (poi: Poi) => CheckInResult | null
+  applyTodaySteps: (dateKey: string, stepsToday: number) => void
   setDisplayName: (name: string) => void
   updateAppearance: (patch: Partial<PlayerAppearance>) => void
   hatchReadyEgg: (eggId: string) => HatchedCreature | null
@@ -56,7 +54,6 @@ interface ProfileContextValue {
   feedCreature: (creatureId: string, foodItemId: string) => void
   addXp: (amount: number) => void
   addDevEgg: (isShiny?: boolean) => void
-  addDevSteps: (n: number) => void
   addDevStreakDays: (n: number) => void
   openStreakChest: () => StreakChestRewards | null
   toggleDevPremium: () => void
@@ -75,6 +72,11 @@ interface ProfileContextValue {
   joinWeeklyWalk: (startSteps: number) => boolean
   claimWeeklyWalkReward: (currentSteps: number) => { coins: number; egg: boolean } | null
   expireWeeklyWalkIfStale: () => void
+}
+
+export interface CheckInResult {
+  xp: number
+  egg: boolean
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
@@ -136,9 +138,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return ids
   }, [profile.foodNodes, profile.squads])
 
-  function addVisit(poi: Poi) {
-    if (visitedPois.has(poi.id)) return
-    if (isPoiLocked(poi, profile)) return
+  function addVisit(poi: Poi): CheckInResult | null {
+    if (visitedPois.has(poi.id)) return null
+    if (isPoiLocked(poi, profile)) return null
 
     const category = poi.category ?? 'landmark'
     const creaturesById = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
@@ -173,10 +175,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     )
 
     // Award a new egg from this POI if a slot is available
-    const updatedEggs =
-      profile.eggs.length < profile.maxEggSlots
-        ? [...profile.eggs, createEgg(poi)]
-        : profile.eggs
+    const gotEgg = profile.eggs.length < profile.maxEggSlots
+    const updatedEggs = gotEgg ? [...profile.eggs, createEgg(poi)] : profile.eggs
 
     const updated: PlayerProfile = {
       ...profile,
@@ -196,6 +196,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const final = withLevelUpRewards(profile, updated)
     setProfile(final)
     saveProfile(final)
+    return { xp: xpGained, egg: gotEgg }
   }
 
   function setDisplayName(name: string) {
@@ -249,32 +250,19 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  // Advance incubating eggs by steps walked. Call with the current today's step count
-  // each time it changes; handles daily resets by detecting when count decreases.
-  // Eggs that reach their requirement become "ready" and wait for the player to tap
-  // them in the Creatures tab - hatching no longer happens automatically.
-  // Persist today's step total into the per-day log the journal calendar reads.
-  // Steps only climb within a day, so we keep the max and skip no-op writes.
-  function recordDailySteps(dateKey: string, steps: number) {
-    if (steps <= 0) return
-    const current = profile.dailySteps ?? {}
-    if ((current[dateKey] ?? 0) >= steps) return
-    persist({ ...profile, dailySteps: { ...current, [dateKey]: steps } })
-  }
-
-  function advanceEggsBySteps(currentStepsToday: number) {
-    if (profile.eggs.length === 0) return
-    const prev = profile.stepsAppliedToEggs
-    // If count went down (new day), apply all of today's steps; otherwise apply delta.
-    const delta = currentStepsToday <= prev ? currentStepsToday : currentStepsToday - prev
+  // Apply today's step count, which only climbs within a day. dailySteps holds
+  // the steps already applied per local date, so the delta advances the eggs
+  // and the same write logs the day for the journal and the monthly medal. One
+  // write on purpose: two writes from the same snapshot would drop the first.
+  // A ready egg waits for the player to tap it in the Creatures tab.
+  function applyTodaySteps(dateKey: string, stepsToday: number) {
+    const applied = profile.dailySteps[dateKey] ?? 0
+    const delta = stepsToday - applied
     if (delta <= 0) return
 
     const eggs = advanceEggs(profile.eggs, delta)
     const newlyReady = eggs.filter((egg, i) => isEggReady(egg) && !isEggReady(profile.eggs[i]))
-
-    const updated: PlayerProfile = { ...profile, stepsAppliedToEggs: currentStepsToday, eggs }
-    setProfile(updated)
-    saveProfile(updated)
+    persist({ ...profile, eggs, dailySteps: { ...profile.dailySteps, [dateKey]: stepsToday } })
     if (newlyReady.length > 0) setJustReady(newlyReady)
   }
 
@@ -586,19 +574,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, eggs: [...profile.eggs, egg] })
   }
 
-  function addDevSteps(n: number) {
-    const newStepsApplied = profile.stepsAppliedToEggs + n
-    const eggs = profile.eggs.length > 0 ? advanceEggs(profile.eggs, n) : profile.eggs
-    const newlyReady = eggs.filter((egg, i) => isEggReady(egg) && !isEggReady(profile.eggs[i]))
-    const key = new Date().toLocaleDateString('sv')
-    const dailySteps = { ...profile.dailySteps, [key]: (profile.dailySteps?.[key] ?? 0) + n }
-    const updated: PlayerProfile = { ...profile, stepsAppliedToEggs: newStepsApplied, eggs, dailySteps }
-    setProfile(updated)
-    saveProfile(updated)
-    if (newlyReady.length > 0) setJustReady(newlyReady)
-    addDevStepsToHud(n)
-  }
-
   function toggleDevPremium() {
     const isPremium = !profile.isPremium
     persist({ ...profile, isPremium, premiumInterval: isPremium ? 'monthly' : null })
@@ -798,11 +773,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProfileContext.Provider value={{
-      profile, visitedPois, addVisit, advanceEggsBySteps, recordDailySteps, setDisplayName, updateAppearance, hatchReadyEgg, renameCreature, justReady, clearJustReady,
+      profile, visitedPois, addVisit, applyTodaySteps, setDisplayName, updateAppearance, hatchReadyEgg, renameCreature, justReady, clearJustReady,
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevSteps, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, markNewsRead, subscribePremium, cancelPremium, claimMedal,
+      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, markNewsRead, subscribePremium, cancelPremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

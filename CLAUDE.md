@@ -55,7 +55,7 @@ All figures use **SGD**. Singapore is the first market. Lorewalk sources medals 
 
 One sentence: **walk to real places, collect and hatch creatures, build typed squads, deploy them to boost or claim places, and grow your collection and holdings.**
 
-1. **Walk** to a real landmark (a POI). The HUD step counter tracks steps as a flavour stat. **Visits carry the real progress.** Web step counting is too unreliable to gate progression on.
+1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. Steps hatch eggs and count toward the monthly Premium medal.
 2. **Check in** at the landmark, within 50 m. The player earns XP and an egg.
 3. **Visit more landmarks.** Eggs hatch into **typed** creatures, where the type matches the POI category: Heritage, Nature, Arts, and so on. The player gains XP and levels up.
 4. **Build a squad** from the collection. There are 3 squads of 4 slots each. Type matters.
@@ -92,7 +92,8 @@ src/
                            #   HatchRewardScreen, LevelUpScreen, WeekStrip, etc)
   contexts/               # React context providers
     ProfileContext.tsx     # player profile: creatures, squads, coins, eggs, steps
-    RewardContext.tsx      # queued reward/level-up screens
+    RewardContext.tsx      # reward screen (real payouts) + toast (small updates)
+    PlayerLocationContext  # one GPS watch + step counter for the app, applies steps to eggs
     ConnectionModeContext, LocaleContext, MusicContext
   hooks/
     useGeolocation.ts      # watchPosition wrapper → PlayerPosition state
@@ -114,6 +115,7 @@ src/
   pages/                  # MapPage, CreaturesPage, SquadsPage, ShopPage, ProfilePage,
                           #   SettingsPage, CharacterCustomizationPage
                           # ExpeditionsPage.tsx still exists but has no route and no import
+                          # ShopPage has no route: CoinCapsule opens it as a bottom sheet
   App.tsx                  # BrowserRouter + Routes + BottomNav + context providers
   main.tsx
   index.css                # Tailwind import + MapLibre CSS + mobile reset

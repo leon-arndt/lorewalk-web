@@ -160,14 +160,14 @@ test.describe('Profile dev cheats', () => {
 
   test('+100 steps cheat hatches a 100-step egg', async ({ page }) => {
     const unreadyEgg = { ...READY_EGG, id: 'egg-unready', stepsProgress: 0 }
-    await seedProfile(page, { eggs: [unreadyEgg], stepsAppliedToEggs: 0 })
+    await seedProfile(page, { eggs: [unreadyEgg] })
     await page.goto('/profile')
     await page.getByRole('button', { name: /\+100.*steps/i }).first().click()
-    // Wait for saveProfile to write the updated stepsAppliedToEggs before navigating
+    // Wait for saveProfile to write the egg progress before navigating
     await page.waitForFunction(() => {
       const raw = localStorage.getItem('lorewalk_profile')
       if (!raw) return false
-      return JSON.parse(raw).stepsAppliedToEggs >= 100
+      return JSON.parse(raw).eggs[0]?.stepsProgress >= 100
     })
     await page.getByRole('link', { name: 'Creatures' }).click()
     await expect(page.getByText('Tap to hatch!')).toBeVisible()

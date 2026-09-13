@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useRef, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useReward } from '@/contexts/RewardContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import {
@@ -11,6 +11,8 @@ import {
 import { accent, rewardGradient } from '@/lib/theme'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 
+// The shop has one entry point: CoinCapsule opens this as a bottom sheet, from
+// every screen that shows the coin balance. It has no route of its own.
 // Real money runs through Google Play Billing via RevenueCat's Capacitor SDK
 // (see src/lib/billing.ts, used by PremiumModal for subscriptions). Coin packs
 // aren't wired to that yet - until they are, the buy buttons credit coins
@@ -26,19 +28,12 @@ const COIN_PACKS = [
 export function ShopPage() {
   const { profile, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins } = useProfile()
   const { mode } = useConnectionMode()
+  const { showToast } = useReward()
   const { t } = useLocale()
-  const location = useLocation()
-  const scrollRef = useRef<HTMLDivElement>(null)
   const coinsRef = useRef<HTMLDivElement>(null)
-  const [flash, setFlash] = useState<string | null>(null)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
 
   const scrollToCoins = () => coinsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-
-  // Deep-link: /shop#coins (e.g. tapping a coin chip elsewhere) jumps to Coins.
-  useEffect(() => {
-    if (location.hash === '#coins') coinsRef.current?.scrollIntoView({ block: 'start' })
-  }, [location.hash])
 
   const creatureCost = creatureSlotsCost(profile.bonusCreatureSlots)
   const eggCost = eggSlotCost(profile.maxEggSlots)
@@ -75,15 +70,14 @@ export function ShopPage() {
     // currently only used for Premium subscriptions).
     if (mode === 'offline') {
       addCoins(pack.coins)
-      setFlash(t('shop_test_purchase', { coins: pack.coins }))
+      showToast(t('shop_test_purchase', { coins: pack.coins }))
     } else {
-      setFlash(t('shop_online_note'))
+      showToast(t('shop_online_note'))
     }
-    setTimeout(() => setFlash(null), 2800)
   }
 
   return (
-    <div ref={scrollRef} style={{ height: '100%', overflowY: 'auto', background: '#f8fafc' }}>
+    <div style={{ background: '#f8fafc', paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div style={{
         position: 'sticky', top: 0, zIndex: 2, background: '#f8fafc',
         padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',
@@ -199,9 +193,6 @@ export function ShopPage() {
             </div>
           ))}
         </div>
-        {flash && (
-          <div style={{ marginTop: 12, fontSize: 13, fontWeight: 700, color: '#16a34a', textAlign: 'center' }}>{flash}</div>
-        )}
       </section>
 
       {showPremiumModal && <PremiumModal onClose={() => setShowPremiumModal(false)} />}

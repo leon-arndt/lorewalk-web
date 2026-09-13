@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { useGeolocation } from '@/hooks/useGeolocation'
+import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
 import { hasReturned, expeditionDurationMs, claimPendingCoins, creatureName } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
-import type { ExpeditionTarget, HatchedCreature, Squad } from '@/types'
+import { CoinCapsule } from '@/components/UI/CoinCapsule'
+import type { ExpeditionTarget, HatchedCreature, RewardItem, Squad } from '@/types'
 import { accent, accentSoft, rewardGradient } from '@/lib/theme'
 import { pageBackground } from '@/lib/glass'
 
@@ -81,6 +82,7 @@ function Slot({ creature, disabled, onTap }: SlotProps) {
 
 function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatLon }) {
   const { profile, setActiveSquad, renameSquad, clearSlot, collectExpedition, recallSquad } = useProfile()
+  const { showReward } = useReward()
   const { t } = useLocale()
   const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
   const isActive = profile.activeSquadId === squad.id
@@ -91,7 +93,6 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
 
   const [picker, setPicker] = useState<number | null>(null)
   const [expeditionOpen, setExpeditionOpen] = useState(false)
-  const [flash, setFlash] = useState<string | null>(null)
   const [nameDraft, setNameDraft] = useState(squad.name)
   // Mirror external renames/resets into the controlled input.
   useEffect(() => { setNameDraft(squad.name) }, [squad.name])
@@ -103,15 +104,22 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
   }
 
   function handleCollect() {
+    if (!exp) return
     const r = collectExpedition(squad.id)
-    if (r) {
-      const parts = [`+${r.xp} XP`, `+${r.coins} 🪙`]
-      if (r.food) parts.push(`${r.food.emoji} ${r.food.name}!`)
-      if (r.egg) parts.push('🥚 egg!')
-      r.levelUps.forEach(({ species, newLevel }) => parts.push(`⬆️ ${species} ${t('level_badge', { level: newLevel })}!`))
-      setFlash(parts.join('  '))
-      setTimeout(() => setFlash(null), 3200)
-    }
+    if (!r) return
+    const items: RewardItem[] = [
+      { type: 'xp', amount: r.xp },
+      { type: 'coins', amount: r.coins },
+    ]
+    if (r.food) items.push({ type: 'food', label: r.food.name, emoji: r.food.emoji })
+    if (r.egg) items.push({ type: 'egg' })
+    r.levelUps.forEach(({ species, newLevel }) => items.push({ type: 'level_up', amount: newLevel, label: species }))
+    showReward({
+      emoji: '🧭',
+      title: t('squads_expedition_reward_title'),
+      subtitle: t('squads_expedition_reward_subtitle', { name: exp.poiName }),
+      items,
+    })
   }
 
   return (
@@ -196,7 +204,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
                 border: 'none', borderRadius: 10, padding: '10px', cursor: 'pointer',
               }}
             >
-              {flash ?? t('squads_collect_reward')}
+              {t('squads_collect_reward')}
             </button>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
@@ -381,8 +389,7 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
 export function SquadsPage() {
   const { profile } = useProfile()
   const { t } = useLocale()
-  const { position } = useGeolocation()
-  const navigate = useNavigate()
+  const { position } = usePlayerLocation()
   const [now, setNow] = useState(() => Date.now())
 
   // Tick once a second so countdowns and the "ready" state stay live.
@@ -400,16 +407,7 @@ export function SquadsPage() {
       <div style={{ padding: '24px 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>{t('squads_title')}</h1>
-          <button
-            onClick={() => navigate('/shop#coins')}
-            title={t('shop_get_more_coins')}
-            style={{
-              flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#b45309', cursor: 'pointer',
-              background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20,
-              padding: '4px 12px',
-            }}>
-            🪙 {profile.coins}
-          </button>
+          <CoinCapsule />
         </div>
         <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
           {t('squads_subtitle')}
@@ -429,8 +427,8 @@ export function SquadsPage() {
 
 function Holdings({ now }: { now: number }) {
   const { profile, collectClaim } = useProfile()
+  const { showToast } = useReward()
   const { t } = useLocale()
-  const [flash, setFlash] = useState<string | null>(null)
 
   if (profile.claims.length === 0) {
     return (
@@ -445,10 +443,7 @@ function Holdings({ now }: { now: number }) {
 
   function collect(poiId: string) {
     const coins = collectClaim(poiId)
-    if (coins > 0) {
-      setFlash(`+${coins} 🪙`)
-      setTimeout(() => setFlash(null), 2200)
-    }
+    if (coins > 0) showToast(t('toast_coins_collected', { coins }))
   }
 
   return (
@@ -488,9 +483,6 @@ function Holdings({ now }: { now: number }) {
           )
         })}
       </div>
-      {flash && (
-        <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: '#b45309', textAlign: 'center' }}>{flash}</div>
-      )}
     </div>
   )
 }
