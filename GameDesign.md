@@ -276,6 +276,15 @@ A **squad** is the team, a noun. An **expedition** is what a squad does, a verb.
 - Each companion is the same rigged Quaternius cat (`public/models/cat.glb`) that the collection thumbnails use. It plays the Idle and Walk clips of the model. The coat colour comes from the species in `src/data/creatures.ts`, and a shiny creature gets a gold tint. A companion on the map therefore matches its card in the collection. If the model does not load, a procedural shape per POI category replaces it.
 - **Sizing**: the characters hold a roughly constant on-screen size, in the Pikmin Bloom style, instead of true-to-life metres. This keeps them visible at normal play zoom, about 15 and above. At the whole-island offline view they stay tiny. Zoom to street level to see them.
 
+### Player avatar
+- The avatar is a chibi cube character from the same Quaternius cube family as the creature cat. It replaced the procedural capsule figure on 2026-09-13. The user chose the cube style over realistic modular humans, so the player and the companions read as one world and stay legible at map zoom.
+- There are two styles, "Short hair" and "Long hair". The picker names the hairstyle, not a gender.
+- Every colour option tints the model directly: skin, hair, eyes, top, and bottom.
+- An item with a different shape gets a blocky add-on built in code: the hoodie hood, jeans and cargo trousers, the skirt, every pair of shoes, and the cap, beanie, and sun hat. Cosmetics stay CC0 only, so the hats are not downloaded models.
+- On the map, the avatar walks while the GPS position moves and faces the direction of travel. It idles when the player stops. The customization preview waves after each change.
+- The customization screen never scrolls. The character fills the middle, and a fixed panel below it holds one tab per category (style, skin, hair, eyes, top, bottom, shoes, head item) with one row of options. The camera moves in to the head for hair, eyes, and head items, and to the feet for shoes. The player drags to turn the character. After a drag, it eases back to face the front.
+- Player icons (the profile header, the friend list, friends on a landmark) show a rendered head-and-shoulders portrait of the same avatar, so a friend looks the same as on the map. A blocky SVG face in the same style shows while the portrait renders.
+
 ### Squads on the map
 - A squad on an expedition shows a marker at the target POI: a 2×2 cluster of the emojis of its members.
 - The marker of the **active** squad carries an indigo ring. A **returned** expedition carries a 🎁 badge.

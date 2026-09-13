@@ -247,6 +247,9 @@ export interface Translations {
   customize_bottom: string
   customize_shoes: string
   customize_head_item: string
+  customize_style: string
+  customize_style_short_hair: string
+  customize_style_long_hair: string
   checkin_reward_title: string
   toast_poi_premium_locked: string
   toast_egg_ready_one: string

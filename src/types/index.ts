@@ -171,6 +171,7 @@ export interface PlayerProfile {
 }
 
 export interface PlayerAppearance {
+  bodyId: string       // an AVATAR_BODIES id in data/cosmetics.ts
   skinToneId: string
   hairColorId: string
   eyeColorId: string

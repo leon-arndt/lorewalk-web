@@ -104,7 +104,8 @@ src/
     profile.ts             # profile persistence + game rules (achievements, XP, eggs)
     journalDb.ts           # IndexedDB store for journal photos / postcards
     mapCharacters.ts       # three.js creature companions (loads /models/creature-<cat>.glb)
-    mapPlayerAvatar.ts     # procedural on-map player avatar (PlayerAppearance colours)
+    playerAvatar.ts        # chibi player avatar: /models/avatar-*.glb, tints + item add-ons
+    mapPlayerAvatar.ts     # map layer that walks the player avatar at the GPS position
     mapPoiPins.ts, mapMrt.ts, creaturePreview.ts, mapUtils.ts, health.ts, sfx.ts
     theme.ts, glass.ts     # theme.ts = brand accent/reward colours, glass.ts = frosted surfaces
   data/                   # static game data: creatures.ts, foods.ts, cosmetics.ts,

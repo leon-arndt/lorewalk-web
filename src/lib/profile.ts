@@ -597,7 +597,8 @@ export function loadProfile(): PlayerProfile {
         // rather than retroactively granting a chest for streak days already banked.
         streakChestMilestone: parsed.streakChestMilestone ?? streakChestMilestoneFor(parsed.streakDays ?? 0),
         streakFreezes: parsed.streakFreezes ?? 0,
-        appearance: parsed.appearance ?? DEFAULT_APPEARANCE,
+        // Merged so saves from before a field existed (such as bodyId) pick up its default.
+        appearance: { ...DEFAULT_APPEARANCE, ...parsed.appearance },
       }
     }
   } catch { /* ignore */ }

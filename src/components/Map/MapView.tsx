@@ -512,7 +512,9 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     let cancelled = false
 
     const add = async () => {
-      const p = position ?? { longitude: 103.8198, latitude: 1.3521 }
+      // The ref, not the mount-time `position`: a fix that lands before the map
+      // loads would otherwise leave the avatar at the default centre until the next one.
+      const p = positionRef.current ?? { longitude: 103.8198, latitude: 1.3521 }
       const handle = await addPlayerAvatarLayer(map, {
         position: [p.longitude, p.latitude],
         appearance: appearanceRef.current,

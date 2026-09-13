@@ -1,6 +1,8 @@
 // Shared offscreen WebGL renderer for egg + creature thumbnail generation.
 import { creatureDefBySpecies } from '@/data/creatures'
 import { CAT_MODEL_URL, tintCat } from '@/lib/catModel'
+import { createPlayerAvatar } from '@/lib/playerAvatar'
+import type { PlayerAppearance } from '@/types'
 
 const IMAGE_SIZE = 120  // logical px (rendered 2× for retina)
 
@@ -179,6 +181,35 @@ export function getCreatureSpinFrames(species: string, isShiny = false): Promise
     spinCache.set(key, renderCreatureFrames(def.color, isShiny, angles))
   }
   return spinCache.get(key)!
+}
+
+// Cache key for a look: every field that changes the render, in a fixed order.
+export function appearanceKey(a: PlayerAppearance): string {
+  return [a.bodyId, a.skinToneId, a.hairColorId, a.eyeColorId, a.topId, a.bottomId, a.shoesId, a.headItemId].join('|')
+}
+
+const portraitCache = new Map<string, Promise<string | null>>()
+
+// Head-and-shoulders render of the player avatar, for friend and profile icons.
+export function getAvatarPortraitURL(appearance: PlayerAppearance): Promise<string | null> {
+  const key = appearanceKey(appearance)
+  if (!portraitCache.has(key)) {
+    portraitCache.set(key, (async () => {
+      await initRenderer()
+      const avatar = await createPlayerAvatar(appearance)
+      avatar.update(0.3)
+      // The avatar is 1.4 tall with its head in the top half, facing +z.
+      avatar.root.rotation.y = 0.3
+      camera!.position.set(0, 1.12, 1.65)
+      camera!.lookAt(0, 1.04, 0)
+      scene!.add(avatar.root)
+      renderer!.render(scene!, camera!)
+      const dataURL = renderer!.domElement.toDataURL('image/png')
+      avatar.dispose()
+      return dataURL
+    })().catch(() => null))
+  }
+  return portraitCache.get(key)!
 }
 
 // Deterministic per-id hue so the same item always gets the same cube colour.

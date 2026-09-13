@@ -119,39 +119,34 @@ builder when a model is absent.
 
 ## Player avatar
 
-`mapPlayerAvatar.ts` renders the on-map character of the player. By default it
-builds a procedural blocky humanoid and colours it from `PlayerAppearance`
-(`src/types/index.ts`): skin tone, hair colour, eye colour, top, bottom, and
-shoes colour, plus an optional head item. This needs no file. It follows the same
-procedural placeholder convention as the creature shapes above.
+The player avatar is a chibi cube character. `src/lib/playerAvatar.ts` builds
+it, and both the map layer (`mapPlayerAvatar.ts`) and the customization preview
+(`CharacterCustomizationPage.tsx`) use it. `PlayerAppearance.bodyId` picks the
+model:
 
-### Replacement with a real CC0 rig
+| Style      | File                    | Source                                                           |
+|------------|-------------------------|------------------------------------------------------------------|
+| Short hair | `avatar-short-hair.glb` | [Cube Guy Character](https://poly.pizza/m/K1IczhnvQ5) by Quaternius, CC0   |
+| Long hair  | `avatar-long-hair.glb`  | [Cube Woman Character](https://poly.pizza/m/75ikp7NEDx) by Quaternius, CC0 |
 
-Drop a rigged humanoid `.glb` in here as `player-avatar.glb`. The app picks it up
-automatically and the code needs no change. Export the file with:
+Both come from the same Quaternius cube family as `cat.glb`. Like the cat, each
+download coloured itself from one small texture atlas. A one-time conversion
+split the mesh by atlas swatch into five flat materials and removed the atlas:
+`Skin` (with the hands and the bare feet), `Hair`, `Eyes`, `Top`, and `Bottom`.
+The conversion also kept only the Idle, Walk, and Wave clips and quantized the
+mesh. The app tints each material from `PlayerAppearance`.
 
-- **Materials named `Skin`, `Hair`, and `Eyes`.** The app clones and retints these
-  per `PlayerAppearance`. This is the same technique as the `Cat_Main` and
-  `Cat_Secondary` retinting in `catModel.ts`. See the "Creature collection
-  thumbnails" section above.
-- **Child mesh nodes with the prefixes `Top_`, `Bottom_`, `Shoes_`, and `Head_`**,
-  one node per cosmetic item id in `src/data/cosmetics.ts`. Examples: `Top_tee`,
-  `Top_hoodie`, `Bottom_jeans`, `Head_cap`. The app shows only the node that
-  matches the equipped id and hides the rest.
+Items whose shape differs get blocky add-ons, built in code in
+`addItemShapes()`: the hoodie hood and pocket, the jacket front, jeans and cargo
+trousers over the shins, the skirt, every pair of shoes, and the cap, beanie,
+and sun hat. The code measures the rest pose of the model and sizes each add-on
+from it, so one set of numbers fits both bodies. Each add-on attaches to a bone
+(`Head`, `Torso`, `Hips`, `LowerLegL`, `FootL`, and so on), so it follows the
+animation. Only CC0 assets go in. Almost every hat model on Poly Pizza is
+CC-BY 3.0, so the hats stay procedural.
 
-Good CC0 sources for a modular humanoid rig with tintable skin and eyes:
-
-- **Quaternius Universal Base Characters**: https://quaternius.com/packs/universalbasecharacters.html
-  (6 base proportions, 20 hairstyles, tintable skin and eyes, glTF, humanoid rig).
-- **Quaternius Modular Character Outfits**: https://quaternius.itch.io/modular-character-outfits-fantasy
-  (62 modular tops, bottoms, shoes, and headwear pieces, CC0, glTF. They retarget
-  onto the Universal Base Characters rig above).
-- **Kenney Modular Characters**: https://kenney.nl/assets/modular-characters
-  (CC0, 75 or more skins, 40 or more accessories).
-
-Both Quaternius packs are itch.io "name your own price" downloads, so set the
-price to 0. Download them by hand, then export and rename the pieces to the
-convention above.
+If the model does not load, a procedural capsule humanoid takes its place. The
+service worker does not precache `.glb` files, so this can happen offline.
 
 ## Animation clip naming
 

@@ -33,6 +33,18 @@ export const EYE_COLORS: ColorSwatch[] = [
   { id: 'amber',  label: 'Amber',  color: 0xb5651d },
 ]
 
+// The rigged CC0 Quaternius Cube Guy and Cube Woman. The player picks one by
+// hairstyle, so the choice reads as a style, not a gender.
+export interface AvatarBodyDef {
+  id: string
+  modelUrl: string
+}
+
+export const AVATAR_BODIES: AvatarBodyDef[] = [
+  { id: 'shortHair', modelUrl: '/models/avatar-short-hair.glb' },
+  { id: 'longHair',  modelUrl: '/models/avatar-long-hair.glb' },
+]
+
 export type CosmeticSlot = 'top' | 'bottom' | 'shoes' | 'headItem'
 
 export interface CosmeticItemDef {
@@ -81,6 +93,10 @@ export function cosmeticItemsBySlot(slot: CosmeticSlot): CosmeticItemDef[] {
   return COSMETIC_ITEMS.filter((i) => i.slot === slot)
 }
 
+export function avatarBodyById(id: string): AvatarBodyDef {
+  return AVATAR_BODIES.find((b) => b.id === id) ?? AVATAR_BODIES[0]
+}
+
 export function skinToneById(id: string): ColorSwatch | undefined {
   return SKIN_BY_ID.get(id)
 }
@@ -98,6 +114,7 @@ export function toCssColor(color: number): string {
 }
 
 export const DEFAULT_APPEARANCE: PlayerAppearance = {
+  bodyId: AVATAR_BODIES[0].id,
   skinToneId: SKIN_TONES[1].id,
   hairColorId: HAIR_COLORS[0].id,
   eyeColorId: EYE_COLORS[0].id,
@@ -123,6 +140,7 @@ export function deterministicAppearance(seed: string): PlayerAppearance {
   const pick = <T extends { id: string }>(arr: T[], salt: string): T =>
     arr[hashSeed(seed + salt) % arr.length]
   return {
+    bodyId: pick(AVATAR_BODIES, ':body').id,
     skinToneId: pick(SKIN_TONES, ':skin').id,
     hairColorId: pick(HAIR_COLORS, ':hair').id,
     eyeColorId: pick(EYE_COLORS, ':eye').id,
