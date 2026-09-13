@@ -11,6 +11,7 @@ import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
 import type { Poi, PlayerAppearance, PlayerPosition } from '@/types'
 import { accent, accentAlpha } from '@/lib/theme'
+import { SINGAPORE_BOUNDARY } from '@/data/singapore-boundary'
 
 // Map markers are built with raw DOM (MapLibre, not React) - this mirrors EmojiSprite's
 // emoji-fallback-then-3D-swap pattern for that imperative context.
@@ -367,10 +368,16 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (import.meta.env.DEV) (window as unknown as { _map?: maplibregl.Map })._map = map
 
     map.on('load', () => {
-      // Lower 3D buildings to neighbourhood zoom.
+      // Lower 3D buildings to neighbourhood zoom. Hide every base-map label
+      // outside Singapore (Johor Bahru, Batam) since the game is Singapore-only.
       for (const layer of map.getStyle().layers) {
         if (layer.type === 'fill-extrusion') {
           map.setLayerZoomRange(layer.id, 12, 24)
+        } else if (layer.type === 'symbol') {
+          const inSingapore: maplibregl.ExpressionSpecification = ['within', SINGAPORE_BOUNDARY]
+          // Liberty's filters are all expression syntax, so they can share an 'all'.
+          const filter = map.getFilter(layer.id) as maplibregl.ExpressionSpecification | undefined
+          map.setFilter(layer.id, filter ? ['all', filter, inSingapore] : inSingapore)
         }
       }
       addMrtLayers(map)

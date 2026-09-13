@@ -190,6 +190,7 @@ create policy "anyone can update" on player_public_stats for update using (true)
 - **Tile source**: the OpenFreeMap "Liberty" vector style at `https://tiles.openfreemap.org/styles/liberty`. It is free, needs no API key, and includes 3D building extrusions and transit POIs. The community funds it and it carries no SLA. Self-host the tiles or move to a paid provider before any high-volume public launch. The map used flat raster OSM before. The web map no longer matches the 2D look of the Unity client, which was a deliberate aesthetic choice.
 - **3D and pitch**: the map starts at `pitch: 70`, so Liberty's building extrusions read as depth. `maxPitch` is 80. The first GPS fix eases the camera to zoom 16.5, because the extrusions start at zoom 12 and the tilt reads as flat above that.
 - **Default centre**: Singapore (1.3521, 103.8198), used when the browser has no GPS fix.
+- **Singapore-only labels**: the game is Singapore only, so the map shows no base-map label outside Singapore, such as Johor Bahru or Batam. On load, `MapView.tsx` adds a `within` filter to every Liberty symbol layer. The filter uses the boundary polygon in `src/data/singapore-boundary.ts`. The polygon includes the territorial waters, so it follows the maritime line through the Johor Strait.
 - **POI colours**: gold `#f59e0b` marks a permanent POI, purple `#a855f7` marks a temporary one. The Unity uGUI markers follow the same convention.
 
 ## Sound
