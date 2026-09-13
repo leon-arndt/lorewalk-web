@@ -8,14 +8,17 @@ import type * as T3 from 'three'
 //
 // Each character autonomously wanders: idle → pick a nearby point → play the walk
 // clip while turning to face it → idle on arrival. Models load from `modelUrl`
-// (a Quaternius .glb with Idle/Walk clips); if that's missing we fall back to
-// category-specific procedural creatures so the pipeline is always visible.
+// (the rigged Quaternius cat with Idle/Walk clips, retinted per coat colour); if
+// that's missing we fall back to category-specific procedural creatures so the
+// pipeline is always visible.
 
-// One on-map character: creature id, body colour, and POI category (drives shape).
+// One on-map character: creature id, coat colour, and POI category (drives the
+// fallback shape only).
 export interface CharacterSpec {
   id: string
   color: number
   category?: string
+  shiny?: boolean
 }
 
 export interface CharacterLayerHandle {
@@ -43,6 +46,10 @@ const SIZE_COMP_MAX = 1024
 
 const LAYER_ID = 'lorewalk-characters'
 
+// Height in body units that a loaded model is fitted to, independent of the
+// .glb's own units. Keeps companions a bit shorter than the player avatar.
+const MODEL_FIT_HEIGHT = 0.8
+
 export async function addCharacterLayer(
   map: maplibregl.Map,
   opts: CharacterLayerOptions,
@@ -50,6 +57,7 @@ export async function addCharacterLayer(
   const THREE = await import('three')
   const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
   const { clone: skeletonClone } = await import('three/examples/jsm/utils/SkeletonUtils.js')
+  const { tintCat } = await import('@/lib/catModel')
 
   const wanderRadius = opts.wanderRadiusM ?? 25
   const modelScale = opts.modelScale ?? 1
@@ -81,6 +89,7 @@ export async function addCharacterLayer(
     idleUntil: number
     bobPhase: number
     procedural: boolean
+    ownedMaterials: T3.Material[]
   }
   const characters: Character[] = []
 
@@ -280,10 +289,12 @@ export async function addCharacterLayer(
     let mixer: T3.AnimationMixer | null = null
     let idle: AnimationAction | null = null
     let walk: AnimationAction | null = null
+    let ownedMaterials: T3.Material[] = []
     const procedural = !template
 
     if (template) {
       root = skeletonClone(template.scene)
+      ownedMaterials = tintCat(THREE, root, spec.color, spec.shiny)
       mixer = new THREE.AnimationMixer(root)
       const clips = template.animations
       const idleClip = pickClip(clips, 'idle') ?? clips[0] ?? null
@@ -304,7 +315,7 @@ export async function addCharacterLayer(
       root, mixer, idle, walk, state: 'idle',
       x: start.x, z: start.z, tx: start.x, tz: start.z,
       speed: 1.1 + Math.random() * 0.7,
-      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural,
+      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, ownedMaterials,
     })
   }
 
@@ -360,7 +371,13 @@ export async function addCharacterLayer(
   if (opts.modelUrl) {
     try {
       const gltf = await new GLTFLoader().loadAsync(opts.modelUrl)
-      template = { scene: gltf.scene, animations: gltf.animations }
+      // Fit on an inner node: render() overwrites each clone's root scale per frame.
+      gltf.scene.updateMatrixWorld(true)
+      const size = new THREE.Box3().setFromObject(gltf.scene).getSize(new THREE.Vector3())
+      if (size.y > 0) gltf.scene.scale.setScalar(MODEL_FIT_HEIGHT / size.y)
+      const fitted = new THREE.Group()
+      fitted.add(gltf.scene)
+      template = { scene: fitted, animations: gltf.animations }
     } catch {
       template = null
     }
@@ -395,7 +412,7 @@ export async function addCharacterLayer(
         x: start.x, z: start.z, tx: start.x, tz: start.z,
         speed: 1.1 + Math.random() * 0.7,
         idleUntil: 0, bobPhase: Math.random() * Math.PI * 2,
-        procedural: true,
+        procedural: true, ownedMaterials: [],
       })
     } else {
       originalSpawn(spec)
@@ -407,6 +424,7 @@ export async function addCharacterLayer(
       c.mixer?.stopAllAction()
       worldGroup.remove(c.root)
       if (c.procedural) disposeObject(c.root)
+      c.ownedMaterials.forEach((m) => m.dispose())
     }
     characters.length = 0
     specs.forEach(spawnWithGlb)

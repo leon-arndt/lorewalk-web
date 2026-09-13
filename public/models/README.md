@@ -2,16 +2,27 @@
 
 ## Creature collection thumbnails
 
-`cat.glb` holds the base rigged cat mesh. The creature card and the creature detail
-screen use it for their thumbnails, in place of the emoji placeholders. It is CC0,
-by [Quaternius](https://poly.pizza/m/2f54vbV0In) on poly.pizza.
+`cat.glb` holds the rigged cat mesh. The creature card, the creature detail
+screen, and the companions on the map all use it. It is the CC0
+[Cat by Quaternius](https://poly.pizza/m/qKICY6xla2) on poly.pizza. It replaced
+an older Quaternius "Cat_Blob" model, which had a round body and no legs.
 
-Its materials are flat-shaded and carry the names `Cat_Main`, `Cat_Secondary`,
-`Ears`, `Eye_White`, and `Eye_Black`. `creaturePreview.ts` therefore retints one
-shared mesh per coat `color` of a creature (see `data/creatures.ts`). This avoids
-one model per coat variant.
+The download colours the cat from one texture atlas. The atlas is shared across
+the whole animal pack. A one-time conversion split the mesh by atlas swatch into
+flat materials and removed the atlas. The conversion also shortened the clip
+names. The materials are:
 
-Animation clips: Idle, Walk, Jump, Dance, Bite_Front, HitRecieve, Death, Yes, No.
+| Material        | Parts                         | Tinted |
+|-----------------|-------------------------------|--------|
+| `Cat_Main`      | body, head, tail, outer ears  | coat colour |
+| `Cat_Secondary` | muzzle, paws, inner ears      | a paler coat colour |
+| `Eye_Black`     | eyes                          | no     |
+| `Nose`          | nose                          | no     |
+
+`tintCat()` in `src/lib/catModel.ts` retints one shared mesh per coat `color` of a
+creature (see `data/creatures.ts`). This avoids one model per coat variant.
+
+Animation clips: Idle, Idle_Eating, Walk, Run, Jump_Start, Jump_Loop, Headbutt, Death.
 
 # POI pin models
 
@@ -63,12 +74,17 @@ and about 40 other trees, such as palms and pines.
 
 # Map character models
 
-Each creature category renders its own procedural 3D shape by default, and this
-needs no file. To override every shape with one shared animated model, drop a CC0
-`.glb` here as `character.glb`. To load one GLB per category instead, extend
-`mapCharacters.ts`.
+The companions on the map use `cat.glb`, the same model as the collection
+thumbnails. `MapView.tsx` passes `CAT_MODEL_URL` from `src/lib/catModel.ts` to
+`addCharacterLayer`. The layer fits the model to a fixed height, so the units of
+the file do not matter. It plays the Idle and Walk clips. `tintCat()` in
+`catModel.ts` retints each clone per coat colour. The thumbnail code uses the same
+function.
 
-## Procedural creature shapes (built-in placeholders)
+If the model does not load, each creature category falls back to its own
+procedural 3D shape. The shapes are in the table below.
+
+## Procedural creature shapes (fallback)
 
 | Category  | Shape              | Inspiration        |
 |-----------|--------------------|--------------------|
@@ -90,11 +106,13 @@ Good sources, all CC0 or public domain:
   ships rigged humanoids with `Idle`, `Walk`, and `Run` clips.
 - **Poly Pizza**: https://poly.pizza. Filter by CC0.
 
-### To use one shared animated model for every category
-1. Save the file as `public/models/character.glb`.
-2. Pass `modelUrl: '/models/character.glb'` to the `addCharacterLayer` call in `MapView.tsx`.
+### To use a different shared animated model
+1. Save the file in this directory.
+2. Pass its URL as `modelUrl` to the `addCharacterLayer` call in `MapView.tsx`.
+3. Name its tintable materials `Cat_Main` and `Cat_Secondary`, or change the set
+   in `catModel.ts`.
 
-### To use one model per category (better long term)
+### To use one model per species or category (better long term)
 Extend `mapCharacters.ts`. Add a `categoryModelUrl` map, load each entry through
 `GLTFLoader`, and cache the result by category. Fall back to the procedural
 builder when a model is absent.
@@ -114,7 +132,7 @@ automatically and the code needs no change. Export the file with:
 
 - **Materials named `Skin`, `Hair`, and `Eyes`.** The app clones and retints these
   per `PlayerAppearance`. This is the same technique as the `Cat_Main` and
-  `Cat_Secondary` retinting in `creaturePreview.ts`. See the "Creature collection
+  `Cat_Secondary` retinting in `catModel.ts`. See the "Creature collection
   thumbnails" section above.
 - **Child mesh nodes with the prefixes `Top_`, `Bottom_`, `Shoes_`, and `Head_`**,
   one node per cosmetic item id in `src/data/cosmetics.ts`. Examples: `Top_tee`,

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { getFoodDef } from '@/data/foods'
-import { getCreaturePreviewURL } from '@/lib/creaturePreview'
+import { getCreaturePreviewURL, getCreatureSpinFrames } from '@/lib/creaturePreview'
 import { creatureName, xpForCreatureLevel } from '@/lib/profile'
 import type { FoodItem, HatchedCreature } from '@/types'
 import { pageBackground } from '@/lib/glass'
@@ -8,6 +8,10 @@ import { accent, rewardGradientHorizontal } from '@/lib/theme'
 import { useLocale } from '@/contexts/LocaleContext'
 
 const DROPZONE = 'creature'
+
+// Tapping the creature in the detail view spins it SPIN_TURNS times with a hop.
+const SPIN_MS = 900
+const SPIN_TURNS = 2
 
 function bobDelay(id: string) {
   return `-${(id.charCodeAt(id.length - 1) % 20) / 10}s`
@@ -20,11 +24,11 @@ function CreatureScene({ creature, size, nomming, highlight }: {
   highlight?: boolean
 }) {
   const large = size === 'lg'
-  const emojiSize = large ? 96 : 44
-  const groundW = large ? 160 : 84
-  const groundH = large ? 46 : 24
-  const shadowW = large ? 70 : 36
-  const shadowH = large ? 14 : 7
+  const emojiSize = large ? 96 : 64
+  const groundW = large ? 160 : 96
+  const groundH = large ? 46 : 26
+  const shadowW = large ? 70 : 44
+  const shadowH = large ? 14 : 8
 
   const [src, setSrc] = useState<string | null>(null)
   useEffect(() => {
@@ -32,6 +36,56 @@ function CreatureScene({ creature, size, nomming, highlight }: {
     getCreaturePreviewURL(creature.species, creature.isShiny).then((url) => { if (!cancelled) setSrc(url) })
     return () => { cancelled = true }
   }, [creature.species, creature.isShiny])
+
+  const [spinSrc, setSpinSrc] = useState<string | null>(null)
+  const spinningRef = useRef(false)
+  const rafRef = useRef(0)
+  const spinning = spinSrc !== null
+
+  // Warm the turntable frames after the sheet has slid in, so the first tap
+  // spins at once without stalling the slide animation.
+  useEffect(() => {
+    if (!large) return
+    const id = setTimeout(() => { getCreatureSpinFrames(creature.species, creature.isShiny).catch(() => {}) }, 400)
+    return () => clearTimeout(id)
+  }, [large, creature.species, creature.isShiny])
+
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), [])
+
+  async function spin() {
+    if (spinningRef.current) return
+    spinningRef.current = true
+    const frames = await getCreatureSpinFrames(creature.species, creature.isShiny).catch(() => [])
+    if (!frames.length) { spinningRef.current = false; return }
+    const start = performance.now()
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / SPIN_MS)
+      const eased = 1 - Math.pow(1 - t, 3)
+      setSpinSrc(frames[Math.round(eased * SPIN_TURNS * frames.length) % frames.length])
+      if (t < 1) { rafRef.current = requestAnimationFrame(tick); return }
+      setSpinSrc(null)
+      spinningRef.current = false
+    }
+    rafRef.current = requestAnimationFrame(tick)
+  }
+
+  const figureStyle: CSSProperties = {
+    fontSize: emojiSize,
+    lineHeight: 1,
+    display: 'block',
+    transformOrigin: spinning ? '50% 100%' : undefined,
+    animation: spinning
+      ? `creatureSpinHop ${SPIN_MS}ms ease-in-out`
+      : nomming
+      ? 'creatureNom 0.55s ease forwards'
+      : `creatureBob 2.2s ease-in-out infinite`,
+    animationDelay: spinning || nomming ? '0s' : bobDelay(creature.id),
+    filter: creature.isShiny ? 'drop-shadow(0 0 10px rgba(245,158,11,0.75))' : undefined,
+  }
+  const shown = spinSrc ?? src
+  const figure = shown
+    ? <img src={shown} width={emojiSize} height={emojiSize} alt={creature.species} style={{ display: 'block' }} />
+    : creature.emoji
 
   return (
     <div
@@ -45,20 +99,21 @@ function CreatureScene({ creature, size, nomming, highlight }: {
         transition: 'background 0.15s',
       }}
     >
-      <span style={{
-        fontSize: emojiSize,
-        lineHeight: 1,
-        display: 'block',
-        animation: nomming
-          ? 'creatureNom 0.55s ease forwards'
-          : `creatureBob 2.2s ease-in-out infinite`,
-        animationDelay: nomming ? '0s' : bobDelay(creature.id),
-        filter: creature.isShiny ? 'drop-shadow(0 0 10px rgba(245,158,11,0.75))' : undefined,
-      }}>
-        {src
-          ? <img src={src} width={emojiSize} height={emojiSize} alt={creature.species} style={{ display: 'block' }} />
-          : creature.emoji}
-      </span>
+      {large
+        ? (
+          <button
+            type="button"
+            onClick={spin}
+            style={{
+              ...figureStyle,
+              background: 'none', border: 0, padding: 0, cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            {figure}
+          </button>
+        )
+        : <span style={figureStyle}>{figure}</span>}
 
       <div style={{
         width: shadowW, height: shadowH,

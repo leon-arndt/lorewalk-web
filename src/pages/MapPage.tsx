@@ -22,6 +22,7 @@ import { glassChrome } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
 import { isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
+import { creatureDefBySpecies } from '@/data/creatures'
 import type { Poi, RewardItem } from '@/types'
 import { accent, rewardGradient } from '@/lib/theme'
 
@@ -78,11 +79,15 @@ export function MapPage() {
       .filter((id): id is string => !!id)
       // Creatures away foraging at a food node don't walk with you.
       .filter((id) => !busyCreatureIds.has(id))
-      .map((id) => ({
-        id,
-        color: categoryColor(byId.get(id)?.poiCategory),
-        category: byId.get(id)?.poiCategory,
-      }))
+      .map((id) => {
+        const c = byId.get(id)
+        return {
+          id,
+          color: (c && creatureDefBySpecies(c.species)?.color) ?? categoryColor(c?.poiCategory),
+          category: c?.poiCategory,
+          shiny: c?.isShiny,
+        }
+      })
     if (members.length > 0) return members
     return [0, 1, 2].map((i) => ({ id: `ambient-${i}`, color: 0x94a3b8, category: undefined }))
   }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures, busyCreatureIds])

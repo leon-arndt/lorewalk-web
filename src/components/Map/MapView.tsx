@@ -2,6 +2,7 @@ import { useEffect, useRef, type MutableRefObject } from 'react'
 import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
+import { CAT_MODEL_URL } from '@/lib/catModel'
 import { addPlayerAvatarLayer, type PlayerAvatarLayerHandle } from '@/lib/mapPlayerAvatar'
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
@@ -450,7 +451,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       const handle = await addCharacterLayer(map, {
         center: c,
         characters: companionsRef.current,
-        modelUrl: '/models/character.glb',
+        modelUrl: CAT_MODEL_URL,
         wanderRadiusM: 30,
         modelScale: 4,
       })

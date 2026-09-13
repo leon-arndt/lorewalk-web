@@ -270,7 +270,7 @@ A **squad** is the team, a noun. An **expedition** is what a squad does, a verb.
 - The app renders the **creatures of the active squad** as 3D characters that idle and wander around the position of the player. This makes the party physical. An empty slot means one companion fewer.
 - While the active squad is **away on an expedition**, no companion follows. They are all at the landmark.
 - While the active squad is **empty**, a few neutral grey "ambient" wanderers appear, so the map is never lifeless. Real members replace them once the player assigns creatures.
-- The body colour of a companion reflects the type and category of its creature. The current model is a procedural placeholder. A Quaternius `.glb` at `public/models/character.glb` replaces it.
+- Each companion is the same rigged Quaternius cat (`public/models/cat.glb`) that the collection thumbnails use. It plays the Idle and Walk clips of the model. The coat colour comes from the species in `src/data/creatures.ts`, and a shiny creature gets a gold tint. A companion on the map therefore matches its card in the collection. If the model does not load, a procedural shape per POI category replaces it.
 - **Sizing**: the characters hold a roughly constant on-screen size, in the Pikmin Bloom style, instead of true-to-life metres. This keeps them visible at normal play zoom, about 15 and above. At the whole-island offline view they stay tiny. Zoom to street level to see them.
 
 ### Squads on the map
