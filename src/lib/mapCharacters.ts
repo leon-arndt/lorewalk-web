@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
+import { isMapPaused } from '@/lib/mapUtils'
 
 // Renders little animated characters that wander around a point on the map, à la
 // Pikmin Bloom. MapLibre has no native glTF support, so this is a Three.js custom
@@ -475,7 +476,7 @@ export async function addCharacterLayer(
       // Characters animate continuously (idle bob + idle clip), so keep the frame
       // loop alive while any exist - but let the map go idle when the roster is
       // empty instead of pinning the GPU at full FPS for nothing.
-      if (characters.length > 0) map.triggerRepaint()
+      if (characters.length > 0 && !isMapPaused()) map.triggerRepaint()
     },
     onRemove() {
       renderer?.dispose()

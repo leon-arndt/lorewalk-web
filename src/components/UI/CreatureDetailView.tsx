@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { getFoodDef } from '@/data/foods'
 import { getCreaturePreviewURL, getCreatureSpinFrames } from '@/lib/creaturePreview'
 import { creatureName, xpForCreatureLevel } from '@/lib/profile'
+import { creatureDefBySpecies } from '@/data/creatures'
 import type { FoodItem, HatchedCreature } from '@/types'
-import { pageBackground } from '@/lib/glass'
-import { accent, rewardGradientHorizontal } from '@/lib/theme'
+import { glassSheet } from '@/lib/glass'
+import { accent, categoryCss, rewardGradientHorizontal } from '@/lib/theme'
 import { useLocale } from '@/contexts/LocaleContext'
 
 const DROPZONE = 'creature'
@@ -24,11 +25,15 @@ function CreatureScene({ creature, size, nomming, highlight }: {
   highlight?: boolean
 }) {
   const large = size === 'lg'
-  const emojiSize = large ? 96 : 64
-  const groundW = large ? 160 : 96
-  const groundH = large ? 46 : 26
-  const shadowW = large ? 70 : 44
-  const shadowH = large ? 14 : 8
+  const boxSize = large ? 96 : 60
+  // Pokedex-style size variety: the wild and mythic cats stand taller than strays.
+  const type = creatureDefBySpecies(creature.species)?.type
+  const emojiSize = Math.round(boxSize * (type === 'wild' || type === 'mythic' ? 1 : 0.84))
+  const groundW = large ? 150 : 64
+  const groundH = large ? 38 : 18
+  const shadowW = large ? 70 : 34
+  const shadowH = large ? 14 : 7
+  const typeColor = categoryCss(creature.poiCategory)
 
   const [src, setSrc] = useState<string | null>(null)
   useEffect(() => {
@@ -92,13 +97,14 @@ function CreatureScene({ creature, size, nomming, highlight }: {
       data-dropzone={large ? DROPZONE : undefined}
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
-        userSelect: 'none',
+        userSelect: 'none', isolation: 'isolate',
         padding: large ? '12px 32px 12px' : undefined,
         borderRadius: large ? 20 : undefined,
         background: highlight ? 'rgba(99,102,241,0.08)' : undefined,
         transition: 'background 0.15s',
       }}
     >
+      <div style={{ height: boxSize, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       {large
         ? (
           <button
@@ -114,28 +120,25 @@ function CreatureScene({ creature, size, nomming, highlight }: {
           </button>
         )
         : <span style={figureStyle}>{figure}</span>}
+      </div>
 
       <div style={{
         width: shadowW, height: shadowH,
         borderRadius: '50%',
-        background: 'rgba(0,0,0,0.22)',
+        background: 'rgba(15,23,42,0.18)',
         marginTop: large ? -10 : -5,
         animation: nomming ? undefined : `shadowPulse 2.2s ease-in-out infinite`,
         animationDelay: bobDelay(creature.id),
       }} />
 
+      {/* Flat pad in the creature's type colour, under the contact shadow. */}
       <div style={{
         width: groundW, height: groundH,
         borderRadius: '50%',
-        background: 'radial-gradient(ellipse at 42% 32%, #4ade80 0%, #22c55e 40%, #16a34a 68%, #166534 100%)',
-        boxShadow: 'inset 0 -6px 14px rgba(0,0,0,0.28), inset 0 3px 6px rgba(255,255,255,0.18), 0 5px 12px rgba(0,0,0,0.18)',
-        marginTop: large ? -16 : -8,
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-        padding: large ? '2px 18px 0' : '1px 10px 0',
-      }}>
-        <span style={{ fontSize: large ? 13 : 7, lineHeight: 1 }}>🌱</span>
-        <span style={{ fontSize: large ? 11 : 6, lineHeight: 1 }}>🌱</span>
-      </div>
+        background: `radial-gradient(ellipse at center, ${typeColor}59 0%, ${typeColor}2e 55%, ${typeColor}00 72%)`,
+        marginTop: large ? -24 : -12,
+        position: 'relative', zIndex: -1,
+      }} />
     </div>
   )
 }
@@ -291,7 +294,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '88vh',
-          background: pageBackground,
+          ...glassSheet,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

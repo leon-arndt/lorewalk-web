@@ -9,7 +9,7 @@ import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import type { ExpeditionTarget, HatchedCreature, RewardItem, Squad } from '@/types'
 import { accent, accentSoft, rewardGradient } from '@/lib/theme'
-import { pageBackground } from '@/lib/glass'
+import { glassPage } from '@/lib/glass'
 
 // Where a squad sets out from when sending it on an expedition: the player's live
 // position, or Singapore's centre when GPS is unavailable (e.g. offline testing).
@@ -403,7 +403,7 @@ export function SquadsPage() {
     : SG_CENTRE
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: pageBackground, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>{t('squads_title')}</h1>

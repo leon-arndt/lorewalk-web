@@ -6,7 +6,7 @@ import { deterministicAppearance } from '@/data/cosmetics'
 import { BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
 import { useLocale } from '@/contexts/LocaleContext'
 import { accent, accentSoft, rewardGradient } from '@/lib/theme'
-import { pageBackground } from '@/lib/glass'
+import { glassSheet } from '@/lib/glass'
 
 interface Props {
   friend: Friend
@@ -38,7 +38,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          background: pageBackground,
+          ...glassSheet,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

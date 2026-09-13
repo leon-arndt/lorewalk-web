@@ -3,7 +3,7 @@ import { getMedalConfig } from '@/data/medals'
 import { useLocale } from '@/contexts/LocaleContext'
 import { currentMonthKey } from '@/lib/profile'
 import type { EarnedMedal } from '@/types'
-import { pageBackground } from '@/lib/glass'
+import { glassSheet } from '@/lib/glass'
 
 const MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -36,7 +36,7 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          background: pageBackground,
+          ...glassSheet,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

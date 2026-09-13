@@ -4,7 +4,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useReward } from '@/contexts/RewardContext'
-import { pageBackground } from '@/lib/glass'
+import { glassSheet } from '@/lib/glass'
 import {
   fetchPremiumOfferings, isBillingAvailable, playSubscriptionManagementUrl, purchasePremiumPackage,
   type PremiumOfferings,
@@ -123,7 +123,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '92vh',
-          background: pageBackground,
+          ...glassSheet,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

@@ -1,5 +1,5 @@
 import { Component, useEffect, type ReactNode } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { ConnectionModeProvider } from '@/contexts/ConnectionModeContext'
 import { ProfileProvider, useProfile } from '@/contexts/ProfileContext'
 import { LocaleProvider } from '@/contexts/LocaleContext'
@@ -19,16 +19,22 @@ import { ProfilePage } from '@/pages/ProfilePage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { CharacterCustomizationPage } from '@/pages/CharacterCustomizationPage'
 
+function MapUnavailable() {
+  // The map sits under every tab, so its fallback would ghost through their glass.
+  if (useLocation().pathname !== '/') return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, color: '#94a3b8', fontSize: 14 }}>
+      <span style={{ fontSize: 40 }}>🗺</span>
+      Map unavailable
+    </div>
+  )
+}
+
 class MapErrorBoundary extends Component<{ children: ReactNode }, { crashed: boolean }> {
   state = { crashed: false }
   static getDerivedStateFromError() { return { crashed: true } }
   render() {
-    if (this.state.crashed) return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, color: '#94a3b8', fontSize: 14 }}>
-        <span style={{ fontSize: 40 }}>🗺</span>
-        Map unavailable
-      </div>
-    )
+    if (this.state.crashed) return <MapUnavailable />
     return this.props.children
   }
 }
@@ -89,8 +95,10 @@ export default function App() {
           <BrowserRouter>
             <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
               <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+                {/* Mounted on every route: the other tabs are frosted glass over it. */}
+                <MapErrorBoundary><MapPage /></MapErrorBoundary>
                 <Routes>
-                  <Route path="/" element={<MapErrorBoundary><MapPage /></MapErrorBoundary>} />
+                  <Route path="/" element={null} />
                   <Route path="/creatures" element={<CreaturesPage />} />
                   <Route path="/squads" element={<SquadsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />

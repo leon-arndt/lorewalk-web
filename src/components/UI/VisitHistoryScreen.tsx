@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { VisitHistoryItem } from '@/components/UI/VisitHistoryItem'
 import type { VisitRecord } from '@/types'
-import { pageBackground } from '@/lib/glass'
+import { glassSheet } from '@/lib/glass'
 
 const PAGE_SIZE = 20
 
@@ -29,7 +29,7 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          background: pageBackground,
+          ...glassSheet,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

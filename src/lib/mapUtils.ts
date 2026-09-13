@@ -12,3 +12,9 @@ export function haversineDistance(
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
   return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
+
+// Another tab covers the map with a frosted page. The map stays mounted so it
+// shows through the blur, but its 3D layers stop requesting frames meanwhile.
+let paused = false
+export function setMapPaused(value: boolean) { paused = value }
+export function isMapPaused() { return paused }

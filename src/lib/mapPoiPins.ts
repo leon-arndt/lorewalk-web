@@ -1,5 +1,7 @@
 import maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
+import { isMapPaused } from '@/lib/mapUtils'
+import { categoryColors } from '@/lib/theme'
 
 // Renders Pokémon-GO–style 3D POI pins: a pulsing ground ring, a thin stem,
 // and a floating emoji orb that bobs gently - all in the same Three.js/WebGL
@@ -25,14 +27,6 @@ const LAYER_ID = 'lorewalk-poi-pins'
 const SG_CENTER = { lng: 103.8198, lat: 1.3521 }
 const R_EARTH = 6371000
 
-const CATEGORY_COLORS: Record<string, number> = {
-  heritage: 0xf59e0b,
-  landmark: 0x6366f1,
-  arts:     0xa855f7,
-  religious: 0xfacc15,
-  museum:   0xf472b6,
-  nature:   0x22c55e,
-}
 const VISITED_COLOR = 0x4ade80
 
 // Constant apparent size across zoom levels (same trick as companion characters).
@@ -233,7 +227,7 @@ function buildModelBody(THREE: typeof T3, model: T3.Object3D, color: number, vis
 }
 
 function buildPin(THREE: typeof T3, spec: PoiPinSpec, models: Map<string, T3.Object3D>): PinObjects {
-  const color = spec.visited ? VISITED_COLOR : (CATEGORY_COLORS[spec.category] ?? 0x94a3b8)
+  const color = spec.visited ? VISITED_COLOR : (categoryColors[spec.category] ?? 0x94a3b8)
 
   const group = new THREE.Group()
   const { x, z } = toLocalXZ(spec.lat, spec.lon)
@@ -351,7 +345,7 @@ export async function addPoiPinsLayer(
 
       renderer.resetState()
       renderer.render(scene, camera)
-      map.triggerRepaint()
+      if (!isMapPaused()) map.triggerRepaint()
     },
     onRemove() {
       renderer?.dispose()

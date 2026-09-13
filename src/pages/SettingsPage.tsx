@@ -6,6 +6,7 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { NotificationPrefKey } from '@/types'
 import { accent } from '@/lib/theme'
+import { glassPage } from '@/lib/glass'
 
 const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_motivation' | 'settings_notif_party_walk' | 'settings_notif_challenges' | 'settings_notif_friends_gifts' | 'settings_notif_latest_news'; descKey: 'settings_daily_motivation_desc' | 'settings_notif_party_walk_desc' | 'settings_notif_challenges_desc' | 'settings_notif_friends_gifts_desc' | 'settings_notif_latest_news_desc' }[] = [
   { key: 'dailyMotivationNotifications', titleKey: 'settings_daily_motivation', descKey: 'settings_daily_motivation_desc' },
@@ -54,7 +55,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{
         position: 'sticky', top: 0, zIndex: 2, background: '#f8fafc',
         padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',

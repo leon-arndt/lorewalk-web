@@ -8,7 +8,7 @@ import {
   fileToCompressedDataUrl, type JournalPhoto,
 } from '@/lib/journalDb'
 import { accent, accentAlpha } from '@/lib/theme'
-import { pageBackground } from '@/lib/glass'
+import { glassPage } from '@/lib/glass'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -178,7 +178,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 50, overflowY: 'auto',
-      background: pageBackground,
+      ...glassPage,
       animation: 'panelSlideUp 0.34s cubic-bezier(0.16,1,0.3,1)',
       paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     }}>

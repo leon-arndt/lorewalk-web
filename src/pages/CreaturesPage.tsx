@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { creatureCap, creatureName, isEggReady, xpForCreatureLevel } from '@/lib/profile'
+import { creatureCap, creatureName, isEggReady } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { EggPreview } from '@/components/UI/EggPreview'
 import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
 import { CreatureDetailView, CreatureSceneCard } from '@/components/UI/CreatureDetailView'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { Egg, HatchedCreature } from '@/types'
-import { accent, accentSoft } from '@/lib/theme'
-import { pageBackground } from '@/lib/glass'
-
-const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
+import type { Translations } from '@/i18n/types'
+import { accent, categoryCss } from '@/lib/theme'
+import { glassPage } from '@/lib/glass'
 
 function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: string) => void }) {
   const { t } = useLocale()
@@ -19,7 +18,7 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
   if (!egg) {
     return (
       <div style={{
-        border: '2px dashed #e2e8f0', borderRadius: 16, padding: '20px 10px',
+        border: '2px dashed rgba(100,116,139,0.22)', borderRadius: 16, padding: '20px 10px',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         gap: 8, minHeight: 144, justifyContent: 'center',
       }}>
@@ -42,9 +41,9 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
       onClick={ready ? () => onHatch(egg.id) : undefined}
       style={{
         position: 'relative',
-        background: 'white', borderRadius: 16, padding: '14px 10px',
-        boxShadow: ready ? '0 0 0 3px rgba(99,102,241,0.25), 0 1px 4px rgba(0,0,0,0.08)' : '0 1px 4px rgba(0,0,0,0.08)',
-        border: `2px solid ${ready ? '#818cf8' : isEpic ? '#fca5a5' : isRare ? '#fde68a' : '#c7d2fe'}`,
+        background: 'rgba(255,255,255,0.58)', borderRadius: 16, padding: '14px 10px',
+        boxShadow: ready ? '0 0 0 3px rgba(99,102,241,0.25)' : 'inset 0 1px 0 rgba(255,255,255,0.9)',
+        border: `2px solid ${ready ? '#818cf8' : 'transparent'}`,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         gap: 7, minHeight: 144,
         cursor: ready ? 'pointer' : 'default',
@@ -103,83 +102,44 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
   )
 }
 
-function EmptyCreatureSlot() {
+// Pikmin Bloom-style roster: bare creatures on type-coloured pads, no card chrome.
+function CollectionTile({ creature, onTap }: { creature: HatchedCreature; onTap: () => void }) {
   const { t } = useLocale()
   return (
-    <div style={{
-      border: '2px dashed #e2e8f0', borderRadius: 16, minHeight: 132,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
-    }}>
-      <span style={{ fontSize: 22, opacity: 0.3 }}>🐾</span>
-      <span style={{ fontSize: 10, fontWeight: 600, color: '#cbd5e1' }}>{t('creatures_empty_slot')}</span>
+    <button
+      type="button"
+      onClick={onTap}
+      className="flex min-w-0 flex-col items-center rounded-2xl px-1 pt-2 pb-2 transition-colors hover:bg-white/40 active:bg-white/70"
+      style={{ WebkitTapHighlightColor: 'transparent' }}
+    >
+      <CreatureSceneCard creature={creature} />
+      <span className="mt-0.5 w-full truncate text-center text-[11px] font-semibold text-slate-800">
+        {creatureName(creature)}
+      </span>
+      <span className="text-[10px] font-semibold tabular-nums" style={{ color: accent }}>
+        {t('level_badge', { level: creature.level })}
+      </span>
+    </button>
+  )
+}
+
+// A free storage slot: just the empty pad a creature would stand on.
+function EmptyPad() {
+  return (
+    <div aria-hidden className="flex min-h-[112px] justify-center pt-[64px]">
+      <div className="h-[14px] w-14 rounded-[50%] bg-slate-500/10" />
     </div>
   )
 }
 
-function CreatureCard({ creature, onTap }: { creature: HatchedCreature; onTap: () => void }) {
-  const { t } = useLocale()
-  const isRare = RARE_CATEGORIES.has(creature.poiCategory)
-  const xpNeeded = xpForCreatureLevel(creature.level)
-  const xpPct = Math.min(1, creature.xp / xpNeeded) * 100
-  const atCap = creature.level >= 20
-  const accentColor = creature.isShiny ? '#d97706' : isRare ? '#d97706' : accent
-  const accentBg = creature.isShiny ? '#fef3c7' : isRare ? '#fde68a' : accentSoft
-
-  return (
-    <div
-      onClick={onTap}
-      style={{
-        position: 'relative',
-        background: creature.isShiny
-          ? 'linear-gradient(160deg, #fffbeb, #fef3c7)'
-          : 'white',
-        borderRadius: 16, padding: '16px 12px 12px',
-        boxShadow: creature.isShiny
-          ? '0 0 0 2px #f59e0b, 0 2px 8px rgba(245,158,11,0.20)'
-          : '0 1px 4px rgba(0,0,0,0.06)',
-        border: `2px solid ${creature.isShiny ? '#f59e0b' : isRare ? '#fde68a' : '#e0e7ff'}`,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-        cursor: 'pointer',
-        WebkitTapHighlightColor: 'transparent',
-      }}
-    >
-      {/* Level badge */}
-      <div style={{
-        position: 'absolute', top: 6, left: 8,
-        background: accentBg, color: accentColor,
-        fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 20,
-        letterSpacing: '0.03em',
-      }}>
-        {t('level_badge', { level: creature.level })}
-      </div>
-
-      {/* Animated creature scene */}
-      <div style={{ marginTop: 12 }}>
-        <CreatureSceneCard creature={creature} />
-      </div>
-
-      {/* XP bar */}
-      {!atCap && (
-        <div style={{ width: '100%' }}>
-          <div style={{ height: 4, borderRadius: 2, background: '#f1f5f9', overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', width: `${xpPct}%`,
-              background: accentColor, borderRadius: 2, transition: 'width 0.3s',
-            }} />
-          </div>
-        </div>
-      )}
-      {atCap && (
-        <div style={{ fontSize: 8, color: accentColor, fontWeight: 700 }}>MAX</div>
-      )}
-
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>
-          {creatureName(creature)}
-        </div>
-      </div>
-    </div>
-  )
+const TYPE_ORDER = ['heritage', 'landmark', 'arts', 'religious', 'nature', 'museum']
+const TYPE_LABEL: Record<string, keyof Translations> = {
+  heritage: 'category_heritage',
+  landmark: 'poi_landmark',
+  arts: 'category_arts',
+  religious: 'category_religious',
+  nature: 'category_nature',
+  museum: 'category_museum',
 }
 
 function PantrySection() {
@@ -199,9 +159,8 @@ function PantrySection() {
           if (!def) return null
           return (
             <div key={item.id} style={{
-              background: 'white', borderRadius: 14, padding: '12px 8px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-              border: '2px solid #e0e7ff',
+              background: 'rgba(255,255,255,0.58)', borderRadius: 14, padding: '12px 8px',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
             }}>
               <EmojiSprite id={`food_${item.foodId}`} emoji={def.emoji} size={32} />
@@ -226,6 +185,11 @@ export function CreaturesPage() {
   const full = hatchedCreatures.length >= cap
   const [rewardCreature, setRewardCreature] = useState<HatchedCreature | null>(null)
   const [selectedCreature, setSelectedCreature] = useState<HatchedCreature | null>(null)
+  const [typeFilter, setTypeFilter] = useState<string | null>(null)
+  const ownedTypes = TYPE_ORDER.filter((type) => hatchedCreatures.some((c) => c.poiCategory === type))
+  // A released creature can take the last of its type with it; fall back to all.
+  const activeType = typeFilter && ownedTypes.includes(typeFilter) ? typeFilter : null
+  const shownCreatures = [...hatchedCreatures].reverse().filter((c) => !activeType || c.poiCategory === activeType)
 
   function handleRelease(creature: HatchedCreature) {
     if (window.confirm(t('creatures_release_confirm', { name: creatureName(creature) }))) {
@@ -243,7 +207,7 @@ export function CreaturesPage() {
   const slots: (Egg | null)[] = [...eggs, ...Array<null>(emptySlots).fill(null)]
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: pageBackground, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{ padding: '24px 16px 20px' }}>
         <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>
           {t('creatures_title')}
@@ -284,9 +248,9 @@ export function CreaturesPage() {
           ].map(({ label, tier, steps }) => (
             <span key={label} style={{
               fontSize: 10, padding: '3px 8px', borderRadius: 20,
-              background: tier === 'epic' ? '#fee2e2' : tier === 'rare' ? '#fef3c7' : '#ede9fe',
-              color: tier === 'epic' ? '#dc2626' : tier === 'rare' ? '#b45309' : '#7c3aed',
-              fontWeight: 600,
+              background: 'rgba(255,255,255,0.5)',
+              color: tier === 'epic' ? '#b91c1c' : tier === 'rare' ? '#a16207' : '#64748b',
+              fontWeight: 500,
             }}>
               {label} - {tier.charAt(0).toUpperCase() + tier.slice(1)} ({steps.toLocaleString()} steps)
             </span>
@@ -296,9 +260,14 @@ export function CreaturesPage() {
 
       {/* Collection */}
       <section style={{ padding: '0 16px 32px' }}>
-        <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
-          {t('creatures_collection')} <span style={{ color: full ? '#e11d48' : '#1e293b' }}>{hatchedCreatures.length} / {cap}</span>
-        </h2>
+        <div className="mb-3 flex items-baseline justify-between">
+          <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: accent }}>
+            {t('creatures_collection')}
+          </h2>
+          <span className="text-[13px] font-semibold tabular-nums text-slate-400">
+            <span className={full ? 'text-rose-600' : 'text-slate-800'}>{hatchedCreatures.length}</span> / {cap}
+          </span>
+        </div>
         {full && (
           <div style={{ marginBottom: 12, padding: '8px 12px', background: '#fff1f2', borderRadius: 10 }}>
             <p style={{ margin: 0, fontSize: 12, color: '#e11d48' }}>
@@ -307,16 +276,43 @@ export function CreaturesPage() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-          {[...hatchedCreatures].reverse().map((creature) => (
-            <CreatureCard
+        {ownedTypes.length > 1 && (
+          <div className="mb-2 flex items-center gap-2.5">
+            {ownedTypes.map((type) => {
+              const on = activeType === type
+              const color = categoryCss(type)
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  aria-label={t(TYPE_LABEL[type])}
+                  aria-pressed={on}
+                  onClick={() => setTypeFilter(on ? null : type)}
+                  className="size-7 shrink-0 rounded-full transition-all"
+                  style={{
+                    background: color,
+                    boxShadow: on ? `0 0 0 3px white, 0 0 0 5px ${color}` : 'inset 0 -2px 0 rgba(0,0,0,0.12)',
+                    opacity: activeType && !on ? 0.4 : 1,
+                  }}
+                />
+              )
+            })}
+            {activeType && (
+              <span className="ml-1 text-[12px] font-semibold text-slate-600">{t(TYPE_LABEL[activeType])}</span>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-4 gap-1">
+          {shownCreatures.map((creature) => (
+            <CollectionTile
               key={creature.id}
               creature={creature}
               onTap={() => setSelectedCreature(creature)}
             />
           ))}
-          {Array.from({ length: Math.max(0, cap - hatchedCreatures.length) }).map((_, i) => (
-            <EmptyCreatureSlot key={`empty-${i}`} />
+          {!activeType && Array.from({ length: Math.max(0, cap - hatchedCreatures.length) }).map((_, i) => (
+            <EmptyPad key={`empty-${i}`} />
           ))}
         </div>
 

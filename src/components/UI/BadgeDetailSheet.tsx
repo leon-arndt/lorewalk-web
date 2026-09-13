@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { pageBackground } from '@/lib/glass'
+import { glassSheet } from '@/lib/glass'
 
 interface Props {
   icon: ReactNode
@@ -25,7 +25,7 @@ export function BadgeDetailSheet({ icon, name, description, status, statusColor,
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '80vh',
-          background: pageBackground,
+          ...glassSheet,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',

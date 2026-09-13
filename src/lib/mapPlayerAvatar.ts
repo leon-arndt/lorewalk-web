@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
+import { isMapPaused } from '@/lib/mapUtils'
 import type { PlayerAppearance } from '@/types'
 import { skinToneById, hairColorById, eyeColorById, cosmeticItemById } from '@/data/cosmetics'
 
@@ -245,7 +246,7 @@ export async function addPlayerAvatarLayer(
 
       renderer.resetState()
       renderer.render(scene, camera)
-      map.triggerRepaint()
+      if (!isMapPaused()) map.triggerRepaint()
     },
     onRemove() {
       renderer?.dispose()

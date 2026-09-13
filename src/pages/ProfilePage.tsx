@@ -18,7 +18,7 @@ import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 import type { Achievement, EarnedMedal } from '@/types'
 import { accent, rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
-import { pageBackground } from '@/lib/glass'
+import { glassPage } from '@/lib/glass'
 
 declare const __APP_VERSION__: string
 declare const __GIT_COMMIT__: string
@@ -110,7 +110,7 @@ export function ProfilePage() {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: pageBackground, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
 
       {/* Header card */}
       <div style={{ position: 'relative', background: 'white', padding: '44px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>

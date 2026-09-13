@@ -6,6 +6,7 @@ import { CAT_MODEL_URL } from '@/lib/catModel'
 import { addPlayerAvatarLayer, type PlayerAvatarLayerHandle } from '@/lib/mapPlayerAvatar'
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
+import { setMapPaused } from '@/lib/mapUtils'
 import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
 import type { Poi, PlayerAppearance, PlayerPosition } from '@/types'
@@ -317,9 +318,10 @@ interface MapViewProps {
   onShrineNodeClick?: (id: string) => void
   onBearingChange?: (bearing: number) => void
   compassResetRef?: MutableRefObject<(() => void) | null>
+  paused?: boolean
 }
 
-export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef }: MapViewProps) {
+export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef, paused = false }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -401,6 +403,11 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       mapRef.current = null
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    setMapPaused(paused)
+    if (!paused) mapRef.current?.triggerRepaint()
+  }, [paused])
 
   // Launch the 3D POI pins layer once the map (and style) is ready.
   useEffect(() => {

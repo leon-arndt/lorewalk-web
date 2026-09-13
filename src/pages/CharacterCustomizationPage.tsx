@@ -9,6 +9,7 @@ import {
 } from '@/data/cosmetics'
 import type { PlayerAppearance } from '@/types'
 import { accent, accentSoft } from '@/lib/theme'
+import { glassPage } from '@/lib/glass'
 
 function ColorSwatchRow({ swatches, selectedId, onSelect }: {
   swatches: ColorSwatch[]
@@ -147,7 +148,7 @@ export function CharacterCustomizationPage() {
   const { appearance } = profile
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', background: '#f8fafc', paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{
         position: 'sticky', top: 0, zIndex: 2, background: '#f8fafc',
         padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',

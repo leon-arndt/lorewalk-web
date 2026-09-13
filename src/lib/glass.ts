@@ -33,5 +33,20 @@ export const glassNav: CSSProperties = {
   borderRadius: 999,
 }
 
-// Gradient background for non-map pages - gives glass chrome something to refract
-export const pageBackground = 'linear-gradient(160deg, #f6faf6 0%, #eaf6ec 55%, #f2faf3 100%)'
+// Full-screen pages (every tab but the map, the journal, the news). The map stays
+// mounted under them, so it shows through as a soft blur of the player's area.
+// Tune the see-through here: lower alpha shows more map, lower blur more detail.
+const PAGE_BD = 'blur(24px) saturate(170%)'
+export const glassPage: CSSProperties = {
+  background: 'linear-gradient(180deg, rgba(244,250,245,0.80) 0%, rgba(236,246,238,0.62) 45%, rgba(236,246,238,0.70) 100%)',
+  backdropFilter: PAGE_BD,
+  WebkitBackdropFilter: PAGE_BD,
+}
+
+// Bottom sheets over a dark scrim. Same material as glassPage, but opaque enough
+// that the scrim does not turn the sheet grey.
+export const glassSheet: CSSProperties = {
+  background: 'rgba(246,251,247,0.90)',
+  backdropFilter: BD_HEAVY,
+  WebkitBackdropFilter: BD_HEAVY,
+}

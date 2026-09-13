@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { MapView } from '@/components/Map/MapView'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
@@ -24,21 +24,12 @@ import { isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { creatureDefBySpecies } from '@/data/creatures'
 import type { Poi, RewardItem } from '@/types'
-import { accent, rewardGradient } from '@/lib/theme'
+import { accent, categoryColors, rewardGradient } from '@/lib/theme'
 
 const CHECKIN_RADIUS_M = 50
 
-// Map a creature's type (POI category) to a 3D companion body colour.
-const CATEGORY_COLORS: Record<string, number> = {
-  heritage: 0xf59e0b,
-  landmark: 0x6366f1,
-  arts: 0xa855f7,
-  religious: 0xfacc15,
-  museum: 0xf472b6,
-  nature: 0x22c55e,
-}
 function categoryColor(category?: string): number {
-  return (category && CATEGORY_COLORS[category]) || 0x94a3b8
+  return (category && categoryColors[category]) || 0x94a3b8
 }
 
 export function MapPage() {
@@ -50,6 +41,9 @@ export function MapPage() {
   const { showReward, showToast } = useReward()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
+  // The map stays mounted under every tab so it shows through their frosted
+  // pages. Its HUD and panels only show on the map tab itself.
+  const onMapTab = useLocation().pathname === '/'
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null)
   const [isPanelClosing, setIsPanelClosing] = useState(false)
   const panelCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -342,8 +336,10 @@ export function MapPage() {
         onShrineNodeClick={handleShrineNodeClick}
         onBearingChange={setBearing}
         compassResetRef={compassResetRef}
+        paused={!onMapTab}
       />
 
+      <div hidden={!onMapTab}>
       <div style={{
         position: 'absolute', top: 12, left: 12, right: 12,
         display: 'flex', flexDirection: 'column', gap: 8,
@@ -530,6 +526,7 @@ export function MapPage() {
       {journalOpen && <JournalOverlay onClose={() => setJournalOpen(false)} />}
 
       {newsOpen && <NewsOverlay onClose={() => setNewsOpen(false)} />}
+      </div>
     </div>
   )
 }
