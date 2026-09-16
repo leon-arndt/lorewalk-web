@@ -16,7 +16,7 @@ export interface Translations {
   poi_landmark: string
   poi_event: string
   poi_pts: string
-  poi_learn_more: string
+  poi_from_wikipedia: string
   poi_visited: string
   poi_checkin: string
   poi_checkin_offline: string
@@ -105,6 +105,7 @@ export interface Translations {
   squads_send_title: string
   squads_no_visited: string
   squads_no_match: string
+  squads_in_squad: string
   squads_holdings: string
   squads_holdings_empty: string
   squads_holdings_title: string

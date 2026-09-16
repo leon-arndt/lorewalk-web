@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
-import { hasReturned, expeditionDurationMs, claimPendingCoins, creatureName } from '@/lib/profile'
+import { hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
-import { CreaturePreview } from '@/components/UI/CreaturePreview'
+import { CreatureTile, EmptyPad } from '@/components/UI/CreatureTile'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import type { ExpeditionTarget, HatchedCreature, RewardItem, Squad } from '@/types'
-import { accent, accentSoft, rewardGradient } from '@/lib/theme'
-import { glassPage } from '@/lib/glass'
+import { accent, accentAlpha, accentSoft, categoryCss, rewardGradient } from '@/lib/theme'
+import { glassPage, glassSheet } from '@/lib/glass'
 
 // Where a squad sets out from when sending it on an expedition: the player's live
 // position, or Singapore's centre when GPS is unavailable (e.g. offline testing).
@@ -17,12 +18,14 @@ const SG_CENTRE = { lat: 1.3521, lon: 103.8198 }
 
 interface LatLon { lat: number; lon: number }
 
-const RARE_CATEGORIES = new Set(['religious', 'museum', 'nature'])
+// Frosted card on the page glass, same material as the egg and pantry cards.
+const card: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.58)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 3px rgba(15,23,42,0.04)',
+}
 
-function typeColors(category: string) {
-  return RARE_CATEGORIES.has(category)
-    ? { bg: '#fef3c7', fg: '#b45309', ring: '#fbbf24' }
-    : { bg: '#ede9fe', fg: '#7c3aed', ring: '#c4b5fd' }
+function TypeDot({ category }: { category: string }) {
+  return <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: categoryCss(category), flexShrink: 0 }} />
 }
 
 function matchCount(squad: Squad, category: string, byId: Map<string, HatchedCreature>) {
@@ -34,50 +37,6 @@ function formatCountdown(ms: number) {
   const m = Math.floor(total / 60)
   const s = total % 60
   return `${m}:${s.toString().padStart(2, '0')}`
-}
-
-interface SlotProps {
-  creature: HatchedCreature | null
-  disabled: boolean
-  onTap: () => void
-}
-
-function Slot({ creature, disabled, onTap }: SlotProps) {
-  const { t } = useLocale()
-  if (!creature) {
-    return (
-      <button onClick={onTap} disabled={disabled} style={{
-        aspectRatio: '1', border: '2px dashed #e2e8f0', borderRadius: 14,
-        background: 'transparent', cursor: disabled ? 'default' : 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 22, color: '#cbd5e1', opacity: disabled ? 0.5 : 1,
-      }}>
-        +
-      </button>
-    )
-  }
-
-  const c = typeColors(creature.poiCategory)
-  return (
-    <button onClick={onTap} disabled={disabled} style={{
-      aspectRatio: '1', borderRadius: 14, cursor: disabled ? 'default' : 'pointer',
-      background: c.bg, border: `2px solid ${c.ring}`, opacity: disabled ? 0.6 : 1,
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', gap: 2, padding: 4, position: 'relative',
-    }}>
-      <span style={{
-        position: 'absolute', top: 4, right: 4, fontSize: 8, fontWeight: 700,
-        color: 'white', background: accent, borderRadius: 6,
-        padding: '1px 4px', lineHeight: 1.4,
-      }}>
-        {t('level_badge', { level: creature.level })}
-      </span>
-      <CreaturePreview species={creature.species} emoji={creature.emoji} isShiny={creature.isShiny} size={40} />
-      <span style={{ fontSize: 8, fontWeight: 700, color: c.fg, textTransform: 'capitalize' }}>
-        {creature.poiCategory}
-      </span>
-    </button>
-  )
 }
 
 function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatLon }) {
@@ -124,11 +83,11 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
 
   return (
     <div style={{
-      background: 'white', borderRadius: 18, padding: 16, marginBottom: 14,
-      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-      border: `2px solid ${isActive ? '#a5b4fc' : 'transparent'}`,
+      ...card, borderRadius: 20, padding: '14px 12px 12px', marginBottom: 14,
+      border: `2px solid ${isActive ? accentAlpha(0.45) : 'transparent'}`,
+      transition: 'border-color 0.25s ease',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 4px 4px' }}>
         <input
           value={nameDraft}
           onChange={(e) => setNameDraft(e.target.value)}
@@ -138,30 +97,32 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             else setNameDraft(squad.name)
           }}
           style={{
-            flex: 1, fontSize: 16, fontWeight: 700, color: '#1e293b',
+            flex: 1, minWidth: 0, fontSize: 16, fontWeight: 700, color: '#1e293b',
             border: 'none', borderBottom: '1px solid transparent', outline: 'none',
             background: 'transparent', padding: '2px 0',
           }}
-          onFocus={(e) => (e.target.style.borderBottomColor = '#c7d2fe')}
+          onFocus={(e) => (e.target.style.borderBottomColor = accentAlpha(0.35))}
         />
         <button
           onClick={() => setActiveSquad(squad.id)}
           disabled={isActive}
           style={{
-            fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20,
+            flexShrink: 0, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20,
             border: 'none', cursor: isActive ? 'default' : 'pointer',
-            background: isActive ? accent : accentSoft,
+            background: isActive ? accent : 'rgba(255,255,255,0.75)',
             color: isActive ? 'white' : accent,
+            boxShadow: isActive ? 'none' : `inset 0 0 0 1px ${accentAlpha(0.18)}`,
+            transition: 'background 0.2s ease, color 0.2s ease',
           }}
         >
           {isActive ? t('squads_active') : t('squads_set_active')}
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-        {members.map((c, i) => (
-          <Slot key={i} creature={c} disabled={away} onTap={() => handleSlotTap(i)} />
-        ))}
+      <div className="grid grid-cols-4 gap-1">
+        {members.map((c, i) => c
+          ? <CreatureTile key={i} creature={c} disabled={away} onTap={() => handleSlotTap(i)} />
+          : <EmptyPad key={i} disabled={away} onTap={() => handleSlotTap(i)} />)}
       </div>
 
       {!away && (() => {
@@ -171,12 +132,13 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             onClick={() => hasMembers && setExpeditionOpen(true)}
             disabled={!hasMembers}
             style={{
-              marginTop: 12, width: '100%', textAlign: 'center',
-              fontSize: 13, fontWeight: 600,
-              color: hasMembers ? accent : '#94a3b8',
-              background: hasMembers ? accentSoft : '#f1f5f9',
-              border: 'none', borderRadius: 10,
-              padding: '10px 12px',
+              marginTop: 6, width: '100%', textAlign: 'center',
+              fontSize: 13, fontWeight: 700,
+              color: hasMembers ? 'white' : '#94a3b8',
+              background: hasMembers ? accent : 'rgba(241,245,249,0.7)',
+              boxShadow: hasMembers ? `inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 12px ${accentAlpha(0.22)}` : 'none',
+              border: 'none', borderRadius: 14,
+              padding: '11px 12px',
               cursor: hasMembers ? 'pointer' : 'not-allowed',
               opacity: hasMembers ? 1 : 0.7,
             }}
@@ -188,8 +150,9 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
 
       {away && exp && (
         <div style={{
-          marginTop: 12, background: '#f8fafc', border: '1px solid #f1f5f9',
-          borderRadius: 12, padding: '12px 14px',
+          marginTop: 6, background: 'rgba(255,255,255,0.55)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9)',
+          borderRadius: 14, padding: '12px 14px',
         }}>
           <div style={{ fontSize: 12, color: '#475569', marginBottom: 8 }}>
             {t('squads_exploring', { name: exp.poiName })}
@@ -201,21 +164,21 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
               style={{
                 width: '100%', fontSize: 13, fontWeight: 700, color: 'white',
                 background: rewardGradient,
-                border: 'none', borderRadius: 10, padding: '10px', cursor: 'pointer',
+                border: 'none', borderRadius: 14, padding: '11px', cursor: 'pointer',
               }}
             >
               {t('squads_collect_reward')}
             </button>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: '#6366f1', fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: accent, fontVariantNumeric: 'tabular-nums' }}>
                 {formatCountdown(new Date(exp.returnsAt).getTime() - now)}
               </span>
               <button
                 onClick={() => recallSquad(squad.id)}
                 style={{
                   fontSize: 11, fontWeight: 600, color: '#e11d48',
-                  background: '#fff1f2', border: 'none', borderRadius: 20,
+                  background: 'rgba(255,241,242,0.8)', border: 'none', borderRadius: 20,
                   padding: '5px 12px', cursor: 'pointer',
                 }}
               >
@@ -242,29 +205,49 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
 }
 
 function Sheet({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
-  return (
+  const { t } = useLocale()
+  return createPortal(
     <div
       onClick={onClose}
       data-sfx="close"
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.35)',
-        display: 'flex', alignItems: 'flex-end', zIndex: 50,
+        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
+        display: 'flex', alignItems: 'flex-end', zIndex: 60,
+        animation: 'fadeIn 0.2s ease',
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '100%', maxHeight: '70vh', overflowY: 'auto',
-          background: 'white', borderRadius: '20px 20px 0 0', padding: 16,
+          width: '100%', maxHeight: '75vh', display: 'flex', flexDirection: 'column',
+          ...glassSheet, borderRadius: '24px 24px 0 0', overflow: 'hidden',
+          animation: 'panelSlideUp 0.28s ease',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>{title}</h3>
-          <button onClick={onClose} data-sfx="close" style={{ border: 'none', background: 'transparent', fontSize: 20, cursor: 'pointer', color: '#94a3b8' }}>✕</button>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
         </div>
-        {children}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px 8px', flexShrink: 0 }}>
+          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#1e293b' }}>{title}</h3>
+          <button
+            onClick={onClose}
+            data-sfx="close"
+            aria-label={t('common_close')}
+            style={{
+              width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              background: 'rgba(100,116,139,0.12)', color: '#64748b', fontSize: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+        <div style={{ overflowY: 'auto', padding: '4px 16px calc(24px + env(safe-area-inset-bottom))' }}>
+          {children}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -289,33 +272,17 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
 
   return (
     <Sheet title={t('squads_add_creature')} onClose={onClose}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-        {profile.hatchedCreatures.map((c) => {
-          const col = typeColors(c.poiCategory)
+      <div className="grid grid-cols-4 gap-1">
+        {[...profile.hatchedCreatures].reverse().sort((a, b) => Number(assignedIn.has(a.id)) - Number(assignedIn.has(b.id))).map((c) => {
           const where = assignedIn.get(c.id)
-          const used = !!where
           return (
-            <button
+            <CreatureTile
               key={c.id}
-              disabled={used}
-              onClick={() => { if (!used) { assignToSlot(squad.id, slotIndex, c.id); onClose() } }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
-                background: used ? '#f8fafc' : 'white',
-                border: `2px solid ${used ? '#e2e8f0' : col.ring}`, borderRadius: 14,
-                padding: 10, cursor: used ? 'default' : 'pointer',
-                opacity: used ? 0.55 : 1,
-              }}
-            >
-              <CreaturePreview species={c.species} emoji={c.emoji} isShiny={c.isShiny} size={48} />
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: used ? '#94a3b8' : '#1e293b' }}>{creatureName(c)}</div>
-                <div style={{ fontSize: 10, color: used ? '#94a3b8' : col.fg, textTransform: 'capitalize', fontWeight: 600 }}>
-                  {c.poiCategory} · {t('level_badge', { level: c.level })}
-                </div>
-                {where && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>in {where}</div>}
-              </div>
-            </button>
+              creature={c}
+              disabled={!!where}
+              note={where && t('squads_in_squad', { name: where })}
+              onTap={() => { assignToSlot(squad.id, slotIndex, c.id); onClose() }}
+            />
           )
         })}
       </div>
@@ -349,7 +316,6 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
           {visited.map((v) => {
             const matches = matchCount(squad, v.poiCategory, byId)
             const bonus = matches * 25
-            const col = typeColors(v.poiCategory)
             const distM = haversineDistance(from.lat, from.lon, v.lat!, v.lon!)
             const durationMs = expeditionDurationMs(distM)
             return (
@@ -359,21 +325,23 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
                   textAlign: 'left', fontSize: 13, color: '#1e293b',
-                  background: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: 10,
-                  padding: '10px 12px', cursor: 'pointer',
+                  ...card, border: 'none', borderRadius: 14,
+                  padding: '11px 14px', cursor: 'pointer',
                 }}
               >
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ fontWeight: 600 }}>{v.poiName}</span>
-                  <span style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize' }}> · {v.poiCategory}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <TypeDot category={v.poiCategory} />
+                    <span style={{ fontWeight: 600 }}>{v.poiName}</span>
+                  </span>
                   <span style={{ display: 'block', fontSize: 11, color: '#94a3b8' }}>
                     🧭 {(distM / 1000).toFixed(1)} km · ⏱ {formatCountdown(durationMs)}
                   </span>
                 </span>
                 <span style={{
                   flexShrink: 0, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-                  background: bonus > 0 ? col.bg : '#f1f5f9',
-                  color: bonus > 0 ? col.fg : '#94a3b8',
+                  background: bonus > 0 ? accentSoft : 'rgba(241,245,249,0.8)',
+                  color: bonus > 0 ? accent : '#94a3b8',
                 }}>
                   {bonus > 0 ? `+${bonus}%` : t('squads_no_match')}
                 </span>
@@ -454,16 +422,15 @@ function Holdings({ now }: { now: number }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {profile.claims.map((claim) => {
           const pending = claimPendingCoins(claim, now)
-          const col = typeColors(claim.poiCategory)
           return (
             <div key={claim.poiId} style={{
-              background: 'white', borderRadius: 14, padding: '12px 14px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              ...card, borderRadius: 16, padding: '12px 14px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
             }}>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>🚩 {claim.poiName}</div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: col.fg, textTransform: 'capitalize' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, fontSize: 10, fontWeight: 600, color: '#64748b', textTransform: 'capitalize' }}>
+                  <TypeDot category={claim.poiCategory} />
                   {claim.poiCategory} · ×{claim.affinity.toFixed(2)} rate
                 </div>
               </div>
@@ -473,7 +440,7 @@ function Holdings({ now }: { now: number }) {
                 style={{
                   flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 20,
                   border: 'none', cursor: pending > 0 ? 'pointer' : 'default',
-                  background: pending > 0 ? '#fffbeb' : '#f1f5f9',
+                  background: pending > 0 ? '#fef3c7' : 'rgba(241,245,249,0.8)',
                   color: pending > 0 ? '#b45309' : '#cbd5e1',
                 }}
               >

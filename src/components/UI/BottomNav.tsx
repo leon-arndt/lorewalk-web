@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { isEggReady } from '@/lib/profile'
@@ -33,10 +33,14 @@ const ProfileIcon = () => (
   </svg>
 )
 
+const TAB_W = 64
+const TAB_GAP = 2
+
 export function BottomNav() {
   const { t } = useLocale()
   const { profile } = useProfile()
   const hasReadyEgg = profile.eggs.some(isEggReady)
+  const { pathname } = useLocation()
 
   const tabs = [
     { to: '/', icon: <MapIcon />, label: t('nav_map'), dot: false },
@@ -44,6 +48,7 @@ export function BottomNav() {
     { to: '/squads', icon: <SquadsIcon />, label: t('nav_squads'), dot: false },
     { to: '/profile', icon: <ProfileIcon />, label: t('nav_profile'), dot: profile.pendingStreakChest },
   ]
+  const activeIndex = tabs.findIndex(({ to }) => (to === '/' ? pathname === '/' : pathname.startsWith(to)))
 
   return (
     <nav style={{
@@ -53,11 +58,20 @@ export function BottomNav() {
       transform: 'translateX(-50%)',
       zIndex: 40,
       display: 'flex',
-      gap: 2,
+      gap: TAB_GAP,
       padding: 6,
       ...glassNav,
       whiteSpace: 'nowrap',
     }}>
+      <span aria-hidden style={{
+        position: 'absolute', top: 6, left: 6, width: TAB_W, height: 52,
+        borderRadius: 999, pointerEvents: 'none',
+        background: accentAlpha(0.12),
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 ${accentAlpha(0.10)}`,
+        transform: `translateX(${Math.max(0, activeIndex) * (TAB_W + TAB_GAP)}px)`,
+        opacity: activeIndex < 0 ? 0 : 1,
+        transition: 'transform 0.38s cubic-bezier(0.34, 1.36, 0.64, 1), opacity 0.2s ease',
+      }} />
       {tabs.map(({ to, icon, label, dot }) => (
         <NavLink
           key={to}
@@ -70,7 +84,7 @@ export function BottomNav() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: 3,
-            width: 64,
+            width: TAB_W,
             height: 52,
             borderRadius: 999,
             textDecoration: 'none',
@@ -79,13 +93,7 @@ export function BottomNav() {
             letterSpacing: '0.04em',
             textTransform: 'uppercase' as const,
             color: isActive ? accent : 'rgba(100,116,139,0.70)',
-            background: isActive
-              ? accentAlpha(0.12)
-              : 'transparent',
-            boxShadow: isActive
-              ? `inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 ${accentAlpha(0.10)}`
-              : 'none',
-            transition: 'background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease',
+            transition: 'color 0.25s ease',
             WebkitTapHighlightColor: 'transparent',
           })}
         >

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
+import { useWikipediaExtract } from '@/hooks/useWikipediaExtract'
 import { useProfile } from '@/contexts/ProfileContext'
 import { glassChrome, glassPanel } from '@/lib/glass'
 import { haversineDistance } from '@/lib/mapUtils'
@@ -43,6 +44,7 @@ interface PoiDetailPanelProps {
 export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onClose, isClosing = false }: PoiDetailPanelProps) {
   const { mode } = useConnectionMode()
   const { t } = useLocale()
+  const wikiExtract = useWikipediaExtract(poi.learnMoreUrl)
   const CATEGORY_META = categoryMeta(t)
   const { sendPostcard } = useProfile()
   const [pickingFriend, setPickingFriend] = useState(false)
@@ -152,22 +154,12 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
         {poi.name}
       </h2>
       <p style={{ margin: 0, fontSize: 14, color: '#64748b', lineHeight: 1.6 }}>
-        {poi.description}
+        {wikiExtract ?? poi.description}
       </p>
-
-      {poi.learnMoreUrl && (
-        <a
-          href={poi.learnMoreUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            marginTop: 12, fontSize: 13, fontWeight: 500,
-            color: accent, textDecoration: 'none',
-          }}
-        >
-          {t('poi_learn_more')}
-        </a>
+      {wikiExtract && (
+        <p style={{ margin: '6px 0 0', fontSize: 10, color: '#94a3b8' }}>
+          {t('poi_from_wikipedia')}
+        </p>
       )}
 
       <div style={{ marginTop: 20 }}>

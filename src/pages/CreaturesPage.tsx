@@ -5,7 +5,8 @@ import { creatureCap, creatureName, isEggReady } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { EggPreview } from '@/components/UI/EggPreview'
 import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
-import { CreatureDetailView, CreatureSceneCard } from '@/components/UI/CreatureDetailView'
+import { CreatureDetailView } from '@/components/UI/CreatureDetailView'
+import { CreatureTile, EmptyPad } from '@/components/UI/CreatureTile'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { Egg, HatchedCreature } from '@/types'
 import type { Translations } from '@/i18n/types'
@@ -98,36 +99,6 @@ function EggSlotCard({ egg, onHatch }: { egg: Egg | null; onHatch: (eggId: strin
           </span>
         </div>
       )}
-    </div>
-  )
-}
-
-// Pikmin Bloom-style roster: bare creatures on type-coloured pads, no card chrome.
-function CollectionTile({ creature, onTap }: { creature: HatchedCreature; onTap: () => void }) {
-  const { t } = useLocale()
-  return (
-    <button
-      type="button"
-      onClick={onTap}
-      className="flex min-w-0 flex-col items-center rounded-2xl px-1 pt-2 pb-2 transition-colors hover:bg-white/40 active:bg-white/70"
-      style={{ WebkitTapHighlightColor: 'transparent' }}
-    >
-      <CreatureSceneCard creature={creature} />
-      <span className="mt-0.5 w-full truncate text-center text-[11px] font-semibold text-slate-800">
-        {creatureName(creature)}
-      </span>
-      <span className="text-[10px] font-semibold tabular-nums" style={{ color: accent }}>
-        {t('level_badge', { level: creature.level })}
-      </span>
-    </button>
-  )
-}
-
-// A free storage slot: just the empty pad a creature would stand on.
-function EmptyPad() {
-  return (
-    <div aria-hidden className="flex min-h-[112px] justify-center pt-[64px]">
-      <div className="h-[14px] w-14 rounded-[50%] bg-slate-500/10" />
     </div>
   )
 }
@@ -305,7 +276,7 @@ export function CreaturesPage() {
 
         <div className="grid grid-cols-4 gap-1">
           {shownCreatures.map((creature) => (
-            <CollectionTile
+            <CreatureTile
               key={creature.id}
               creature={creature}
               onTap={() => setSelectedCreature(creature)}

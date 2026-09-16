@@ -49,6 +49,7 @@ export function usePois(position: PlayerPosition | null) {
         ...row,
         lat: row.lat ?? row.latitude,
         lon: row.lon ?? row.longitude,
+        learnMoreUrl: row.learnMoreUrl ?? row.learn_more_url,
       })) as Poi[]
       setPois(pois)
     }
