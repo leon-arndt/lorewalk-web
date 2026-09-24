@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "effects": {
+    "fx/fireworks": {
+      "loop": false,
+      "emitters": [
+        {
+          "name": "rocket",
+          "delay": 0,
+          "duration": 0,
+          "burst": 1,
+          "rate": 0,
+          "life": [
+            1.3,
+            1.45
+          ],
+          "shape": "point",
+          "radius": 0,
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "spread": 6,
+          "speed": [
+            19,
+            21
+          ],
+          "gravity": 9,
+          "drag": 0.2,
+          "size": [
+            1.2,
+            1.0
+          ],
+          "alpha": [
+            1,
+            1
+          ],
+          "colors": [
+            "#fb923c"
+          ],
+          "endColor": "#f97316",
+          "sprite": "glow",
+          "blend": "normal",
+          "spin": 0,
+          "twinkle": 0,
+          "onDeath": "burst",
+          "trail": "trail",
+          "trailRate": 45
+        },
+        {
+          "name": "rocket 2",
+          "delay": 0.45,
+          "duration": 0,
+          "burst": 1,
+          "rate": 0,
+          "life": [
+            1.2,
+            1.3
+          ],
+          "shape": "point",
+          "radius": 0,
+          "offset": [
+            3,
+            0,
+            0
+          ],
+          "direction": [
+            0.25,
+            1,
+            0.1
+          ],
+          "spread": 6,
+          "speed": [
+            17,
+            19
+          ],
+          "gravity": 9,
+          "drag": 0.2,
+          "size": [
+            1.2,
+            1.0
+          ],
+          "alpha": [
+            1,
+            1
+          ],
+          "colors": [
+            "#fb923c"
+          ],
+          "endColor": "#f97316",
+          "sprite": "glow",
+          "blend": "normal",
+          "spin": 0,
+          "twinkle": 0,
+          "onDeath": "burst",
+          "trail": "trail",
+          "trailRate": 45
+        },
+        {
+          "name": "burst",
+          "delay": 0,
+          "duration": 0,
+          "burst": 110,
+          "rate": 0,
+          "life": [
+            1.4,
+            2.0
+          ],
+          "shape": "point",
+          "radius": 0,
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "spread": 180,
+          "speed": [
+            9,
+            13
+          ],
+          "gravity": 3,
+          "drag": 1.8,
+          "size": [
+            2.6,
+            0.8
+          ],
+          "alpha": [
+            1,
+            0.15
+          ],
+          "colors": [
+            "#ec4899",
+            "#eab308",
+            "#0ea5e9",
+            "#8b5cf6",
+            "#22c55e"
+          ],
+          "endColor": "",
+          "sprite": "glow",
+          "blend": "normal",
+          "spin": 0,
+          "twinkle": 0.4,
+          "trail": "embers",
+          "trailRate": 6
+        },
+        {
+          "name": "trail",
+          "delay": 0,
+          "duration": 0,
+          "burst": 1,
+          "rate": 0,
+          "life": [
+            0.3,
+            0.5
+          ],
+          "shape": "point",
+          "radius": 0,
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "direction": [
+            0,
+            -1,
+            0
+          ],
+          "spread": 30,
+          "speed": [
+            0,
+            0.4
+          ],
+          "gravity": 0,
+          "drag": 1,
+          "size": [
+            0.9,
+            0.1
+          ],
+          "alpha": [
+            0.9,
+            0
+          ],
+          "colors": [
+            "#fdba74"
+          ],
+          "endColor": "#fef3c7",
+          "sprite": "glow",
+          "blend": "normal",
+          "spin": 0,
+          "twinkle": 0
+        },
+        {
+          "name": "embers",
+          "delay": 0,
+          "duration": 0,
+          "burst": 1,
+          "rate": 0,
+          "life": [
+            0.4,
+            0.7
+          ],
+          "shape": "point",
+          "radius": 0,
+          "offset": [
+            0,
+            0,
+            0
+          ],
+          "direction": [
+            0,
+            -1,
+            0
+          ],
+          "spread": 40,
+          "speed": [
+            0,
+            0.2
+          ],
+          "gravity": 1,
+          "drag": 1,
+          "size": [
+            0.7,
+            0
+          ],
+          "alpha": [
+            0.7,
+            0
+          ],
+          "colors": [
+            "#fbbf24"
+          ],
+          "endColor": "#f97316",
+          "sprite": "glow",
+          "blend": "normal",
+          "spin": 0,
+          "twinkle": 0.3
+        }
+      ]
+    },
+    "fx/sparkles": {
+      "loop": true,
+      "emitters": [
+        {
+          "name": "sparkle",
+          "delay": 0,
+          "duration": 2,
+          "burst": 6,
+          "rate": 28,
+          "life": [
+            0.6,
+            1.2
+          ],
+          "shape": "sphere",
+          "radius": 4.5,
+          "offset": [
+            0,
+            4,
+            0
+          ],
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "spread": 180,
+          "speed": [
+            0,
+            0.3
+          ],
+          "gravity": -0.2,
+          "drag": 1,
+          "size": [
+            3.2,
+            0.5
+          ],
+          "alpha": [
+            1,
+            0
+          ],
+          "colors": [
+            "#facc15",
+            "#fde047",
+            "#f59e0b",
+            "#ffffff"
+          ],
+          "endColor": "",
+          "sprite": "star",
+          "blend": "normal",
+          "spin": 90,
+          "twinkle": 0.6
+        },
+        {
+          "name": "glints",
+          "delay": 0,
+          "duration": 2,
+          "burst": 0,
+          "rate": 30,
+          "life": [
+            0.4,
+            0.8
+          ],
+          "shape": "sphere",
+          "radius": 5,
+          "offset": [
+            0,
+            4,
+            0
+          ],
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "spread": 180,
+          "speed": [
+            0.1,
+            0.5
+          ],
+          "gravity": -0.4,
+          "drag": 0.5,
+          "size": [
+            0.9,
+            0
+          ],
+          "alpha": [
+            0.9,
+            0
+          ],
+          "colors": [
+            "#fbbf24",
+            "#ffffff"
+          ],
+          "endColor": "",
+          "sprite": "glow",
+          "blend": "normal",
+          "spin": 0,
+          "twinkle": 0.8
+        }
+      ]
+    },
+    "fx/confetti": {
+      "loop": false,
+      "emitters": [
+        {
+          "name": "confetti",
+          "delay": 0,
+          "duration": 0,
+          "burst": 140,
+          "rate": 0,
+          "life": [
+            1.8,
+            2.6
+          ],
+          "shape": "point",
+          "radius": 0,
+          "offset": [
+            0,
+            6,
+            0
+          ],
+          "direction": [
+            0,
+            1,
+            0
+          ],
+          "spread": 50,
+          "speed": [
+            10,
+            16
+          ],
+          "gravity": 5,
+          "drag": 2.2,
+          "size": [
+            1.2,
+            1.2
+          ],
+          "alpha": [
+            1,
+            0
+          ],
+          "colors": [
+            "#ec4899",
+            "#38bdf8",
+            "#facc15",
+            "#22c55e",
+            "#a855f7"
+          ],
+          "endColor": "",
+          "sprite": "square",
+          "blend": "normal",
+          "spin": 540,
+          "twinkle": 0
+        }
+      ]
+    }
+  }
+}

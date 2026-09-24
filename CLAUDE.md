@@ -107,7 +107,9 @@ src/
     playerAvatar.ts        # chibi player avatar: /models/avatar-*.glb, tints + item add-ons
     mapPlayerAvatar.ts     # map layer that walks the player avatar at the GPS position
     mapPoiPins.ts, mapMrt.ts, creaturePreview.ts, mapUtils.ts, health.ts, sfx.ts
+    vfx.ts, mapVfx.ts      # particle effects: simulation + the MapLibre layer that draws them
     theme.ts, glass.ts     # theme.ts = brand accent/reward colours, glass.ts = frosted surfaces
+  dev/                    # dev-only pages, never built: vfxPreview.html (the Particle Editor preview)
   data/                   # static game data: creatures.ts, foods.ts, cosmetics.ts,
                           #   medals.ts, singapore-pois.ts
   i18n/                   # locale dictionaries (en/de/ja/ko/zh/ms/id/ta) + types
@@ -122,12 +124,15 @@ src/
   index.css                # Tailwind import + MapLibre CSS + mobile reset
 public/
   models/                 # CC0 .glb creature models per POI category (procedural fallback)
+  vfx/
+    vfxbank.json          # particle effects by id, read at runtime by lib/vfx.ts
   sounds/
     soundbank.json        # event -> sample map, read at runtime by lib/sfx.ts
     packs/<pack-id>/      # sample files + pack.json (name, author, license)
 e2e/                      # Playwright specs + profile-seed helper
 tools/
   vscode-soundbank/       # VSCode extension: the sound event editor
+  vscode-particles/       # VSCode extension: the particle effect editor
 ```
 
 ## Environment
@@ -219,6 +224,28 @@ in, as with the models.
 Edit the bank with the VSCode extension in `tools/vscode-soundbank/`. Press F5
 and run "Lorewalk: Open Soundbank Editor". Do not hand-edit an event value if the
 editor can set it. See `tools/vscode-soundbank/README.md`.
+
+## Visual effects
+
+`src/lib/vfx.ts` simulates the particle effects, such as fireworks, sparkles, and
+confetti. Like the sound bank, it holds no effect of its own. It fetches
+`public/vfx/vfxbank.json` and plays an effect by id, such as `fx/fireworks`.
+An effect is a list of emitters. An emitter can burst a second emitter where
+each particle dies, or leave a trail of a second emitter. A firework uses both.
+
+`src/lib/mapVfx.ts` draws the effects as a MapLibre custom layer. Call
+`playMapVfx(id, [lng, lat])` to play an effect on the map. Effects scale with
+zoom like the companions. One unit is 1 m at zoom 20, and the player avatar is
+5.6 units tall.
+
+Edit the bank with the Particle Editor, a VSCode extension in
+`tools/vscode-particles/`. Run "Lorewalk: Open Particle Editor". Its preview
+shows `src/dev/vfxPreview.html` from the dev server, so `npm run dev` must run.
+That page plays the effect with the game's own code on the game's map. See
+`tools/vscode-particles/README.md`.
+
+The map is light, so additive blending washes out there. Use normal blending
+for a color that must show in daylight.
 
 ## PWA Notes
 

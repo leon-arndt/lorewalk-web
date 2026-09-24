@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Particle preview</title>
+    <style>
+      html, body, #map { margin: 0; height: 100%; }
+      body { font: 12px system-ui, sans-serif; }
+      #hint {
+        position: absolute; left: 10px; bottom: 10px; padding: 4px 8px; border-radius: 6px;
+        background: rgba(15, 23, 42, 0.75); color: #e2e8f0; pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="hint">Click the map to move the effect</div>
+    <script type="module" src="./vfxPreview.ts"></script>
+  </body>
+</html>

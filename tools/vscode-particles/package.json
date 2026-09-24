@@ -1,0 +1,20 @@
+{
+  "name": "lorewalk-particles",
+  "displayName": "Lorewalk Particle Editor",
+  "description": "Particle effect editor for Lorewalk Web, with a live preview on the game map.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "lorewalk",
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "lorewalk.particles.open",
+        "title": "Open Particle Editor",
+        "category": "Lorewalk"
+      }
+    ]
+  }
+}

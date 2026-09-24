@@ -2,6 +2,7 @@ import { useEffect, useRef, type MutableRefObject } from 'react'
 import maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
+import { addVfxLayer, type VfxLayerHandle } from '@/lib/mapVfx'
 import { CAT_MODEL_URL } from '@/lib/catModel'
 import { addPlayerAvatarLayer, type PlayerAvatarLayerHandle } from '@/lib/mapPlayerAvatar'
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
@@ -537,6 +538,28 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   useEffect(() => {
     playerAvatarRef.current?.setAppearance(appearance)
   }, [appearance])
+
+  // Particle effects (fireworks, sparkles) draw above the avatar and companions.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    let cancelled = false
+    let handle: VfxLayerHandle | null = null
+
+    const add = async () => {
+      const h = await addVfxLayer(map)
+      if (cancelled) { h.remove(); return }
+      handle = h
+    }
+
+    if (map.loaded()) add()
+    else map.once('load', add)
+
+    return () => {
+      cancelled = true
+      handle?.remove()
+    }
+  }, [])
 
   useEffect(() => {
     const map = mapRef.current
