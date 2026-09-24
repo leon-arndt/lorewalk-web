@@ -80,6 +80,7 @@ export function MapPage() {
           color: (c && creatureDefBySpecies(c.species)?.color) ?? categoryColor(c?.poiCategory),
           category: c?.poiCategory,
           shiny: c?.isShiny,
+          hat: c && creatureDefBySpecies(c.species)?.hat,
         }
       })
     if (members.length > 0) return members

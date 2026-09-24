@@ -10,7 +10,10 @@ export interface CreatureDef {
   type: CreatureType
   rarity: CreatureRarity
   poiCategory: string
+  hat?: CatHat
 }
+
+export type CatHat = 'party'
 
 // ponytail: legendary excluded from hatch pool; add special event system when needed
 export const CREATURES: CreatureDef[] = [
@@ -36,6 +39,7 @@ export const CREATURES: CreatureDef[] = [
   { id: 'longhaired_cat',   species: 'Long-haired Cat',  emoji: '🐱',   color: 0xede0c8, type: 'community', rarity: 'rare',      poiCategory: 'arts' },
   { id: 'fat_cat',          species: 'Fat Cat',          emoji: '🐈',   color: 0xe0a95c, type: 'community', rarity: 'rare',      poiCategory: 'landmark' },
   { id: 'singapura_cat',    species: 'Singapura Cat',    emoji: '🐱',   color: 0xb98456, type: 'community', rarity: 'rare',      poiCategory: 'landmark' },
+  { id: 'party_cat',        species: 'Party Cat',        emoji: '🥳',   color: 0xf2984a, type: 'community', rarity: 'rare',      poiCategory: 'arts', hat: 'party' },
 
   // Wild Cat - Epic
   { id: 'clouded_leopard',  species: 'Clouded Leopard',  emoji: '🐆',   color: 0xc9a15a, type: 'wild',      rarity: 'epic',      poiCategory: 'nature' },

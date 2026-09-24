@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
 import { isMapPaused } from '@/lib/mapUtils'
+import type { CatHat } from '@/data/creatures'
 
 // Renders little animated characters that wander around a point on the map, à la
 // Pikmin Bloom. MapLibre has no native glTF support, so this is a Three.js custom
@@ -20,6 +21,7 @@ export interface CharacterSpec {
   color: number
   category?: string
   shiny?: boolean
+  hat?: CatHat
 }
 
 export interface CharacterLayerHandle {
@@ -58,7 +60,7 @@ export async function addCharacterLayer(
   const THREE = await import('three')
   const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js')
   const { clone: skeletonClone } = await import('three/examples/jsm/utils/SkeletonUtils.js')
-  const { tintCat } = await import('@/lib/catModel')
+  const { addCatHat, tintCat } = await import('@/lib/catModel')
 
   const wanderRadius = opts.wanderRadiusM ?? 25
   const modelScale = opts.modelScale ?? 1
@@ -91,6 +93,7 @@ export async function addCharacterLayer(
     bobPhase: number
     procedural: boolean
     ownedMaterials: T3.Material[]
+    ownedGeometries: T3.BufferGeometry[]
   }
   const characters: Character[] = []
 
@@ -291,11 +294,17 @@ export async function addCharacterLayer(
     let idle: AnimationAction | null = null
     let walk: AnimationAction | null = null
     let ownedMaterials: T3.Material[] = []
+    let ownedGeometries: T3.BufferGeometry[] = []
     const procedural = !template
 
     if (template) {
       root = skeletonClone(template.scene)
       ownedMaterials = tintCat(THREE, root, spec.color, spec.shiny)
+      if (spec.hat) {
+        const hat = addCatHat(THREE, root, spec.hat)
+        ownedMaterials.push(...hat.materials)
+        ownedGeometries = hat.geometries
+      }
       mixer = new THREE.AnimationMixer(root)
       const clips = template.animations
       const idleClip = pickClip(clips, 'idle') ?? clips[0] ?? null
@@ -316,7 +325,7 @@ export async function addCharacterLayer(
       root, mixer, idle, walk, state: 'idle',
       x: start.x, z: start.z, tx: start.x, tz: start.z,
       speed: 1.1 + Math.random() * 0.7,
-      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, ownedMaterials,
+      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, ownedMaterials, ownedGeometries,
     })
   }
 
@@ -413,7 +422,7 @@ export async function addCharacterLayer(
         x: start.x, z: start.z, tx: start.x, tz: start.z,
         speed: 1.1 + Math.random() * 0.7,
         idleUntil: 0, bobPhase: Math.random() * Math.PI * 2,
-        procedural: true, ownedMaterials: [],
+        procedural: true, ownedMaterials: [], ownedGeometries: [],
       })
     } else {
       originalSpawn(spec)
@@ -426,6 +435,7 @@ export async function addCharacterLayer(
       worldGroup.remove(c.root)
       if (c.procedural) disposeObject(c.root)
       c.ownedMaterials.forEach((m) => m.dispose())
+      c.ownedGeometries.forEach((g) => g.dispose())
     }
     characters.length = 0
     specs.forEach(spawnWithGlb)
