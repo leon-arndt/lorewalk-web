@@ -187,14 +187,23 @@ function addItemShapes(THREE: THREE, model: T3.Object3D, appearance: PlayerAppea
   const m = measure(THREE, model)
   const u = m.H
 
-  function block(bone: string, w: number, h: number, d: number, x: number, y: number, z: number, color: number) {
-    const geo = new THREE.BoxGeometry(w, h, d)
-    const mat = new THREE.MeshStandardMaterial({ color, roughness: 1, metalness: 0 })
+  function shape(bone: string, geo: T3.BufferGeometry, x: number, y: number, z: number, color: number, scaleZ = 1) {
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 1, metalness: 0, flatShading: true })
     owned.push(geo, mat)
     const mesh = new THREE.Mesh(geo, mat)
     mesh.position.set(x, y, z)
+    mesh.scale.z = scaleZ
     // attach() keeps the world transform, so shapes built in model space land on the bone.
     ;(model.getObjectByName(bone) ?? model).attach(mesh)
+  }
+  function block(bone: string, w: number, h: number, d: number, x: number, y: number, z: number, color: number) {
+    shape(bone, new THREE.BoxGeometry(w, h, d), x, y, z, color)
+  }
+  // A square frustum, wider at the bottom: the angled A-line of a chibi skirt.
+  function flare(bone: string, wTop: number, wBottom: number, h: number, depthRatio: number, x: number, y: number, z: number, color: number) {
+    const geo = new THREE.CylinderGeometry(wTop / Math.SQRT2, wBottom / Math.SQRT2, h, 4)
+    geo.rotateY(Math.PI / 4)
+    shape(bone, geo, x, y, z, color, depthRatio)
   }
   const shade = (color: number, k: number) => new THREE.Color(color).multiplyScalar(k).getHex()
   const size = (b: T3.Box3) => b.getSize(new THREE.Vector3())
@@ -241,7 +250,14 @@ function addItemShapes(THREE: THREE, model: T3.Object3D, appearance: PlayerAppea
       }
     }
   } else if (appearance.bottomId === 'skirt') {
-    block('Hips', bs.x * 1.25, bs.y * 0.9, bs.z * 1.35, bc.x, bb.max.y - bs.y * 0.45, bc.z, bottomColor)
+    // Waistband, flared panel, then a darker hem, so it reads as cloth and not one box.
+    const depth = (bs.z / bs.x) * 1.1
+    const band = bs.y * 0.18, hem = bs.y * 0.16, panel = bs.y * 1.05 - band - hem
+    const flareAt = (y: number) => bs.x * (1.04 + 0.56 * (bb.max.y - band - y) / (panel + hem))
+    const panelBase = bb.max.y - band - panel
+    block('Hips', bs.x * 1.08, band, bs.x * 1.08 * depth, bc.x, bb.max.y - band / 2, bc.z, shade(bottomColor, 0.8))
+    flare('Hips', flareAt(bb.max.y - band), flareAt(panelBase), panel, depth, bc.x, panelBase + panel / 2, bc.z, bottomColor)
+    flare('Hips', flareAt(panelBase) * 1.03, flareAt(panelBase - hem) * 1.03, hem, depth, bc.x, panelBase - hem / 2, bc.z, shade(bottomColor, 0.8))
   }
 
   // Shoes: the model is barefoot, so every pair is a shape.
