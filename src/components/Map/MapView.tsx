@@ -423,14 +423,18 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (!map) return
     let cancelled = false
 
+    const specs = () => poisRef.current.map((p) => ({
+      id: p.id, lat: p.lat, lon: p.lon,
+      kind: p.kind, category: p.category ?? '', visited: visitedPoisRef.current.has(p.id),
+    }))
+
     const add = async () => {
-      const specs = poisRef.current.map((p) => ({
-        id: p.id, lat: p.lat, lon: p.lon,
-        kind: p.kind, category: p.category ?? '', visited: visitedPoisRef.current.has(p.id),
-      }))
-      const handle = await addPoiPinsLayer(map, specs)
+      const initial = poisRef.current
+      const handle = await addPoiPinsLayer(map, specs())
       if (cancelled) { handle.remove(); return }
       poiPinsRef.current = handle
+      // POIs that arrived while the layer was loading had no handle to update.
+      if (poisRef.current !== initial) handle.updatePins(specs())
     }
 
     if (map.loaded()) add()

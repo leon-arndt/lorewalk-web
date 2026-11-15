@@ -8,21 +8,21 @@ import type { Poi, PlayerPosition } from '@/types'
 const POI_RADIUS_M = 1_000
 const REFETCH_MOVE_M = 50
 
+interface PoiRow extends Partial<Poi> {
+  latitude?: number
+  longitude?: number
+  learn_more_url?: string
+}
+
 export function usePois(position: PlayerPosition | null) {
   const { mode } = useConnectionMode()
-  const [pois, setPois] = useState<Poi[]>([])
+  const [livePois, setLivePois] = useState<Poi[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const lastFetchRef = useRef<{ lat: number; lon: number } | null>(null)
+  const requestRef = useRef(0)
 
   useEffect(() => {
-    // Offline: show all POIs immediately - no GPS needed, no proximity filter.
-    // When online and in Singapore, switch to Supabase for live proximity queries.
-    if (mode === 'offline') {
-      setPois(SINGAPORE_POIS)
-      return
-    }
-
-    if (!position) return
+    if (mode !== 'online' || !position) return
 
     // Re-fetch on true displacement, not on quantized grid cells: skip the RPC
     // until the player has actually moved REFETCH_MOVE_M since the last fetch.
@@ -31,32 +31,51 @@ export function usePois(position: PlayerPosition | null) {
       return
     }
 
-    let cancelled = false
+    // Claimed before the request resolves and never cancelled on a new GPS fix.
+    // A fix arrives about once per second, so a cancel-on-change cleanup would
+    // drop every response slower than that and the POIs would never load.
+    const origin = { lat: position.latitude, lon: position.longitude }
+    lastFetchRef.current = origin
+    const request = ++requestRef.current
 
-    async function fetchPois() {
-      const { data, error } = await supabase.rpc('get_pois_near', {
-        p_lat: position!.latitude,
-        p_lon: position!.longitude,
-        p_radius_m: POI_RADIUS_M,
-      })
+    void (async () => {
+      let rows: PoiRow[] = []
+      let message: string | null = null
+      try {
+        const { data, error } = await supabase.rpc('get_pois_near', {
+          p_lat: origin.lat,
+          p_lon: origin.lon,
+          p_radius_m: POI_RADIUS_M,
+        })
+        if (error) message = error.message
+        else rows = (data as PoiRow[] | null) ?? []
+      } catch (err) {
+        message = err instanceof Error ? err.message : String(err)
+      }
 
-      if (cancelled) return
-      if (error) { setError(error.message); return }
-
-      lastFetchRef.current = { lat: position!.latitude, lon: position!.longitude }
+      if (request !== requestRef.current) return
+      setError(message)
+      if (message) {
+        // Let the next GPS fix retry instead of waiting for a 50 m move.
+        lastFetchRef.current = null
+        return
+      }
+      if (rows.length === 0) {
+        setLivePois(null)
+        return
+      }
       // Supabase RPC returns `latitude`/`longitude`; normalise to `lat`/`lon`.
-      const pois = ((data as any[]) ?? []).map((row) => ({
+      setLivePois(rows.map((row) => ({
         ...row,
         lat: row.lat ?? row.latitude,
         lon: row.lon ?? row.longitude,
         learnMoreUrl: row.learnMoreUrl ?? row.learn_more_url,
-      })) as Poi[]
-      setPois(pois)
-    }
-
-    fetchPois()
-    return () => { cancelled = true }
+      })) as Poi[])
+    })()
   }, [mode, position])
 
-  return { pois, error }
+  // The bundled list shows until a live fetch returns POIs, so the map is never
+  // empty while GPS has no fix, the request is slow, or Supabase is unreachable.
+  const online = mode === 'online'
+  return { pois: online && livePois ? livePois : SINGAPORE_POIS, error: online ? error : null }
 }

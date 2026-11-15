@@ -360,6 +360,6 @@ export async function addPoiPinsLayer(
     remove() {
       try { if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID) } catch { /* map torn down */ }
     },
-    updatePins(specs) { rebuild(specs) },
+    updatePins(specs) { rebuild(specs); map.triggerRepaint() },
   }
 }
