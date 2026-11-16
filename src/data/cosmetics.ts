@@ -114,12 +114,12 @@ export function toCssColor(color: number): string {
 }
 
 export const DEFAULT_APPEARANCE: PlayerAppearance = {
-  bodyId: AVATAR_BODIES[0].id,
-  skinToneId: SKIN_TONES[1].id,
-  hairColorId: HAIR_COLORS[0].id,
-  eyeColorId: EYE_COLORS[0].id,
-  topId: 'tee',
-  bottomId: 'jeans',
+  bodyId: 'longHair',
+  skinToneId: 'porcelain',
+  hairColorId: 'black',
+  eyeColorId: 'brown',
+  topId: 'tank',
+  bottomId: 'shorts',
   shoesId: 'sneakers',
   headItemId: 'none',
 }
