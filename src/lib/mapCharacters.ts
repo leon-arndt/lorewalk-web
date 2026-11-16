@@ -2,6 +2,7 @@ import maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
 import { isMapPaused } from '@/lib/mapUtils'
 import type { CatHat } from '@/data/creatures'
+import { addBlink, type Blinker } from '@/lib/blink'
 
 // Renders little animated characters that wander around a point on the map, à la
 // Pikmin Bloom. MapLibre has no native glTF support, so this is a Three.js custom
@@ -92,6 +93,7 @@ export async function addCharacterLayer(
     idleUntil: number
     bobPhase: number
     procedural: boolean
+    blink: Blinker | null
     ownedMaterials: T3.Material[]
     ownedGeometries: T3.BufferGeometry[]
   }
@@ -185,6 +187,7 @@ export async function addCharacterLayer(
     flame.position.y = 1.12
     const pupilM = pm(0x1e293b)
     const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), pupilM)
+    eyeL.name = 'Eye'
     eyeL.position.set(-0.12, 0.72, 0.3)
     const eyeR = eyeL.clone()
     eyeR.position.set(0.12, 0.72, 0.3)
@@ -201,11 +204,13 @@ export async function addCharacterLayer(
     body.position.y = 0.6
     const whiteM = pm(0xffffff)
     const eyeL = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.036, 8, 18), whiteM)
+    eyeL.name = 'Eye'
     eyeL.position.set(-0.13, 0.92, 0.28)
     const eyeR = eyeL.clone()
     eyeR.position.set(0.13, 0.92, 0.28)
     const pupilM = pm(0x1e293b)
     const pL = new THREE.Mesh(new THREE.CircleGeometry(0.055, 10), pupilM)
+    pL.name = 'Eye'
     pL.position.set(-0.13, 0.92, 0.317)
     const pR = pL.clone()
     pR.position.set(0.13, 0.92, 0.317)
@@ -234,6 +239,7 @@ export async function addCharacterLayer(
     hornR.position.set(0.15, 1.38, 0)
     const eyeM = pm(0xfbbf24, { emissive: 0xfbbf24, emissiveIntensity: 0.5 })
     const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 6), eyeM)
+    eyeL.name = 'Eye'
     eyeL.position.set(-0.13, 1.08, 0.2)
     const eyeR = eyeL.clone()
     eyeR.position.set(0.13, 1.08, 0.2)
@@ -250,11 +256,13 @@ export async function addCharacterLayer(
     body.position.y = 0.56
     const eyeM = pm(0xffffff)
     const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 6), eyeM)
+    eyeL.name = 'Eye'
     eyeL.position.set(-0.12, 0.64, 0.29)
     const eyeR = eyeL.clone()
     eyeR.position.set(0.12, 0.64, 0.29)
     const pupilM = pm(0x1e293b)
     const pL = new THREE.Mesh(new THREE.SphereGeometry(0.038, 6, 5), pupilM)
+    pL.name = 'Eye'
     pL.position.set(-0.12, 0.64, 0.325)
     const pR = pL.clone()
     pR.position.set(0.12, 0.64, 0.325)
@@ -314,6 +322,9 @@ export async function addCharacterLayer(
     } else {
       root = buildCreature(spec.category, spec.color)
     }
+    // Procedural eye materials go with disposeObject(); the cat's are owned here.
+    const blink = addBlink(THREE, root)
+    if (template) ownedMaterials.push(...blink.materials)
 
     root.scale.setScalar(modelScale)
     const start = randomPoint()
@@ -325,7 +336,7 @@ export async function addCharacterLayer(
       root, mixer, idle, walk, state: 'idle',
       x: start.x, z: start.z, tx: start.x, tz: start.z,
       speed: 1.1 + Math.random() * 0.7,
-      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, ownedMaterials, ownedGeometries,
+      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, blink, ownedMaterials, ownedGeometries,
     })
   }
 
@@ -373,6 +384,7 @@ export async function addCharacterLayer(
         c.root.position.y = Math.abs(Math.sin(c.bobPhase)) * amp
       }
       c.mixer?.update(dt)
+      c.blink?.update(dt)
     }
   }
 
@@ -422,7 +434,7 @@ export async function addCharacterLayer(
         x: start.x, z: start.z, tx: start.x, tz: start.z,
         speed: 1.1 + Math.random() * 0.7,
         idleUntil: 0, bobPhase: Math.random() * Math.PI * 2,
-        procedural: true, ownedMaterials: [], ownedGeometries: [],
+        procedural: true, blink: null, ownedMaterials: [], ownedGeometries: [],
       })
     } else {
       originalSpawn(spec)

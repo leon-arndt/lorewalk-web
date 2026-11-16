@@ -1,5 +1,6 @@
 import type * as T3 from 'three'
 import type { PlayerAppearance } from '@/types'
+import { addBlink } from '@/lib/blink'
 import { avatarBodyById, skinToneById, hairColorById, eyeColorById, cosmeticItemById } from '@/data/cosmetics'
 
 // The player's 3D avatar, shared by the map layer and the customization preview.
@@ -83,6 +84,8 @@ async function createRigged(THREE: THREE, appearance: PlayerAppearance): Promise
   })
 
   addItemShapes(THREE, model, appearance, owned)
+  const blink = addBlink(THREE, model)
+  owned.push(...blink.materials)
 
   const box = new THREE.Box3().setFromObject(model)
   const height = box.max.y - box.min.y || 1
@@ -123,7 +126,10 @@ async function createRigged(THREE: THREE, appearance: PlayerAppearance): Promise
     wave() {
       if (waveAction && current !== waveAction) fadeTo(waveAction)
     },
-    update(dt) { mixer.update(dt) },
+    update(dt) {
+      mixer.update(dt)
+      blink.update(dt)
+    },
     dispose() {
       mixer.stopAllAction()
       root.removeFromParent()
@@ -316,6 +322,7 @@ function createProcedural(THREE: THREE, appearance: PlayerAppearance): PlayerAva
   head.position.y = 1.12
   const eyeMat = pm(THREE, eye)
   const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 6), eyeMat)
+  eyeL.name = 'Eye'
   eyeL.position.set(-0.08, 1.14, 0.18)
   const eyeR = eyeL.clone()
   eyeR.position.set(0.08, 1.14, 0.18)
@@ -325,6 +332,7 @@ function createProcedural(THREE: THREE, appearance: PlayerAppearance): PlayerAva
   )
   hairCap.position.y = 1.2
   g.add(legs, feet, torso, armL, armR, head, eyeL, eyeR, hairCap)
+  const blink = addBlink(THREE, g)
 
   const root = new THREE.Group()
   root.add(g)
@@ -336,6 +344,7 @@ function createProcedural(THREE: THREE, appearance: PlayerAppearance): PlayerAva
     update(dt) {
       bobPhase += dt * 2
       g.position.y = Math.abs(Math.sin(bobPhase)) * 0.04
+      blink.update(dt)
     },
     dispose() {
       root.removeFromParent()
