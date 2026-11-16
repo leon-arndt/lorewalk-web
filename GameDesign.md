@@ -52,6 +52,7 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 - **Default centre**: Singapore (1.3521, 103.8198), used when the browser has no GPS fix.
 - **Player marker**: an indigo dot with a soft halo ring.
 - **Tile source**: OpenFreeMap "Liberty" vector tiles. They are free, need no key, and carry 3D buildings and transit POIs. The map tilts 45 degrees for depth. The community funds the tiles, so self-host them or move to a paid provider for high-volume production.
+- **Day, night, and weather**: the map follows the Singapore clock and the real weather from data.gov.sg. The map turns blue at night, and building windows stay lit until people go to bed. Clouds and rain show when the nearest forecast and rain gauge report them. These effects are visual only and change no game rule.
 
 ---
 

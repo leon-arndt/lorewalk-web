@@ -3,6 +3,7 @@ import type * as T3 from 'three'
 import { isMapPaused } from '@/lib/mapUtils'
 import type { PlayerAppearance } from '@/types'
 import { createPlayerAvatar, type PlayerAvatar } from '@/lib/playerAvatar'
+import { lightScene } from '@/lib/ambience'
 
 // Renders the player's own avatar (lib/playerAvatar.ts) at their live GPS position,
 // à la the companion characters in mapCharacters.ts (same "Three.js on MapLibre"
@@ -46,7 +47,8 @@ export async function addPlayerAvatarLayer(
 
   const scene = new THREE.Scene()
   const camera = new THREE.Camera()
-  scene.add(new THREE.AmbientLight(0xffffff, 1.4))
+  const ambient = new THREE.AmbientLight(0xffffff, 1.4)
+  scene.add(ambient)
   const sun = new THREE.DirectionalLight(0xffffff, 2.4)
   sun.position.set(0.6, 1, 0.4)
   scene.add(sun)
@@ -92,6 +94,7 @@ export async function addPlayerAvatarLayer(
       const nowMs = performance.now()
       const dt = lastMs ? Math.min((nowMs - lastMs) / 1000, 0.1) : 0
       lastMs = nowMs
+      lightScene(ambient, sun, 1.4, 2.4)
 
       if (avatar) {
         const shouldWalk = nowMs < walkUntil

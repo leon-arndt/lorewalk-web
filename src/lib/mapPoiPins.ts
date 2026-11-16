@@ -2,6 +2,7 @@ import maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
 import { isMapPaused } from '@/lib/mapUtils'
 import { categoryColors } from '@/lib/theme'
+import { lightScene } from '@/lib/ambience'
 
 // Renders Pokémon-GO–style 3D POI pins: a pulsing ground ring, a thin stem,
 // and a floating emoji orb that bobs gently - all in the same Three.js/WebGL
@@ -277,7 +278,8 @@ export async function addPoiPinsLayer(
 
   const scene = new THREE.Scene()
   const camera = new THREE.Camera()
-  scene.add(new THREE.AmbientLight(0xffffff, 1.0))
+  const ambient = new THREE.AmbientLight(0xffffff, 1.0)
+  scene.add(ambient)
   const dirLight = new THREE.DirectionalLight(0xffffff, 1.8)
   dirLight.position.set(2, 5, 3)
   scene.add(dirLight)
@@ -320,6 +322,7 @@ export async function addPoiPinsLayer(
       if (!renderer || pinsMap.size === 0) return
 
       const t = performance.now() / 1000
+      lightScene(ambient, dirLight, 1.0, 1.8)
 
       // Bob the whole head (cap + orb) + pulse the ground ring.
       for (const { head, ring, phase } of pinsMap.values()) {

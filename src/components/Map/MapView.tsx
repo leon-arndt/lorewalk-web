@@ -7,6 +7,10 @@ import { CAT_MODEL_URL } from '@/lib/catModel'
 import { addPlayerAvatarLayer, type PlayerAvatarLayerHandle } from '@/lib/mapPlayerAvatar'
 import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
+import { addMapAmbience } from '@/lib/mapAmbience'
+import { addMapWeather } from '@/lib/mapWeather'
+import { startWeatherUpdates } from '@/lib/weather'
+import { setAmbienceOverride } from '@/lib/ambience'
 import { setMapPaused } from '@/lib/mapUtils'
 import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
@@ -366,7 +370,16 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     })
 
     mapRef.current = map
-    if (import.meta.env.DEV) (window as unknown as { _map?: maplibregl.Map })._map = map
+    if (import.meta.env.DEV) {
+      Object.assign(window, { _map: map, _ambience: setAmbienceOverride })
+    }
+
+    // Day and night, clouds, and rain. The weather is the weather where the player stands.
+    const ambience: { remove: () => void }[] = []
+    const stopWeather = startWeatherUpdates(() => {
+      const p = positionRef.current
+      return p ? { latitude: p.latitude, longitude: p.longitude } : { latitude: DEFAULT_CENTER[1], longitude: DEFAULT_CENTER[0] }
+    })
 
     map.on('load', () => {
       // Lower 3D buildings to neighbourhood zoom. Hide every base-map label
@@ -382,6 +395,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
         }
       }
       addMrtLayers(map)
+      ambience.push(addMapAmbience(map), addMapWeather(map))
     })
 
     map.on('rotate', () => onBearingChangeRef.current?.(map.getBearing()))
@@ -407,6 +421,8 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
 
     return () => {
       if (compassResetRef) compassResetRef.current = null
+      stopWeather()
+      ambience.forEach((a) => a.remove())
       map.remove()
       mapRef.current = null
     }

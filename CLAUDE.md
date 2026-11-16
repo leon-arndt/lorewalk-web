@@ -245,6 +245,16 @@ That page plays the effect with the game's own code on the game's map. See
 `tools/vscode-particles/README.md`.
 
 The map is light, so additive blending washes out there. Use normal blending
+## Day, night, and weather
+
+The map follows the Singapore clock and the real weather. `src/lib/ambience.ts` holds the state as four values from 0 to 1: `night`, `awake`, `cloud`, and `rain`.
+
+- **Day and night**: `mapAmbience.ts` reads each color of the Liberty style once, then writes a tinted copy back. Dusk runs from about 18:35 to 19:50, and dawn from about 06:10 to 07:20. The hours are fixed, because sunrise and sunset in Singapore move by only about 15 minutes in a year.
+- **Lit windows**: at night, a generated window image covers the walls of the 3D buildings through `fill-extrusion-pattern`. The `awake` value sets the share of lit windows. It decreases between 22:30 and midnight. The pattern also covers the roof, so a thin `building-3d-roof` layer caps each building.
+- **Weather data**: `weather.ts` reads two public data.gov.sg endpoints every 5 minutes. They need no key. The rainfall endpoint gives a 5-minute total for each rain gauge, and the nearest gauge sets `rain`. The two-hour forecast for the nearest town sets `cloud`.
+- **Clouds and rain**: `mapWeather.ts` draws one fixed cloud field over the island as a three.js layer, with a shadow below each cloud. The clouds sit at 750 m, above the street-level camera, so they show only after a zoom out. The rain is a 2D canvas above the map canvas.
+- **Test a state**: in a dev build, run `_ambience({ hour: 21, cloud: 1, rain: 1 })` in the browser console. Run `_ambience(null)` to go back to the real state.
+
 for a color that must show in daylight.
 
 ## PWA Notes

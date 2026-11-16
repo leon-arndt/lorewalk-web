@@ -3,6 +3,7 @@ import type * as T3 from 'three'
 import { isMapPaused } from '@/lib/mapUtils'
 import type { CatHat } from '@/data/creatures'
 import { addBlink, type Blinker } from '@/lib/blink'
+import { lightScene } from '@/lib/ambience'
 
 // Renders little animated characters that wander around a point on the map, à la
 // Pikmin Bloom. MapLibre has no native glTF support, so this is a Three.js custom
@@ -69,7 +70,8 @@ export async function addCharacterLayer(
 
   const scene = new THREE.Scene()
   const camera = new THREE.Camera()
-  scene.add(new THREE.AmbientLight(0xffffff, 1.4))
+  const ambient = new THREE.AmbientLight(0xffffff, 1.4)
+  scene.add(ambient)
   const sun = new THREE.DirectionalLight(0xffffff, 2.4)
   sun.position.set(0.6, 1, 0.4)
   scene.add(sun)
@@ -475,6 +477,7 @@ export async function addCharacterLayer(
       const dt = lastMs ? Math.min((nowMs - lastMs) / 1000, 0.1) : 0
       lastMs = nowMs
       if (dt) tick(dt, nowMs)
+      lightScene(ambient, sun, 1.4, 2.4)
 
       // Constant-ish screen size: scale each character's own body (NOT the group,
       // which would scale their ground positions and make them slide when zooming).
