@@ -75,6 +75,7 @@ The design keeps its tensions simple on purpose. There is no combat, no PvP, and
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`), against the same Supabase project as the Unity client
 - **Native**: a Capacitor 7 Android wrapper. `@devmaxime/capacitor-health-connect` reads step data. `qrcode` renders the friend-invite QR. `@revenuecat/purchases-capacitor` handles Play Billing for Premium subscriptions (see `src/lib/billing.ts`). `@capgo/capacitor-social-login` opens the native Google sign-in sheet (see `src/lib/googleAuth.ts`)
 - **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`
+- **Animation**: `motion` (the new name of Framer Motion). Import from `motion/react`. Use it for UI transitions, such as the language dropdown in `LanguageDropdown.tsx`
 - **PWA**: `vite-plugin-pwa` and Workbox, with `registerType: autoUpdate`
 - **Routing**: React Router v7 (BrowserRouter)
 - **i18n**: a hand-rolled `LocaleContext` plus one dictionary per language in `src/i18n/` (en, de, ja, ko, zh, ms, id, ta)

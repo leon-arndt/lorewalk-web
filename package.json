@@ -20,6 +20,7 @@
     "@revenuecat/purchases-capacitor": "^11.3.2",
     "@supabase/supabase-js": "^2.108.2",
     "maplibre-gl": "^6.18.0",
+    "motion": "^14.14.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

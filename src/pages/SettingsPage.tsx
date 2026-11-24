@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
-import type { Locale } from '@/contexts/LocaleContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -8,6 +7,7 @@ import type { NotificationPrefKey } from '@/types'
 import { accent } from '@/lib/theme'
 import { glassPage } from '@/lib/glass'
 import { AccountSection } from '@/components/UI/AccountSection'
+import { LanguageDropdown } from '@/components/UI/LanguageDropdown'
 
 const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_motivation' | 'settings_notif_party_walk' | 'settings_notif_challenges' | 'settings_notif_friends_gifts' | 'settings_notif_latest_news'; descKey: 'settings_daily_motivation_desc' | 'settings_notif_party_walk_desc' | 'settings_notif_challenges_desc' | 'settings_notif_friends_gifts_desc' | 'settings_notif_latest_news_desc' }[] = [
   { key: 'dailyMotivationNotifications', titleKey: 'settings_daily_motivation', descKey: 'settings_daily_motivation_desc' },
@@ -41,7 +41,7 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () =>
 }
 
 export function SettingsPage() {
-  const { t, locale, setLocale } = useLocale()
+  const { t } = useLocale()
   const { volume, setVolume, sfxVolume, setSfxVolume } = useMusic()
   const { profile, toggleNotificationPref } = useProfile()
   const { mode, setMode } = useConnectionMode()
@@ -82,27 +82,7 @@ export function SettingsPage() {
           <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('profile_language')}
           </h2>
-          <div style={{
-            background: 'white', borderRadius: 16, padding: '4px 6px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', flexWrap: 'wrap', gap: 6,
-          }}>
-            {(Object.entries(LOCALE_LABELS) as [Locale, string][]).map(([code, label]) => (
-              <button
-                key={code}
-                onClick={() => setLocale(code)}
-                style={{
-                  fontSize: 13, fontWeight: locale === code ? 700 : 500,
-                  padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
-                  background: locale === code ? accent : 'transparent',
-                  color: locale === code ? 'white' : '#475569',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <LanguageDropdown />
         </section>
 
         <section>
