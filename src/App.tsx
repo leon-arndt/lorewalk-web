@@ -12,6 +12,7 @@ import { BottomNav } from '@/components/UI/BottomNav'
 import { LevelUpScreen } from '@/components/UI/LevelUpScreen'
 import { RewardScreen } from '@/components/UI/RewardScreen'
 import { Toast } from '@/components/UI/Toast'
+import { CloudConflictDialog } from '@/components/UI/CloudConflictDialog'
 import { MapPage } from '@/pages/MapPage'
 import { CreaturesPage } from '@/pages/CreaturesPage'
 import { SquadsPage } from '@/pages/SquadsPage'
@@ -112,6 +113,7 @@ export default function App() {
             <RewardScreen />
             <Toast />
             <EggReadyToast />
+            <CloudConflictDialog />
           </BrowserRouter>
         </RewardProvider>
         </PlayerLocationProvider>

@@ -535,72 +535,77 @@ export function applyLevelRewards(
 // ─── localStorage persistence ────────────────────────────────────────────────
 const STORAGE_KEY = 'lorewalk_profile'
 
+// Fills in every field a save from an older build lacks. Both the local save
+// and a cloud save from another device go through this, because either one
+// can come from a build that is older than this one.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function normalizeProfile(parsed: any): PlayerProfile {
+  const squads = parsed.squads ?? createEmptySquads()
+  // Migrate bondLevel → level + xp for saves created before the level system.
+  const hatchedCreatures = (parsed.hatchedCreatures ?? []).map((c: any) => {
+    if (c.level !== undefined) return c as HatchedCreature
+    const { bondLevel, ...rest } = c
+    return { ...rest, level: bondLevel ?? 1, xp: 0 } as HatchedCreature
+  })
+  const eggs: Egg[] = (parsed.eggs ?? []).map((e: any) => {
+    // Migrate pre-steps saves: rename visitsRequired/visitsProgress → steps fields
+    if (e.stepsRequired !== undefined) return e as Egg
+    const tier: EggTier = e.tier ?? 'common'
+    return {
+      ...e,
+      stepsRequired: TIER_STEPS[tier] ?? TIER_STEPS.common,
+      stepsProgress: 0,
+      visitsRequired: undefined,
+      visitsProgress: undefined,
+    } as Egg
+  })
+  return {
+    ...parsed,
+    eggs,
+    hatchedCreatures,
+    foodInventory: parsed.foodInventory ?? [],
+    foodNodes: (parsed.foodNodes ?? []).filter((n: any) =>
+      typeof n.lat === 'number' && isFinite(n.lat) &&
+      typeof n.lon === 'number' && isFinite(n.lon),
+    ),
+    shrineNodes: (parsed.shrineNodes ?? []).filter((n: any) =>
+      typeof n.lat === 'number' && isFinite(n.lat) &&
+      typeof n.lon === 'number' && isFinite(n.lon),
+    ),
+    maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
+    bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
+    squads,
+    activeSquadId: parsed.activeSquadId ?? squads[0]?.id ?? null,
+    coins: parsed.coins ?? 0,
+    tickets: parsed.tickets ?? 0,
+    claims: parsed.claims ?? [],
+    postcards: parsed.postcards ?? [],
+    outbox: parsed.outbox ?? [],
+    weeklyWalk: parsed.weeklyWalk ?? null,
+    dailySteps: parsed.dailySteps ?? {},
+    isPremium: parsed.isPremium ?? false,
+    premiumInterval: parsed.premiumInterval ?? null,
+    medals: parsed.medals ?? [],
+    dailyMotivationNotifications: parsed.dailyMotivationNotifications ?? false,
+    partyWalkNotifications: parsed.partyWalkNotifications ?? false,
+    challengesNotifications: parsed.challengesNotifications ?? false,
+    friendsAndGiftsNotifications: parsed.friendsAndGiftsNotifications ?? false,
+    latestNewsNotifications: parsed.latestNewsNotifications ?? false,
+    lastReadNewsAt: parsed.lastReadNewsAt ?? null,
+    pendingStreakChest: parsed.pendingStreakChest ?? false,
+    // Saves from before this feature existed start at their current milestone
+    // rather than retroactively granting a chest for streak days already banked.
+    streakChestMilestone: parsed.streakChestMilestone ?? streakChestMilestoneFor(parsed.streakDays ?? 0),
+    streakFreezes: parsed.streakFreezes ?? 0,
+    // Merged so saves from before a field existed (such as bodyId) pick up its default.
+    appearance: { ...DEFAULT_APPEARANCE, ...parsed.appearance },
+  }
+}
+
 export function loadProfile(): PlayerProfile {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as PlayerProfile
-      const squads = parsed.squads ?? createEmptySquads()
-      // Migrate bondLevel → level + xp for saves created before the level system.
-      const hatchedCreatures = (parsed.hatchedCreatures ?? []).map((c: any) => {
-        if (c.level !== undefined) return c as HatchedCreature
-        const { bondLevel, ...rest } = c
-        return { ...rest, level: bondLevel ?? 1, xp: 0 } as HatchedCreature
-      })
-      const eggs: Egg[] = (parsed.eggs ?? []).map((e: any) => {
-        // Migrate pre-steps saves: rename visitsRequired/visitsProgress → steps fields
-        if (e.stepsRequired !== undefined) return e as Egg
-        const tier: EggTier = e.tier ?? 'common'
-        return {
-          ...e,
-          stepsRequired: TIER_STEPS[tier] ?? TIER_STEPS.common,
-          stepsProgress: 0,
-          visitsRequired: undefined,
-          visitsProgress: undefined,
-        } as Egg
-      })
-      return {
-        ...parsed,
-        eggs,
-        hatchedCreatures,
-        foodInventory: parsed.foodInventory ?? [],
-        foodNodes: (parsed.foodNodes ?? []).filter((n: any) =>
-          typeof n.lat === 'number' && isFinite(n.lat) &&
-          typeof n.lon === 'number' && isFinite(n.lon),
-        ),
-        shrineNodes: (parsed.shrineNodes ?? []).filter((n: any) =>
-          typeof n.lat === 'number' && isFinite(n.lat) &&
-          typeof n.lon === 'number' && isFinite(n.lon),
-        ),
-        maxEggSlots: parsed.maxEggSlots ?? MAX_EGG_SLOTS,
-        bonusCreatureSlots: parsed.bonusCreatureSlots ?? 0,
-        squads,
-        activeSquadId: parsed.activeSquadId ?? squads[0]?.id ?? null,
-        coins: parsed.coins ?? 0,
-        tickets: parsed.tickets ?? 0,
-        claims: parsed.claims ?? [],
-        postcards: parsed.postcards ?? [],
-        outbox: parsed.outbox ?? [],
-        weeklyWalk: parsed.weeklyWalk ?? null,
-        dailySteps: parsed.dailySteps ?? {},
-        isPremium: parsed.isPremium ?? false,
-        premiumInterval: parsed.premiumInterval ?? null,
-        medals: parsed.medals ?? [],
-        dailyMotivationNotifications: parsed.dailyMotivationNotifications ?? false,
-        partyWalkNotifications: parsed.partyWalkNotifications ?? false,
-        challengesNotifications: parsed.challengesNotifications ?? false,
-        friendsAndGiftsNotifications: parsed.friendsAndGiftsNotifications ?? false,
-        latestNewsNotifications: parsed.latestNewsNotifications ?? false,
-        lastReadNewsAt: parsed.lastReadNewsAt ?? null,
-        pendingStreakChest: parsed.pendingStreakChest ?? false,
-        // Saves from before this feature existed start at their current milestone
-        // rather than retroactively granting a chest for streak days already banked.
-        streakChestMilestone: parsed.streakChestMilestone ?? streakChestMilestoneFor(parsed.streakDays ?? 0),
-        streakFreezes: parsed.streakFreezes ?? 0,
-        // Merged so saves from before a field existed (such as bodyId) pick up its default.
-        appearance: { ...DEFAULT_APPEARANCE, ...parsed.appearance },
-      }
-    }
+    if (raw) return normalizeProfile(JSON.parse(raw))
   } catch { /* ignore */ }
 
   return {
@@ -668,6 +673,37 @@ export const POSTCARD_DELIVERY_MS = import.meta.env.DEV ? 30_000 : 48 * 3_600_00
 
 export function saveProfile(profile: PlayerProfile) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
+}
+
+// True while the player has done nothing worth keeping. A sign-in on such a
+// device takes the cloud save without a question.
+export function isFreshProfile(profile: PlayerProfile): boolean {
+  return profile.totalXp === 0
+    && profile.visitHistory.length === 0
+    && profile.hatchedCreatures.length === 0
+    && profile.eggs.length === 0
+}
+
+// How many of this device's steps for a date the profile already holds. The
+// step counter is per device, but profile.dailySteps syncs between devices,
+// so the two numbers differ as soon as a second device walks on the same day.
+const STEPS_APPLIED_KEY = 'lorewalk.stepsApplied'
+
+export function loadAppliedSteps(dateKey: string): number | null {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STEPS_APPLIED_KEY) ?? 'null') as { date: string; steps: number } | null
+    return stored && stored.date === dateKey ? stored.steps : null
+  } catch {
+    return null
+  }
+}
+
+export function saveAppliedSteps(dateKey: string, steps: number) {
+  try {
+    localStorage.setItem(STEPS_APPLIED_KEY, JSON.stringify({ date: dateKey, steps }))
+  } catch {
+    // ignore quota / private-mode failures
+  }
 }
 
 // ─── Ticket economy ───────────────────────────────────────────────────────────

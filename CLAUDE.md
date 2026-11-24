@@ -73,7 +73,7 @@ The design keeps its tensions simple on purpose. There is no combat, no PvP, and
 - **Map**: MapLibre GL JS with OpenFreeMap "Liberty" vector tiles (3D buildings, transit POIs), tilted 70 degrees
 - **3D**: three.js. Custom MapLibre layers draw the animated creature companions, the POI pins, and the MRT lines (`mapCharacters.ts`, `mapPoiPins.ts`, `mapMrt.ts`)
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`), against the same Supabase project as the Unity client
-- **Native**: a Capacitor 7 Android wrapper. `@devmaxime/capacitor-health-connect` reads step data. `qrcode` renders the friend-invite QR. `@revenuecat/purchases-capacitor` handles Play Billing for Premium subscriptions (see `src/lib/billing.ts`)
+- **Native**: a Capacitor 7 Android wrapper. `@devmaxime/capacitor-health-connect` reads step data. `qrcode` renders the friend-invite QR. `@revenuecat/purchases-capacitor` handles Play Billing for Premium subscriptions (see `src/lib/billing.ts`). `@capgo/capacitor-social-login` opens the native Google sign-in sheet (see `src/lib/googleAuth.ts`)
 - **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`
 - **PWA**: `vite-plugin-pwa` and Workbox, with `registerType: autoUpdate`
 - **Routing**: React Router v7 (BrowserRouter)
@@ -98,10 +98,13 @@ src/
   hooks/
     useGeolocation.ts      # watchPosition wrapper → PlayerPosition state
     usePois.ts             # Supabase RPC → nearby Poi[] (re-fetches on ~50m movement)
+    useAccount.ts          # the signed-in Supabase account: anonymous or Google
     useVisitedPois, useStepCounter, useFriends, useBackgroundMusic
   lib/
     supabase.ts            # Supabase client (env vars VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
     profile.ts             # profile persistence + game rules (achievements, XP, eggs)
+    cloudSave.ts           # cloud save: sync rules + the engine that uploads and downloads
+    googleAuth.ts          # Google sign-in: web button, native sheet, Supabase link
     journalDb.ts           # IndexedDB store for journal photos / postcards
     mapCharacters.ts       # three.js creature companions (loads /models/creature-<cat>.glb)
     playerAvatar.ts        # chibi player avatar: /models/avatar-*.glb, tints + item add-ons
@@ -142,7 +145,10 @@ Copy `.env.example` to `.env.local`. Fill in the values from your Supabase proje
 ```
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 ```
+
+`VITE_GOOGLE_CLIENT_ID` is optional. Without it the app hides Google sign-in, and the cloud save stays off.
 
 ## Supabase RPC
 
@@ -177,17 +183,33 @@ $$;
 
 The anon key ships in the client bundle, so anyone can call the Supabase REST API with it. Row-level security (RLS) is the only access control. Read `supabase/migrations/20261115000000_auth_rls.sql` before you add a table or a policy.
 
-- **Player id**: when the app goes online, `ensureSession()` in `src/lib/supabase.ts` signs the player in with Supabase anonymous auth. `ProfileContext.tsx` then sets `profile.id` to that auth uid. The server reads the uid from a signed token as `auth.uid()`, and every policy compares a row against it. An offline profile keeps a local `guest_<timestamp>` id until then.
-- **Dashboard setting**: "Allow anonymous sign-ins" must be on in the Supabase project (Authentication, Sign In / Providers). Without it no client gets a session, and every policy denies access.
+- **Player id**: when the app goes online, `ensureSession()` in `src/lib/supabase.ts` signs the player in with Supabase anonymous auth. `useAccount` follows the session, and `ProfileContext.tsx` sets `profile.id` to its auth uid. The server reads the uid from a signed token as `auth.uid()`, and every policy compares a row against it. An offline profile keeps a local `guest_<timestamp>` id until then.
+- **Google sign-in**: an anonymous session lives on one device. `signInWithGoogleToken()` in `src/lib/googleAuth.ts` first links Google to the anonymous account, so the uid and every row that keys on it stay. If the Google account already owns a Lorewalk account, it signs in to that account, and `profile.id` changes to its uid.
+- **Dashboard settings**: three settings must be on in the Supabase project (Authentication, Sign In / Providers). Without "Allow anonymous sign-ins" no client gets a session, and every policy denies access. Google sign-in needs the Google provider, with the web client id under "Client IDs", and "Allow manual linking".
 - **`premium_entitlements`**: a player reads only their own row. Only the RevenueCat webhook writes.
 - **`friend_codes`**: a player reads and writes only their own codes.
 - **`friendships`**: a player reads only their own rows. The `add_friend_by_code` RPC is the only way to write a row.
 - **`player_public_stats`**: a player writes only their own row. A player reads their own row and the rows of their friends.
 - **`medal_claims`**: the `claim_medal` RPC issues one pickup code per player per month, and only for an active entitlement. Only the service role can call `redeem_medal`. A player reads only their own claims.
+- **`player_saves`**: a player reads only their own row. The `save_profile` RPC is the only way to write a row, and it refuses an anonymous account.
 
 A new table must enable RLS in its migration. A table that a raw SQL statement makes has RLS off, and the anon key can then read and write every row.
 
-The server does not verify gameplay values. Steps, level, and achievements in `player_public_stats` come from the client as reported.
+The server does not verify gameplay values. Steps, level, and achievements in `player_public_stats` come from the client as reported. The profile in `player_saves` is client data too.
+
+## Cloud save
+
+A player who signs in with Google gets a cloud save. `localStorage` stays the working copy, so the game still runs without a connection. The cloud save is the full `PlayerProfile` as one JSON row in `player_saves`, with a `revision` number. `supabase/migrations/20261124000000_player_saves.sql` holds the table and the `save_profile` RPC.
+
+- **Engine**: `CloudSaveEngine` in `src/lib/cloudSave.ts` runs outside React. `ProfileContext.tsx` makes one, tells it the account and each profile change, and takes a downloaded profile back through `onAdopt`.
+- **Device state**: the `lorewalk.cloudSave` key in `localStorage` holds the account id, the last revision that the device saw, and a `dirty` flag for a change that is not in the cloud yet.
+- **Upload**: a change uploads 2 seconds later, and at most one time in 30 seconds. The app also uploads when it goes to the background. `save_profile` takes the revision that the device last saw. If the server holds a different one, it writes nothing and reports a conflict.
+- **Download**: the app compares revisions when the account appears, when the app comes back to the foreground, and when the network comes back. `decideSync()` holds the rule. A device without a change of its own takes a newer cloud save. A device with no progress takes the cloud save on the first sign-in.
+- **Conflict**: when both sides hold progress, `CloudConflictDialog.tsx` asks the player which save to keep. The engine does not merge profiles.
+- **Housekeeping**: some profile changes come from the app, not the player: spawned food and shrine nodes, the account id, and the server entitlement. `persistHousekeeping()` marks them, and they do not set `dirty`. Without that mark, a device that only opened the app raises a false conflict against a newer cloud save. Use `persistHousekeeping()` for a new automatic change.
+- **New profile field**: add its default to `normalizeProfile()` in `profile.ts`. A cloud save from an older build goes through the same function as a local save.
+- **Steps**: the step counter counts one device. `profile.dailySteps` holds the sum across devices, and the `lorewalk.stepsApplied` key holds how many steps of this device are already in that sum.
+- **Not synced**: the journal photos in IndexedDB, and the settings outside the profile, such as the volume and the language.
 
 ## Map
 
@@ -274,10 +296,11 @@ npm run android   # build + cap sync + open Android Studio
 
 ## Testing
 
-Playwright end-to-end is the only test runner. There is no unit runner. The specs live in `e2e/lorewalk.spec.ts` and run in the Chromium project. `playwright.config.ts` sets the baseURL to `localhost:8849`, and its `webServer` block runs `npm run dev` or reuses a running one.
+Playwright end-to-end is the only test runner. There is no unit runner. The specs live in `e2e/` and run in the Chromium project. `e2e/lorewalk.spec.ts` holds the gameplay specs. `playwright.config.ts` sets the baseURL to `localhost:8849`, and its `webServer` block runs `npm run dev` or reuses a running one.
 
 - `e2e/profile-seed.ts` seeds a known profile into localStorage, so every test starts from a fixed state. Its `ACHIEVEMENT_IDS` list mirrors `profile.ts` by hand. Update it whenever you add an achievement.
 - The suite covers the map render and nav routing, egg hatching, the pantry and feeding, dev cheats, squad management, expedition dispatch, and the shrine system.
+- `e2e/cloud-save.spec.ts` covers the cloud save. It seeds a signed-in session and answers every Supabase request itself, so it needs no project and no Google account. It does not cover the Google sign-in itself.
 - Run `npm run test:e2e` before you commit a gameplay change.
 
 ## Code Style

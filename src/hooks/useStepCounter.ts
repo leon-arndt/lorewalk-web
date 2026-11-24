@@ -43,6 +43,11 @@ function load(day: string): StepState {
   return { steps: 0, distanceM: 0 }
 }
 
+// Today's step count of this device, for code outside the hook.
+export function loadDeviceSteps(day: string): number {
+  return load(day).steps
+}
+
 function save(state: StepState, day: string) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, date: day } satisfies StoredState))

@@ -1,11 +1,14 @@
-import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback, useEffect, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { supabase, ensureSession } from '@/lib/supabase'
+import { useAccount, type Account } from '@/hooks/useAccount'
+import { CloudSaveEngine, type CloudSaveState } from '@/lib/cloudSave'
+import { loadDeviceSteps } from '@/hooks/useStepCounter'
 import { getFoodDef } from '@/data/foods'
 import {
-  loadProfile, saveProfile, isPoiLocked,
+  loadProfile, saveProfile, isPoiLocked, loadAppliedSteps, saveAppliedSteps, localDateKey,
   currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
   applyXp, updateStreak, checkAchievements, todayStr,
   streakChestMilestoneFor, rollStreakChestRewards, type StreakChestRewards,
@@ -72,6 +75,11 @@ interface ProfileContextValue {
   joinWeeklyWalk: (startSteps: number) => boolean
   claimWeeklyWalkReward: (currentSteps: number) => { coins: number; egg: boolean } | null
   expireWeeklyWalkIfStale: () => void
+  account: Account | null
+  cloudSave: CloudSaveState
+  resolveCloudConflict: (keep: 'device' | 'cloud') => Promise<void>
+  setCloudConflictOpen: (open: boolean) => void
+  signOut: () => Promise<void>
 }
 
 export interface CheckInResult {
@@ -81,11 +89,89 @@ export interface CheckInResult {
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
 
+// Profile objects that came from a change the player did not make: the map
+// spawning nodes, the account id, the server entitlement. The cloud save does
+// not count them as unsaved progress. See CloudSaveEngine.profileChanged.
+const housekeeping = new WeakSet<PlayerProfile>()
+
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<PlayerProfile>(loadProfile)
   const [justReady, setJustReady] = useState<Egg[]>([])
   const [pendingLevelUp, setPendingLevelUp] = useState<{ level: number; rewards: LevelReward[] } | null>(null)
   const { mode } = useConnectionMode()
+
+  const account = useAccount(mode === 'online')
+  const accountId = account?.userId ?? null
+
+  // Online, the player id is the signed-in auth uid: every RLS policy and the
+  // RevenueCat app user id key on it. A Google sign-in on a second device
+  // swaps the uid, so this follows the account, not only the first sign-in.
+  useEffect(() => {
+    if (!accountId || profile.id === accountId) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the account lives in Supabase auth, outside React, and the profile must follow it
+    setProfile((prev) => {
+      const updated = { ...prev, id: accountId }
+      housekeeping.add(updated)
+      saveProfile(updated)
+      return updated
+    })
+  }, [accountId, profile.id])
+
+  // Cloud save. Only a linked (Google) account syncs: an anonymous session
+  // dies with the device, so a save for it protects nothing.
+  const [cloudEngine] = useState(() => new CloudSaveEngine(profile))
+  const cloudSave = useSyncExternalStore(cloudEngine.subscribe, cloudEngine.getState)
+  const cloudUserId = account && !account.isAnonymous ? account.userId : null
+
+  useEffect(() => {
+    cloudEngine.onAdopt = (cloudProfile) => {
+      setProfile(cloudProfile)
+      saveProfile(cloudProfile)
+      // The cloud total for today can hold steps from another device. Pin
+      // what this device already counted, so only its new steps add to it.
+      const today = localDateKey(new Date())
+      if (loadAppliedSteps(today) === null) saveAppliedSteps(today, loadDeviceSteps(today))
+      setJustReady([])
+      setPendingLevelUp(null)
+    }
+  }, [cloudEngine])
+
+  useEffect(() => { cloudEngine.profileChanged(profile, housekeeping.has(profile)) }, [cloudEngine, profile])
+
+  useEffect(() => {
+    cloudEngine.setUser(cloudUserId)
+    if (!cloudUserId) return
+    // Coming back to the app is when another device may have played. Leaving
+    // it is the last sure moment to upload.
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') void cloudEngine.sync()
+      else void cloudEngine.flush()
+    }
+    const onOnline = () => void cloudEngine.sync()
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('online', onOnline)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('online', onOnline)
+    }
+  }, [cloudEngine, cloudUserId])
+
+  const resolveCloudConflict = useCallback(
+    (keep: 'device' | 'cloud') => cloudEngine.resolveConflict(keep),
+    [cloudEngine],
+  )
+
+  const setCloudConflictOpen = useCallback(
+    (open: boolean) => cloudEngine.setConflictOpen(open),
+    [cloudEngine],
+  )
+
+  // The profile stays on this device after a sign-out, so nothing is lost if
+  // the last upload failed. scope 'local' keeps the other devices signed in.
+  const signOut = useCallback(async () => {
+    await cloudEngine.flush()
+    await supabase.auth.signOut({ scope: 'local' })
+  }, [cloudEngine])
 
   // Server-verified entitlement sync. premium_entitlements is written only by
   // the revenuecat-webhook Edge Function after a real Google Play purchase -
@@ -93,27 +179,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // CLAUDE.md's "must move to a server-verified entitlement" note. Offline
   // mode keeps trusting the local flag, for the dev cheats / test-purchase flow.
   useEffect(() => {
-    if (mode !== 'online') return
+    // Wait until profile.id holds the account id (the effect above).
+    if (mode !== 'online' || !accountId || profile.id !== accountId) return
     let cancelled = false
     async function checkEntitlement() {
       try {
-        // Online, the player id is the signed-in auth uid: every RLS policy
-        // and the RevenueCat app user id key on it. Adopt it, then let the
-        // effect re-run with the new profile.id.
-        const uid = await ensureSession()
-        if (cancelled || !uid) return
-        if (profile.id !== uid) {
-          setProfile((prev) => {
-            const updated = { ...prev, id: uid }
-            saveProfile(updated)
-            return updated
-          })
-          return
-        }
         const { data, error } = await supabase
           .from('premium_entitlements')
           .select('is_active, interval, expires_at')
-          .eq('player_id', uid)
+          .eq('player_id', accountId)
           .maybeSingle()
         if (cancelled) return
         // A query failure (e.g. the premium_entitlements migration hasn't been
@@ -124,16 +198,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         // expiration event leaves it stale. expires_at decides.
         const isActive = !!data?.is_active && !!data.expires_at && new Date(data.expires_at).getTime() > Date.now()
         const interval = isActive ? ((data?.interval as PremiumInterval | null) ?? null) : null
-        if (profile.isPremium === isActive && profile.premiumInterval === interval) return
-        persist({ ...profile, isPremium: isActive, premiumInterval: interval })
+        setProfile((prev) => {
+          if (prev.isPremium === isActive && prev.premiumInterval === interval) return prev
+          const updated = { ...prev, isPremium: isActive, premiumInterval: interval }
+          housekeeping.add(updated)
+          saveProfile(updated)
+          return updated
+        })
       } catch (err) {
         if (!cancelled) console.warn('premium_entitlements check failed', err)
       }
     }
     checkEntitlement()
     return () => { cancelled = true }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-check on going online or switching profiles, not every profile field change
-  }, [mode, profile.id])
+  }, [mode, accountId, profile.id])
 
   const visitedPois = useMemo(
     () => new Set(profile.visitHistory.map((v) => v.poiId)),
@@ -265,19 +343,23 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  // Apply today's step count, which only climbs within a day. dailySteps holds
-  // the steps already applied per local date, so the delta advances the eggs
-  // and the same write logs the day for the journal and the monthly medal. One
-  // write on purpose: two writes from the same snapshot would drop the first.
+  // Apply today's step count, which only climbs within a day. The delta
+  // advances the eggs, and the same write logs the day in dailySteps for the
+  // journal and the monthly medal. One write on purpose: two writes from the same snapshot would drop the first.
   // A ready egg waits for the player to tap it in the Creatures tab.
   function applyTodaySteps(dateKey: string, stepsToday: number) {
-    const applied = profile.dailySteps[dateKey] ?? 0
+    // stepsToday counts this device only, but dailySteps can hold steps that
+    // another device walked today. So the delta comes from what this device
+    // already applied, and the day's total grows by it.
+    const dayTotal = profile.dailySteps[dateKey] ?? 0
+    const applied = loadAppliedSteps(dateKey) ?? Math.min(dayTotal, stepsToday)
     const delta = stepsToday - applied
     if (delta <= 0) return
 
     const eggs = advanceEggs(profile.eggs, delta)
     const newlyReady = eggs.filter((egg, i) => isEggReady(egg) && !isEggReady(profile.eggs[i]))
-    persist({ ...profile, eggs, dailySteps: { ...profile.dailySteps, [dateKey]: stepsToday } })
+    persist({ ...profile, eggs, dailySteps: { ...profile.dailySteps, [dateKey]: dayTotal + delta } })
+    saveAppliedSteps(dateKey, stepsToday)
     if (newlyReady.length > 0) setJustReady(newlyReady)
   }
 
@@ -320,6 +402,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   function persist(updated: PlayerProfile) {
     setProfile(updated)
     saveProfile(updated)
+  }
+
+  function persistHousekeeping(updated: PlayerProfile) {
+    housekeeping.add(updated)
+    persist(updated)
   }
 
   // If the player crossed a level boundary, collect rewards for every new level,
@@ -375,7 +462,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         const old = profile.foodNodes[i]
         return !old || n.id !== old.id || n.lat !== old.lat || n.lon !== old.lon
       })
-    if (changed) persist({ ...profile, foodNodes: updated })
+    if (changed) persistHousekeeping({ ...profile, foodNodes: updated })
   }
 
   // Dispatch a set of creatures (not a squad) to a food node, Pikmin-style.
@@ -720,7 +807,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const changed =
       updated.length !== profile.shrineNodes.length ||
       updated.some((n, i) => n.id !== profile.shrineNodes[i]?.id)
-    if (changed) persist({ ...profile, shrineNodes: updated })
+    if (changed) persistHousekeeping({ ...profile, shrineNodes: updated })
   }
 
   function startShrineExpedition(nodeId: string, creatureIds: string[]) {
@@ -823,6 +910,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,
+      account, cloudSave, resolveCloudConflict, setCloudConflictOpen, signOut,
     }}>
       {children}
     </ProfileContext.Provider>

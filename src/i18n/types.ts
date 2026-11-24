@@ -273,4 +273,25 @@ export interface Translations {
   settings_connection: string
   settings_online_mode: string
   settings_online_mode_desc: string
+  account_title: string
+  account_desc: string
+  account_offline_hint: string
+  account_unavailable: string
+  account_sign_in_google: string
+  account_sign_in_failed: string
+  account_signed_in_as: string
+  account_signed_in_google: string
+  account_sign_out: string
+  account_sync_saving: string
+  account_sync_saved: string
+  account_sync_error: string
+  account_conflict_title: string
+  account_conflict_choose: string
+  account_conflict_body: string
+  account_conflict_device: string
+  account_conflict_cloud: string
+  account_conflict_summary: string
+  account_conflict_saved_on: string
+  account_conflict_confirm: string
+  account_conflict_later: string
 }

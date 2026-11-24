@@ -183,8 +183,20 @@ A RevenueCat webhook (`supabase/functions/revenuecat-webhook`) verifies each pur
 
 ## Player Profile
 
-### Guest profile (offline)
-`localStorage` holds the profile under `lorewalk_profile`. The app creates it on first launch with the name "Explorer". The player can edit the name in-app. No sign-in is needed.
+### Guest profile
+`localStorage` holds the profile under `lorewalk_profile`. The app creates it on first launch with the name "Explorer". The player can edit the name in-app. No sign-in is needed to play.
+
+### Account and cloud save
+A guest profile lives on one device. A player who signs in with Google in Settings gets a cloud save, and can then move to a new phone or play on two devices.
+
+- **Optional**: sign-in never blocks play. A guest keeps every feature except the cloud save.
+- **Google only**: one tap, and no password to forget. The sign-in keeps the player id of the guest, so the friends, the Premium entitlement, and the medal claims stay.
+- **Automatic**: the app uploads a change a few seconds after the player makes it. It downloads a newer save when the player opens the app.
+- **Second device**: a device with no progress takes the cloud save without a question.
+- **Two saves**: when the device and the account each hold progress that the other lacks, the app asks the player which save to keep. It does not merge them, because a merge of two full profiles can duplicate creatures or coins. The player can put the choice off, and Settings then shows it again.
+- **Sign-out**: the profile stays on the device, so a failed upload loses nothing.
+- **Steps**: each device counts its own steps, and the day's total is the sum across devices.
+- **Not in the cloud save**: the journal photos. They stay on the device.
 
 ### Level system
 - Each POI check-in awards XP equal to `poi.points`, which is 5 to 10 XP.
@@ -314,7 +326,6 @@ The player starts with 3 squads of 4 slots. An extra squad or slot fits the **co
 
 ## Future PWA Features (not designed yet)
 
-- Auth through Supabase, to sync visited POIs, creatures, and points across devices.
 - A loop that connects points to creature growth through check-ins.
 - Push notifications for expedition returns and daily discovery POIs.
 - A share card for a visited POI (social).

@@ -33,3 +33,12 @@ export function ensureSession(): Promise<string | null> {
   }
   return sessionPromise
 }
+
+// A Google sign-in or a sign-out swaps the player id, so the cached id must
+// follow. INITIAL_SESSION is left alone on purpose: it can report "no session"
+// while the first anonymous sign-in is still in flight, and a reset there
+// would start a second one.
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT') sessionPromise = null
+  else if (session && event !== 'INITIAL_SESSION') sessionPromise = Promise.resolve(session.user.id)
+})

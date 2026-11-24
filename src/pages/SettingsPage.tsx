@@ -7,6 +7,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import type { NotificationPrefKey } from '@/types'
 import { accent } from '@/lib/theme'
 import { glassPage } from '@/lib/glass'
+import { AccountSection } from '@/components/UI/AccountSection'
 
 const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_motivation' | 'settings_notif_party_walk' | 'settings_notif_challenges' | 'settings_notif_friends_gifts' | 'settings_notif_latest_news'; descKey: 'settings_daily_motivation_desc' | 'settings_notif_party_walk_desc' | 'settings_notif_challenges_desc' | 'settings_notif_friends_gifts_desc' | 'settings_notif_latest_news_desc' }[] = [
   { key: 'dailyMotivationNotifications', titleKey: 'settings_daily_motivation', descKey: 'settings_daily_motivation_desc' },
@@ -75,6 +76,8 @@ export function SettingsPage() {
       </div>
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <AccountSection />
+
         <section>
           <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
             {t('profile_language')}

@@ -654,6 +654,7 @@ export function ProfilePage() {
                 onClick={() => {
                   localStorage.removeItem('lorewalk_profile')
                   localStorage.removeItem('lorewalk.steps')
+                  localStorage.removeItem('lorewalk.stepsApplied')
                   localStorage.removeItem('lorewalk.stepRingCelebratedDate')
                   window.location.reload()
                 }}

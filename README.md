@@ -12,7 +12,7 @@ Read [GameDesign.md](GameDesign.md) for the full game design. Read [CLAUDE.md](C
 
 1. Install the dependencies: `npm install`.
 2. Copy `.env.example` to `.env.local`.
-3. Fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from your Supabase project settings.
+3. Fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from your Supabase project settings. Google sign-in and the cloud save also need `VITE_GOOGLE_CLIENT_ID`. The app runs without it.
 4. Start the dev server: `npm run dev`. It listens on `localhost:8849`.
 
 The map falls back to Singapore (1.3521, 103.8198) when the browser gives no GPS fix. Both the Geolocation API and PWA install need HTTPS. For a phone test, run `vite --host` and put a tunnel such as ngrok in front of it.
