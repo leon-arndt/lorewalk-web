@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
 import { isMapPaused } from '@/lib/mapUtils'
 import { createVfxInstance, loadVfxBank, type VfxEffect, type VfxInstance } from '@/lib/vfx'

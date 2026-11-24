@@ -1,4 +1,5 @@
-import maplibregl from 'maplibre-gl'
+import '@/lib/maplibreWorker'
+import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { DEFAULT_APPEARANCE } from '@/data/cosmetics'
 import { addPlayerAvatarLayer } from '@/lib/mapPlayerAvatar'

@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
 
 // Singapore MRT rendered as MapLibre GeoJSON layers.
 // Station labels match SMRT signage: coloured capsule per line code, then name.

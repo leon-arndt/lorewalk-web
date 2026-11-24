@@ -27,6 +27,10 @@ export default defineConfig({
     port: 8849,
     strictPort: true,
   },
+  // MapLibre starts its worker as a module (see src/lib/maplibreWorker.ts).
+  worker: {
+    format: 'es',
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
