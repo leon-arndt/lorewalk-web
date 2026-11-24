@@ -123,7 +123,7 @@ export const zh: Translations = {
   shop_popular: '热门',
   shop_best_value: '最划算',
   shop_test_purchase: '✓ +{coins} 🪙（测试购买）',
-  shop_online_note: '真实购买需要 Google Play  -  在设置中切换到离线模式进行测试',
+  shop_online_note: '真实购买需要 Google Play。',
   shop_get_more_coins: '获取更多金币',
 
   premium_go_premium: '开通高级会员',
@@ -165,6 +165,7 @@ export const zh: Translations = {
   premium_not_setup_web: '真实购买需要已安装的 Android 应用。',
   premium_plan_unavailable: '此套餐暂不可用。',
   premium_purchase_failed: '购买失败，请重试。',
+  premium_needs_online: '请先在设置中切换到在线模式，再进行订阅。',
   premium_cancelled_msg: '高级会员已取消。你可以随时重新订阅。',
   common_close: '关闭',
 
@@ -230,6 +231,7 @@ export const zh: Translations = {
   medal_history_title: '每月奖章',
   medal_history_subtitle: '按年份排列的所有月份',
   medal_earned_title: '获得奖章！',
+  medal_claim_failed: '无法领取奖章。请在设置中切换到在线模式后重试。',
   medal_challenge_info_aria: '每月挑战的运作方式',
   medal_view_all_aria: '查看所有每月奖章',
 

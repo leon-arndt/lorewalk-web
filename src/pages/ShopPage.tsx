@@ -65,10 +65,11 @@ export function ShopPage() {
   ]
 
   function buyPack(pack: typeof COIN_PACKS[number]) {
-    // Offline = sandbox: simulate a successful purchase and grant coins instantly.
-    // Online purchases aren't wired to RevenueCat yet (see src/lib/billing.ts,
-    // currently only used for Premium subscriptions).
-    if (mode === 'offline') {
+    // Dev build, offline = sandbox: simulate a successful purchase and grant
+    // coins instantly. A shipped build never grants free coins. Real purchases
+    // aren't wired to RevenueCat yet (see src/lib/billing.ts, currently only
+    // used for Premium subscriptions).
+    if (import.meta.env.DEV && mode === 'offline') {
       addCoins(pack.coins)
       showToast(t('shop_test_purchase', { coins: pack.coins }))
     } else {

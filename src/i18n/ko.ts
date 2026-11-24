@@ -123,7 +123,7 @@ export const ko: Translations = {
   shop_popular: '인기',
   shop_best_value: '최고의 가성비',
   shop_test_purchase: '✓ +{coins} 🪙 (테스트 구매)',
-  shop_online_note: '실제 구매는 Google Play 결제 필요  -  테스트는 설정에서 오프라인으로 전환하세요',
+  shop_online_note: '실제 구매에는 Google Play 결제가 필요합니다.',
   shop_get_more_coins: '코인 더 받기',
 
   premium_go_premium: '프리미엄 시작하기',
@@ -165,6 +165,7 @@ export const ko: Translations = {
   premium_not_setup_web: '실제 구매는 설치된 Android 앱이 필요합니다.',
   premium_plan_unavailable: '이 플랜은 아직 사용할 수 없습니다.',
   premium_purchase_failed: '구매에 실패했습니다. 다시 시도해 주세요.',
+  premium_needs_online: '구독하려면 설정에서 온라인 모드로 전환하세요.',
   premium_cancelled_msg: '프리미엄이 취소되었습니다. 언제든지 다시 구독할 수 있습니다.',
   common_close: '닫기',
 
@@ -230,6 +231,7 @@ export const ko: Translations = {
   medal_history_title: '월간 메달',
   medal_history_subtitle: '연도별 모든 월',
   medal_earned_title: '메달 획득!',
+  medal_claim_failed: '메달을 획득하지 못했습니다. 설정에서 온라인 모드로 전환한 후 다시 시도해 주세요.',
   medal_challenge_info_aria: '월간 챌린지 작동 방식',
   medal_view_all_aria: '모든 월간 메달 보기',
 

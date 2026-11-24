@@ -123,7 +123,7 @@ export const ta: Translations = {
   shop_popular: 'பிரபலம்',
   shop_best_value: 'சிறந்த மதிப்பு',
   shop_test_purchase: '✓ +{coins} 🪙 (சோதனை கொள்முதல்)',
-  shop_online_note: 'உண்மையான கொள்முதல்களுக்கு Google Play தேவை  -  சோதனைக்கு அமைப்புகளில் இணையமின்றி மாறவும்',
+  shop_online_note: 'உண்மையான கொள்முதல்களுக்கு Google Play தேவை.',
   shop_get_more_coins: 'மேலும் நாணயங்களைப் பெறுங்கள்',
 
   premium_go_premium: 'பிரீமியம் பெறுங்கள்',
@@ -165,6 +165,7 @@ export const ta: Translations = {
   premium_not_setup_web: 'உண்மையான கொள்முதல்களுக்கு நிறுவப்பட்ட Android ஆப் தேவை.',
   premium_plan_unavailable: 'இந்த திட்டம் இன்னும் கிடைக்கவில்லை.',
   premium_purchase_failed: 'கொள்முதல் தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.',
+  premium_needs_online: 'சந்தா பெற அமைப்புகளில் இணைய முறைக்கு மாறவும்.',
   premium_cancelled_msg: 'பிரீமியம் ரத்து செய்யப்பட்டது. நீங்கள் எப்போது வேண்டுமானாலும் மீண்டும் சந்தா செய்யலாம்.',
   common_close: 'மூடு',
 
@@ -230,6 +231,7 @@ export const ta: Translations = {
   medal_history_title: 'மாத பதக்கங்கள்',
   medal_history_subtitle: 'ஆண்டு வாரியாக அனைத்து மாதங்களும்',
   medal_earned_title: 'பதக்கம் பெறப்பட்டது!',
+  medal_claim_failed: 'பதக்கத்தைப் பெற முடியவில்லை. அமைப்புகளில் இணைய முறைக்கு மாறி மீண்டும் முயற்சிக்கவும்.',
   medal_challenge_info_aria: 'மாத சவால் எவ்வாறு செயல்படுகிறது',
   medal_view_all_aria: 'அனைத்து மாத பதக்கங்களையும் காண்க',
 

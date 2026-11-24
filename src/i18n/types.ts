@@ -163,6 +163,7 @@ export interface Translations {
   premium_not_setup_web: string
   premium_plan_unavailable: string
   premium_purchase_failed: string
+  premium_needs_online: string
   premium_cancelled_msg: string
   common_close: string
 
@@ -228,6 +229,7 @@ export interface Translations {
   medal_history_title: string
   medal_history_subtitle: string
   medal_earned_title: string
+  medal_claim_failed: string
   medal_challenge_info_aria: string
   medal_view_all_aria: string
 

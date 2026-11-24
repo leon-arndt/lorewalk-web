@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useMemo, useCallback, useEffect } 
 import type { ReactNode } from 'react'
 import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
-import { supabase } from '@/lib/supabase'
+import { supabase, ensureSession } from '@/lib/supabase'
 import { getFoodDef } from '@/data/foods'
 import {
   loadProfile, saveProfile, isPoiLocked,
@@ -61,7 +61,7 @@ interface ProfileContextValue {
   markNewsRead: (publishedAt: string) => void
   subscribePremium: (interval: 'monthly' | 'yearly') => void
   cancelPremium: () => void
-  claimMedal: () => EarnedMedal | null
+  claimMedal: () => Promise<EarnedMedal | null>
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
@@ -97,17 +97,32 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     let cancelled = false
     async function checkEntitlement() {
       try {
+        // Online, the player id is the signed-in auth uid: every RLS policy
+        // and the RevenueCat app user id key on it. Adopt it, then let the
+        // effect re-run with the new profile.id.
+        const uid = await ensureSession()
+        if (cancelled || !uid) return
+        if (profile.id !== uid) {
+          setProfile((prev) => {
+            const updated = { ...prev, id: uid }
+            saveProfile(updated)
+            return updated
+          })
+          return
+        }
         const { data, error } = await supabase
           .from('premium_entitlements')
-          .select('is_active, interval')
-          .eq('player_id', profile.id)
+          .select('is_active, interval, expires_at')
+          .eq('player_id', uid)
           .maybeSingle()
         if (cancelled) return
         // A query failure (e.g. the premium_entitlements migration hasn't been
         // applied to this Supabase project yet) is not the same as a real "not
         // active" answer - leave the local flag alone rather than revoke on it.
         if (error) { console.warn('premium_entitlements check failed', error.message); return }
-        const isActive = data?.is_active ?? false
+        // is_active holds what was true at the last webhook event, so a missed
+        // expiration event leaves it stale. expires_at decides.
+        const isActive = !!data?.is_active && !!data.expires_at && new Date(data.expires_at).getTime() > Date.now()
         const interval = isActive ? ((data?.interval as PremiumInterval | null) ?? null) : null
         if (profile.isPremium === isActive && profile.premiumInterval === interval) return
         persist({ ...profile, isPremium: isActive, premiumInterval: interval })
@@ -602,18 +617,45 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, isPremium: false, premiumInterval: null })
   }
 
-  function claimMedal(): EarnedMedal | null {
+  // The medal is a physical item, so the server issues the claim: the
+  // claim_medal RPC checks the verified entitlement, allows one claim per
+  // month, and returns the pickup code. Only a dev build may claim offline.
+  async function claimMedal(): Promise<EarnedMedal | null> {
     if (!profile.isPremium) return null
-    const monthKey = currentMonthKey()
-    if (profile.medals.some((m) => m.monthKey === monthKey)) return null
-    if (stepsThisMonth(profile.dailySteps, monthKey) < MEDAL_EVENT_TARGET_STEPS) return null
-    const medal: EarnedMedal = {
-      id: `medal_${Date.now()}`,
-      monthKey,
-      title: `${monthLabel(monthKey)} Medal`,
-      claimedAt: new Date().toISOString(),
+    const localMonth = currentMonthKey()
+    if (profile.medals.some((m) => m.monthKey === localMonth)) return null
+    if (stepsThisMonth(profile.dailySteps, localMonth) < MEDAL_EVENT_TARGET_STEPS) return null
+
+    let medal: EarnedMedal
+    if (import.meta.env.DEV && mode !== 'online') {
+      medal = {
+        id: `medal_${Date.now()}`,
+        monthKey: localMonth,
+        title: `${monthLabel(localMonth)} Medal`,
+        claimedAt: new Date().toISOString(),
+      }
+    } else {
+      if (mode !== 'online' || !(await ensureSession())) return null
+      const { data, error } = await supabase.rpc('claim_medal')
+      const row = (data as { month_key: string; claim_code: string; claimed_at: string }[] | null)?.[0]
+      if (error || !row) {
+        if (error) console.warn('claim_medal failed', error.message)
+        return null
+      }
+      medal = {
+        id: `medal_${row.month_key}`,
+        monthKey: row.month_key,
+        title: `${monthLabel(row.month_key)} Medal`,
+        claimedAt: row.claimed_at,
+        claimCode: row.claim_code,
+      }
     }
-    persist({ ...profile, medals: [...profile.medals, medal] })
+    setProfile((prev) => {
+      if (prev.medals.some((m) => m.monthKey === medal.monthKey)) return prev
+      const updated = { ...prev, medals: [...prev.medals, medal] }
+      saveProfile(updated)
+      return updated
+    })
     return medal
   }
 

@@ -123,7 +123,7 @@ export const id: Translations = {
   shop_popular: 'Populer',
   shop_best_value: 'Nilai terbaik',
   shop_test_purchase: '✓ +{coins} 🪙 (pembelian uji)',
-  shop_online_note: 'Pembelian nyata memerlukan Google Play  -  beralih ke Offline di Pengaturan untuk menguji',
+  shop_online_note: 'Pembelian nyata memerlukan Google Play.',
   shop_get_more_coins: 'Dapatkan lebih banyak koin',
 
   premium_go_premium: 'Dapatkan Premium',
@@ -165,6 +165,7 @@ export const id: Translations = {
   premium_not_setup_web: 'Pembelian nyata memerlukan aplikasi Android yang terpasang.',
   premium_plan_unavailable: 'Paket ini belum tersedia.',
   premium_purchase_failed: 'Pembelian gagal. Silakan coba lagi.',
+  premium_needs_online: 'Beralih ke mode online di Pengaturan untuk berlangganan.',
   premium_cancelled_msg: 'Premium dibatalkan. Kamu bisa berlangganan lagi kapan saja.',
   common_close: 'Tutup',
 
@@ -230,6 +231,7 @@ export const id: Translations = {
   medal_history_title: 'Medali bulanan',
   medal_history_subtitle: 'Semua bulan, diurutkan berdasarkan tahun',
   medal_earned_title: 'Medali diraih!',
+  medal_claim_failed: 'Medali tidak bisa diklaim. Beralih ke mode online di Pengaturan dan coba lagi.',
   medal_challenge_info_aria: 'Cara kerja tantangan bulanan',
   medal_view_all_aria: 'Lihat semua medali bulanan',
 

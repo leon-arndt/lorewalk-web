@@ -4,6 +4,8 @@ A browser-based PWA companion to the Lorewalk Android game. Walk to real Singapo
 
 The Android app uses Unity and ARCore. This web app drops the AR and keeps the map, the collection, and the expeditions. Chrome installs it to the home screen through "Add to Home Screen".
 
+Lorewalk is not a digital-only product. Each month, a Premium player can earn a real metal medal and collect it in person. See [Physical medals](#physical-medals).
+
 Read [GameDesign.md](GameDesign.md) for the full game design. Read [CLAUDE.md](CLAUDE.md) for the architecture notes and the cost numbers behind the monetisation.
 
 ## Quick start
@@ -31,6 +33,17 @@ Run `npm run test:e2e` before you commit a gameplay change.
 ## Stack
 
 React 19 and TypeScript on Vite. MapLibre GL JS draws the map from OpenFreeMap "Liberty" vector tiles at a 45 degree pitch. three.js draws the creature companions, the POI pins, and the MRT lines as custom map layers. Supabase holds the backend, and the Unity client shares the same project. Capacitor 7 wraps the app for Android and reads step data through Health Connect. Tailwind CSS v4 handles styling, and `vite-plugin-pwa` handles the service worker.
+
+## Physical medals
+
+A real medal gives the game a value that a screen cannot give. The player can hold it, keep it, and show it to a friend.
+
+- **Real.** The medal is a metal object on a ribbon, not an in-app badge.
+- **Earned.** A subscription does not grant a medal. The player must finish that month's in-app challenge.
+- **Different each month.** Each month has its own design, so a year of play makes a set of 12.
+- **Collected in person.** The player takes the medal at the monthly community event below.
+
+Most games in this genre sell digital rewards only. The medal is what Lorewalk Premium adds on top. Nobody has picked a medal supplier yet. [GameDesign.md](GameDesign.md) holds the design, and [CLAUDE.md](CLAUDE.md) holds the cost numbers.
 
 ## Monthly community event (Singapore)
 

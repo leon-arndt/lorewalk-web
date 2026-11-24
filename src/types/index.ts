@@ -195,6 +195,7 @@ export interface EarnedMedal {
   monthKey: string   // 'YYYY-MM', the challenge this came from
   title: string
   claimedAt: string
+  claimCode?: string   // server-issued pickup code from the claim_medal RPC; absent on a dev offline claim
 }
 
 export interface Postcard {

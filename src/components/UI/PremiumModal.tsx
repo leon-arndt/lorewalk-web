@@ -1,3 +1,4 @@
+import { UUID_RE } from '@/lib/supabase'
 import { useEffect, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -61,6 +62,12 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
 
   async function handleSubscribe() {
     if (mode !== 'online') {
+      // The simulated purchase is a dev tool. A shipped build must never
+      // grant Premium without a real purchase.
+      if (!import.meta.env.DEV) {
+        showToast(t('premium_needs_online'))
+        return
+      }
       subscribePremium(interval)
       setSubscribed(true)
       showToast(t('premium_test_purchase_complete'))
@@ -76,6 +83,12 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
     const pkg = interval === 'monthly' ? offerings?.monthly : offerings?.yearly
     if (!pkg) {
       showToast(t('premium_plan_unavailable'))
+      return
+    }
+    // The purchase binds to the RevenueCat app user id. That must be the
+    // signed-in auth uid, or the webhook row never matches this player.
+    if (!UUID_RE.test(profile.id)) {
+      showToast(t('premium_purchase_failed'))
       return
     }
     setPurchasing(true)
@@ -95,7 +108,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
   }
 
   function handleCancel() {
-    if (mode === 'online') {
+    if (mode === 'online' || !import.meta.env.DEV) {
       window.open(playSubscriptionManagementUrl(), '_blank', 'noopener')
       setConfirmingCancel(false)
       return

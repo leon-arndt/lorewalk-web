@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, UUID_RE } from '@/lib/supabase'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import type { Translations } from '@/i18n/types'
 
@@ -63,6 +63,9 @@ export function useFriends(
 ) {
   const { mode } = useConnectionMode()
   const offline = mode === 'offline'
+  // Online, the server only accepts the signed-in auth uid as the player id.
+  // ProfileContext swaps profile.id to it after sign-in, so wait for that.
+  const ready = !offline && UUID_RE.test(playerId)
 
   const [friendCode, setFriendCode] = useState<FriendCode | null>(null)
   const [friends, setFriends] = useState<Friend[]>([])
@@ -75,15 +78,15 @@ export function useFriends(
       setLoading(false)
       return
     }
-    void loadAll()
-  }, [playerId, offline])
+    if (ready) void loadAll()
+  }, [playerId, offline, ready])
 
   // Keep the stored display_name current: an existing code snapshots the name at
   // insert time, so a later rename would otherwise show stale to anyone adding you.
   useEffect(() => {
-    if (offline || !playerId) return
+    if (!ready) return
     void supabase.from('friend_codes').update({ display_name: displayName }).eq('player_id', playerId)
-  }, [playerId, displayName, offline])
+  }, [playerId, displayName, ready])
 
   // Publish the stats friends see on our row (level, total steps, unlocked
   // achievements) - see player_public_stats in CLAUDE.md for the table shape.
@@ -91,7 +94,7 @@ export function useFriends(
   // the array identity alone would re-run this write on every render.
   const achievementKey = achievementIds.join(',')
   useEffect(() => {
-    if (offline || !playerId) return
+    if (!ready) return
     // Steps tick on every GPS fix; batch a walk's updates into one write.
     const t = setTimeout(() => {
       void supabase.from('player_public_stats').upsert({
@@ -104,7 +107,7 @@ export function useFriends(
       })
     }, 5_000)
     return () => clearTimeout(t)
-  }, [playerId, displayName, level, totalSteps, achievementKey, offline])
+  }, [playerId, displayName, level, totalSteps, achievementKey, ready])
 
   async function loadAll() {
     setLoading(true)
@@ -218,39 +221,21 @@ export function useFriends(
         return { ok: true, key: 'friends_added_test' }
       }
 
-      const { data: codeRows } = await supabase.rpc('lookup_friend_code', { p_code: code })
-
-      if (!codeRows?.length) return { ok: false, key: 'friends_not_found' }
-      const { player_id: friendId, display_name: friendName } = codeRows[0]
-
-      if (friendId === playerId) return { ok: false, key: 'friends_own_code' }
-
-      const [pA, pB] = [playerId, friendId].sort()
-      const nameA = pA === playerId ? displayName : friendName
-      const nameB = pB === playerId ? displayName : friendName
-
-      const { data: existing } = await supabase
-        .from('friendships')
-        .select('id')
-        .eq('player_a', pA)
-        .eq('player_b', pB)
-        .limit(1)
-
-      if (existing?.length) return { ok: false, key: 'friends_already' }
-
-      const { error } = await supabase
-        .from('friendships')
-        .insert({ player_a: pA, player_b: pB, name_a: nameA, name_b: nameB })
-
-      if (error) {
-        // Concurrent/duplicate add races past the existence check; the unique
-        // index is the real guard, so treat its violation as "already friends".
-        if (error.code === UNIQUE_VIOLATION) return { ok: false, key: 'friends_already' }
-        return { ok: false, key: 'friends_failed' }
-      }
+      // The server resolves the code and writes the friendship row. The
+      // client has no insert right on friendships, so nobody can befriend a
+      // player without holding their code.
+      const { data, error } = await supabase.rpc('add_friend_by_code', {
+        p_code: code,
+        p_display_name: displayName,
+      })
+      const row = (data as { status: string; friend_name: string | null }[] | null)?.[0]
+      if (error || !row) return { ok: false, key: 'friends_failed' }
+      if (row.status === 'not_found') return { ok: false, key: 'friends_not_found' }
+      if (row.status === 'own_code') return { ok: false, key: 'friends_own_code' }
+      if (row.status === 'already') return { ok: false, key: 'friends_already' }
 
       await loadFriends()
-      return { ok: true, key: 'friends_added', vars: { name: friendName } }
+      return { ok: true, key: 'friends_added', vars: { name: row.friend_name ?? '' } }
     },
     [playerId, displayName, offline, friendCode],
   )

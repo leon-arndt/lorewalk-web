@@ -123,7 +123,7 @@ export const ms: Translations = {
   shop_popular: 'Popular',
   shop_best_value: 'Nilai terbaik',
   shop_test_purchase: '✓ +{coins} 🪙 (pembelian ujian)',
-  shop_online_note: 'Pembelian sebenar memerlukan Google Play  -  tukar ke Luar Talian dalam Tetapan untuk ujian',
+  shop_online_note: 'Pembelian sebenar memerlukan Google Play.',
   shop_get_more_coins: 'Dapatkan lebih banyak syiling',
 
   premium_go_premium: 'Dapatkan Premium',
@@ -165,6 +165,7 @@ export const ms: Translations = {
   premium_not_setup_web: 'Pembelian sebenar memerlukan aplikasi Android yang dipasang.',
   premium_plan_unavailable: 'Pelan ini belum tersedia.',
   premium_purchase_failed: 'Pembelian gagal. Sila cuba lagi.',
+  premium_needs_online: 'Tukar ke mod dalam talian dalam Tetapan untuk melanggan.',
   premium_cancelled_msg: 'Premium dibatalkan. Anda boleh melanggan semula bila-bila masa.',
   common_close: 'Tutup',
 
@@ -230,6 +231,7 @@ export const ms: Translations = {
   medal_history_title: 'Pingat bulanan',
   medal_history_subtitle: 'Semua bulan, disusun mengikut tahun',
   medal_earned_title: 'Pingat diperoleh!',
+  medal_claim_failed: 'Pingat tidak dapat dituntut. Tukar ke mod dalam talian dalam Tetapan dan cuba lagi.',
   medal_challenge_info_aria: 'Cara cabaran bulanan berfungsi',
   medal_view_all_aria: 'Lihat semua pingat bulanan',
 

@@ -33,7 +33,7 @@ function formatDate(iso: string) {
 export function ProfilePage() {
   const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevStreakDays, toggleDevPremium, claimMedal } = useProfile()
   const { addDevSteps } = usePlayerLocation()
-  const { showReward } = useReward()
+  const { showReward, showToast } = useReward()
   const { t } = useLocale()
   const navigate = useNavigate()
   const [editingName, setEditingName] = useState(false)
@@ -97,9 +97,12 @@ export function ProfilePage() {
     })
   }
 
-  function handleClaimMedal() {
-    const medal = claimMedal()
-    if (!medal) return
+  async function handleClaimMedal() {
+    const medal = await claimMedal()
+    if (!medal) {
+      showToast(t('medal_claim_failed'))
+      return
+    }
     showReward({
       emoji: '🏅',
       title: t('medal_earned_title'),

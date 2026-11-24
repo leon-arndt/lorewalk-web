@@ -123,7 +123,7 @@ export const en: Translations = {
   shop_popular: 'Popular',
   shop_best_value: 'Best value',
   shop_test_purchase: '✓ +{coins} 🪙 (test purchase)',
-  shop_online_note: 'Real purchases need Google Play Billing. Switch to Offline in Settings to test.',
+  shop_online_note: 'Real purchases need Google Play Billing.',
   shop_get_more_coins: 'Get more coins',
 
   premium_go_premium: 'Go Premium',
@@ -165,6 +165,7 @@ export const en: Translations = {
   premium_not_setup_web: 'Real purchases require the installed Android app.',
   premium_plan_unavailable: "This plan isn't available yet.",
   premium_purchase_failed: 'Purchase failed. Please try again.',
+  premium_needs_online: 'Switch to Online mode in Settings to subscribe.',
   premium_cancelled_msg: 'Premium cancelled. You can resubscribe anytime.',
   common_close: 'Close',
 
@@ -230,6 +231,7 @@ export const en: Translations = {
   medal_history_title: 'Monthly medals',
   medal_history_subtitle: 'All months, sorted by year',
   medal_earned_title: 'Medal earned!',
+  medal_claim_failed: 'Could not claim the medal. Switch to Online mode in Settings and try again.',
   medal_challenge_info_aria: 'How the monthly challenge works',
   medal_view_all_aria: 'View all monthly medals',
 

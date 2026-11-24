@@ -123,7 +123,7 @@ export const ja: Translations = {
   shop_popular: '人気',
   shop_best_value: 'お得',
   shop_test_purchase: '✓ +{coins} 🪙（テスト購入）',
-  shop_online_note: '実際の購入にはGoogle Play Billingが必要です  -  テストするには設定でオフラインに切り替えてください',
+  shop_online_note: '実際の購入にはGoogle Play Billingが必要です。',
   shop_get_more_coins: 'コインを追加',
 
   premium_go_premium: 'プレミアムに登録',
@@ -165,6 +165,7 @@ export const ja: Translations = {
   premium_not_setup_web: '実際の購入にはインストール済みのAndroidアプリが必要です。',
   premium_plan_unavailable: 'このプランはまだ利用できません。',
   premium_purchase_failed: '購入に失敗しました。もう一度お試しください。',
+  premium_needs_online: '登録するには、設定でオンラインモードに切り替えてください。',
   premium_cancelled_msg: 'プレミアムを解約しました。いつでも再登録できます。',
   common_close: '閉じる',
 
@@ -230,6 +231,7 @@ export const ja: Translations = {
   medal_history_title: '月間メダル',
   medal_history_subtitle: '年別のすべての月',
   medal_earned_title: 'メダル獲得！',
+  medal_claim_failed: 'メダルを獲得できませんでした。設定でオンラインモードに切り替えて、もう一度お試しください。',
   medal_challenge_info_aria: '月間チャレンジの仕組み',
   medal_view_all_aria: 'すべての月間メダルを見る',
 

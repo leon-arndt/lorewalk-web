@@ -49,7 +49,7 @@ All figures use **SGD**. Singapore is the first market. Lorewalk sources medals 
 - **Candidate venue: Temasek Shophouse (Orchard Road) or a similar site.** It is a social-impact hub next to Fort Canning Park. A walk loop through heritage and nature POIs ends back at the venue for drinks and medal pickup. Its event spaces hold about 80 to 220 guests, depending on the room. The tradeoff: the venue curates for social and community impact, such as ground-ups, non-profits, and social enterprises. A booking therefore needs a pitch on the community-walk angle, not a plain commercial rental. The venue does not guarantee free or subsidized use to a for-profit premium product, even when the event itself serves the community. Nobody has booked it yet. It remains a candidate.
 - **Comparable anchors**: Geocaching Premium costs USD 39.99 per year, about **SGD 54 per year** or **SGD 4.50 per month**. Its monthly plan costs USD 6.99, about **SGD 9.50 per month**. Geocaching Premium is digital only and carries no physical fulfillment cost, so it anchors the price. **parkrun** anchors the structure of the event itself: free, recurring, volunteer-run community walks where a player claims a tracked achievement in person instead of by mail. Lorewalk Premium currently prices below both anchors, at SGD 15 per year per GameDesign.md. The user base is smaller and earlier, and no physical fulfillment exists yet.
 - **Why a player earns the medal instead of receiving one per subscription**: at low subscriber counts, one medal per subscriber per month costs more than a SGD 4.50 to 9.50 monthly subscription covers. A completion gate caps the real unit volume at whoever finishes that month's event, not at everyone who pays.
-- **Real-money payment**: the integration has scaffolding but does not run yet. GameDesign.md's "Premium entitlement" section and the TODO.md WIP entry list the exact setup steps that remain. The design routes Google Play Billing through RevenueCat's Capacitor SDK. A Supabase-side `premium_entitlements` table becomes the server-verified source of truth once the app is online, and only a RevenueCat webhook (`supabase/functions/revenuecat-webhook`) writes to it. Until that webhook is deployed and Play Console products exist, `isPremium` on `PlayerProfile` falls back to a **client-side, unverified** flag. The dev cheats panel toggles that flag, and so does the offline test-purchase flow in `PremiumModal.tsx`. Do not treat the flag as trustworthy for anything of real value until the Supabase row backs it in online mode.
+- **Real-money payment**: the integration has scaffolding but does not run yet. GameDesign.md's "Premium entitlement" section and the TODO.md WIP entry list the exact setup steps that remain. The design routes Google Play Billing through RevenueCat's Capacitor SDK. A Supabase-side `premium_entitlements` table becomes the server-verified source of truth once the app is online, and only a RevenueCat webhook (`supabase/functions/revenuecat-webhook`) writes to it. Until that webhook is deployed and Play Console products exist, `isPremium` on `PlayerProfile` falls back to a **client-side, unverified** flag. The dev cheats panel toggles that flag, and so does the offline test-purchase flow in `PremiumModal.tsx`. Both exist only in a dev build (`import.meta.env.DEV`): a shipped build never grants Premium or coins without a real purchase. Do not treat the flag as trustworthy for anything of real value until the Supabase row backs it in online mode.
 
 ### Core gameplay loop
 
@@ -173,23 +173,21 @@ $$;
 
 `useFriends` needs three more tables. `friend_codes` and `friendships` support code-based friend adding. `player_public_stats` holds what a friend's profile card shows: level, total steps, and unlocked achievement ids.
 
-None of these tables check `auth.uid()`. Like the rest of this pre-launch prototype, they trust a client-generated `player_id` at face value, so RLS stays open instead of owner-scoped.
+### Auth and row-level security
 
-```sql
-create table if not exists player_public_stats (
-  player_id text primary key,
-  display_name text not null,
-  level int not null default 1,
-  total_steps bigint not null default 0,
-  achievement_ids text[] not null default '{}',
-  updated_at timestamptz not null default now()
-);
+The anon key ships in the client bundle, so anyone can call the Supabase REST API with it. Row-level security (RLS) is the only access control. Read `supabase/migrations/20261115000000_auth_rls.sql` before you add a table or a policy.
 
-alter table player_public_stats enable row level security;
-create policy "public read" on player_public_stats for select using (true);
-create policy "anyone can upsert" on player_public_stats for insert with check (true);
-create policy "anyone can update" on player_public_stats for update using (true);
-```
+- **Player id**: when the app goes online, `ensureSession()` in `src/lib/supabase.ts` signs the player in with Supabase anonymous auth. `ProfileContext.tsx` then sets `profile.id` to that auth uid. The server reads the uid from a signed token as `auth.uid()`, and every policy compares a row against it. An offline profile keeps a local `guest_<timestamp>` id until then.
+- **Dashboard setting**: "Allow anonymous sign-ins" must be on in the Supabase project (Authentication, Sign In / Providers). Without it no client gets a session, and every policy denies access.
+- **`premium_entitlements`**: a player reads only their own row. Only the RevenueCat webhook writes.
+- **`friend_codes`**: a player reads and writes only their own codes.
+- **`friendships`**: a player reads only their own rows. The `add_friend_by_code` RPC is the only way to write a row.
+- **`player_public_stats`**: a player writes only their own row. A player reads their own row and the rows of their friends.
+- **`medal_claims`**: the `claim_medal` RPC issues one pickup code per player per month, and only for an active entitlement. Only the service role can call `redeem_medal`. A player reads only their own claims.
+
+A new table must enable RLS in its migration. A table that a raw SQL statement makes has RLS off, and the anon key can then read and write every row.
+
+The server does not verify gameplay values. Steps, level, and achievements in `player_public_stats` come from the client as reported.
 
 ## Map
 
@@ -245,6 +243,8 @@ That page plays the effect with the game's own code on the game's map. See
 `tools/vscode-particles/README.md`.
 
 The map is light, so additive blending washes out there. Use normal blending
+for a color that must show in daylight.
+
 ## Day, night, and weather
 
 The map follows the Singapore clock and the real weather. `src/lib/ambience.ts` holds the state as four values from 0 to 1: `night`, `awake`, `cloud`, and `rain`.
@@ -254,8 +254,6 @@ The map follows the Singapore clock and the real weather. `src/lib/ambience.ts` 
 - **Weather data**: `weather.ts` reads two public data.gov.sg endpoints every 5 minutes. They need no key. The rainfall endpoint gives a 5-minute total for each rain gauge, and the nearest gauge sets `rain`. The two-hour forecast for the nearest town sets `cloud`.
 - **Clouds and rain**: `mapWeather.ts` draws one fixed cloud field over the island as a three.js layer, with a shadow below each cloud. The clouds sit at 750 m, above the street-level camera, so they show only after a zoom out. The rain is a 2D canvas above the map canvas.
 - **Test a state**: in a dev build, run `_ambience({ hour: 21, cloud: 1, rain: 1 })` in the browser console. Run `_ambience(null)` to go back to the real state.
-
-for a color that must show in daylight.
 
 ## PWA Notes
 
