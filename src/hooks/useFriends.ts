@@ -87,17 +87,24 @@ export function useFriends(
 
   // Publish the stats friends see on our row (level, total steps, unlocked
   // achievements) - see player_public_stats in CLAUDE.md for the table shape.
+  // Callers build achievementIds fresh each render, so depend on its contents:
+  // the array identity alone would re-run this write on every render.
+  const achievementKey = achievementIds.join(',')
   useEffect(() => {
     if (offline || !playerId) return
-    void supabase.from('player_public_stats').upsert({
-      player_id: playerId,
-      display_name: displayName,
-      level,
-      total_steps: totalSteps,
-      achievement_ids: achievementIds,
-      updated_at: new Date().toISOString(),
-    })
-  }, [playerId, displayName, level, totalSteps, achievementIds, offline])
+    // Steps tick on every GPS fix; batch a walk's updates into one write.
+    const t = setTimeout(() => {
+      void supabase.from('player_public_stats').upsert({
+        player_id: playerId,
+        display_name: displayName,
+        level,
+        total_steps: totalSteps,
+        achievement_ids: achievementKey ? achievementKey.split(',') : [],
+        updated_at: new Date().toISOString(),
+      })
+    }, 5_000)
+    return () => clearTimeout(t)
+  }, [playerId, displayName, level, totalSteps, achievementKey, offline])
 
   async function loadAll() {
     setLoading(true)

@@ -35,7 +35,7 @@ function categoryColor(category?: string): number {
 export function MapPage() {
   const { t } = useLocale()
   const { position, gpsError, gpsLoading, steps, distanceM } = usePlayerLocation()
-  const { pois } = usePois(position)
+  const { pois } = usePois()
   const { posts: newsPosts } = useNews()
   const { profile, visitedPois, addVisit, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
   const { showReward, showToast } = useReward()
