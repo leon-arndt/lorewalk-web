@@ -9,6 +9,8 @@ import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { FoodNode, HatchedCreature, PlayerPosition } from '@/types'
 import { accent } from '@/lib/theme'
+import { motion } from 'motion/react'
+import { panelMotion } from '@/lib/motion'
 
 function formatDuration(ms: number) {
   const total = Math.max(0, Math.ceil(ms / 1000))
@@ -33,17 +35,14 @@ interface Props {
   isClosing?: boolean
 }
 
-const panelStyle = (isClosing: boolean) => ({
+const panelStyle = {
   position: 'absolute' as const, bottom: 0, left: 0, right: 0,
   ...glassPanel, border: 'none',
   borderRadius: '24px 24px 0 0',
   padding: '20px 20px',
   paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
   zIndex: 10,
-  animation: isClosing
-    ? 'panelSlideDown 0.28s cubic-bezier(0.36,0,0.66,0) forwards'
-    : 'panelSlideUp 0.38s cubic-bezier(0.16,1,0.3,1)',
-})
+}
 
 export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isClosing = false }: Props) {
   const { t } = useLocale()
@@ -121,7 +120,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
   if (exp) {
     const members = exp.creatureIds.map((id) => byId.get(id)).filter(Boolean) as HatchedCreature[]
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
           <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={44} />
@@ -162,14 +161,14 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
             </p>
           </div>
         )}
-      </div>
+      </motion.div>
     )
   }
 
   // ── Creature selection ───────────────────────────────────────────────────────
   if (selecting) {
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -262,13 +261,13 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
               ? `Need ${requirement - selectedPower} more power`
               : `Send ${selected.length} · ⏱ ${formatDuration(durationMs)}`}
         </button>
-      </div>
+      </motion.div>
     )
   }
 
   // ── Summary ──────────────────────────────────────────────────────────────────
   return (
-    <div style={panelStyle(isClosing)}>
+    <motion.div {...panelMotion(isClosing)} style={panelStyle}>
       {header}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
         <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={44} />
@@ -302,6 +301,6 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
       >
         Start expedition
       </button>
-    </div>
+    </motion.div>
   )
 }

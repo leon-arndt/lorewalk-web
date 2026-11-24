@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { ShopPage } from '@/pages/ShopPage'
 import { glassPanel } from '@/lib/glass'
+import { AnimatePresence, motion } from 'motion/react'
+import { CountBump } from '@/components/UI/CountBump'
+import { sheetIn, tapScale } from '@/lib/motion'
 
 export function CoinCapsule() {
   const { profile } = useProfile()
@@ -9,7 +12,8 @@ export function CoinCapsule() {
 
   return (
     <>
-      <button
+      <motion.button
+        whileTap={tapScale}
         onClick={() => setOpen(true)}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
@@ -25,19 +29,27 @@ export function CoinCapsule() {
           WebkitTapHighlightColor: 'transparent',
         }}
       >
-        🪙 {profile.coins.toLocaleString()}
-      </button>
+        🪙 <CountBump value={profile.coins.toLocaleString()} />
+      </motion.button>
 
+      <AnimatePresence>
       {open && (
         <>
-          <div
+          <motion.div
+            key="shop-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}
             style={{
               position: 'fixed', inset: 0, zIndex: 60,
               background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(2px)',
             }}
           />
-          <div
+          <motion.div
+            key="shop-sheet"
+            {...sheetIn}
+            exit={{ y: '100%', transition: { duration: 0.22, ease: 'easeIn' } }}
             style={{
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 70,
               maxHeight: '88dvh',
@@ -66,9 +78,10 @@ export function CoinCapsule() {
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               <ShopPage />
             </div>
-          </div>
+          </motion.div>
         </>
       )}
+      </AnimatePresence>
     </>
   )
 }

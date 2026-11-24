@@ -25,6 +25,8 @@ import { getFoodDef } from '@/data/foods'
 import { creatureDefBySpecies } from '@/data/creatures'
 import type { Poi, RewardItem } from '@/types'
 import { accent, categoryColors, rewardGradient } from '@/lib/theme'
+import { motion } from 'motion/react'
+import { popSpring, tapScale } from '@/lib/motion'
 
 const CHECKIN_RADIUS_M = 50
 
@@ -392,7 +394,7 @@ export function MapPage() {
             alignSelf: 'flex-end', marginTop: 4,
             pointerEvents: 'auto',
           }}>
-          <button
+          <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={popSpring}
             onClick={() => compassResetRef.current?.()}
             title={t('map_reset_to_north')}
             style={{
@@ -416,7 +418,7 @@ export function MapPage() {
               <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
               <circle r="2" fill="#334155" />
             </svg>
-          </button>
+          </motion.button>
           </div>
         )}
       </div>
@@ -433,7 +435,7 @@ export function MapPage() {
       )}
 
       {/* Weekly walk floating button - bottom left above nav */}
-      <button
+      <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={{ ...popSpring, delay: 0.25 }}
         onClick={handleWeeklyWalkOpen}
         style={{
           position: 'absolute',
@@ -464,12 +466,12 @@ export function MapPage() {
             {profile.tickets}🎟️
           </span>
         )}
-      </button>
+      </motion.button>
 
       {/* News - bottom right, mirroring the weekly walk button on the left.
           Kept as a compact icon so a long localized "Weekly Walk" label can
           never collide with it. */}
-      <button
+      <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={{ ...popSpring, delay: 0.35 }}
         onClick={() => setNewsOpen(true)}
         aria-label={t('news_open')}
         style={{
@@ -492,7 +494,7 @@ export function MapPage() {
             background: '#ef4444', border: '1.5px solid white',
           }} />
         )}
-      </button>
+      </motion.button>
 
       {selectedShrineNode && (
         <ShrinePanel

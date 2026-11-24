@@ -9,6 +9,8 @@ import {
 } from '@/lib/journalDb'
 import { accent, accentAlpha } from '@/lib/theme'
 import { glassPage } from '@/lib/glass'
+import { motion } from 'motion/react'
+import { sheetIn, backdropIn } from '@/lib/motion'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -55,23 +57,20 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
   }
 
   return (
-    <div
+    <motion.div {...backdropIn('rgba(15,10,30,0.55)')}
       onClick={onClose}
       data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 70,
-        background: 'rgba(15,10,30,0.55)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
       }}
     >
-      <div
+      <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 480, maxHeight: '82dvh', overflowY: 'auto',
           background: 'white', borderRadius: '24px 24px 0 0',
           padding: '20px 20px calc(env(safe-area-inset-bottom) + 24px)',
-          animation: 'panelSlideUp 0.34s cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 16px' }} />
@@ -134,8 +133,8 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
           onChange={(e) => handleFiles(e.target.files)}
           style={{ display: 'none' }}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -176,10 +175,9 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
   const isCurrentOrPastMonth = new Date(year, month, 1) <= new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 
   return (
-    <div style={{
+    <motion.div {...sheetIn} style={{
       position: 'fixed', inset: 0, zIndex: 50, overflowY: 'auto',
       ...glassPage,
-      animation: 'panelSlideUp 0.34s cubic-bezier(0.16,1,0.3,1)',
       paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     }}>
       {/* Header */}
@@ -268,7 +266,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
           onPhotosChanged={refreshPhotoDates}
         />
       )}
-    </div>
+    </motion.div>
   )
 }
 

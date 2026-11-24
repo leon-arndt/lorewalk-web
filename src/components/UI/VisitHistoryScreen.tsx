@@ -3,6 +3,8 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { VisitHistoryItem } from '@/components/UI/VisitHistoryItem'
 import type { VisitRecord } from '@/types'
 import { glassSheet } from '@/lib/glass'
+import { motion } from 'motion/react'
+import { sheetIn, backdropIn } from '@/lib/motion'
 
 const PAGE_SIZE = 20
 
@@ -16,16 +18,15 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   return (
-    <div
+    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 75,
-        background: 'rgba(15,23,42,0.45)',
         display: 'flex', alignItems: 'flex-end',
       }}
     >
-      <div
+      <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
@@ -33,7 +34,6 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'panelSlideUp 0.28s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
@@ -67,7 +67,7 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

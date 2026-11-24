@@ -1,4 +1,4 @@
-import { Component, useEffect, type ReactNode } from 'react'
+import { Component, useEffect, useState, type ReactNode } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { ConnectionModeProvider } from '@/contexts/ConnectionModeContext'
 import { ProfileProvider, useProfile } from '@/contexts/ProfileContext'
@@ -8,6 +8,7 @@ import { RewardProvider, useReward } from '@/contexts/RewardContext'
 import { PlayerLocationProvider } from '@/contexts/PlayerLocationContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { playSfx } from '@/lib/sfx'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { BottomNav } from '@/components/UI/BottomNav'
 import { LevelUpScreen } from '@/components/UI/LevelUpScreen'
 import { RewardScreen } from '@/components/UI/RewardScreen'
@@ -38,6 +39,56 @@ class MapErrorBoundary extends Component<{ children: ReactNode }, { crashed: boo
     if (this.state.crashed) return <MapUnavailable />
     return this.props.children
   }
+}
+
+// Tabs slide in from the side they sit on in the nav. Between two tabs the old
+// page leaves at once, so only one page is ever in the DOM; back to the map it
+// slides away and uncovers the map.
+const ROUTE_ORDER = ['/', '/creatures', '/squads', '/profile', '/settings', '/customize']
+const pageSpring = { type: 'spring', stiffness: 380, damping: 38 } as const
+type PageDir = { dir: number; toMap: boolean }
+const pageVariants = {
+  enter: ({ dir }: PageDir) => ({ x: `${dir * 100}%` }),
+  center: { x: 0 },
+  exit: ({ dir, toMap }: PageDir) => (toMap
+    ? { x: `${dir * -100}%`, transition: pageSpring }
+    : { opacity: 0, transition: { duration: 0 } }),
+}
+
+function AnimatedRoutes() {
+  const location = useLocation()
+  const { pathname } = location
+  const [prev, setPrev] = useState(pathname)
+  const [dir, setDir] = useState(1)
+  if (prev !== pathname) {
+    setDir(ROUTE_ORDER.indexOf(pathname) >= ROUTE_ORDER.indexOf(prev) ? 1 : -1)
+    setPrev(pathname)
+  }
+  const custom: PageDir = { dir, toMap: pathname === '/' }
+  return (
+    <AnimatePresence initial={false} custom={custom}>
+      {ROUTE_ORDER.indexOf(pathname) > 0 && (
+        <motion.div
+          key={pathname}
+          custom={custom}
+          variants={pageVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={pageSpring}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          <Routes location={location}>
+            <Route path="/creatures" element={<CreaturesPage />} />
+            <Route path="/squads" element={<SquadsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/customize" element={<CharacterCustomizationPage />} />
+          </Routes>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 }
 
 function LevelUpOverlay() {
@@ -87,6 +138,7 @@ function useGlobalClickSfx() {
 export default function App() {
   useGlobalClickSfx()
   return (
+    <MotionConfig reducedMotion="user">
     <LocaleProvider>
     <MusicProvider>
     <ConnectionModeProvider>
@@ -98,14 +150,7 @@ export default function App() {
               <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
                 {/* Mounted on every route: the other tabs are frosted glass over it. */}
                 <MapErrorBoundary><MapPage /></MapErrorBoundary>
-                <Routes>
-                  <Route path="/" element={null} />
-                  <Route path="/creatures" element={<CreaturesPage />} />
-                  <Route path="/squads" element={<SquadsPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="/customize" element={<CharacterCustomizationPage />} />
-                </Routes>
+                <AnimatedRoutes />
               </div>
             </div>
             <BottomNav />
@@ -121,5 +166,6 @@ export default function App() {
     </ConnectionModeProvider>
     </MusicProvider>
     </LocaleProvider>
+    </MotionConfig>
   )
 }

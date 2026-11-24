@@ -11,6 +11,8 @@ import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import type { ExpeditionTarget, HatchedCreature, RewardItem, Squad } from '@/types'
 import { accent, accentAlpha, accentSoft, categoryCss, rewardGradient } from '@/lib/theme'
 import { glassPage, glassSheet } from '@/lib/glass'
+import { motion } from 'motion/react'
+import { sheetIn, backdropIn } from '@/lib/motion'
 
 // Where a squad sets out from when sending it on an expedition: the player's live
 // position, or Singapore's centre when GPS is unavailable (e.g. offline testing).
@@ -207,21 +209,18 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
 function Sheet({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
   const { t } = useLocale()
   return createPortal(
-    <div
+    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)',
-        display: 'flex', alignItems: 'flex-end', zIndex: 60,
-        animation: 'fadeIn 0.2s ease',
+        position: 'fixed', inset: 0, display: 'flex', alignItems: 'flex-end', zIndex: 60,
       }}
     >
-      <div
+      <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '75vh', display: 'flex', flexDirection: 'column',
           ...glassSheet, borderRadius: '24px 24px 0 0', overflow: 'hidden',
-          animation: 'panelSlideUp 0.28s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
@@ -245,8 +244,8 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
         <div style={{ overflowY: 'auto', padding: '4px 16px calc(24px + env(safe-area-inset-bottom))' }}>
           {children}
         </div>
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>,
     document.body,
   )
 }

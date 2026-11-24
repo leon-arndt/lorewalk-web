@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useReward } from '@/contexts/RewardContext'
 import { rewardGradient } from '@/lib/theme'
+import { AnimatePresence, motion } from 'motion/react'
+import { popSpring } from '@/lib/motion'
 
 const TOAST_MS = 4000
 
@@ -15,8 +17,6 @@ export function Toast() {
     return () => clearTimeout(timer)
   }, [toast, dismissToast])
 
-  if (!toast) return null
-
   return (
     <div style={{
       position: 'fixed', left: 16, right: 16,
@@ -24,26 +24,34 @@ export function Toast() {
       display: 'flex', justifyContent: 'center',
       zIndex: 10000, pointerEvents: 'none',
     }}>
-      <button
-        key={toast.id}
-        role="status"
-        onClick={() => {
-          if (toast.to) navigate(toast.to)
-          dismissToast()
-        }}
-        style={{
-          pointerEvents: 'auto',
-          background: rewardGradient,
-          color: 'white', fontSize: 13, fontWeight: 600, lineHeight: 1.4,
-          padding: '10px 20px', borderRadius: 24, border: 'none',
-          boxShadow: '0 4px 16px rgba(129,140,248,0.45)',
-          textAlign: 'center', cursor: 'pointer',
-          WebkitTapHighlightColor: 'transparent',
-          animation: 'toastIn 0.3s ease',
-        }}
-      >
-        {toast.message}
-      </button>
+      <AnimatePresence mode="wait">
+        {toast && (
+          <motion.button
+            key={toast.id}
+            initial={{ y: 40, scale: 0.6, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: 20, scale: 0.8, opacity: 0, transition: { duration: 0.18 } }}
+            whileTap={{ scale: 0.95 }}
+            transition={popSpring}
+            role="status"
+            onClick={() => {
+              if (toast.to) navigate(toast.to)
+              dismissToast()
+            }}
+            style={{
+              pointerEvents: 'auto',
+              background: rewardGradient,
+              color: 'white', fontSize: 13, fontWeight: 600, lineHeight: 1.4,
+              padding: '10px 20px', borderRadius: 24, border: 'none',
+              boxShadow: '0 4px 16px rgba(129,140,248,0.45)',
+              textAlign: 'center', cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            {toast.message}
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

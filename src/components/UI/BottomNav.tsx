@@ -4,6 +4,8 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { isEggReady } from '@/lib/profile'
 import { glassNav } from '@/lib/glass'
 import { accent, accentAlpha } from '@/lib/theme'
+import { motion, AnimatePresence } from 'motion/react'
+import { popSpring, tapScale } from '@/lib/motion'
 
 const MapIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -63,15 +65,22 @@ export function BottomNav() {
       ...glassNav,
       whiteSpace: 'nowrap',
     }}>
-      <span aria-hidden style={{
-        position: 'absolute', top: 6, left: 6, width: TAB_W, height: 52,
-        borderRadius: 999, pointerEvents: 'none',
-        background: accentAlpha(0.12),
-        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 ${accentAlpha(0.10)}`,
-        transform: `translateX(${Math.max(0, activeIndex) * (TAB_W + TAB_GAP)}px)`,
-        opacity: activeIndex < 0 ? 0 : 1,
-        transition: 'transform 0.38s cubic-bezier(0.34, 1.36, 0.64, 1), opacity 0.2s ease',
-      }} />
+      <motion.span
+        aria-hidden
+        initial={false}
+        animate={{
+          x: Math.max(0, activeIndex) * (TAB_W + TAB_GAP),
+          scaleX: [1.18, 1],
+          opacity: activeIndex < 0 ? 0 : 1,
+        }}
+        transition={{ type: 'spring', stiffness: 520, damping: 30, mass: 0.8 }}
+        style={{
+          position: 'absolute', top: 6, left: 6, width: TAB_W, height: 52,
+          borderRadius: 999, pointerEvents: 'none',
+          background: accentAlpha(0.12),
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 ${accentAlpha(0.10)}`,
+        }}
+      />
       {tabs.map(({ to, icon, label, dot }) => (
         <NavLink
           key={to}
@@ -97,14 +106,33 @@ export function BottomNav() {
             WebkitTapHighlightColor: 'transparent',
           })}
         >
-          {dot && (
-            <span style={{
-              position: 'absolute', top: 6, right: 14, width: 9, height: 9,
-              borderRadius: '50%', background: '#ef4444', border: '1.5px solid white',
-            }} />
+          {({ isActive }) => (
+            <>
+              <AnimatePresence>
+                {dot && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: [1, 1.25, 1] }}
+                    exit={{ scale: 0 }}
+                    transition={{ scale: { duration: 1.6, repeat: Infinity, repeatDelay: 1.2 } }}
+                    style={{
+                      position: 'absolute', top: 6, right: 14, width: 9, height: 9,
+                      borderRadius: '50%', background: '#ef4444', border: '1.5px solid white',
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+              <motion.span
+                whileTap={tapScale}
+                animate={isActive ? { y: [0, -5, 0], rotate: [0, -8, 0] } : { y: 0, rotate: 0 }}
+                transition={isActive ? { duration: 0.45, ease: 'easeOut' } : popSpring}
+                style={{ display: 'flex' }}
+              >
+                {icon}
+              </motion.span>
+              <span>{label}</span>
+            </>
           )}
-          {icon}
-          <span>{label}</span>
         </NavLink>
       ))}
     </nav>

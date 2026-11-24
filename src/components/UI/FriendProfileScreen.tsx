@@ -7,6 +7,8 @@ import { BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
 import { useLocale } from '@/contexts/LocaleContext'
 import { accent, accentSoft, rewardGradient } from '@/lib/theme'
 import { glassSheet } from '@/lib/glass'
+import { motion } from 'motion/react'
+import { sheetIn, backdropIn } from '@/lib/motion'
 
 interface Props {
   friend: Friend
@@ -25,16 +27,15 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
   const locked = achievements.filter((a) => !a.unlocked)
 
   return (
-    <div
+    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 76,
-        background: 'rgba(15,23,42,0.45)',
         display: 'flex', alignItems: 'flex-end',
       }}
     >
-      <div
+      <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
@@ -42,7 +43,6 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'panelSlideUp 0.28s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
@@ -140,7 +140,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {badge && (
         <BadgeDetailSheet
@@ -156,6 +156,6 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
           onClose={() => setBadge(null)}
         />
       )}
-    </div>
+    </motion.div>
   )
 }

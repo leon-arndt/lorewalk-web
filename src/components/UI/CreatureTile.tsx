@@ -3,6 +3,8 @@ import { creatureName } from '@/lib/profile'
 import { CreatureSceneCard } from '@/components/UI/CreatureDetailView'
 import type { HatchedCreature } from '@/types'
 import { accent } from '@/lib/theme'
+import { motion } from 'motion/react'
+import { popSpring } from '@/lib/motion'
 
 // Pikmin Bloom-style roster: bare creatures on type-coloured pads, no card chrome.
 export function CreatureTile({ creature, onTap, disabled, note }: {
@@ -13,10 +15,14 @@ export function CreatureTile({ creature, onTap, disabled, note }: {
 }) {
   const { t } = useLocale()
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onTap}
       disabled={disabled}
+      initial={{ scale: 0.8, y: 10 }}
+      animate={{ scale: 1, y: 0 }}
+      whileTap={disabled ? undefined : { scale: 0.9, rotate: -3 }}
+      transition={popSpring}
       className="flex min-w-0 flex-col items-center rounded-2xl px-1 pt-2 pb-2 transition-colors enabled:hover:bg-white/40 enabled:active:bg-white/70 disabled:opacity-45"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
@@ -28,7 +34,7 @@ export function CreatureTile({ creature, onTap, disabled, note }: {
         {t('level_badge', { level: creature.level })}
       </span>
       {note && <span className="w-full truncate text-center text-[9px] font-medium text-slate-500">{note}</span>}
-    </button>
+    </motion.button>
   )
 }
 
@@ -43,10 +49,11 @@ export function EmptyPad({ onTap, disabled }: { onTap?: () => void; disabled?: b
     )
   }
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onTap}
       disabled={disabled}
+      whileTap={disabled ? undefined : { scale: 0.9 }}
       aria-label={t('squads_add_creature')}
       className="flex min-h-[112px] flex-col items-center rounded-2xl pt-4 transition-colors enabled:hover:bg-white/40 enabled:active:bg-white/70 disabled:opacity-40"
       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -58,6 +65,6 @@ export function EmptyPad({ onTap, disabled }: { onTap?: () => void; disabled?: b
         +
       </span>
       {pad}
-    </button>
+    </motion.button>
   )
 }

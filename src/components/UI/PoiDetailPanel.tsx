@@ -11,6 +11,8 @@ import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { accent, rewardGradient } from '@/lib/theme'
+import { motion } from 'motion/react'
+import { panelMotion } from '@/lib/motion'
 
 const MOCK_FRIENDS = [
   { id: 'mock-1', name: 'Aisha' },
@@ -68,7 +70,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
     : null
 
   return (
-    <div style={{
+    <motion.div {...panelMotion(isClosing)} style={{
       position: 'absolute',
       bottom: 0, left: 0, right: 0,
       ...glassPanel,
@@ -77,9 +79,6 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
       padding: '20px 20px',
       paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
       zIndex: 10,
-      animation: isClosing
-        ? 'panelSlideDown 0.28s cubic-bezier(0.36,0,0.66,0) forwards'
-        : 'panelSlideUp 0.38s cubic-bezier(0.16,1,0.3,1)',
     }}>
       <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
 
@@ -288,6 +287,6 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           onClose={() => setShowPremiumModal(false)}
         />
       )}
-    </div>
+    </motion.div>
   )
 }

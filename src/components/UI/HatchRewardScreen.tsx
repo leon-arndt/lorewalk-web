@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { HatchedCreature } from '@/types'
+import { motion } from 'motion/react'
 
 export function HatchRewardScreen({ creature, onRename, onDismiss }: {
   creature: HatchedCreature
@@ -18,7 +19,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
   }
 
   return (
-    <div style={{
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} style={{
       position: 'fixed', inset: 0, zIndex: 200,
       background: creature.isShiny ? 'rgba(30,20,0,0.95)' : 'rgba(10,8,30,0.93)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -40,7 +41,13 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
         Hatched!
       </div>
 
-      <CreaturePreview species={creature.species} emoji={creature.emoji} creatureType={creature.creatureType} isShiny={creature.isShiny} size={140} />
+      <motion.div
+        initial={{ scale: 0, rotate: -20, y: 40 }}
+        animate={{ scale: 1, rotate: 0, y: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 12, delay: 0.15 }}
+      >
+        <CreaturePreview species={creature.species} emoji={creature.emoji} creatureType={creature.creatureType} isShiny={creature.isShiny} size={140} />
+      </motion.div>
 
       {editing ? (
         <div style={{ display: 'flex', gap: 8 }}>
@@ -92,6 +99,6 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
       >
         Continue
       </button>
-    </div>
+    </motion.div>
   )
 }

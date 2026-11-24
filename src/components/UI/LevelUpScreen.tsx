@@ -3,6 +3,8 @@ import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useLocale } from '@/contexts/LocaleContext'
 import type { LevelReward } from '@/lib/profile'
 import type { Translations } from '@/i18n/types'
+import { motion } from 'motion/react'
+import { popIn, popSpring } from '@/lib/motion'
 
 const BURST_COLORS = ['#818cf8','#c084fc','#34d399','#fbbf24','#f472b6','#60a5fa','#fb923c']
 
@@ -93,11 +95,13 @@ function AnimatedLevel({ level }: { level: number }) {
 
 function RewardCard({
   reward,
+  index,
   revealed,
   isNext,
   cardRef,
 }: {
   reward: LevelReward
+  index: number
   revealed: boolean
   isNext: boolean
   cardRef: (el: HTMLDivElement | null) => void
@@ -105,7 +109,7 @@ function RewardCard({
   const { t } = useLocale()
   const info = rewardInfo(reward, t)
   return (
-    <div
+    <motion.div {...popIn(index + 2)}
       ref={cardRef}
       style={{
         width: 96,
@@ -115,22 +119,21 @@ function RewardCard({
         background: revealed ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.06)',
         border: `2px solid ${revealed ? '#22c55e' : isNext ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
         boxShadow: isNext && !revealed ? '0 0 12px rgba(255,255,255,0.12)' : 'none',
-        transition: 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
-        transform: revealed ? 'scale(1)' : 'scale(0.88)',
+        transition: 'background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease',
       }}
     >
       {revealed ? (
-        <>
+        <motion.div initial={{ rotateY: 90, scale: 0.6 }} animate={{ rotateY: 0, scale: 1 }} transition={popSpring}>
           <div style={{ fontSize: 38, marginBottom: 8, lineHeight: 1 }}>
             <EmojiSprite id={reward.type} emoji={info.emoji} size={38} />
           </div>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{info.title}</div>
           <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4, lineHeight: 1.3 }}>{info.sub}</div>
-        </>
+        </motion.div>
       ) : (
         <div style={{ fontSize: 30, opacity: isNext ? 0.6 : 0.3, lineHeight: 1, paddingTop: 4 }}>?</div>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -171,7 +174,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
   }
 
   return (
-    <div
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}
       onClick={handleTap}
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
@@ -183,7 +186,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
     >
       {burst && <ParticleBurst key={burst.key} cx={burst.cx} cy={burst.cy} />}
 
-      <div style={{ textAlign: 'center' }}>
+      <motion.div initial={{ scale: 0.5, y: 30 }} animate={{ scale: 1, y: 0 }} transition={{ ...popSpring, delay: 0.1 }} style={{ textAlign: 'center' }}>
         <div style={{
           fontSize: 11, fontWeight: 800, letterSpacing: 5,
           color: '#86efac', textTransform: 'uppercase', marginBottom: 12,
@@ -194,7 +197,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
         <div style={{ fontSize: 13, color: '#64748b', marginTop: 10, fontWeight: 500 }}>
           {t('levelup_subtitle', { level })}
         </div>
-      </div>
+      </motion.div>
 
       {rewards.length > 0 && (
         <>
@@ -206,6 +209,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
               <RewardCard
                 key={i}
                 reward={r}
+                index={i}
                 revealed={i < revealed}
                 isNext={i === revealed}
                 cardRef={(el) => { cardRefs.current[i] = el }}
@@ -223,6 +227,6 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
       }}>
         {allRevealed ? t('levelup_tap_continue') : t('levelup_tap_reveal')}
       </div>
-    </div>
+    </motion.div>
   )
 }

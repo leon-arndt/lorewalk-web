@@ -11,6 +11,8 @@ import {
   type PremiumOfferings,
 } from '@/lib/billing'
 import type { PremiumInterval } from '@/types'
+import { motion } from 'motion/react'
+import { sheetIn, backdropIn } from '@/lib/motion'
 
 const PLAN_PRICES: Record<PremiumInterval, { price: string; subPrice?: string; savePct?: number }> = {
   monthly: { price: 'SGD 6.99/mo' },
@@ -123,16 +125,15 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const currentPlan = profile.premiumInterval ? PLANS[profile.premiumInterval] : PLANS.monthly
 
   return (
-    <div
+    <motion.div {...backdropIn('rgba(15,23,42,0.55)')}
       onClick={onClose}
       data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 90,
-        background: 'rgba(15,23,42,0.55)',
         display: 'flex', alignItems: 'flex-end',
       }}
     >
-      <div
+      <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '92vh',
@@ -140,7 +141,6 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'panelSlideUp 0.28s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
@@ -318,7 +318,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
             </>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

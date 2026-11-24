@@ -7,6 +7,8 @@ import type { FoodItem, HatchedCreature } from '@/types'
 import { glassSheet } from '@/lib/glass'
 import { accent, categoryCss, rewardGradientHorizontal } from '@/lib/theme'
 import { useLocale } from '@/contexts/LocaleContext'
+import { motion } from 'motion/react'
+import { sheetIn, backdropIn } from '@/lib/motion'
 
 const DROPZONE = 'creature'
 
@@ -281,16 +283,15 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
   }
 
   return (
-    <div
+    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 60,
-        background: 'rgba(15,23,42,0.45)',
         display: 'flex', alignItems: 'flex-end',
       }}
     >
-      <div
+      <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '88vh',
@@ -298,7 +299,6 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'panelSlideUp 0.28s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0' }}>
@@ -393,8 +393,8 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
           </div>
 
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 

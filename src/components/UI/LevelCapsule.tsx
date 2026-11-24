@@ -2,13 +2,17 @@ import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { glassChrome } from '@/lib/glass'
 import { accent } from '@/lib/theme'
+import { motion } from 'motion/react'
+import { CountBump } from '@/components/UI/CountBump'
+import { tapScale } from '@/lib/motion'
 
 export function LevelCapsule({ level }: { level: number }) {
   const navigate = useNavigate()
   const { t } = useLocale()
 
   return (
-    <button
+    <motion.button
+      whileTap={tapScale}
       onClick={() => navigate('/profile')}
       style={{
         display: 'flex', alignItems: 'center', gap: 5,
@@ -20,7 +24,7 @@ export function LevelCapsule({ level }: { level: number }) {
         WebkitTapHighlightColor: 'transparent',
       }}
     >
-      ⭐ {t('level_badge', { level })}
-    </button>
+      ⭐ <CountBump value={t('level_badge', { level })} />
+    </motion.button>
   )
 }

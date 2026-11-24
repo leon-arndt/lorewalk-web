@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { glassSheet } from '@/lib/glass'
+import { motion } from 'motion/react'
+import { sheetIn, backdropIn } from '@/lib/motion'
 
 interface Props {
   icon: ReactNode
@@ -12,16 +14,15 @@ interface Props {
 
 export function BadgeDetailSheet({ icon, name, description, status, statusColor, onClose }: Props) {
   return (
-    <div
+    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
       style={{
         position: 'fixed', inset: 0, zIndex: 80,
-        background: 'rgba(15,23,42,0.45)',
         display: 'flex', alignItems: 'flex-end',
       }}
     >
-      <div
+      <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '80vh',
@@ -29,7 +30,6 @@ export function BadgeDetailSheet({ icon, name, description, status, statusColor,
           borderRadius: '24px 24px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'panelSlideUp 0.28s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0' }}>
@@ -62,7 +62,7 @@ export function BadgeDetailSheet({ icon, name, description, status, statusColor,
             Close
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

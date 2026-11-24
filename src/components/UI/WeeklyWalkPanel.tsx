@@ -9,6 +9,8 @@ import {
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { accent, rewardGradient } from '@/lib/theme'
+import { motion } from 'motion/react'
+import { panelMotion } from '@/lib/motion'
 
 interface Props {
   currentSteps: number
@@ -19,17 +21,14 @@ interface Props {
 const REWARD_ACCENT = '#6366f1'
 const REWARD_ACCENT_SOFT = 'rgba(99,102,241,0.1)'
 
-const panelStyle = (isClosing: boolean) => ({
+const panelStyle = {
   position: 'absolute' as const, bottom: 0, left: 0, right: 0,
   ...glassPanel, border: 'none',
   borderRadius: '24px 24px 0 0',
   padding: '20px 20px',
   paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
   zIndex: 10,
-  animation: isClosing
-    ? 'panelSlideDown 0.28s cubic-bezier(0.36,0,0.66,0) forwards'
-    : 'panelSlideUp 0.38s cubic-bezier(0.16,1,0.3,1)',
-})
+}
 
 function ProgressBar({ value, max, color = REWARD_ACCENT }: { value: number; max: number; color?: string }) {
   const pct = Math.min(100, (value / max) * 100)
@@ -85,7 +84,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
   // ── Expired walk ─────────────────────────────────────────────────────────────
   if (walk && isExpired) {
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🗓️</div>
@@ -105,7 +104,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
             Got it
           </button>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
@@ -132,7 +131,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
     }
 
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
 
         {/* Header */}
@@ -217,21 +216,21 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
             </p>
           </div>
         )}
-      </div>
+      </motion.div>
     )
   }
 
   // ── Reward already claimed (walk still in state but done) ────────────────────
   if (walk?.rewardClaimed) {
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 52, marginBottom: 12 }}>🏅</div>
           <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_reward_claimed')}</h2>
           <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>{t('weekly_next_starts_monday')}</p>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
@@ -248,7 +247,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
   }
 
   return (
-    <div style={panelStyle(isClosing)}>
+    <motion.div {...panelMotion(isClosing)} style={panelStyle}>
       {header}
 
       {/* Title */}
@@ -340,6 +339,6 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
       >
         {hasTicket ? 'Join party walk - 🎟️ 1 ticket' : 'Need a ticket to join'}
       </button>
-    </div>
+    </motion.div>
   )
 }

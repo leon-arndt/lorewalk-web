@@ -6,6 +6,8 @@ import { glassPanel, glassChrome } from '@/lib/glass'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { HatchedCreature, ShrineNode, PlayerPosition } from '@/types'
 import { accent } from '@/lib/theme'
+import { motion } from 'motion/react'
+import { panelMotion } from '@/lib/motion'
 
 function formatDuration(ms: number) {
   const total = Math.max(0, Math.ceil(ms / 1000))
@@ -38,17 +40,14 @@ interface Props {
   isClosing?: boolean
 }
 
-const panelStyle = (isClosing: boolean) => ({
+const panelStyle = {
   position: 'absolute' as const, bottom: 0, left: 0, right: 0,
   ...glassPanel, border: 'none',
   borderRadius: '24px 24px 0 0',
   padding: '20px 20px',
   paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
   zIndex: 10,
-  animation: isClosing
-    ? 'panelSlideDown 0.28s cubic-bezier(0.36,0,0.66,0) forwards'
-    : 'panelSlideUp 0.38s cubic-bezier(0.16,1,0.3,1)',
-})
+}
 
 const SHRINE_ACCENT = '#7c3aed'
 const SHRINE_BG = 'rgba(124,58,237,0.08)'
@@ -120,7 +119,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
   if (isCleared) {
     const clearedMs = new Date(node.clearedUntil!).getTime() - now
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 52, marginBottom: 8 }}>⛩️</div>
@@ -135,7 +134,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
             Replenishes in {formatDuration(clearedMs)}
           </div>
         </div>
-      </div>
+      </motion.div>
     )
   }
 
@@ -144,7 +143,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
     const members = exp.creatureIds.map((id) => byId.get(id)).filter(Boolean) as HatchedCreature[]
     const willWin = exp.power >= node.difficulty
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
           <div style={{ fontSize: 44, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
@@ -203,14 +202,14 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
             </p>
           </div>
         )}
-      </div>
+      </motion.div>
     )
   }
 
   // ── Creature selection ───────────────────────────────────────────────────────
   if (selecting) {
     return (
-      <div style={panelStyle(isClosing)}>
+      <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -307,13 +306,13 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
               ? `Send anyway (may lose) - ${formatDuration(SHRINE_DURATION_MS)}`
               : `Challenge! - ${formatDuration(SHRINE_DURATION_MS)}`}
         </button>
-      </div>
+      </motion.div>
     )
   }
 
   // ── Summary ──────────────────────────────────────────────────────────────────
   return (
-    <div style={panelStyle(isClosing)}>
+    <motion.div {...panelMotion(isClosing)} style={panelStyle}>
       {header}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
         <div style={{ fontSize: 52, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
@@ -354,6 +353,6 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
       >
         ⚔️ Challenge shrine
       </button>
-    </div>
+    </motion.div>
   )
 }
