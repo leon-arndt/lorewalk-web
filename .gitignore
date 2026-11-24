@@ -48,3 +48,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase CLI link state (project ref, pooler address), machine-specific
+supabase/.temp/

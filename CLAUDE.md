@@ -195,7 +195,7 @@ The anon key ships in the client bundle, so anyone can call the Supabase REST AP
 - **`player_saves`**: a player reads only their own row. The `save_profile` RPC is the only way to write a row, and it refuses an anonymous account.
 - **Account deletion**: the `delete_account` RPC deletes every row of the caller in the tables above, then the auth user. `deleteAccount()` in `ProfileContext.tsx` calls it, wipes the profile and the journal photos on the device, and reloads the app as a new guest. A new table that keys on the player id needs a `delete` line in that function. The function does not cancel a Play subscription.
 
-A new table must enable RLS in its migration. A table that a raw SQL statement makes has RLS off, and the anon key can then read and write every row.
+A new table must enable RLS in its migration and add its policy there. The `ensure_rls` event trigger (`supabase/migrations/20261124020000_rls_auto_enable.sql`) also turns RLS on for every new table in `public`, so a table that a raw SQL statement makes is not open to the anon key. RLS without a policy denies every client, so a table with no policy returns no rows.
 
 The server does not verify gameplay values. Steps, level, and achievements in `player_public_stats` come from the client as reported. The profile in `player_saves` is client data too.
 
