@@ -197,6 +197,7 @@ A guest profile lives on one device. A player who signs in with Google in Settin
 - **Sign-out**: the profile stays on the device, so a failed upload loses nothing.
 - **Steps**: each device counts its own steps, and the day's total is the sum across devices.
 - **Not in the cloud save**: the journal photos. They stay on the device.
+- **Delete account**: Settings has a "Delete account" button for every online player, guest or signed in. After one confirmation the server deletes the save, the friends, the public stats, the medal claims, and the account itself. The device then deletes its profile and its journal photos and starts again as a new guest. The player cannot undo this. A Premium subscription does not end with the account, so the dialog tells a subscriber to cancel it in Google Play first.
 
 ### Level system
 - Each POI check-in awards XP equal to `poi.points`, which is 5 to 10 XP.

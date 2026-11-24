@@ -296,4 +296,12 @@ export const ms: Translations = {
   account_conflict_saved_on: 'Disimpan pada {date}',
   account_conflict_confirm: 'Kekalkan simpanan ini',
   account_conflict_later: 'Putuskan kemudian',
+  account_delete: 'Padam akaun',
+  account_delete_title: 'Padam akaun anda?',
+  account_delete_body: 'Ini akan memadam kemajuan, makhluk, rakan, tuntutan pingat dan foto jurnal anda, pada peranti ini dan pada pelayan. Tindakan ini tidak boleh dibatalkan.',
+  account_delete_subscription: 'Langganan Premium anda tidak tamat bersama akaun. Batalkan dahulu di Google Play.',
+  account_delete_confirm: 'Padam selama-lamanya',
+  account_delete_cancel: 'Kekalkan akaun saya',
+  account_delete_busy: 'Memadam…',
+  account_delete_failed: 'Akaun tidak dipadam. Semak sambungan anda dan cuba lagi.',
 }

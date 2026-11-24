@@ -296,4 +296,12 @@ export const ko: Translations = {
   account_conflict_saved_on: '{date}에 저장됨',
   account_conflict_confirm: '이 저장 데이터 유지',
   account_conflict_later: '나중에 결정',
+  account_delete: '계정 삭제',
+  account_delete_title: '계정을 삭제하시겠습니까?',
+  account_delete_body: '진행 상황, 생물, 친구, 메달 수령 신청, 저널 사진이 이 기기와 서버에서 모두 삭제됩니다. 되돌릴 수 없습니다.',
+  account_delete_subscription: '프리미엄 구독은 계정을 삭제해도 종료되지 않습니다. 먼저 Google Play에서 해지하세요.',
+  account_delete_confirm: '영구 삭제',
+  account_delete_cancel: '계정 유지',
+  account_delete_busy: '삭제 중…',
+  account_delete_failed: '계정을 삭제하지 못했습니다. 연결을 확인하고 다시 시도해 주세요.',
 }

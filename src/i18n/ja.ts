@@ -296,4 +296,12 @@ export const ja: Translations = {
   account_conflict_saved_on: '{date} に保存',
   account_conflict_confirm: 'このセーブデータを残す',
   account_conflict_later: 'あとで決める',
+  account_delete: 'アカウントを削除',
+  account_delete_title: 'アカウントを削除しますか？',
+  account_delete_body: '進行状況、クリーチャー、フレンド、メダルの受け取り申請、ジャーナルの写真が、この端末とサーバーの両方から削除されます。元に戻すことはできません。',
+  account_delete_subscription: 'プレミアムの定期購入はアカウントを削除しても終了しません。先にGoogle Playで解約してください。',
+  account_delete_confirm: '完全に削除する',
+  account_delete_cancel: 'アカウントを残す',
+  account_delete_busy: '削除中…',
+  account_delete_failed: 'アカウントを削除できませんでした。接続を確認して、もう一度お試しください。',
 }

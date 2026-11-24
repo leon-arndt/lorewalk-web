@@ -294,4 +294,12 @@ export interface Translations {
   account_conflict_saved_on: string
   account_conflict_confirm: string
   account_conflict_later: string
+  account_delete: string
+  account_delete_title: string
+  account_delete_body: string
+  account_delete_subscription: string
+  account_delete_confirm: string
+  account_delete_cancel: string
+  account_delete_busy: string
+  account_delete_failed: string
 }

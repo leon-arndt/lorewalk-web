@@ -80,6 +80,19 @@ export async function deleteJournalPhoto(id: string): Promise<void> {
   db.close()
 }
 
+// Empties the album. A clear, not deleteDatabase: that call waits for every
+// open connection, and a wait here would stall the account deletion.
+export async function clearJournal(): Promise<void> {
+  const db = await openDb()
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite')
+    tx.objectStore(STORE).clear()
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+  db.close()
+}
+
 // Downscale + JPEG-compress a picked file to a data URL small enough to keep many.
 export async function fileToCompressedDataUrl(file: File, maxDim = 1000, quality = 0.72): Promise<string> {
   const img = await loadImage(file)

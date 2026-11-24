@@ -35,12 +35,13 @@ interface Setup {
   local: Record<string, unknown>
   meta?: { userId: string; revision: number; dirty: boolean; syncedAt: string | null }
   cloud: CloudRow | null
+  failDelete?: boolean
 }
 
 // Seeds the device, then stands in for the player_saves table and the
 // save_profile RPC with the same revision rule as the migration.
-async function setup(page: Page, { local, meta, cloud }: Setup) {
-  const server = { row: cloud, pushes: [] as PushBody[] }
+async function setup(page: Page, { local, meta, cloud, failDelete }: Setup) {
+  const server = { row: cloud, pushes: [] as PushBody[], deletes: 0 }
   const cors = { 'access-control-allow-origin': '*' }
 
   await page.route((url) => url.hostname === HOST, async (route) => {
@@ -57,6 +58,12 @@ async function setup(page: Page, { local, meta, cloud }: Setup) {
       const revision = (server.row?.revision ?? 0) + 1
       server.row = { profile: body.p_profile, revision, updated_at: new Date().toISOString() }
       return route.fulfill({ json: [{ status: 'saved', revision }], headers: cors })
+    }
+    if (path === '/rest/v1/rpc/delete_account') {
+      server.deletes += 1
+      if (failDelete) return route.fulfill({ status: 500, json: { message: 'boom' }, headers: cors })
+      server.row = null
+      return route.fulfill({ status: 204, headers: cors })
     }
     return route.fulfill({ json: path.startsWith('/auth/') ? {} : [], headers: cors })
   })
@@ -82,6 +89,10 @@ async function setup(page: Page, { local, meta, cloud }: Setup) {
   }
 
   await page.addInitScript(({ profile, cloudMeta, sessionKey, sessionValue }) => {
+    // An init script runs again on a reload. Seed one time per tab, or the
+    // reload after an account deletion would bring the old player back.
+    if (sessionStorage.getItem('seeded')) return
+    sessionStorage.setItem('seeded', '1')
     localStorage.setItem('lorewalk_profile', JSON.stringify(profile))
     localStorage.setItem('lorewalk.connectionMode', 'online')
     localStorage.setItem(sessionKey, JSON.stringify(sessionValue))
@@ -217,5 +228,56 @@ test.describe('Cloud save', () => {
       const saved = JSON.parse(localStorage.getItem('lorewalk_profile') ?? '{}')
       return saved.eggs?.[0]?.stepsProgress >= 100 && saved.dailySteps?.[day] === 3100
     }, today)
+  })
+
+  test('deleting the account wipes the server rows and the device, then restarts as a guest', async ({ page }) => {
+    const server = await setup(page, {
+      local: makeProfile({ id: USER_ID, displayName: 'Leaving Player' }),
+      meta: { userId: USER_ID, revision: 4, dirty: false, syncedAt: null },
+      cloud: cloudRow({ displayName: 'Leaving Player' }, 4),
+    })
+    await page.goto('/settings')
+    await page.getByRole('button', { name: 'Delete account' }).click()
+    const dialog = page.getByRole('alertdialog')
+    await expect(dialog.getByText('Delete your account?')).toBeVisible()
+    // Nothing happens until the second, explicit tap.
+    expect(server.deletes).toBe(0)
+
+    await dialog.getByRole('button', { name: 'Delete forever' }).click()
+    // The reload starts a new guest: the default name, and no trace of the account.
+    await page.waitForFunction(() => {
+      const saved = JSON.parse(localStorage.getItem('lorewalk_profile') ?? 'null')
+      return saved?.displayName === 'Explorer'
+    })
+    expect(server.deletes).toBe(1)
+    const left = await page.evaluate(() => ({
+      meta: localStorage.getItem('lorewalk.cloudSave'),
+      session: Object.keys(localStorage).filter((k) => k.endsWith('-auth-token')),
+      mode: localStorage.getItem('lorewalk.connectionMode'),
+    }))
+    expect(left).toEqual({ meta: null, session: [], mode: 'online' })
+    await page.goto('/profile')
+    await expect(page.getByText('Leaving Player')).toHaveCount(0)
+  })
+
+  test('a failed deletion changes nothing and says so', async ({ page }) => {
+    const server = await setup(page, {
+      local: makeProfile({ id: USER_ID, displayName: 'Staying Player' }),
+      meta: { userId: USER_ID, revision: 4, dirty: false, syncedAt: null },
+      cloud: cloudRow({ displayName: 'Staying Player' }, 4),
+      failDelete: true,
+    })
+    await page.goto('/settings')
+    await page.getByRole('button', { name: 'Delete account' }).click()
+    const dialog = page.getByRole('alertdialog')
+    await dialog.getByRole('button', { name: 'Delete forever' }).click()
+    await expect(dialog.getByText(/was not deleted/)).toBeVisible()
+    expect(server.deletes).toBe(1)
+
+    await dialog.getByRole('button', { name: 'Keep my account' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(page.getByText('Signed in as player@example.com')).toBeVisible()
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('lorewalk_profile') ?? 'null'))
+    expect(saved.displayName).toBe('Staying Player')
   })
 })

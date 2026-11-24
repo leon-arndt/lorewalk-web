@@ -671,8 +671,26 @@ export function localDateKey(d: Date): string {
 // 48h in prod, 30s in dev for fast testing
 export const POSTCARD_DELIVERY_MS = import.meta.env.DEV ? 30_000 : 48 * 3_600_000
 
+// Set by clearLocalPlayerData. The app reloads right after, but an effect
+// that is still in flight must not write the deleted profile back first.
+let saveLocked = false
+
 export function saveProfile(profile: PlayerProfile) {
+  if (saveLocked) return
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
+}
+
+// Removes what this device holds about the player, for an account deletion.
+// The settings stay: language, volume, and connection mode are not player data.
+// The caller must reload the app, because the profile in memory is still there.
+export function clearLocalPlayerData() {
+  saveLocked = true
+  for (const key of [
+    STORAGE_KEY, STEPS_APPLIED_KEY,
+    'lorewalk.cloudSave', 'lorewalk.steps', 'lorewalk.stepRingCelebratedDate', 'lorewalk_visited_pois',
+  ]) {
+    try { localStorage.removeItem(key) } catch { /* ignore */ }
+  }
 }
 
 // True while the player has done nothing worth keeping. A sign-in on such a

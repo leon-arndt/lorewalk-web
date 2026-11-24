@@ -6,9 +6,10 @@ import { supabase, ensureSession } from '@/lib/supabase'
 import { useAccount, type Account } from '@/hooks/useAccount'
 import { CloudSaveEngine, type CloudSaveState } from '@/lib/cloudSave'
 import { loadDeviceSteps } from '@/hooks/useStepCounter'
+import { clearJournal } from '@/lib/journalDb'
 import { getFoodDef } from '@/data/foods'
 import {
-  loadProfile, saveProfile, isPoiLocked, loadAppliedSteps, saveAppliedSteps, localDateKey,
+  loadProfile, saveProfile, isPoiLocked, loadAppliedSteps, saveAppliedSteps, localDateKey, clearLocalPlayerData,
   currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
   applyXp, updateStreak, checkAchievements, todayStr,
   streakChestMilestoneFor, rollStreakChestRewards, type StreakChestRewards,
@@ -80,6 +81,7 @@ interface ProfileContextValue {
   resolveCloudConflict: (keep: 'device' | 'cloud') => Promise<void>
   setCloudConflictOpen: (open: boolean) => void
   signOut: () => Promise<void>
+  deleteAccount: () => Promise<boolean>
 }
 
 export interface CheckInResult {
@@ -172,6 +174,26 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     await cloudEngine.flush()
     await supabase.auth.signOut({ scope: 'local' })
   }, [cloudEngine])
+
+  // Not reversible. The server removes every row of the player and the auth
+  // user itself (the delete_account RPC). Only after that succeeds does the
+  // device wipe its own copy and restart as a new guest. Resolves false, with
+  // nothing changed, when the server call fails.
+  const deleteAccount = useCallback(async (): Promise<boolean> => {
+    // An upload that lands after the delete would fail, but stop it anyway.
+    cloudEngine.setUser(null)
+    const { error } = await supabase.rpc('delete_account')
+    if (error) {
+      console.warn('delete_account failed', error.message)
+      cloudEngine.setUser(cloudUserId)
+      return false
+    }
+    clearLocalPlayerData()
+    await clearJournal().catch(() => { /* the album may not exist yet */ })
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => { /* the session is dead either way */ })
+    window.location.reload()
+    return true
+  }, [cloudEngine, cloudUserId])
 
   // Server-verified entitlement sync. premium_entitlements is written only by
   // the revenuecat-webhook Edge Function after a real Google Play purchase -
@@ -910,7 +932,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,
-      account, cloudSave, resolveCloudConflict, setCloudConflictOpen, signOut,
+      account, cloudSave, resolveCloudConflict, setCloudConflictOpen, signOut, deleteAccount,
     }}>
       {children}
     </ProfileContext.Provider>

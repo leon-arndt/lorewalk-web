@@ -12,16 +12,17 @@
   - Still open from the audit: `permanent_pois` and `temporary_pois` need RLS, the RevenueCat webhook ignores the event type, `vercel.json` sets no security headers, and the server does not verify steps or check-ins.
 - **cloud save**: the client and the migration exist, but the flow is not live. It needs a Google OAuth client and the Supabase setup below. The "Cloud save" section of CLAUDE.md explains the sync rules.
   - Client: `src/lib/cloudSave.ts` holds the sync engine, `src/lib/googleAuth.ts` holds the sign-in, and `AccountSection.tsx` in Settings holds the UI. `e2e/cloud-save.spec.ts` tests the sync rules against a mock server.
-  - Server: `supabase/migrations/20261124000000_player_saves.sql` holds the `player_saves` table and the `save_profile` RPC. Nobody has run it against a real database.
+  - Server: `supabase/migrations/20261124000000_player_saves.sql` holds the `player_saves` table and the `save_profile` RPC. `supabase/migrations/20261124010000_delete_account.sql` holds the `delete_account` RPC behind "Delete account" in Settings. Nobody has run them against a real database.
   - Remaining steps, in order:
     1. In the Google Cloud console, create an OAuth client of the type "Web application". Add `http://localhost:8849` and the production origin as authorized JavaScript origins.
     2. Create a second OAuth client of the type "Android", with the package name `com.lorewalk.app` and the SHA-1 of the signing key. The code does not use its id, but the Android sign-in sheet fails without it.
     3. Set `VITE_GOOGLE_CLIENT_ID` to the id of the web client, in `.env.local` and in the host's build settings.
     4. In the Supabase dashboard (Authentication, Sign In / Providers), turn on the Google provider and enter the id of the web client under "Client IDs". Turn on "Allow manual linking".
-    5. Do the "security hardening" steps above, then apply the `player_saves` migration.
+    5. Do the "security hardening" steps above, then apply the `player_saves` and `delete_account` migrations.
     6. Test in a browser on two devices: sign in on the first device, sign in on the second device, and make sure that the progress follows. Then play on both devices without a connection, and make sure that the app asks which save to keep.
     7. Run `npm run android` and test the sign-in on a phone. Nobody has run the native sign-in sheet yet.
-  - Still open: the app has no way to delete an account, and Google Play requires one for an app with sign-in. The journal photos stay on the device, because they live in IndexedDB. The weekly party walk measures progress from the step count of one device, so a second device shows a different number.
+    8. Delete a test account in Settings. Make sure that its rows and its auth user are gone, and that the same Google account can sign in again as a new player.
+  - Still open: Google Play also requires a web address where a player can ask for deletion without the app. Nobody has made that page. The journal photos stay on the device, because they live in IndexedDB. The weekly party walk measures progress from the step count of one device, so a second device shows a different number.
 - **premium payment**: the client and the server both have scaffolding, but the flow is not live.
   - Client: `src/lib/billing.ts` wraps RevenueCat's `@revenuecat/purchases-capacitor` SDK. `PremiumModal.tsx` calls it when the app runs native and online.
   - Server: `supabase/functions/revenuecat-webhook` writes the `premium_entitlements` table from `supabase/migrations/20260721000000_premium_entitlements.sql`. `ProfileContext.tsx` reconciles `isPremium` against that row once online.

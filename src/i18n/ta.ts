@@ -296,4 +296,12 @@ export const ta: Translations = {
   account_conflict_saved_on: '{date} அன்று சேமிக்கப்பட்டது',
   account_conflict_confirm: 'இந்தச் சேமிப்பை வைத்திரு',
   account_conflict_later: 'பின்னர் முடிவு செய்',
+  account_delete: 'கணக்கை நீக்கு',
+  account_delete_title: 'உங்கள் கணக்கை நீக்கவா?',
+  account_delete_body: 'இது உங்கள் முன்னேற்றம், உயிரினங்கள், நண்பர்கள், பதக்கக் கோரிக்கைகள் மற்றும் நாட்குறிப்புப் படங்களை இந்தச் சாதனத்திலும் சேவையகத்திலும் நீக்கும். இதைத் திரும்பப் பெற முடியாது.',
+  account_delete_subscription: 'கணக்கை நீக்கினாலும் உங்கள் Premium சந்தா முடிவடையாது. முதலில் Google Play-இல் அதை ரத்து செய்யவும்.',
+  account_delete_confirm: 'நிரந்தரமாக நீக்கு',
+  account_delete_cancel: 'என் கணக்கை வைத்திரு',
+  account_delete_busy: 'நீக்குகிறது…',
+  account_delete_failed: 'கணக்கு நீக்கப்படவில்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.',
 }

@@ -296,4 +296,12 @@ export const de: Translations = {
   account_conflict_saved_on: 'Gespeichert am {date}',
   account_conflict_confirm: 'Diesen Spielstand behalten',
   account_conflict_later: 'Später entscheiden',
+  account_delete: 'Konto löschen',
+  account_delete_title: 'Konto wirklich löschen?',
+  account_delete_body: 'Damit werden dein Fortschritt, deine Wesen, Freunde, Medaillenansprüche und Tagebuchfotos gelöscht, auf diesem Gerät und auf dem Server. Das lässt sich nicht rückgängig machen.',
+  account_delete_subscription: 'Dein Premium-Abo endet nicht mit dem Konto. Kündige es vorher bei Google Play.',
+  account_delete_confirm: 'Endgültig löschen',
+  account_delete_cancel: 'Konto behalten',
+  account_delete_busy: 'Wird gelöscht…',
+  account_delete_failed: 'Das Konto wurde nicht gelöscht. Prüfe deine Verbindung und versuch es noch einmal.',
 }

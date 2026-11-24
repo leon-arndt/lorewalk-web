@@ -296,4 +296,12 @@ export const zh: Translations = {
   account_conflict_saved_on: '保存于 {date}',
   account_conflict_confirm: '保留此存档',
   account_conflict_later: '稍后决定',
+  account_delete: '删除账号',
+  account_delete_title: '要删除你的账号吗？',
+  account_delete_body: '这将删除你在此设备和服务器上的进度、生物、好友、奖牌领取记录和日志照片。此操作无法撤销。',
+  account_delete_subscription: '删除账号不会终止你的高级版订阅。请先在 Google Play 中取消订阅。',
+  account_delete_confirm: '永久删除',
+  account_delete_cancel: '保留我的账号',
+  account_delete_busy: '删除中…',
+  account_delete_failed: '账号未删除。请检查网络连接后重试。',
 }

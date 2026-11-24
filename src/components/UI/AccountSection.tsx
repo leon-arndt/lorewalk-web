@@ -1,16 +1,19 @@
+import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { GoogleSignInButton } from '@/components/UI/GoogleSignInButton'
+import { DeleteAccountDialog } from '@/components/UI/DeleteAccountDialog'
 import { accent } from '@/lib/theme'
 
 const hint = { fontSize: 12, color: '#94a3b8' } as const
 
-// The Settings card for the account: sign in, cloud save status, sign out.
+// The Settings card for the account: sign in, cloud save status, sign out, delete.
 export function AccountSection() {
   const { t } = useLocale()
   const { mode } = useConnectionMode()
   const { account, cloudSave, setCloudConflictOpen, signOut } = useProfile()
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const linked = !!account && !account.isAnonymous
 
@@ -72,7 +75,21 @@ export function AccountSection() {
             {mode === 'online' && (account ? <GoogleSignInButton /> : <div style={hint}>{t('account_unavailable')}</div>)}
           </>
         )}
+        {/* A guest has server rows too (friend code, public stats), so the
+            delete is there for every online account, linked or not. */}
+        {mode === 'online' && account && (
+          <button
+            onClick={() => setDeleteOpen(true)}
+            style={{
+              alignSelf: 'flex-start', padding: 0, border: 'none', background: 'none',
+              color: '#b91c1c', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+            }}
+          >
+            {t('account_delete')}
+          </button>
+        )}
       </div>
+      {deleteOpen && <DeleteAccountDialog onClose={() => setDeleteOpen(false)} />}
     </section>
   )
 }

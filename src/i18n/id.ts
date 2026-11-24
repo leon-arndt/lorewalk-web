@@ -296,4 +296,12 @@ export const id: Translations = {
   account_conflict_saved_on: 'Disimpan {date}',
   account_conflict_confirm: 'Pertahankan simpanan ini',
   account_conflict_later: 'Putuskan nanti',
+  account_delete: 'Hapus akun',
+  account_delete_title: 'Hapus akunmu?',
+  account_delete_body: 'Ini menghapus progres, makhluk, teman, klaim medali, dan foto jurnalmu, di perangkat ini dan di server. Tindakan ini tidak bisa dibatalkan.',
+  account_delete_subscription: 'Langganan Premium-mu tidak berakhir bersama akun. Batalkan dulu di Google Play.',
+  account_delete_confirm: 'Hapus selamanya',
+  account_delete_cancel: 'Pertahankan akunku',
+  account_delete_busy: 'Menghapus…',
+  account_delete_failed: 'Akun tidak terhapus. Periksa koneksimu dan coba lagi.',
 }

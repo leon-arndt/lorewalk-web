@@ -296,4 +296,12 @@ export const en: Translations = {
   account_conflict_saved_on: 'Saved {date}',
   account_conflict_confirm: 'Keep this save',
   account_conflict_later: 'Decide later',
+  account_delete: 'Delete account',
+  account_delete_title: 'Delete your account?',
+  account_delete_body: 'This deletes your progress, creatures, friends, medal claims, and journal photos, on this device and on the server. You cannot undo this.',
+  account_delete_subscription: 'Your Premium subscription does not end with the account. Cancel it in Google Play first.',
+  account_delete_confirm: 'Delete forever',
+  account_delete_cancel: 'Keep my account',
+  account_delete_busy: 'Deleting…',
+  account_delete_failed: 'The account was not deleted. Check your connection and try again.',
 }
