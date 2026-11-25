@@ -43,6 +43,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       workbox: {
+        // The main bundle is over the 2 MiB default, and a file over the limit
+        // fails the build. It must stay in the precache for offline play.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // Three.js is only needed once the map mounts — keep it out of the
         // install-time precache and let it load on demand.
         globIgnores: ['**/three.module-*.js', '**/GLTFLoader-*.js', '**/SkeletonUtils-*.js'],
