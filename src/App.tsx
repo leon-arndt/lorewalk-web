@@ -116,6 +116,20 @@ function EggReadyToast() {
 }
 
 // One delegated listener covers every button/link in the app, including ones
+// A paid coin pack arrives through the server, sometimes a while after the
+// purchase or on another device, so the notice lives here, not in the shop.
+function CoinsDeliveredToast() {
+  const { coinsDelivered, clearCoinsDelivered } = useProfile()
+  const { showToast } = useReward()
+  const { t } = useLocale()
+  useEffect(() => {
+    if (coinsDelivered === 0) return
+    showToast(t('shop_coins_delivered', { coins: coinsDelivered }))
+    clearCoinsDelivered()
+  }, [coinsDelivered, clearCoinsDelivered, showToast, t])
+  return null
+}
+
 // added later - no per-component wiring needed. Elements tagged data-sfx="close"
 // (panel close/back buttons) get the distinct close sound; everything else gets
 // the default click. A data-sfx value with a slash is a full soundbank event id
@@ -160,6 +174,7 @@ export default function App() {
             <EggReadyToast />
             <CloudConflictDialog />
           </BrowserRouter>
+            <CoinsDeliveredToast />
         </RewardProvider>
         </PlayerLocationProvider>
       </ProfileProvider>

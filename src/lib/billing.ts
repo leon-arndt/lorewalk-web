@@ -70,6 +70,41 @@ export async function restorePremiumPurchases(playerId: string): Promise<boolean
   return !!customerInfo.entitlements.active[ENTITLEMENT_ID]
 }
 
+// The RevenueCat offering that holds the coin packs, one package per Play
+// in-app product. Kept apart from the default offering, which holds Premium.
+const COIN_OFFERING_ID = 'coins'
+
+export type CoinPackages = Record<string, import('@revenuecat/purchases-capacitor').PurchasesPackage>
+
+// The coin packs that the store offers right now, keyed by Play product id.
+export async function fetchCoinPackages(playerId: string): Promise<CoinPackages | null> {
+  if (!isBillingAvailable()) return null
+  await configure(playerId)
+  const { Purchases } = await import('@revenuecat/purchases-capacitor')
+  const offerings = await Purchases.getOfferings()
+  const offering = offerings.all[COIN_OFFERING_ID]
+  if (!offering) return null
+  return Object.fromEntries(offering.availablePackages.map((p) => [p.product.identifier, p]))
+}
+
+// A successful purchase grants nothing on the device. The RevenueCat webhook
+// writes a coin_grants row, and the client adds the coins when it reads that
+// row (see src/lib/coinGrants.ts).
+export async function purchaseCoinPack(
+  playerId: string,
+  pkg: import('@revenuecat/purchases-capacitor').PurchasesPackage,
+): Promise<PurchaseResult> {
+  await configure(playerId)
+  const { Purchases } = await import('@revenuecat/purchases-capacitor')
+  try {
+    await Purchases.purchasePackage({ aPackage: pkg })
+    return { ok: true }
+  } catch (e) {
+    const err = e as { userCancelled?: boolean; message?: string }
+    return { ok: false, cancelled: !!err.userCancelled, error: err.message }
+  }
+}
+
 // Google Play requires cancellation through its own subscription management
 // UI, not in-app - this just deep-links there instead of calling a cancel API.
 export function playSubscriptionManagementUrl(productId?: string): string {

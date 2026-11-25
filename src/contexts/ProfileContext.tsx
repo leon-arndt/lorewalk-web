@@ -1,10 +1,11 @@
-import { createContext, useContext, useState, useMemo, useCallback, useEffect, useSyncExternalStore } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { supabase, ensureSession } from '@/lib/supabase'
 import { useAccount, type Account } from '@/hooks/useAccount'
 import { CloudSaveEngine, type CloudSaveState } from '@/lib/cloudSave'
+import { fetchCoinGrants, applyCoinGrants } from '@/lib/coinGrants'
 import { loadDeviceSteps } from '@/hooks/useStepCounter'
 import { clearJournal } from '@/lib/journalDb'
 import { getFoodDef } from '@/data/foods'
@@ -82,6 +83,11 @@ interface ProfileContextValue {
   setCloudConflictOpen: (open: boolean) => void
   signOut: () => Promise<void>
   deleteAccount: () => Promise<boolean>
+  // Reads the server-verified coin packs and adds the new ones. Resolves to
+  // the number of coins that arrived.
+  syncCoinGrants: () => Promise<number>
+  coinsDelivered: number
+  clearCoinsDelivered: () => void
 }
 
 export interface CheckInResult {
@@ -234,6 +240,52 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     checkEntitlement()
     return () => { cancelled = true }
   }, [mode, accountId, profile.id])
+
+  // Coin packs. The server records each verified purchase as a coin_grants
+  // row, and this adds the rows that the profile has not counted yet. It waits
+  // for the cloud save: a second device must first take the save that already
+  // holds the grant, or it would add the grant itself and raise a conflict.
+  const coinGrantsUserId =
+    mode === 'online' && accountId && profile.id === accountId
+    && (!cloudUserId || (cloudSave.status === 'synced' && !cloudSave.conflict))
+      ? accountId
+      : null
+  const profileRef = useRef(profile)
+  useEffect(() => { profileRef.current = profile }, [profile])
+  const coinGrantSync = useRef<Promise<number> | null>(null)
+  const [coinsDelivered, setCoinsDelivered] = useState(0)
+  const clearCoinsDelivered = useCallback(() => setCoinsDelivered(0), [])
+
+  const syncCoinGrants = useCallback((): Promise<number> => {
+    if (!coinGrantsUserId) return Promise.resolve(0)
+    if (coinGrantSync.current) return coinGrantSync.current
+    const run = (async () => {
+      const grants = await fetchCoinGrants(coinGrantsUserId)
+      if (!grants) return 0
+      const applied = applyCoinGrants(profileRef.current, grants)
+      if (applied.coins === 0) return 0
+      // Ahead of the render, so a call that follows at once counts nothing twice.
+      profileRef.current = applied.profile
+      setProfile((prev) => {
+        const next = applyCoinGrants(prev, grants)
+        if (next.coins === 0) return prev
+        saveProfile(next.profile)
+        return next.profile
+      })
+      setCoinsDelivered((n) => n + applied.coins)
+      return applied.coins
+    })().finally(() => { coinGrantSync.current = null })
+    coinGrantSync.current = run
+    return run
+  }, [coinGrantsUserId])
+
+  useEffect(() => {
+    if (!coinGrantsUserId) return
+    void syncCoinGrants()
+    const onVisibility = () => { if (document.visibilityState === 'visible') void syncCoinGrants() }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [coinGrantsUserId, syncCoinGrants])
 
   const visitedPois = useMemo(
     () => new Set(profile.visitHistory.map((v) => v.poiId)),
@@ -933,6 +985,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,
       account, cloudSave, resolveCloudConflict, setCloudConflictOpen, signOut, deleteAccount,
+      syncCoinGrants, coinsDelivered, clearCoinsDelivered,
     }}>
       {children}
     </ProfileContext.Provider>

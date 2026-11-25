@@ -167,7 +167,7 @@ The shop has one entry point: the coin capsule. The map HUD and the Squads tab b
 - **+3 creature slots**: costs `60 + 60 × (bonus / 3)`, which climbs with each purchase.
 - **+1 egg slot**: costs `120 × (slotsBought + 1)`, capped at `MAX_EGG_SLOTS_CAP` (6).
 
-Real-money IAP waits. A coins-only shop already closes the earn-and-spend loop. The current costs are tuned for development. Rebalance them together with the duration and rate constants before launch.
+Coin packs for real money have code, but no store product exists yet. The server records each verified purchase in `coin_grants`, and the client adds the coins from that record. A coins-only shop already closes the earn-and-spend loop. The current costs are tuned for development. Rebalance them together with the duration and rate constants before launch.
 
 ### Premium entitlement (payment integration scaffolded, not live yet)
 

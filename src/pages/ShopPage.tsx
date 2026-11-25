@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
@@ -10,28 +10,49 @@ import {
 } from '@/lib/profile'
 import { accent, rewardGradient } from '@/lib/theme'
 import { PremiumModal } from '@/components/UI/PremiumModal'
+import { UUID_RE } from '@/lib/supabase'
+import { isBillingAvailable, fetchCoinPackages, purchaseCoinPack, type CoinPackages } from '@/lib/billing'
 
 // The shop has one entry point: CoinCapsule opens this as a bottom sheet, from
 // every screen that shows the coin balance. It has no route of its own.
 // Real money runs through Google Play Billing via RevenueCat's Capacitor SDK
-// (see src/lib/billing.ts, used by PremiumModal for subscriptions). Coin packs
-// aren't wired to that yet - until they are, the buy buttons credit coins
-// directly, clearly labelled as test. Priced in SGD - Singapore is the first
-// launch market (see CLAUDE.md).
+// (see src/lib/billing.ts). A coin pack is a Play in-app product. The device
+// never credits a paid pack itself: the RevenueCat webhook records the
+// purchase, and ProfileContext.syncCoinGrants adds the coins from that record.
+// The webhook holds the coins per product (COIN_PRODUCTS), so keep the two
+// lists in step. `price` shows until the store returns its own price string.
+// Priced in SGD - Singapore is the first launch market (see CLAUDE.md).
 const COIN_PACKS = [
-  { coins: 100, price: 'S$0.79', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
-  { coins: 600, price: 'S$3.49', tagKey: 'shop_popular' as const },
-  { coins: 1000, price: 'S$5.00', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
-  { coins: 2500, price: 'S$6.99', tagKey: 'shop_best_value' as const },
+  { productId: 'lorewalk_coins_100', coins: 100, price: 'S$0.79', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { productId: 'lorewalk_coins_600', coins: 600, price: 'S$3.49', tagKey: 'shop_popular' as const },
+  { productId: 'lorewalk_coins_1000', coins: 1000, price: 'S$5.00', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { productId: 'lorewalk_coins_2500', coins: 2500, price: 'S$6.99', tagKey: 'shop_best_value' as const },
 ]
 
+// The webhook runs after the purchase returns, so the grant row is not there
+// yet. Look a few times. If it still is not there, the next app start or
+// return to the foreground picks it up.
+const GRANT_RETRY_MS = [2_000, 4_000, 8_000, 16_000]
+
 export function ShopPage() {
-  const { profile, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins } = useProfile()
+  const { profile, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, syncCoinGrants } = useProfile()
   const { mode } = useConnectionMode()
   const { showToast } = useReward()
   const { t } = useLocale()
   const coinsRef = useRef<HTMLDivElement>(null)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [packages, setPackages] = useState<CoinPackages | null>(null)
+  const [buying, setBuying] = useState<string | null>(null)
+  const testMode = import.meta.env.DEV && mode === 'offline'
+
+  useEffect(() => {
+    if (mode !== 'online' || !isBillingAvailable() || !UUID_RE.test(profile.id)) return
+    let cancelled = false
+    fetchCoinPackages(profile.id)
+      .then((p) => { if (!cancelled) setPackages(p) })
+      .catch(() => { /* the store is unreachable: the buy button reports it */ })
+    return () => { cancelled = true }
+  }, [mode, profile.id])
 
   const scrollToCoins = () => coinsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
@@ -64,16 +85,40 @@ export function ShopPage() {
     },
   ]
 
-  function buyPack(pack: typeof COIN_PACKS[number]) {
+  async function buyPack(pack: typeof COIN_PACKS[number]) {
     // Dev build, offline = sandbox: simulate a successful purchase and grant
-    // coins instantly. A shipped build never grants free coins. Real purchases
-    // aren't wired to RevenueCat yet (see src/lib/billing.ts, currently only
-    // used for Premium subscriptions).
-    if (import.meta.env.DEV && mode === 'offline') {
+    // coins instantly. A shipped build never grants free coins.
+    if (testMode) {
       addCoins(pack.coins)
       showToast(t('shop_test_purchase', { coins: pack.coins }))
-    } else {
+      return
+    }
+    if (mode !== 'online') {
+      showToast(t('shop_needs_online'))
+      return
+    }
+    if (!isBillingAvailable()) {
       showToast(t('shop_online_note'))
+      return
+    }
+    // The purchase binds to the RevenueCat app user id. That must be the
+    // signed-in auth uid, or the grant row never matches this player.
+    const pkg = packages?.[pack.productId]
+    if (!pkg || !UUID_RE.test(profile.id)) {
+      showToast(t('premium_purchase_failed'))
+      return
+    }
+    setBuying(pack.productId)
+    const result = await purchaseCoinPack(profile.id, pkg)
+    setBuying(null)
+    if (!result.ok) {
+      if (!result.cancelled) showToast(result.error ?? t('premium_purchase_failed'))
+      return
+    }
+    showToast(t('shop_purchase_pending'))
+    for (const delay of GRANT_RETRY_MS) {
+      await new Promise((resolve) => setTimeout(resolve, delay))
+      if (await syncCoinGrants() > 0) break
     }
   }
 
@@ -157,8 +202,8 @@ export function ShopPage() {
       {/* Coins (real-money top-up) */}
       <section ref={coinsRef} id="coins" style={{ padding: '16px 16px 32px', scrollMarginTop: 8 }}>
         <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: accent }}>{t('shop_coins_title')}</h2>
-        <p style={{ margin: '0 0 12px', fontSize: 12, color: mode === 'offline' ? '#16a34a' : '#94a3b8' }}>
-          {mode === 'offline' ? t('shop_coins_offline') : t('shop_coins_online')}
+        <p style={{ margin: '0 0 12px', fontSize: 12, color: testMode ? '#16a34a' : '#94a3b8' }}>
+          {testMode ? t('shop_coins_offline') : t('shop_coins_online')}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
           {COIN_PACKS.map((pack) => (
@@ -183,13 +228,15 @@ export function ShopPage() {
               <span style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>{pack.coins.toLocaleString()}</span>
               <button
                 onClick={() => buyPack(pack)}
+                disabled={buying !== null}
                 style={{
                   width: '100%', fontSize: 13, fontWeight: 700, padding: '9px', borderRadius: 12,
-                  border: 'none', cursor: 'pointer',
+                  border: 'none', cursor: buying ? 'default' : 'pointer',
                   background: rewardGradient, color: 'white',
+                  opacity: buying && buying !== pack.productId ? 0.5 : 1,
                 }}
               >
-                {pack.price}
+                {buying === pack.productId ? '…' : (packages?.[pack.productId]?.product.priceString ?? pack.price)}
               </button>
             </div>
           ))}

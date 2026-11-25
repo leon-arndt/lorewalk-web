@@ -36,18 +36,22 @@ interface Setup {
   meta?: { userId: string; revision: number; dirty: boolean; syncedAt: string | null }
   cloud: CloudRow | null
   failDelete?: boolean
+  grants?: { id: string; coins: number }[]
 }
 
 // Seeds the device, then stands in for the player_saves table and the
 // save_profile RPC with the same revision rule as the migration.
-async function setup(page: Page, { local, meta, cloud, failDelete }: Setup) {
-  const server = { row: cloud, pushes: [] as PushBody[], deletes: 0 }
+async function setup(page: Page, { local, meta, cloud, failDelete, grants }: Setup) {
+  const server = { row: cloud, pushes: [] as PushBody[], deletes: 0, grants: grants ?? [] }
   const cors = { 'access-control-allow-origin': '*' }
 
   await page.route((url) => url.hostname === HOST, async (route) => {
     const path = new URL(route.request().url()).pathname
     if (path === '/rest/v1/player_saves') {
       return route.fulfill({ json: server.row ? [server.row] : [], headers: cors })
+    }
+    if (path === '/rest/v1/coin_grants') {
+      return route.fulfill({ json: server.grants, headers: cors })
     }
     if (path === '/rest/v1/rpc/save_profile') {
       const body = route.request().postDataJSON() as PushBody
@@ -279,5 +283,56 @@ test.describe('Cloud save', () => {
     await expect(page.getByText('Signed in as player@example.com')).toBeVisible()
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('lorewalk_profile') ?? 'null'))
     expect(saved.displayName).toBe('Staying Player')
+  })
+})
+
+// A paid coin pack reaches the device as a coin_grants row. The webhook writes
+// the row in production. Here the mock server holds it.
+test.describe('Coin packs', () => {
+  // The grant sync runs after the cloud sync, so it lands late when several
+  // browsers share the machine. The dev server can also reload the page while a
+  // test runs, and an evaluate call dies with the old page. Read through a
+  // patient poll that survives both.
+  const SLOW = { timeout: 15_000 }
+  const expectCoins = (page: Page, amount: number) =>
+    expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('lorewalk_profile') ?? '{}').coins as number).catch(() => null), SLOW).toBe(amount)
+
+  test('a verified purchase adds its coins one time and uploads them', async ({ page }) => {
+    const server = await setup(page, {
+      local: makeProfile({ id: USER_ID, coins: 500 }),
+      meta: { userId: USER_ID, revision: 3, dirty: false, syncedAt: null },
+      cloud: cloudRow({ coins: 500 }, 3),
+      grants: [{ id: 'GPA.1111', coins: 600 }],
+    })
+    await page.goto('/')
+    await expect(page.getByText('✓ +600 🪙')).toBeVisible(SLOW)
+    await expectCoins(page, 1100)
+    await expect.poll(() => server.pushes.some((p) => p.p_profile.coins === 1100), { timeout: 15_000 }).toBe(true)
+
+    // The same row is still on the server after a restart. It must not count again.
+    await page.reload()
+    await expect(page.locator('canvas.maplibregl-canvas')).toBeVisible(SLOW)
+    await page.waitForTimeout(3000)
+    await expectCoins(page, 1100)
+
+    // A second purchase adds only itself.
+    server.grants.push({ id: 'GPA.2222', coins: 100 })
+    await page.reload()
+    await expect(page.getByText('✓ +100 🪙')).toBeVisible(SLOW)
+    await expectCoins(page, 1200)
+  })
+
+  test('a second device takes the cloud save and does not add the grant again', async ({ page }) => {
+    await setup(page, {
+      local: makeProfile({ id: USER_ID, coins: 500 }),
+      meta: { userId: USER_ID, revision: 3, dirty: false, syncedAt: null },
+      cloud: cloudRow({ coins: 1100, coinGrantsApplied: ['GPA.1111'] }, 4),
+      grants: [{ id: 'GPA.1111', coins: 600 }],
+    })
+    await page.goto('/profile')
+    await expectCoins(page, 1100)
+    await page.waitForTimeout(1500)
+    await expectCoins(page, 1100)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
   })
 })

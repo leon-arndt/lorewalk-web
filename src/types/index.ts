@@ -152,6 +152,7 @@ export interface PlayerProfile {
   squads: Squad[]
   activeSquadId: string | null
   coins: number
+  coinGrantsApplied: string[]   // ids of the server-verified coin packs already added to coins, see lib/coinGrants.ts
   tickets: number
   claims: Claim[]
   postcards: Postcard[]   // inbox (received)

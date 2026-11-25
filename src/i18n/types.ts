@@ -121,6 +121,9 @@ export interface Translations {
   shop_popular: string
   shop_best_value: string
   shop_test_purchase: string
+  shop_needs_online: string
+  shop_purchase_pending: string
+  shop_coins_delivered: string
   shop_online_note: string
   shop_get_more_coins: string
 

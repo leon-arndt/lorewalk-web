@@ -9,7 +9,7 @@
     1. Turn on "Allow anonymous sign-ins" in the Supabase dashboard.
     2. Done: `npx supabase db push --remote` applied all 7 migrations to the empty project.
     3. Test online mode on two devices: add a friend by code, open the friend's profile card, and claim a medal with an active entitlement.
-  - Still open from the audit: `permanent_pois` and `temporary_pois` do not exist in the project yet, and they need a read policy for everyone when they do (the `ensure_rls` trigger turns RLS on, and `get_pois_near` then returns no rows without a policy), the RevenueCat webhook ignores the event type, `vercel.json` sets no security headers, and the server does not verify steps or check-ins.
+  - Still open from the audit: `permanent_pois` and `temporary_pois` do not exist in the project yet, and they need a read policy for everyone when they do (the `ensure_rls` trigger turns RLS on, and `get_pois_near` then returns no rows without a policy), the RevenueCat webhook does not check the order of events, `vercel.json` sets no security headers, and the server does not verify steps or check-ins.
 - **cloud save**: the client exists and the migrations are in the Supabase project, but the flow is not live. It needs a Google OAuth client and the Supabase setup below. The "Cloud save" section of CLAUDE.md explains the sync rules.
   - Client: `src/lib/cloudSave.ts` holds the sync engine, `src/lib/googleAuth.ts` holds the sign-in, and `AccountSection.tsx` in Settings holds the UI. `e2e/cloud-save.spec.ts` tests the sync rules against a mock server.
   - Server: `supabase/migrations/20261124000000_player_saves.sql` holds the `player_saves` table and the `save_profile` RPC. `supabase/migrations/20261124010000_delete_account.sql` holds the `delete_account` RPC behind "Delete account" in Settings. Both are in the `lorewalk` Supabase project, but nobody has called them with a real session.
@@ -31,7 +31,13 @@
     2. Create a RevenueCat project, link it to Play Console, and add a `premium` entitlement with Monthly and Annual packages on the default offering. Set its public API key as `VITE_REVENUECAT_ANDROID_KEY`.
     3. The migration is already in the project. Run `supabase functions deploy revenuecat-webhook` with `REVENUECAT_WEBHOOK_SECRET` set. Enter the same secret value in the RevenueCat webhook config.
     4. Ship at least an internal-testing Play Console release, then test a real purchase on a device. Play Billing does not work in a plain browser tab.
-  - The coin packs in `ShopPage.tsx` are a separate purchase flow. Nobody has wired them yet.
+  - Coin packs: the client and the server exist, but no store product does. `ShopPage.tsx` buys a pack through `purchaseCoinPack()` in `billing.ts`. The webhook writes a `coin_grants` row (`supabase/migrations/20261125000000_coin_grants.sql`), and `syncCoinGrants()` in `ProfileContext.tsx` adds the coins. Nobody has run the migration or a real purchase.
+    1. In Play Console, create four in-app products: `lorewalk_coins_100`, `lorewalk_coins_600`, `lorewalk_coins_1000`, and `lorewalk_coins_2500`.
+    2. In RevenueCat, add an offering with the id `coins` and one package for each product.
+    3. Apply the migration, then deploy the webhook again.
+    4. Set `REVENUECAT_ALLOW_SANDBOX=true` on a test project only. Without it, the webhook ignores a purchase from a Play license tester. This applies to Premium too.
+    5. Buy a pack on a device. Make sure that the coins arrive one time, and that a second device shows the same balance after sign-in.
+    - Still open: a refund does not take the coins back.
 
 ## Backlog
 

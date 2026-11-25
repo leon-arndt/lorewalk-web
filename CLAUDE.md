@@ -192,6 +192,7 @@ The anon key ships in the client bundle, so anyone can call the Supabase REST AP
 - **`friendships`**: a player reads only their own rows. The `add_friend_by_code` RPC is the only way to write a row.
 - **`player_public_stats`**: a player writes only their own row. A player reads their own row and the rows of their friends.
 - **`medal_claims`**: the `claim_medal` RPC issues one pickup code per player per month, and only for an active entitlement. Only the service role can call `redeem_medal`. A player reads only their own claims.
+- **`coin_grants`**: one row for each verified coin pack purchase. Only the RevenueCat webhook writes, and a player reads only their own rows. `syncCoinGrants()` in `ProfileContext.tsx` adds each new row to `profile.coins` and records its id in `profile.coinGrantsApplied`. The table makes sure that a paid pack arrives one time. The coin balance itself stays client data.
 - **`player_saves`**: a player reads only their own row. The `save_profile` RPC is the only way to write a row, and it refuses an anonymous account.
 - **Account deletion**: the `delete_account` RPC deletes every row of the caller in the tables above, then the auth user. `deleteAccount()` in `ProfileContext.tsx` calls it, wipes the profile and the journal photos on the device, and reloads the app as a new guest. A new table that keys on the player id needs a `delete` line in that function. The function does not cancel a Play subscription.
 
