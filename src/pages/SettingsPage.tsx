@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { isVibrationEnabled, setVibrationEnabled, vibrate } from '@/lib/haptics'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
@@ -17,6 +19,8 @@ const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_
   { key: 'friendsAndGiftsNotifications', titleKey: 'settings_notif_friends_gifts', descKey: 'settings_notif_friends_gifts_desc' },
   { key: 'latestNewsNotifications', titleKey: 'settings_notif_latest_news', descKey: 'settings_notif_latest_news_desc' },
 ]
+
+const audioLabel: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#1e293b' }
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
@@ -47,6 +51,7 @@ export function SettingsPage() {
   const { profile, toggleNotificationPref } = useProfile()
   const { mode, setMode } = useConnectionMode()
   const navigate = useNavigate()
+  const [vibration, setVibration] = useState(isVibrationEnabled)
 
   async function handleToggleNotifications(key: NotificationPrefKey) {
     const turningOn = !profile[key]
@@ -88,45 +93,46 @@ export function SettingsPage() {
 
         <section>
           <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
-            {t('settings_music_volume')}
+            {t('settings_sound_section')}
           </h2>
           <div style={{
-            background: 'white', borderRadius: 16, padding: '14px 16px',
+            background: 'white', borderRadius: 16, padding: '16px',
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', alignItems: 'center', gap: 12,
+            display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', columnGap: 16, rowGap: 18,
           }}>
-            <span style={{ fontSize: 18 }}>{volume === 0 ? '🔇' : '🔊'}</span>
+            <label htmlFor="settings-music" style={audioLabel}>{t('settings_music_volume')}</label>
             <input
+              id="settings-music"
               type="range"
               min={0}
               max={1}
               step={0.05}
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              style={{ flex: 1, accentColor: accent }}
+              style={{ width: '100%', minWidth: 0, accentColor: accent }}
             />
-          </div>
-        </section>
-
-        <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
-            {t('settings_sound_effects')}
-          </h2>
-          <div style={{
-            background: 'white', borderRadius: 16, padding: '14px 16px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', alignItems: 'center', gap: 12,
-          }}>
-            <span style={{ fontSize: 18 }}>{sfxVolume === 0 ? '🔇' : '🔊'}</span>
+            <label htmlFor="settings-sfx" style={audioLabel}>{t('settings_sound_effects')}</label>
             <input
+              id="settings-sfx"
               type="range"
               min={0}
               max={1}
               step={0.05}
               value={sfxVolume}
               onChange={(e) => setSfxVolume(Number(e.target.value))}
-              style={{ flex: 1, accentColor: accent }}
+              style={{ width: '100%', minWidth: 0, accentColor: accent }}
             />
+            <span style={audioLabel}>{t('settings_vibration')}</span>
+            <div style={{ justifySelf: 'end' }}>
+              <ToggleSwitch
+                checked={vibration}
+                onChange={() => {
+                  setVibrationEnabled(!vibration)
+                  setVibration(!vibration)
+                  if (!vibration) vibrate(30)
+                }}
+              />
+            </div>
           </div>
         </section>
 

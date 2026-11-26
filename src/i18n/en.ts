@@ -47,6 +47,8 @@ export const en: Translations = {
   settings_title: 'Settings',
   settings_music_volume: 'Music volume',
   settings_sound_effects: 'Sound effects',
+  settings_sound_section: 'Sound and vibration',
+  settings_vibration: 'Vibration',
   settings_notifications: 'Notifications',
   settings_daily_motivation: 'Daily motivation',
   settings_daily_motivation_desc: 'Get a daily nudge to keep exploring',

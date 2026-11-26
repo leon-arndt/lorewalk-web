@@ -42,6 +42,7 @@
 ## Backlog
 
 - **cat hats**: test the Party Cat and its party hat in the app, then give the hat to more cats. Add `hat: 'party'` to a `CreatureDef` in `src/data/creatures.ts`. `addCatHat()` in `src/lib/catModel.ts` builds the hat.
+- **haptics**: Settings has a Vibration toggle, but nothing vibrates yet. Call `vibrate()` from `src/lib/haptics.ts` on game events, such as check-in, hatch, and level-up. The function does nothing when the player turns the toggle off. iOS Safari does not vibrate.
 - **vfx**: play particle effects on game events, such as check-in, hatch, and level-up. Call `playMapVfx(id, [lng, lat])` from `src/lib/mapVfx.ts`. The Particle Editor in `tools/vscode-particles/` makes the effects.
 - **player avatar**: test the chibi avatar on an Android phone. Check that the avatar walks and turns on real GPS, that the drag turns it in the customization preview, and that the friend list renders its portraits without a stall. `src/lib/playerAvatar.ts` holds the avatar, and `getAvatarPortraitURL()` in `creaturePreview.ts` holds the portraits.
 - **theming**: test the frosted-glass pages on a mid-range Android phone. The map stays mounted under every tab and pauses its 3D layers, but a full-screen backdrop blur still costs GPU time. If the frame rate drops, lower the blur in `glass.ts` or use a static snapshot of the map. The page slide in `AnimatedRoutes` (`App.tsx`) moves a full-screen blur too. If it stutters, change it to a short fade and rise.

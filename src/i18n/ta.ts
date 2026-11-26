@@ -47,6 +47,8 @@ export const ta: Translations = {
   settings_title: 'அமைப்புகள்',
   settings_music_volume: 'இசை ஒலி அளவு',
   settings_sound_effects: 'ஒலி விளைவுகள்',
+  settings_sound_section: 'ஒலி மற்றும் அதிர்வு',
+  settings_vibration: 'அதிர்வு',
   settings_notifications: 'அறிவிப்புகள்',
   settings_daily_motivation: 'தினசரி ஊக்கம்',
   settings_daily_motivation_desc: 'ஆராய்ச்சியைத் தொடர தினசரி நினைவூட்டலைப் பெறுங்கள்',
