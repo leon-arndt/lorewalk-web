@@ -567,9 +567,13 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     // Offline moved the camera itself, so going back online must re-frame it.
     hasZoomedToPlayerRef.current = false
     followingRef.current = true
-    const p = positionRef.current
-    const center: [number, number] = p ? [p.longitude, p.latitude] : DEFAULT_CENTER
-    const frame = () => map.jumpTo({ center, zoom: PLAYER_ZOOM })
+    // Read the position when the jump happens, not when the effect runs: the
+    // first GPS fix can land before the map loads, and a stale centre would
+    // undo the move to it.
+    const frame = () => {
+      const p = positionRef.current
+      map.jumpTo({ center: p ? [p.longitude, p.latitude] : DEFAULT_CENTER, zoom: PLAYER_ZOOM })
+    }
     if (map.loaded()) frame()
     else map.once('load', frame)
   }, [mode])
@@ -632,7 +636,10 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
 
   useEffect(() => {
     const map = mapRef.current
-    if (!map || !position || mode !== 'online') return
+    // Both modes: offline is a test mode for check-ins and purchases, but the
+    // player still stands at their GPS position. Without this the avatar sat at
+    // the GPS position while the camera stayed on the default centre.
+    if (!map || !position) return
 
     const lngLat: [number, number] = [position.longitude, position.latitude]
     playerAvatarRef.current?.setPosition(lngLat[0], lngLat[1])

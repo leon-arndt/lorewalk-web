@@ -38,3 +38,13 @@ test('a pan stops the camera follow, and the recenter button brings it back', as
   await expect(recenter).toHaveCount(0)
   await expect.poll(async () => (await center(page)).lat).toBeCloseTo(1.29352, 5)
 })
+
+// Offline mode once framed the default centre after the first GPS fix had
+// already moved the camera, so the avatar stood off screen.
+test('offline mode frames the player, not the default centre', async ({ page }) => {
+  await page.route('https://tiles.openfreemap.org/**', (r) => r.fulfill({ json: style }))
+  await seedProfile(page, {})
+  await page.addInitScript(() => localStorage.setItem('lorewalk.connectionMode', 'offline'))
+  await page.goto('/')
+  await expect.poll(async () => (await center(page)).lat, { timeout: 15_000 }).toBeCloseTo(1.2935, 4)
+})
