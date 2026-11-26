@@ -246,6 +246,7 @@ export const de: Translations = {
   streak_chest_card_sub: 'Tippe, um deine Belohnungstruhe zu öffnen',
 
   food_expedition_complete_title: 'Expedition abgeschlossen!',
+  map_recenter: 'Zurück zu meinem Standort',
   map_reset_to_north: 'Nach Norden ausrichten',
   shop_streak_freeze: 'Serien-Frost',
 

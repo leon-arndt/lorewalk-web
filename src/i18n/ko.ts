@@ -246,6 +246,7 @@ export const ko: Translations = {
   streak_chest_card_sub: '탭하여 보상 상자를 여세요',
 
   food_expedition_complete_title: '탐험 완료!',
+  map_recenter: '내 위치로 돌아가기',
   map_reset_to_north: '북쪽으로 재설정',
   shop_streak_freeze: '연속 기록 동결',
 

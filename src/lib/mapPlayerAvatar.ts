@@ -4,6 +4,7 @@ import { isMapPaused } from '@/lib/mapUtils'
 import type { PlayerAppearance } from '@/types'
 import { createPlayerAvatar, type PlayerAvatar } from '@/lib/playerAvatar'
 import { lightScene } from '@/lib/ambience'
+import { accent } from '@/lib/theme'
 
 // Renders the player's own avatar (lib/playerAvatar.ts) at their live GPS position,
 // à la the companion characters in mapCharacters.ts (same "Three.js on MapLibre"
@@ -55,6 +56,15 @@ export async function addPlayerAvatarLayer(
 
   const worldGroup = new THREE.Group()
   scene.add(worldGroup)
+
+  // The avatar shares the depth buffer with the 3D buildings, and at street
+  // level a building in front of the player hides it. This pass draws only the
+  // parts behind other geometry, as a flat silhouette, so the player always
+  // sees where they stand.
+  const xray = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(accent), transparent: true, opacity: 0.55,
+    depthWrite: false, depthFunc: THREE.GreaterDepth,
+  })
 
   let avatar: PlayerAvatar | null = null
   let heading = 0
@@ -121,12 +131,18 @@ export async function addPlayerAvatarLayer(
         .multiply(world)
 
       renderer.resetState()
+      if (avatar) {
+        scene.overrideMaterial = xray
+        renderer.render(scene, camera)
+        scene.overrideMaterial = null
+      }
       renderer.render(scene, camera)
       if (!isMapPaused()) map.triggerRepaint()
     },
     onRemove() {
       renderer?.dispose()
       renderer = null
+      xray.dispose()
     },
   }
 

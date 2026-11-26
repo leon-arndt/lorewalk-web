@@ -246,6 +246,7 @@ export const zh: Translations = {
   streak_chest_card_sub: '点击打开你的奖励宝箱',
 
   food_expedition_complete_title: '探险完成！',
+  map_recenter: '回到我的位置',
   map_reset_to_north: '重置为朝北',
   shop_streak_freeze: '连续记录冻结',
 

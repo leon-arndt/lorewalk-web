@@ -332,10 +332,14 @@ interface MapViewProps {
   onShrineNodeClick?: (id: string) => void
   onBearingChange?: (bearing: number) => void
   compassResetRef?: MutableRefObject<(() => void) | null>
+  // True while the camera is far from the player. MapPage shows a recenter
+  // button then, which calls recenterRef.
+  onAwayChange?: (away: boolean) => void
+  recenterRef?: MutableRefObject<(() => void) | null>
   paused?: boolean
 }
 
-export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef, paused = false }: MapViewProps) {
+export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef, onAwayChange, recenterRef, paused = false }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -363,6 +367,12 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   onPoiClickRef.current = onPoiClick
   const onBearingChangeRef = useRef(onBearingChange)
   onBearingChangeRef.current = onBearingChange
+  const onAwayChangeRef = useRef(onAwayChange)
+  onAwayChangeRef.current = onAwayChange
+  // The camera follows the player until the player pans, zooms, or turns the
+  // map by hand. The recenter button turns following back on.
+  const followingRef = useRef(true)
+  const awayRef = useRef(false)
 
   // Initialise map once.
   useEffect(() => {
@@ -408,6 +418,35 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
 
     map.on('rotate', () => onBearingChangeRef.current?.(map.getBearing()))
 
+    const playerLngLat = (): [number, number] => {
+      const p = positionRef.current
+      return p ? [p.longitude, p.latitude] : DEFAULT_CENTER
+    }
+    const setAway = (away: boolean) => {
+      if (away === awayRef.current) return
+      awayRef.current = away
+      onAwayChangeRef.current?.(away)
+    }
+    // A camera move from code (easeTo, jumpTo) has no originalEvent.
+    map.on('movestart', (e) => {
+      if ((e as { originalEvent?: Event }).originalEvent) followingRef.current = false
+    })
+    map.on('move', () => {
+      if (followingRef.current) return setAway(false)
+      const canvas = map.getCanvas()
+      const w = canvas.clientWidth
+      const h = canvas.clientHeight
+      const pt = map.project(playerLngLat())
+      setAway(Math.hypot(pt.x - w / 2, pt.y - h / 2) > Math.min(w, h) * 0.3)
+    })
+    if (recenterRef) {
+      recenterRef.current = () => {
+        followingRef.current = true
+        setAway(false)
+        map.easeTo({ center: playerLngLat(), zoom: PLAYER_ZOOM, duration: 800 })
+      }
+    }
+
     if (compassResetRef) {
       compassResetRef.current = () => map.easeTo({ bearing: 0, duration: 300 })
     }
@@ -429,6 +468,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
 
     return () => {
       if (compassResetRef) compassResetRef.current = null
+      if (recenterRef) recenterRef.current = null
       stopWeather()
       ambience.forEach((a) => a.remove())
       map.remove()
@@ -526,6 +566,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (!map || mode !== 'offline') return
     // Offline moved the camera itself, so going back online must re-frame it.
     hasZoomedToPlayerRef.current = false
+    followingRef.current = true
     const p = positionRef.current
     const center: [number, number] = p ? [p.longitude, p.latitude] : DEFAULT_CENTER
     const frame = () => map.jumpTo({ center, zoom: PLAYER_ZOOM })
@@ -601,7 +642,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (!hasZoomedToPlayerRef.current) {
       hasZoomedToPlayerRef.current = true
       map.easeTo({ center: lngLat, zoom: PLAYER_ZOOM, duration: 1200 })
-    } else {
+    } else if (followingRef.current) {
       map.easeTo({ center: lngLat, duration: 500 })
     }
   }, [position, mode])

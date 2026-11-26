@@ -246,6 +246,7 @@ export const id: Translations = {
   streak_chest_card_sub: 'Ketuk untuk membuka peti hadiahmu',
 
   food_expedition_complete_title: 'Ekspedisi Selesai!',
+  map_recenter: 'Kembali ke lokasi saya',
   map_reset_to_north: 'Atur ulang ke utara',
   shop_streak_freeze: 'Pembekuan rentetan',
 

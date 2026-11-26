@@ -246,6 +246,7 @@ export const ja: Translations = {
   streak_chest_card_sub: 'タップして報酬チェストを開ける',
 
   food_expedition_complete_title: '遠征完了！',
+  map_recenter: '現在地に戻る',
   map_reset_to_north: '北にリセット',
   shop_streak_freeze: 'ストリークフリーズ',
 

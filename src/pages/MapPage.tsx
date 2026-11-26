@@ -67,6 +67,8 @@ export function MapPage() {
   const [newsOpen, setNewsOpen] = useState(false)
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
+  const recenterRef = useRef<(() => void) | null>(null)
+  const [cameraAway, setCameraAway] = useState(false)
 
   // The active squad's creatures become the 3D companions that walk with you -
   // unless that squad is away on an expedition, in which case nobody follows.
@@ -345,6 +347,8 @@ export function MapPage() {
         onShrineNodeClick={handleShrineNodeClick}
         onBearingChange={setBearing}
         compassResetRef={compassResetRef}
+        onAwayChange={setCameraAway}
+        recenterRef={recenterRef}
         paused={!onMapTab}
       />
 
@@ -423,6 +427,31 @@ export function MapPage() {
               <polygon points="0,-11 -5.5,0 5.5,0" fill="#ef4444" />
               <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
               <circle r="2" fill="#334155" />
+            </svg>
+          </motion.button>
+          </div>
+        )}
+
+        {/* Recenter: only once the player has moved the camera away from
+            their avatar. The camera does not follow the player until then. */}
+        {cameraAway && (
+          <div style={{ alignSelf: 'flex-end', pointerEvents: 'auto' }}>
+          <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={popSpring}
+            onClick={() => recenterRef.current?.()}
+            aria-label={t('map_recenter')}
+            title={t('map_recenter')}
+            style={{
+              width: 44, height: 44, borderRadius: 14, padding: 0,
+              ...glassChrome,
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2.2" strokeLinecap="round" style={{ display: 'block' }}>
+              <circle cx="12" cy="12" r="7" />
+              <circle cx="12" cy="12" r="2.6" fill={accent} stroke="none" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
             </svg>
           </motion.button>
           </div>

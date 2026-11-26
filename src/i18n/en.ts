@@ -246,6 +246,7 @@ export const en: Translations = {
   streak_chest_card_sub: 'Tap to open your reward chest',
 
   food_expedition_complete_title: 'Expedition Complete!',
+  map_recenter: 'Back to my location',
   map_reset_to_north: 'Reset to north',
   shop_streak_freeze: 'Streak freeze',
 

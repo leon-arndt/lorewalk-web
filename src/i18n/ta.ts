@@ -246,6 +246,7 @@ export const ta: Translations = {
   streak_chest_card_sub: 'உங்கள் பரிசு பெட்டியை திறக்க தட்டவும்',
 
   food_expedition_complete_title: 'பயணம் முடிந்தது!',
+  map_recenter: 'என் இருப்பிடத்திற்குத் திரும்பு',
   map_reset_to_north: 'வடக்கை நோக்கி மீட்டமை',
   shop_streak_freeze: 'தொடர் உறைவு',
 

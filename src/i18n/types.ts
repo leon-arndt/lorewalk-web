@@ -244,6 +244,7 @@ export interface Translations {
   streak_chest_card_sub: string
 
   food_expedition_complete_title: string
+  map_recenter: string
   map_reset_to_north: string
   shop_streak_freeze: string
 
