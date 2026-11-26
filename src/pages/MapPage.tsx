@@ -26,7 +26,7 @@ import { isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { creatureDefBySpecies } from '@/data/creatures'
 import type { HatchedCreature, Poi, RewardItem } from '@/types'
-import { accent, categoryColors, rewardGradient } from '@/lib/theme'
+import { accent, categoryColors } from '@/lib/theme'
 import { motion } from 'motion/react'
 import { popSpring } from '@/lib/motion'
 
@@ -489,12 +489,11 @@ export function MapPage() {
           left: 16,
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '9px 14px', borderRadius: 22,
-          background: profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed
-            ? rewardGradient
-            : 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.14)',
-          border: 'none', cursor: 'pointer',
+          ...glassChrome,
+          ...(profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed && {
+            background: 'linear-gradient(135deg, rgba(129,140,248,0.82), rgba(192,132,252,0.82))',
+          }),
+          cursor: 'pointer',
           WebkitTapHighlightColor: 'transparent',
           color: profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed ? 'white' : '#334155',
           fontSize: 13, fontWeight: 700,
