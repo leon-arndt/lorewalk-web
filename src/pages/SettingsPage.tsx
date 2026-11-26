@@ -20,6 +20,10 @@ const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_
   { key: 'latestNewsNotifications', titleKey: 'settings_notif_latest_news', descKey: 'settings_notif_latest_news_desc' },
 ]
 
+declare const __APP_VERSION__: string
+declare const __GIT_COMMIT__: string
+declare const __BUILD_DATE__: string
+
 const audioLabel: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#1e293b' }
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -191,6 +195,17 @@ export function SettingsPage() {
             ))}
           </div>
         </section>
+
+        {/* The page is glass over the map, so a white halo keeps the text legible on any tile. */}
+        <p
+          style={{
+            margin: 0, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#334155',
+            fontVariantNumeric: 'tabular-nums',
+            textShadow: '0 0 2px #fff, 0 0 4px #fff, 0 1px 1px rgba(255,255,255,0.9)',
+          }}
+        >
+          v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
+        </p>
       </div>
     </div>
   )

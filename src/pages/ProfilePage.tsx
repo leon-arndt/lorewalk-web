@@ -21,10 +21,6 @@ import type { Achievement, EarnedMedal } from '@/types'
 import { accent, rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
 import { glassPage } from '@/lib/glass'
 
-declare const __APP_VERSION__: string
-declare const __GIT_COMMIT__: string
-declare const __BUILD_DATE__: string
-
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-SG', {
     day: 'numeric', month: 'short', year: 'numeric',
@@ -546,11 +542,8 @@ export function ProfilePage() {
           )}
         </section>
 
-        {/* Joined date + app version */}
         <p style={{ margin: 0, textAlign: 'center', fontSize: 12, color: '#cbd5e1' }}>
           {t('profile_explorer_since', { date: formatDate(profile.createdAt) })}
-          <br />
-          v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
         </p>
 
         {import.meta.env.DEV && (
