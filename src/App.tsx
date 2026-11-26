@@ -8,6 +8,7 @@ import { RewardProvider, useReward } from '@/contexts/RewardContext'
 import { PlayerLocationProvider } from '@/contexts/PlayerLocationContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { playSfx } from '@/lib/sfx'
+import { installPressFeedback } from '@/lib/ripple'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { BottomNav } from '@/components/UI/BottomNav'
 import { LevelUpScreen } from '@/components/UI/LevelUpScreen'
@@ -115,7 +116,6 @@ function EggReadyToast() {
   return null
 }
 
-// One delegated listener covers every button/link in the app, including ones
 // A paid coin pack arrives through the server, sometimes a while after the
 // purchase or on another device, so the notice lives here, not in the shop.
 function CoinsDeliveredToast() {
@@ -130,6 +130,7 @@ function CoinsDeliveredToast() {
   return null
 }
 
+// One delegated listener covers every button/link in the app, including ones
 // added later - no per-component wiring needed. Elements tagged data-sfx="close"
 // (panel close/back buttons) get the distinct close sound; everything else gets
 // the default click. A data-sfx value with a slash is a full soundbank event id
@@ -151,6 +152,7 @@ function useGlobalClickSfx() {
 
 export default function App() {
   useGlobalClickSfx()
+  useEffect(installPressFeedback, [])
   return (
     <MotionConfig reducedMotion="user">
     <LocaleProvider>
@@ -172,9 +174,9 @@ export default function App() {
             <RewardScreen />
             <Toast />
             <EggReadyToast />
+            <CoinsDeliveredToast />
             <CloudConflictDialog />
           </BrowserRouter>
-            <CoinsDeliveredToast />
         </RewardProvider>
         </PlayerLocationProvider>
       </ProfileProvider>

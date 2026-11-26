@@ -5,7 +5,7 @@ import { glassPanel } from '@/lib/glass'
 import { AnimatePresence, motion } from 'motion/react'
 import { CountBump } from '@/components/UI/CountBump'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
-import { sheetIn, tapScale } from '@/lib/motion'
+import { sheetIn } from '@/lib/motion'
 
 export function CoinCapsule() {
   const { profile } = useProfile()
@@ -13,8 +13,8 @@ export function CoinCapsule() {
 
   return (
     <>
-      <motion.button
-        whileTap={tapScale}
+      <button
+       
         onClick={() => setOpen(true)}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
@@ -31,7 +31,7 @@ export function CoinCapsule() {
         }}
       >
         <EmojiSprite id="item_coins" emoji="🪙" size={18} /> <CountBump value={profile.coins.toLocaleString()} />
-      </motion.button>
+      </button>
 
       <AnimatePresence>
       {open && (

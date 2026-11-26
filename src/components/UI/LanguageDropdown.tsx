@@ -53,7 +53,6 @@ export function LanguageDropdown() {
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
-        whileTap={{ scale: 0.98 }}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 12,
           background: 'white', borderRadius: 16, padding: '12px 16px',

@@ -28,7 +28,7 @@ import { creatureDefBySpecies } from '@/data/creatures'
 import type { HatchedCreature, Poi, RewardItem } from '@/types'
 import { accent, categoryColors, rewardGradient } from '@/lib/theme'
 import { motion } from 'motion/react'
-import { popSpring, tapScale } from '@/lib/motion'
+import { popSpring } from '@/lib/motion'
 
 const CHECKIN_RADIUS_M = 50
 
@@ -415,7 +415,7 @@ export function MapPage() {
             alignSelf: 'flex-end', marginTop: 4,
             pointerEvents: 'auto',
           }}>
-          <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={popSpring}
+          <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} transition={popSpring}
             onClick={() => compassResetRef.current?.()}
             title={t('map_reset_to_north')}
             style={{
@@ -447,7 +447,7 @@ export function MapPage() {
             their avatar. The camera does not follow the player until then. */}
         {cameraAway && (
           <div style={{ alignSelf: 'flex-end', pointerEvents: 'auto' }}>
-          <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={popSpring}
+          <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} transition={popSpring}
             onClick={() => recenterRef.current?.()}
             aria-label={t('map_recenter')}
             title={t('map_recenter')}
@@ -481,7 +481,7 @@ export function MapPage() {
       )}
 
       {/* Weekly walk floating button - bottom left above nav */}
-      <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={{ ...popSpring, delay: 0.25 }}
+      <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ ...popSpring, delay: 0.25 }}
         onClick={handleWeeklyWalkOpen}
         style={{
           position: 'absolute',
@@ -517,7 +517,7 @@ export function MapPage() {
       {/* News - bottom right, mirroring the weekly walk button on the left.
           Kept as a compact icon so a long localized "Weekly Walk" label can
           never collide with it. */}
-      <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={tapScale} transition={{ ...popSpring, delay: 0.35 }}
+      <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ ...popSpring, delay: 0.35 }}
         onClick={() => setNewsOpen(true)}
         aria-label={t('news_open')}
         style={{
