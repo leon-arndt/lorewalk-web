@@ -90,7 +90,10 @@ export const en: Translations = {
   creatures_empty_slot: 'Empty slot',
   creatures_hatch_hint: '🌱 Hatch an egg to fill your first slot.',
   creatures_from: 'From: {name}',
-  creatures_release_confirm: 'Release {name}? This frees a slot but the creature is gone for good.',
+  creatures_release_title: 'Release {name}?',
+  creatures_release_body: 'This frees a slot, but {name} is gone for good.',
+  creatures_release_yes: 'Release',
+  creatures_release_keep: 'Keep {name}',
 
   squads_title: 'Squads',
   squads_subtitle: 'Build teams from your creatures. Keep the active squad home to boost your check-ins by 25% per matching member, or send a squad on an expedition for an away reward.',

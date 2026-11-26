@@ -132,6 +132,22 @@ test.describe('Creatures page', () => {
     await page.getByText('Stone Sprite').click()
     await expect(page.getByRole('button', { name: /release/i })).toBeVisible()
   })
+
+  test('release asks in a game dialog, and only the red button releases', async ({ page }) => {
+    page.on('dialog', () => { throw new Error('native dialog opened') })
+    await seedProfile(page, { foodInventory: [TEST_FOOD], hatchedCreatures: [TEST_CREATURE] })
+    await page.goto('/creatures')
+    await page.getByText('Stone Sprite').click()
+    await page.getByRole('button', { name: /release/i }).click()
+    const dialog = page.getByRole('alertdialog')
+    await expect(dialog.getByText('Release Stone Sprite?')).toBeVisible()
+    await dialog.getByRole('button', { name: 'Keep Stone Sprite' }).click()
+    await expect(dialog).toBeHidden()
+
+    await page.getByRole('button', { name: /release/i }).click()
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Release', exact: true }).click()
+    await expect(page.getByText('Stone Sprite')).toHaveCount(0)
+  })
 })
 
 // ── Profile dev cheats ────────────────────────────────────────────────────────

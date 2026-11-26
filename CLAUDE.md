@@ -313,6 +313,7 @@ The web code follows the same conventions as the Unity project:
 - No comments unless the WHY is non-obvious.
 - No `#region` blocks. No barrel `index.ts` re-exports unless one is genuinely needed.
 - Prefer Tailwind utility classes over custom CSS. Reach for custom CSS only when Tailwind cannot express the rule.
+- Never open a native browser dialog (`window.confirm`, `alert`, `prompt`) in the game. Use `ConfirmDialog.tsx`, and set `danger` for an action that deletes something.
 - Never put an em dash in a UI-facing string. Use a period, a colon, or a hyphen instead. The same rule applies to the Markdown docs, per the Documentation style section.
 
 ## Localization

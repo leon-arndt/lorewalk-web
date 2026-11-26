@@ -160,7 +160,7 @@ export function RewardScreen() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 20,
                   }}>
-                    <EmojiSprite id={item.spriteId ?? item.emoji ?? item.type} emoji={item.emoji ?? meta.icon} size={22} />
+                    <EmojiSprite id={item.spriteId ?? `item_${item.type}`} emoji={item.emoji ?? meta.icon} size={22} />
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textAlign: 'left' }}>
                     {itemLabel(item, t)}

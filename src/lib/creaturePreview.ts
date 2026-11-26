@@ -214,64 +214,17 @@ export function getAvatarPortraitURL(appearance: PlayerAppearance): Promise<stri
   return portraitCache.get(key)!
 }
 
-// Deterministic per-id hue so the same item always gets the same cube colour.
-function hashHue(key: string): number {
-  let hash = 0
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0
-  return Math.abs(hash) % 360
-}
+const modelCache = new Map<string, Promise<string>>()
 
-const placeholderCache = new Map<string, string>()
-const placeholderPending = new Map<string, Promise<string>>()
-
-// Generic stand-in for any non-creature emoji (food, rewards, party avatars) that
-// doesn't have a bespoke model yet - a coloured cube, hashed from its id so the
-// same item always renders the same colour.
-export async function getPlaceholderPreviewURL(key: string): Promise<string> {
-  if (placeholderCache.has(key)) return placeholderCache.get(key)!
-  if (placeholderPending.has(key)) return placeholderPending.get(key)!
-
-  const p = (async () => {
-    await initRenderer()
-    const THREE = await import('three')
-
-    const color = new THREE.Color()
-    color.setHSL(hashHue(key) / 360, 0.55, 0.62)
-
-    const geo = new THREE.BoxGeometry(1, 1, 1)
-    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.05 })
-    const mesh = new THREE.Mesh(geo, mat)
-    mesh.rotation.set(-0.55, 0.7, 0.1)
-
-    camera!.position.set(1.7, 1.4, 1.9)
-    camera!.lookAt(0, 0, 0)
-    scene!.add(mesh)
-    renderer!.render(scene!, camera!)
-    const dataURL = renderer!.domElement.toDataURL('image/png')
-    scene!.remove(mesh)
-    geo.dispose()
-    mat.dispose()
-
-    placeholderCache.set(key, dataURL)
-    placeholderPending.delete(key)
-    return dataURL
-  })()
-
-  placeholderPending.set(key, p)
-  return p
-}
-
-
-const foodCache = new Map<string, Promise<string>>()
-
-export function getFoodPreviewURL(foodId: string): Promise<string> {
-  let p = foodCache.get(foodId)
+// Renders a model built by foodModels.ts or itemModels.ts, framed to fit.
+function getModelPreviewURL(key: string, build: (THREE: typeof import('three')) => Promise<import('three').Group>): Promise<string> {
+  let p = modelCache.get(key)
   if (!p) {
     p = (async () => {
       await initRenderer()
       const THREE = await import('three')
-      const { buildFoodModel, disposeFoodModel } = await import('@/lib/foodModels')
-      const model = buildFoodModel(THREE, foodId)
+      const { disposeModel } = await import('@/lib/foodModels')
+      const model = await build(THREE)
       const sphere = new THREE.Box3().setFromObject(model).getBoundingSphere(new THREE.Sphere())
       const dist = 0.82 * sphere.radius / Math.sin(THREE.MathUtils.degToRad(camera!.fov / 2))
       const dir = new THREE.Vector3(0.25, 0.85, 1).normalize()
@@ -281,15 +234,29 @@ export function getFoodPreviewURL(foodId: string): Promise<string> {
       renderer!.render(scene!, camera!)
       const dataURL = renderer!.domElement.toDataURL('image/png')
       scene!.remove(model)
-      disposeFoodModel(model)
+      disposeModel(model)
       return dataURL
     })()
-    foodCache.set(foodId, p)
+    modelCache.set(key, p)
   }
   return p
 }
 
-// Keys of the form food_<id> get the dish model. Everything else keeps the cube.
-export function getSpritePreviewURL(key: string): Promise<string> {
-  return key.startsWith('food_') ? getFoodPreviewURL(key.slice(5)) : getPlaceholderPreviewURL(key)
+export function getFoodPreviewURL(foodId: string): Promise<string> {
+  return getModelPreviewURL(`food_${foodId}`, async (THREE) => (await import('@/lib/foodModels')).buildFoodModel(THREE, foodId))
+}
+
+const EGG_ITEMS = new Set(['egg', 'egg_slot'])
+
+// Sprite keys: food_<id> for a dish, item_<type> for a reward icon (coins, xp,
+// egg, badge, level_up, egg_slot, creature_slots). Any other key has no model,
+// and the caller keeps its emoji.
+export async function getSpritePreviewURL(key: string): Promise<string | null> {
+  if (key.startsWith('food_')) return getFoodPreviewURL(key.slice(5))
+  if (!key.startsWith('item_')) return null
+  const type = key.slice(5)
+  if (EGG_ITEMS.has(type)) return getEggPreviewURL('common')
+  const { buildItemModel, hasItemModel } = await import('@/lib/itemModels')
+  if (!hasItemModel(type)) return null
+  return getModelPreviewURL(key, async (THREE) => buildItemModel(THREE, type))
 }

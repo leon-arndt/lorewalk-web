@@ -423,7 +423,7 @@ export function buildFoodModel(THREE: Three, foodId: string): Group {
   return root
 }
 
-export function disposeFoodModel(root: Group) {
+export function disposeModel(root: Group) {
   const mats = new Set<Material>()
   root.traverse((o) => {
     const m = o as Mesh

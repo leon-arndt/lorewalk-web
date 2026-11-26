@@ -88,7 +88,10 @@ export interface Translations {
   creatures_empty_slot: string
   creatures_hatch_hint: string
   creatures_from: string
-  creatures_release_confirm: string
+  creatures_release_title: string
+  creatures_release_body: string
+  creatures_release_yes: string
+  creatures_release_keep: string
 
   squads_title: string
   squads_subtitle: string

@@ -90,7 +90,10 @@ export const ja: Translations = {
   creatures_empty_slot: '空きスロット',
   creatures_hatch_hint: '🌱 卵を孵化させて最初のスロットを埋めよう。',
   creatures_from: '出身地: {name}',
-  creatures_release_confirm: '{name}を解放しますか？スロットが空きますが、クリーチャーは永久に消えます。',
+  creatures_release_title: '{name}を解放しますか？',
+  creatures_release_body: 'スロットが空きますが、{name}は永久に消えます。',
+  creatures_release_yes: '解放する',
+  creatures_release_keep: '{name}を残す',
 
   squads_title: 'スクワッド',
   squads_subtitle: 'クリーチャーでチームを編成しよう。アクティブスクワッドを手元に置くと、タイプが一致するメンバー1体につきチェックインが25%ブーストされます。または遠征に送って報酬をもらおう。',

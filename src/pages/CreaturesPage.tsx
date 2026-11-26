@@ -8,6 +8,8 @@ import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
 import { CreatureDetailView } from '@/components/UI/CreatureDetailView'
 import { CreatureTile, EmptyPad } from '@/components/UI/CreatureTile'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { ConfirmDialog } from '@/components/UI/ConfirmDialog'
+import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { Egg, HatchedCreature } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { accent, categoryCss } from '@/lib/theme'
@@ -157,16 +159,17 @@ export function CreaturesPage() {
   const [rewardCreature, setRewardCreature] = useState<HatchedCreature | null>(null)
   const [selectedCreature, setSelectedCreature] = useState<HatchedCreature | null>(null)
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
+  const [releaseTarget, setReleaseTarget] = useState<HatchedCreature | null>(null)
   const ownedTypes = TYPE_ORDER.filter((type) => hatchedCreatures.some((c) => c.poiCategory === type))
   // A released creature can take the last of its type with it; fall back to all.
   const activeType = typeFilter && ownedTypes.includes(typeFilter) ? typeFilter : null
   const shownCreatures = [...hatchedCreatures].reverse().filter((c) => !activeType || c.poiCategory === activeType)
 
-  function handleRelease(creature: HatchedCreature) {
-    if (window.confirm(t('creatures_release_confirm', { name: creatureName(creature) }))) {
-      releaseCreature(creature.id)
-      setSelectedCreature(null)
-    }
+  function confirmRelease() {
+    if (!releaseTarget) return
+    releaseCreature(releaseTarget.id)
+    setReleaseTarget(null)
+    setSelectedCreature(null)
   }
 
   function handleHatch(eggId: string) {
@@ -303,10 +306,24 @@ export function CreaturesPage() {
           creature={selectedCreature}
           foodInventory={profile.foodInventory}
           onFeed={(creatureId, foodItemId) => feedCreature(creatureId, foodItemId)}
-          onRelease={() => handleRelease(selectedCreature)}
+          onRelease={() => setReleaseTarget(selectedCreature)}
           onClose={() => setSelectedCreature(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={releaseTarget !== null}
+        danger
+        icon={releaseTarget && (
+          <CreaturePreview species={releaseTarget.species} emoji={releaseTarget.emoji} creatureType={releaseTarget.creatureType} isShiny={releaseTarget.isShiny} size={88} />
+        )}
+        title={releaseTarget ? t('creatures_release_title', { name: creatureName(releaseTarget) }) : ''}
+        body={releaseTarget ? t('creatures_release_body', { name: creatureName(releaseTarget) }) : ''}
+        confirmLabel={t('creatures_release_yes')}
+        cancelLabel={releaseTarget ? t('creatures_release_keep', { name: creatureName(releaseTarget) }) : ''}
+        onConfirm={confirmRelease}
+        onCancel={() => setReleaseTarget(null)}
+      />
 
       {rewardCreature && (
         <HatchRewardScreen

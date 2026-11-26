@@ -125,7 +125,7 @@ function RewardCard({
       {revealed ? (
         <motion.div initial={{ rotateY: 90, scale: 0.6 }} animate={{ rotateY: 0, scale: 1 }} transition={popSpring}>
           <div style={{ fontSize: 38, marginBottom: 8, lineHeight: 1 }}>
-            <EmojiSprite id={reward.type} emoji={info.emoji} size={38} />
+            <EmojiSprite id={`item_${reward.type}`} emoji={info.emoji} size={38} />
           </div>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{info.title}</div>
           <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4, lineHeight: 1.3 }}>{info.sub}</div>

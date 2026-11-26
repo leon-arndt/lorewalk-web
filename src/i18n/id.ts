@@ -90,7 +90,10 @@ export const id: Translations = {
   creatures_empty_slot: 'Slot kosong',
   creatures_hatch_hint: '🌱 Tetaskan telur untuk mengisi slot pertamamu.',
   creatures_from: 'Dari: {name}',
-  creatures_release_confirm: 'Lepaskan {name}? Ini membebaskan slot tetapi makhluk akan hilang selamanya.',
+  creatures_release_title: 'Lepaskan {name}?',
+  creatures_release_body: 'Ini membebaskan slot, tetapi {name} akan hilang selamanya.',
+  creatures_release_yes: 'Lepaskan',
+  creatures_release_keep: 'Simpan {name}',
 
   squads_title: 'Regu',
   squads_subtitle: 'Bangun tim dari makhlukmu. Simpan regu aktif di rumah untuk meningkatkan check in 25% per anggota yang cocok, atau kirim regu dalam ekspedisi untuk mendapat hadiah.',

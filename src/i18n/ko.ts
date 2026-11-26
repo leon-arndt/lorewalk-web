@@ -90,7 +90,10 @@ export const ko: Translations = {
   creatures_empty_slot: '빈 슬롯',
   creatures_hatch_hint: '🌱 알을 부화시켜 첫 번째 슬롯을 채우세요.',
   creatures_from: '출신지: {name}',
-  creatures_release_confirm: '{name}을(를) 해제하시겠습니까? 슬롯이 비워지지만 생물은 영구적으로 사라집니다.',
+  creatures_release_title: '{name}을(를) 해제하시겠습니까?',
+  creatures_release_body: '슬롯이 비워지지만 {name}은(는) 영구적으로 사라집니다.',
+  creatures_release_yes: '해제',
+  creatures_release_keep: '{name} 유지',
 
   squads_title: '분대',
   squads_subtitle: '생물로 팀을 구성하세요. 활성 분대를 집에 두면 타입이 맞는 멤버마다 체크인이 25% 강화됩니다. 또는 분대를 탐험에 보내 보상을 받으세요.',

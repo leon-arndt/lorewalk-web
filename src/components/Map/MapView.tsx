@@ -25,6 +25,7 @@ function spriteEl(emoji: string, sizePx: number, key = emoji): HTMLElement {
   wrap.textContent = emoji
   wrap.style.cssText = `width:${sizePx}px;height:${sizePx}px;display:flex;align-items:center;justify-content:center;line-height:1;font-size:${sizePx}px;`
   getSpritePreviewURL(key).then((url) => {
+    if (!url) return
     wrap.textContent = ''
     const img = document.createElement('img')
     img.src = url

@@ -90,7 +90,10 @@ export const de: Translations = {
   creatures_empty_slot: 'Leerer Slot',
   creatures_hatch_hint: '🌱 Brüte ein Ei aus, um deinen ersten Slot zu füllen.',
   creatures_from: 'Von: {name}',
-  creatures_release_confirm: '{name} freilassen? Dies gibt einen Slot frei, aber das Wesen ist für immer weg.',
+  creatures_release_title: '{name} freilassen?',
+  creatures_release_body: 'Das gibt einen Slot frei, aber {name} ist für immer weg.',
+  creatures_release_yes: 'Freilassen',
+  creatures_release_keep: '{name} behalten',
 
   squads_title: 'Trupps',
   squads_subtitle: 'Stelle Teams aus deinen Wesen zusammen. Behalte den aktiven Trupp zuhause, um Einchecken um 25% pro passendem Mitglied zu boosten, oder schicke einen Trupp auf Expedition für eine Belohnung.',

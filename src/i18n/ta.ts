@@ -90,7 +90,10 @@ export const ta: Translations = {
   creatures_empty_slot: 'காலி இடம்',
   creatures_hatch_hint: '🌱 முதல் இடத்தை நிரப்ப ஒரு முட்டையை பொரிக்கவும்.',
   creatures_from: 'இடம்: {name}',
-  creatures_release_confirm: '{name}ஐ விடுவிக்கவா? இது ஒரு இடத்தை காலி செய்யும், ஆனால் உயிரினம் என்றும் போய்விடும்.',
+  creatures_release_title: '{name}ஐ விடுவிக்கவா?',
+  creatures_release_body: 'இது ஒரு இடத்தை காலி செய்யும், ஆனால் {name} என்றும் போய்விடும்.',
+  creatures_release_yes: 'விடுவி',
+  creatures_release_keep: '{name}ஐ வைத்திரு',
 
   squads_title: 'படைகள்',
   squads_subtitle: 'உங்கள் உயிரினங்களிலிருந்து குழுக்களை உருவாக்குங்கள். செயல் படையை வீட்டில் வைத்து ஒவ்வொரு பொருத்தமான உறுப்பினருக்கும் 25% சரிபார்ப்பு சிறப்பு பெறுங்கள்.',

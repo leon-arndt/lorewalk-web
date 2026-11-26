@@ -90,7 +90,10 @@ export const zh: Translations = {
   creatures_empty_slot: '空槽',
   creatures_hatch_hint: '🌱 孵化一颗蛋来填满第一个槽位。',
   creatures_from: '来自：{name}',
-  creatures_release_confirm: '释放 {name}？这将释放一个槽位，但生物将永久消失。',
+  creatures_release_title: '释放 {name}？',
+  creatures_release_body: '这将释放一个槽位，但 {name} 将永久消失。',
+  creatures_release_yes: '释放',
+  creatures_release_keep: '保留 {name}',
 
   squads_title: '小队',
   squads_subtitle: '用你的生物组建队伍。让激活的小队陪你在家，每位属性匹配的成员可为打卡提升25%加成；或将小队派去探险获得离开奖励。',

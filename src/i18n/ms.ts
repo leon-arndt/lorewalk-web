@@ -90,7 +90,10 @@ export const ms: Translations = {
   creatures_empty_slot: 'Slot kosong',
   creatures_hatch_hint: '🌱 Tetaskan telur untuk mengisi slot pertama anda.',
   creatures_from: 'Dari: {name}',
-  creatures_release_confirm: 'Lepaskan {name}? Ini membebaskan slot tetapi makhluk akan hilang selama-lamanya.',
+  creatures_release_title: 'Lepaskan {name}?',
+  creatures_release_body: 'Ini membebaskan slot, tetapi {name} akan hilang selama-lamanya.',
+  creatures_release_yes: 'Lepaskan',
+  creatures_release_keep: 'Simpan {name}',
 
   squads_title: 'Pasukan',
   squads_subtitle: 'Bina pasukan dari makhluk anda. Simpan pasukan aktif di rumah untuk meningkatkan daftar masuk sebanyak 25% setiap ahli yang sepadan, atau hantar pasukan dalam ekspedisi untuk ganjaran.',
