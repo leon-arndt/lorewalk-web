@@ -301,6 +301,7 @@ export const de: Translations = {
   account_signed_in_as: 'Angemeldet als {email}',
   account_signed_in_google: 'Mit Google angemeldet',
   account_sign_out: 'Abmelden',
+  account_sign_out_guest_hint: 'Als Gast hast du kein Login zum Abmelden. Melde dich zuerst mit Google an.',
   account_sync_saving: 'Wird gespeichert…',
   account_sync_saved: 'Fortschritt gespeichert',
   account_sync_error: 'Cloud-Speicher nicht erreichbar. Dein Fortschritt bleibt auf diesem Gerät.',

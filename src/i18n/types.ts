@@ -299,6 +299,7 @@ export interface Translations {
   account_signed_in_as: string
   account_signed_in_google: string
   account_sign_out: string
+  account_sign_out_guest_hint: string
   account_sync_saving: string
   account_sync_saved: string
   account_sync_error: string

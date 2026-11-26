@@ -301,6 +301,7 @@ export const ja: Translations = {
   account_signed_in_as: '{email} でサインイン中',
   account_signed_in_google: 'Googleでサインイン中',
   account_sign_out: 'サインアウト',
+  account_sign_out_guest_hint: 'ゲストにはサインアウトするログインがありません。先にGoogleでサインインしてください。',
   account_sync_saving: '保存中…',
   account_sync_saved: '進行状況を保存しました',
   account_sync_error: 'クラウドセーブに接続できません。進行状況はこの端末に残ります。',

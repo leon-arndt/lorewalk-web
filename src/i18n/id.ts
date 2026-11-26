@@ -301,6 +301,7 @@ export const id: Translations = {
   account_signed_in_as: 'Masuk sebagai {email}',
   account_signed_in_google: 'Masuk dengan Google',
   account_sign_out: 'Keluar',
+  account_sign_out_guest_hint: 'Tamu tidak punya login untuk keluar. Masuk dengan Google dulu.',
   account_sync_saving: 'Menyimpan…',
   account_sync_saved: 'Progres tersimpan',
   account_sync_error: 'Simpanan cloud tidak bisa dijangkau. Progresmu tetap ada di perangkat ini.',

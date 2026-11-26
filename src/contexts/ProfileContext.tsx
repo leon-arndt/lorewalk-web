@@ -185,10 +185,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // user itself (the delete_account RPC). Only after that succeeds does the
   // device wipe its own copy and restart as a new guest. Resolves false, with
   // nothing changed, when the server call fails.
+  // Offline mode keeps no live account, but the stored session still works. A
+  // guest_ profile never reached the server, so only the device copy goes.
   const deleteAccount = useCallback(async (): Promise<boolean> => {
     // An upload that lands after the delete would fail, but stop it anyway.
     cloudEngine.setUser(null)
-    const { error } = await supabase.rpc('delete_account')
+    const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }))
+    const onServer = !!session || !profile.id.startsWith('guest_')
+    const { error } = onServer
+      ? await supabase.rpc('delete_account')
+      : { error: null }
     if (error) {
       console.warn('delete_account failed', error.message)
       cloudEngine.setUser(cloudUserId)
@@ -199,7 +205,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut({ scope: 'local' }).catch(() => { /* the session is dead either way */ })
     window.location.reload()
     return true
-  }, [cloudEngine, cloudUserId])
+  }, [cloudEngine, cloudUserId, profile.id])
 
   // Server-verified entitlement sync. premium_entitlements is written only by
   // the revenuecat-webhook Edge Function after a real Google Play purchase -

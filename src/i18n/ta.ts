@@ -301,6 +301,7 @@ export const ta: Translations = {
   account_signed_in_as: '{email} ஆக உள்நுழைந்துள்ளீர்கள்',
   account_signed_in_google: 'Google மூலம் உள்நுழைந்துள்ளீர்கள்',
   account_sign_out: 'வெளியேறு',
+  account_sign_out_guest_hint: 'விருந்தினருக்கு வெளியேற உள்நுழைவு இல்லை. முதலில் Google மூலம் உள்நுழையவும்.',
   account_sync_saving: 'சேமிக்கிறது…',
   account_sync_saved: 'முன்னேற்றம் சேமிக்கப்பட்டது',
   account_sync_error: 'கிளவுட் சேமிப்பை அணுக முடியவில்லை. உங்கள் முன்னேற்றம் இந்தச் சாதனத்தில் இருக்கும்.',

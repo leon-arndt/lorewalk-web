@@ -301,6 +301,7 @@ export const en: Translations = {
   account_signed_in_as: 'Signed in as {email}',
   account_signed_in_google: 'Signed in with Google',
   account_sign_out: 'Sign out',
+  account_sign_out_guest_hint: 'A guest has no login to sign out of. Sign in with Google first.',
   account_sync_saving: 'Saving…',
   account_sync_saved: 'Progress saved',
   account_sync_error: 'Cloud save not reachable. Your progress stays on this device.',

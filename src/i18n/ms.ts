@@ -301,6 +301,7 @@ export const ms: Translations = {
   account_signed_in_as: 'Log masuk sebagai {email}',
   account_signed_in_google: 'Log masuk dengan Google',
   account_sign_out: 'Log keluar',
+  account_sign_out_guest_hint: 'Tetamu tiada log masuk untuk dilog keluar. Log masuk dengan Google dahulu.',
   account_sync_saving: 'Menyimpan…',
   account_sync_saved: 'Kemajuan disimpan',
   account_sync_error: 'Simpanan awan tidak dapat dicapai. Kemajuan anda kekal pada peranti ini.',

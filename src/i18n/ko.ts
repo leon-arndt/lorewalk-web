@@ -301,6 +301,7 @@ export const ko: Translations = {
   account_signed_in_as: '{email} 계정으로 로그인됨',
   account_signed_in_google: 'Google로 로그인됨',
   account_sign_out: '로그아웃',
+  account_sign_out_guest_hint: '게스트는 로그아웃할 로그인이 없습니다. 먼저 Google로 로그인하세요.',
   account_sync_saving: '저장 중…',
   account_sync_saved: '진행 상황이 저장되었습니다',
   account_sync_error: '클라우드 저장에 연결할 수 없습니다. 진행 상황은 이 기기에 남아 있습니다.',

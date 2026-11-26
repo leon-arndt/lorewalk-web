@@ -301,6 +301,7 @@ export const zh: Translations = {
   account_signed_in_as: '已登录：{email}',
   account_signed_in_google: '已使用 Google 登录',
   account_sign_out: '退出登录',
+  account_sign_out_guest_hint: '游客没有可退出的登录。请先使用 Google 登录。',
   account_sync_saving: '保存中…',
   account_sync_saved: '进度已保存',
   account_sync_error: '无法连接云存档。你的进度仍保留在此设备上。',

@@ -199,10 +199,10 @@ A guest profile lives on one device. A player who signs in with Google in Settin
 - **Automatic**: the app uploads a change a few seconds after the player makes it. It downloads a newer save when the player opens the app.
 - **Second device**: a device with no progress takes the cloud save without a question.
 - **Two saves**: when the device and the account each hold progress that the other lacks, the app asks the player which save to keep. It does not merge them, because a merge of two full profiles can duplicate creatures or coins. The player can put the choice off, and Settings then shows it again.
-- **Sign-out**: the profile stays on the device, so a failed upload loses nothing.
+- **Sign-out**: the profile stays on the device, so a failed upload loses nothing. Settings always shows the "Sign out" button. For a guest the button is off, with a hint to sign in with Google first, because a guest has no login to come back to.
 - **Steps**: each device counts its own steps, and the day's total is the sum across devices.
 - **Not in the cloud save**: the journal photos. They stay on the device.
-- **Delete account**: Settings has a "Delete account" button for every online player, guest or signed in. After one confirmation the server deletes the save, the friends, the public stats, the medal claims, and the account itself. The device then deletes its profile and its journal photos and starts again as a new guest. The player cannot undo this. A Premium subscription does not end with the account, so the dialog tells a subscriber to cancel it in Google Play first.
+- **Delete account**: Settings has a "Delete account" button for every player, guest or signed in, online or offline. After one confirmation the server deletes the save, the friends, the public stats, the medal claims, and the account itself. The device then deletes its profile and its journal photos and starts again as a new guest. The player cannot undo this. In offline mode the app uses the session that it stored before. A guest that never went online has no server rows, so only the device copy goes. A player who has server rows but no session gets an error, and nothing changes. A Premium subscription does not end with the account, so the dialog tells a subscriber to cancel it in Google Play first.
 
 ### Level system
 - Each POI check-in awards XP equal to `poi.points`, which is 5 to 10 XP.
