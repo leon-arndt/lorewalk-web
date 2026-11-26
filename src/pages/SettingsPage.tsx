@@ -7,6 +7,7 @@ import type { NotificationPrefKey } from '@/types'
 import { accent } from '@/lib/theme'
 import { glassPage } from '@/lib/glass'
 import { AccountSection } from '@/components/UI/AccountSection'
+import { ConnectionStatus } from '@/components/UI/ConnectionStatus'
 import { LanguageDropdown } from '@/components/UI/LanguageDropdown'
 
 const NOTIFICATION_PREFS: { key: NotificationPrefKey; titleKey: 'settings_daily_motivation' | 'settings_notif_party_walk' | 'settings_notif_challenges' | 'settings_notif_friends_gifts' | 'settings_notif_latest_news'; descKey: 'settings_daily_motivation_desc' | 'settings_notif_party_walk_desc' | 'settings_notif_challenges_desc' | 'settings_notif_friends_gifts_desc' | 'settings_notif_latest_news_desc' }[] = [
@@ -136,17 +137,20 @@ export function SettingsPage() {
           <div style={{
             background: 'white', borderRadius: 16, padding: '14px 16px',
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+            display: 'flex', flexDirection: 'column', gap: 10,
           }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
-                {t('settings_online_mode')}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
+                  {t('settings_online_mode')}
+                </div>
+                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                  {t('settings_online_mode_desc')}
+                </div>
               </div>
-              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-                {t('settings_online_mode_desc')}
-              </div>
+              <ToggleSwitch checked={mode === 'online'} onChange={() => setMode(mode === 'online' ? 'offline' : 'online')} />
             </div>
-            <ToggleSwitch checked={mode === 'online'} onChange={() => setMode(mode === 'online' ? 'offline' : 'online')} />
+            {mode === 'online' && <ConnectionStatus />}
           </div>
         </section>
 

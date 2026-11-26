@@ -70,6 +70,7 @@ export function useFriends(
   const [friendCode, setFriendCode] = useState<FriendCode | null>(null)
   const [friends, setFriends] = useState<Friend[]>([])
   const [loading, setLoading] = useState(true)
+  const [codeFailed, setCodeFailed] = useState(false)
 
   useEffect(() => {
     if (offline) {
@@ -121,11 +122,16 @@ export function useFriends(
     const { data, error } = await supabase.rpc('get_active_friend_code', { p_player_id: playerId })
 
     // A read failure is not "no code" - bailing avoids inserting a duplicate row.
-    if (error) return
+    if (error) {
+      console.warn('get_active_friend_code failed', error.message)
+      setCodeFailed(true)
+      return
+    }
     if (data?.[0]) {
       setFriendCode({ code: data[0].code, expiresAt: data[0].expires_at })
+      setCodeFailed(false)
     } else {
-      await insertCode()
+      setCodeFailed(!(await insertCode()))
     }
   }
 
@@ -142,6 +148,7 @@ export function useFriends(
         .insert({ player_id: playerId, display_name: displayName, code })
         .select('expires_at')
         .single()
+      if (error) console.warn('friend code insert failed', error.message)
       if (!error && data) {
         const fc = { code, expiresAt: data.expires_at }
         setFriendCode(fc)
@@ -188,17 +195,21 @@ export function useFriends(
     )
   }
 
-  const regenerate = useCallback(async () => {
+  // Resolves false when no new code came back, so the caller can say so.
+  const regenerate = useCallback(async (): Promise<boolean> => {
     if (offline) {
       setFriendCode({ code: makeCode(), expiresAt: new Date(Date.now() + TTL_MS).toISOString() })
-      return
+      return true
     }
+    if (!ready) return false
     // Insert first; only drop the old codes once the new one is live, so a failed
     // insert never leaves the user pointing at a deleted code.
     const fc = await insertCode()
-    if (!fc) return
+    setCodeFailed(!fc && !friendCode)
+    if (!fc) return false
     await supabase.from('friend_codes').delete().eq('player_id', playerId).neq('code', fc.code)
-  }, [playerId, displayName, offline])
+    return true
+  }, [playerId, displayName, offline, ready, friendCode])
 
   const addFriend = useCallback(
     async (raw: string): Promise<AddFriendResult> => {
@@ -240,5 +251,9 @@ export function useFriends(
     [playerId, displayName, offline, friendCode],
   )
 
-  return { friendCode, friends, loading, addFriend, regenerate }
+  // The code card explains a blank code: still waiting for a session, or the
+  // server refused.
+  const codeStatus: 'ok' | 'waiting' | 'failed' = offline || friendCode ? 'ok' : !ready ? 'waiting' : codeFailed ? 'failed' : 'ok'
+
+  return { friendCode, friends, loading, addFriend, regenerate, codeStatus }
 }

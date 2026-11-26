@@ -244,6 +244,14 @@ export interface Translations {
   streak_chest_card_sub: string
 
   food_expedition_complete_title: string
+  settings_conn_guest: string
+  settings_conn_google: string
+  settings_conn_connecting: string
+  settings_conn_failed: string
+  settings_conn_not_configured: string
+  settings_conn_retry: string
+  friends_code_waiting: string
+  friends_code_failed: string
   map_recenter: string
   map_reset_to_north: string
   shop_streak_freeze: string

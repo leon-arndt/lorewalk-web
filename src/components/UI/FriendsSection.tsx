@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import QRCode from 'qrcode'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useFriends, type Friend } from '@/hooks/useFriends'
 import { totalSteps as sumTotalSteps } from '@/lib/profile'
@@ -16,7 +17,8 @@ function formatAdded(iso: string): string {
 export function FriendsSection() {
   const { profile } = useProfile()
   const { t } = useLocale()
-  const { friendCode, friends, loading, addFriend, regenerate } = useFriends(
+  const { showToast } = useReward()
+  const { friendCode, friends, loading, addFriend, regenerate, codeStatus } = useFriends(
     profile.id,
     profile.displayName,
     profile.level,
@@ -72,6 +74,15 @@ export function FriendsSection() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const [regenerating, setRegenerating] = useState(false)
+
+  async function handleRegenerate() {
+    if (regenerating) return
+    setRegenerating(true)
+    if (!(await regenerate())) showToast(t('friends_code_failed'))
+    setRegenerating(false)
+  }
+
   function hoursLeft(iso: string): string {
     const h = Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 3_600_000))
     return h === 0 ? t('friends_refreshing_soon') : t('friends_refreshes_in', { h })
@@ -118,11 +129,17 @@ export function FriendsSection() {
               {friendCode?.code ?? '-'}
             </button>
             <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 5 }}>
-              {copied ? t('friends_copied') : (friendCode ? hoursLeft(friendCode.expiresAt) : '')}
+              {copied ? t('friends_copied')
+                : friendCode ? hoursLeft(friendCode.expiresAt)
+                : codeStatus === 'waiting' ? t('friends_code_waiting')
+                : codeStatus === 'failed' ? t('friends_code_failed')
+                : ''}
             </div>
             <button
-              onClick={regenerate}
+              onClick={() => void handleRegenerate()}
+              disabled={regenerating}
               style={{
+                opacity: regenerating ? 0.6 : 1,
                 marginTop: 8, width: '100%', fontSize: 12, fontWeight: 600,
                 color: accent, background: 'none',
                 border: '1px solid #d1fae5', borderRadius: 8,

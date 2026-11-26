@@ -37,5 +37,20 @@ export function useAccount(enabled: boolean): Account | null {
     }
   }, [enabled])
 
+  // A failed sign-in does not retry by itself: the dashboard setting may have
+  // been off, or the network down. Try again until a session exists.
+  useEffect(() => {
+    if (!enabled || account) return
+    const retry = () => { if (document.visibilityState === 'visible') void ensureSession() }
+    const timer = setInterval(retry, 15_000)
+    window.addEventListener('online', retry)
+    document.addEventListener('visibilitychange', retry)
+    return () => {
+      clearInterval(timer)
+      window.removeEventListener('online', retry)
+      document.removeEventListener('visibilitychange', retry)
+    }
+  }, [enabled, account])
+
   return account
 }
