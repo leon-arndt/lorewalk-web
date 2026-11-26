@@ -15,6 +15,9 @@ const MIN_MOVE_M = 5
 const MAX_ACCURACY_M = 35
 const MAX_JUMP_M = 250
 
+// Above 20 km/h the player rides a bus, a train, or a car. A run stays below it.
+export const MAX_WALK_SPEED_MS = 20 / 3.6
+
 const STORAGE_KEY = 'lorewalk.steps'
 
 interface StepState {
@@ -91,6 +94,12 @@ export function useStepCounter(position: PlayerPosition | null): StepState & { a
     const driftFloor = Math.max(MIN_MOVE_M, last.accuracy + position.accuracy)
     const d = haversineDistance(last.latitude, last.longitude, position.latitude, position.longitude)
     if (d < driftFloor || d > MAX_JUMP_M) return
+
+    // A leg in a vehicle counts nothing. The phone's own speed is the better
+    // reading. Without one, use the leg's distance over its time.
+    const dt = (position.timestamp - last.timestamp) / 1000
+    const speed = position.speed ?? (dt > 0 ? d / dt : Infinity)
+    if (speed > MAX_WALK_SPEED_MS) return
 
     const distanceM = base.distanceM + d
     const next = { steps: Math.round(distanceM / STRIDE_M), distanceM }

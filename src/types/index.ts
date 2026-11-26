@@ -66,6 +66,8 @@ export interface PlayerPosition {
   longitude: number
   accuracy: number
   timestamp: number
+  // Metres per second from the device, or null when it gives none.
+  speed?: number | null
 }
 
 export interface VisitRecord {

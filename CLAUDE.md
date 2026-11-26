@@ -55,7 +55,7 @@ All figures use **SGD**. Singapore is the first market. Lorewalk sources medals 
 
 One sentence: **walk to real places, collect and hatch creatures, build typed squads, deploy them to boost or claim places, and grow your collection and holdings.**
 
-1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. Steps hatch eggs and count toward the monthly Premium medal.
+1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. A stretch faster than 20 km/h is a vehicle and counts no steps (`MAX_WALK_SPEED_MS` in `useStepCounter.ts`). Steps hatch eggs and count toward the monthly Premium medal.
 2. **Check in** at the landmark, within 50 m. The player earns XP and an egg.
 3. **Visit more landmarks.** Eggs hatch into **typed** creatures, where the type matches the POI category: Heritage, Nature, Arts, and so on. The player gains XP and levels up.
 4. **Build a squad** from the collection. There are 3 squads of 4 slots each. Type matters.

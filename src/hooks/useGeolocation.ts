@@ -35,6 +35,7 @@ export function useGeolocation(): GeolocationState {
             longitude: pos.coords.longitude,
             accuracy: pos.coords.accuracy,
             timestamp: pos.timestamp,
+            speed: pos.coords.speed,
           },
           error: null,
           loading: false,
