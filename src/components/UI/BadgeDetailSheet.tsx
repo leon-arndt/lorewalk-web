@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import { glassSheet } from '@/lib/glass'
 import { motion } from 'motion/react'
@@ -13,7 +14,7 @@ interface Props {
 }
 
 export function BadgeDetailSheet({ icon, name, description, status, statusColor, onClose }: Props) {
-  return (
+  return createPortal(
     <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
@@ -63,6 +64,7 @@ export function BadgeDetailSheet({ icon, name, description, status, statusColor,
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }

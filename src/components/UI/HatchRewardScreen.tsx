@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { HatchedCreature } from '@/types'
@@ -18,7 +19,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
     setEditing(false)
   }
 
-  return (
+  return createPortal(
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} style={{
       position: 'fixed', inset: 0, zIndex: 200,
       background: creature.isShiny ? 'rgba(30,20,0,0.95)' : 'rgba(10,8,30,0.93)',
@@ -99,6 +100,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
       >
         Continue
       </button>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }

@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -18,7 +19,7 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
     setBusy(false)
   }
 
-  return (
+  return createPortal(
     <div
       role="alertdialog"
       aria-modal="true"
@@ -65,6 +66,7 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
           {t('account_delete_cancel')}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

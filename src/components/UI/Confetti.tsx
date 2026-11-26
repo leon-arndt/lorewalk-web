@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useState, type CSSProperties } from 'react'
 
 interface ConfettiProps {
@@ -39,7 +40,7 @@ export function Confetti({ onDone, count = 24 }: ConfettiProps) {
     return () => clearTimeout(t)
   }, [onDone])
 
-  return (
+  return createPortal(
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 9999 }}>
       {pieces.map((p) => (
         <span
@@ -64,6 +65,7 @@ export function Confetti({ onDone, count = 24 }: ConfettiProps) {
           100% { transform: translate(var(--drift), 110vh) rotate(var(--rotate)); opacity: 0; }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body,
   )
 }

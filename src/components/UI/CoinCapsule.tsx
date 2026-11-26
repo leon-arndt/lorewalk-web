@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { ShopPage } from '@/pages/ShopPage'
@@ -33,6 +34,7 @@ export function CoinCapsule() {
         <EmojiSprite id="item_coins" emoji="🪙" size={18} /> <CountBump value={profile.coins.toLocaleString()} />
       </button>
 
+      {createPortal(
       <AnimatePresence>
       {open && (
         <>
@@ -82,7 +84,9 @@ export function CoinCapsule() {
           </motion.div>
         </>
       )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body,
+      )}
     </>
   )
 }

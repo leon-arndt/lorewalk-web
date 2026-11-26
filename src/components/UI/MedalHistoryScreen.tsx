@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -24,7 +25,7 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
   const byMonthKey = new Map(medals.map((m) => [m.monthKey, m]))
   const nowKey = currentMonthKey()
 
-  return (
+  return createPortal(
     <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
@@ -84,6 +85,7 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
           ))}
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }

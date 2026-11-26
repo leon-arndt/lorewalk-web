@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -671,7 +672,7 @@ export function ProfilePage() {
         )}
       </div>
 
-      {showChallengeInfo && (
+      {showChallengeInfo && createPortal(
         <div
           onClick={() => setShowChallengeInfo(false)}
           style={{
@@ -708,7 +709,8 @@ export function ProfilePage() {
               Got it
             </button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {showMedalHistory && (

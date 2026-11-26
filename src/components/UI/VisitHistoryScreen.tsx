@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { VisitHistoryItem } from '@/components/UI/VisitHistoryItem'
@@ -17,7 +18,7 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
   const { t } = useLocale()
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
-  return (
+  return createPortal(
     <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
@@ -68,6 +69,7 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
           )}
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }

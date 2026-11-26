@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { UUID_RE } from '@/lib/supabase'
 import { useEffect, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
@@ -124,7 +125,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const isManaging = profile.isPremium
   const currentPlan = profile.premiumInterval ? PLANS[profile.premiumInterval] : PLANS.monthly
 
-  return (
+  return createPortal(
     <motion.div {...backdropIn('rgba(15,23,42,0.55)')}
       onClick={onClose}
       data-sfx="close"
@@ -319,6 +320,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
           )}
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }

@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import type { Friend } from '@/hooks/useFriends'
 import { friendAchievementList, type FriendAchievement } from '@/lib/profile'
@@ -26,7 +27,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
   const unlocked = achievements.filter((a) => a.unlocked)
   const locked = achievements.filter((a) => !a.unlocked)
 
-  return (
+  return createPortal(
     <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
@@ -156,6 +157,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
           onClose={() => setBadge(null)}
         />
       )}
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }

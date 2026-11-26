@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { getFoodDef } from '@/data/foods'
 import { getCreaturePreviewURL, getCreatureSpinFrames } from '@/lib/creaturePreview'
@@ -286,7 +287,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
     setTimeout(() => setNomming(false), 600)
   }
 
-  return (
+  return createPortal(
     <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
       onClick={onClose}
       data-sfx="close"
@@ -398,7 +399,8 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
 
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }
 
