@@ -6,7 +6,7 @@
 - **postcards**: a Pikmin Bloom-style keepsake per visited POI. The types and the context methods (`sendPostcard`, `openPostcard`, `seedMockPostcard`) exist, and so does the `PostcardsSection` component. The send flow plays a paper-plane animation (`PoiDetailPanel.tsx`, plus the `postcardPlaneOut` keyframe in `index.css`). Journal integration remains unbuilt.
 - **security hardening**: the client side exists, and the migration is in the `lorewalk` Supabase project since 2026-11-24. `supabase/migrations/20261115000000_auth_rls.sql` holds the policies, and the "Auth and row-level security" section of CLAUDE.md explains them. A read-only check confirmed the tables, the policies, and the function grants. Nobody has called the functions with a real session yet.
   - Remaining steps, in order:
-    1. Turn on "Allow anonymous sign-ins" in the Supabase dashboard.
+    1. Done (2026-11-26): "Allow anonymous sign-ins" is on in the Supabase dashboard.
     2. Done: `npx supabase db push --remote` applied all 7 migrations to the empty project.
     3. Test online mode on two devices: add a friend by code, open the friend's profile card, and claim a medal with an active entitlement.
   - Still open from the audit: `permanent_pois` and `temporary_pois` do not exist in the project yet, and they need a read policy for everyone when they do (the `ensure_rls` trigger turns RLS on, and `get_pois_near` then returns no rows without a policy), the RevenueCat webhook does not check the order of events, `vercel.json` sets no security headers, and the server does not verify steps or check-ins.
