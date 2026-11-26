@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react'
 import { getCreaturePreviewURL } from '@/lib/creaturePreview'
+import { LoadingDot } from '@/components/UI/LoadingDot'
 
 const TYPE_STYLE: Record<string, { bg: string; border: string }> = {
   stray:     { bg: '#f0f4ff', border: '#c7d2fe' },
@@ -24,15 +25,18 @@ export const CreaturePreview = memo(function CreaturePreview({
   isShiny?: boolean
   size?: number
 }) {
-  const [src, setSrc] = useState<string | null>(null)
+  const [result, setResult] = useState<{ key: string; url: string | null } | null>(null)
+  const key = `${species}|${!!isShiny}`
   const style = isShiny ? SHINY_STYLE : (TYPE_STYLE[creatureType ?? ''] ?? { bg: '#f1f5f9', border: '#e2e8f0' })
 
   useEffect(() => {
     let cancelled = false
-    setSrc(null)
-    getCreaturePreviewURL(species, isShiny).then((url) => { if (!cancelled) setSrc(url) })
+    getCreaturePreviewURL(species, isShiny)
+      .catch(() => null)
+      .then((url) => { if (!cancelled) setResult({ key, url }) })
     return () => { cancelled = true }
-  }, [species, isShiny])
+  }, [species, isShiny]) // eslint-disable-line react-hooks/exhaustive-deps
+  const src = result?.key === key ? result.url : undefined
 
   return (
     <div style={{
@@ -43,7 +47,7 @@ export const CreaturePreview = memo(function CreaturePreview({
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>
-      {src
+      {src === undefined ? <LoadingDot size={Math.round(size * 0.6)} /> : src
         ? <img src={src} width={Math.round(size * 0.86)} height={Math.round(size * 0.86)} alt={species} style={{ display: 'block' }} />
         : <span style={{ fontSize: Math.round(size * 0.52), lineHeight: 1 }}>{emoji}</span>}
     </div>

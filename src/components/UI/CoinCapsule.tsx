@@ -4,6 +4,7 @@ import { ShopPage } from '@/pages/ShopPage'
 import { glassPanel } from '@/lib/glass'
 import { AnimatePresence, motion } from 'motion/react'
 import { CountBump } from '@/components/UI/CountBump'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { sheetIn, tapScale } from '@/lib/motion'
 
 export function CoinCapsule() {
@@ -29,7 +30,7 @@ export function CoinCapsule() {
           WebkitTapHighlightColor: 'transparent',
         }}
       >
-        🪙 <CountBump value={profile.coins.toLocaleString()} />
+        <EmojiSprite id="item_coins" emoji="🪙" size={18} /> <CountBump value={profile.coins.toLocaleString()} />
       </motion.button>
 
       <AnimatePresence>

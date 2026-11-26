@@ -22,10 +22,14 @@ import { SINGAPORE_BOUNDARY } from '@/data/singapore-boundary'
 // emoji-fallback-then-3D-swap pattern for that imperative context.
 function spriteEl(emoji: string, sizePx: number, key = emoji): HTMLElement {
   const wrap = document.createElement('div')
-  wrap.textContent = emoji
   wrap.style.cssText = `width:${sizePx}px;height:${sizePx}px;display:flex;align-items:center;justify-content:center;line-height:1;font-size:${sizePx}px;`
-  getSpritePreviewURL(key).then((url) => {
-    if (!url) return
+  // A pulsing dot while the render loads. The emoji only if there is none.
+  const dot = document.createElement('span')
+  dot.className = 'animate-pulse'
+  dot.style.cssText = 'display:block;width:70%;height:70%;border-radius:50%;background:radial-gradient(circle,rgba(148,163,184,0.4) 0%,rgba(148,163,184,0) 70%);'
+  wrap.appendChild(dot)
+  getSpritePreviewURL(key).catch(() => null).then((url) => {
+    if (!url) { wrap.textContent = emoji; return }
     wrap.textContent = ''
     const img = document.createElement('img')
     img.src = url
@@ -104,7 +108,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   inner.appendChild(spriteEl(node.emoji, 22, `food_${node.foodId}`))
   if (state === 'ready') {
     const badge = document.createElement('div')
-    badge.textContent = '🎁'
+    badge.appendChild(spriteEl('🎁', 16, 'item_chest'))
     badge.style.cssText = `
       position:absolute;top:-8px;right:-8px;font-size:14px;
       background:white;border-radius:50%;width:20px;height:20px;
@@ -232,7 +236,7 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
 
   if (squad.ready) {
     const badge = document.createElement('div')
-    badge.textContent = '🎁'
+    badge.appendChild(spriteEl('🎁', 16, 'item_chest'))
     badge.style.cssText = `
       position:absolute;top:-8px;right:-8px;font-size:14px;
       background:white;border-radius:50%;width:20px;height:20px;

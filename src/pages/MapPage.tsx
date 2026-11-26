@@ -14,6 +14,7 @@ import { useReward } from '@/contexts/RewardContext'
 import { StepCounter } from '@/components/UI/StepCounter'
 import { LevelCapsule } from '@/components/UI/LevelCapsule'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
 import { usePois } from '@/hooks/usePois'
 import { useNews, unreadCount } from '@/hooks/useNews'
@@ -500,7 +501,7 @@ export function MapPage() {
           zIndex: 8,
         }}
       >
-        <span style={{ fontSize: 18 }}>🚶</span>
+        <EmojiSprite id="item_sneaker" emoji="🚶" size={22} />
         <span>{t('weekly_walk_button')}</span>
         {profile.tickets > 0 && !profile.weeklyWalk && (
           <span style={{

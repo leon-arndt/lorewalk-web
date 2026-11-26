@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { getFoodDef } from '@/data/foods'
 import { getCreaturePreviewURL, getCreatureSpinFrames } from '@/lib/creaturePreview'
+import { LoadingDot } from '@/components/UI/LoadingDot'
 import { creatureName, xpForCreatureLevel } from '@/lib/profile'
 import { creatureDefBySpecies } from '@/data/creatures'
 import type { FoodItem, HatchedCreature } from '@/types'
@@ -37,10 +38,13 @@ function CreatureScene({ creature, size, nomming, highlight }: {
   const shadowH = large ? 14 : 7
   const typeColor = categoryCss(creature.poiCategory)
 
-  const [src, setSrc] = useState<string | null>(null)
+  // undefined while the render loads, null when it failed.
+  const [src, setSrc] = useState<string | null | undefined>(undefined)
   useEffect(() => {
     let cancelled = false
-    getCreaturePreviewURL(creature.species, creature.isShiny).then((url) => { if (!cancelled) setSrc(url) })
+    getCreaturePreviewURL(creature.species, creature.isShiny)
+      .catch(() => null)
+      .then((url) => { if (!cancelled) setSrc(url) })
     return () => { cancelled = true }
   }, [creature.species, creature.isShiny])
 
@@ -92,7 +96,7 @@ function CreatureScene({ creature, size, nomming, highlight }: {
   const shown = spinSrc ?? src
   const figure = shown
     ? <img src={shown} width={emojiSize} height={emojiSize} alt={creature.species} style={{ display: 'block' }} />
-    : creature.emoji
+    : shown === undefined ? <LoadingDot size={Math.round(emojiSize * 0.7)} /> : creature.emoji
 
   return (
     <div

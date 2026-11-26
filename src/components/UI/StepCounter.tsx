@@ -1,3 +1,4 @@
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useEffect, useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { glassChrome } from '@/lib/glass'
@@ -81,7 +82,7 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
             background: 'rgba(255,255,255,0.7)',
           }}
         >
-          👟
+          <EmojiSprite id="item_sneaker" emoji="👟" size={Math.round(iconSize * 0.72)} />
         </div>
       </StepRing>
       <div style={{ lineHeight: 1.1, textAlign: 'center' }}>

@@ -9,6 +9,12 @@ import type { RewardItem, RewardItemType } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { accent, rewardGradient } from '@/lib/theme'
 
+// Header emojis that have a 3D icon, for callers that pass no spriteId.
+const HEADER_SPRITES: Record<string, string> = {
+  '🎁': 'item_chest', '🧭': 'item_compass', '📍': 'item_pin', '🎉': 'item_trophy',
+  '🏅': 'item_badge', '⛩️': 'item_shrine', '🪙': 'item_coins', '⭐': 'item_xp', '🥚': 'item_egg',
+}
+
 const ITEM_META: Record<RewardItemType, { icon: string; color: string }> = {
   xp:       { icon: '⭐', color: '#f59e0b' },
   coins:    { icon: '🪙', color: '#b45309' },
@@ -125,7 +131,7 @@ export function RewardScreen() {
         }}>
           {medalConfig
             ? <MedalSvg config={medalConfig} size={140} />
-            : <EmojiSprite id={spriteId ?? emoji} emoji={emoji} size={72} />
+            : <EmojiSprite id={spriteId ?? HEADER_SPRITES[emoji] ?? emoji} emoji={emoji} size={72} />
           }
         </div>
 

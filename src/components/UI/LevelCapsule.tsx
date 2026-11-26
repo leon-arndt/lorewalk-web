@@ -1,3 +1,4 @@
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { glassChrome } from '@/lib/glass'
@@ -24,7 +25,7 @@ export function LevelCapsule({ level }: { level: number }) {
         WebkitTapHighlightColor: 'transparent',
       }}
     >
-      ⭐ <CountBump value={t('level_badge', { level })} />
+      <EmojiSprite id="item_xp" emoji="⭐" size={18} /> <CountBump value={t('level_badge', { level })} />
     </motion.button>
   )
 }

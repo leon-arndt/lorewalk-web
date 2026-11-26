@@ -8,6 +8,8 @@ import {
 } from '@/lib/profile'
 import { glassPanel, glassChrome } from '@/lib/glass'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
+import { deterministicAppearance } from '@/data/cosmetics'
 import { accent, rewardGradient } from '@/lib/theme'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
@@ -136,7 +138,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <EmojiSprite id="weekly_walk" emoji="🚶" size={40} />
+          <EmojiSprite id="item_sneaker" emoji="🚶" size={40} />
           <div>
             <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_party_walk_title')}</h2>
             <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Combined goal: {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps</p>
@@ -170,7 +172,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 16,
                   }}>
-                    <EmojiSprite id={m.id} emoji={m.emoji} size={22} />
+                    <PlayerFaceIcon appearance={m.isPlayer ? profile.appearance : deterministicAppearance(m.name)} size={30} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -253,7 +255,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
       {/* Title */}
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
         <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}>
-          <EmojiSprite id="weekly_walk" emoji="🚶" size={52} />
+          <EmojiSprite id="item_sneaker" emoji="🚶" size={52} />
         </div>
         <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: accent }}>{t('weekly_party_walk_title')}</h2>
         <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
@@ -272,10 +274,10 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {[
-            { icon: '⭐', text: '+75 XP' },
-            { icon: '🪙', text: '80-120 coins' },
-            { icon: '🥚', text: t('weekly_rare_egg') },
-            { icon: '🏅', text: t('weekly_walker_badge') },
+            { icon: '⭐', sprite: 'item_xp', text: '+75 XP' },
+            { icon: '🪙', sprite: 'item_coins', text: '80-120 coins' },
+            { icon: '🥚', sprite: 'item_egg', text: t('weekly_rare_egg') },
+            { icon: '🏅', sprite: 'item_badge', text: t('weekly_walker_badge') },
           ].map((r) => (
             <div key={r.text} style={{
               display: 'flex', alignItems: 'center', gap: 5,
@@ -283,7 +285,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
               fontSize: 12, fontWeight: 600, color: '#475569',
               boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             }}>
-              {r.icon} {r.text}
+              <EmojiSprite id={r.sprite} emoji={r.icon} size={18} /> {r.text}
             </div>
           ))}
         </div>

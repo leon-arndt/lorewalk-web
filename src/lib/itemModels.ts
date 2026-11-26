@@ -42,6 +42,24 @@ function coin(THREE: Three, g: Group) {
 const BUILDERS: Record<string, (THREE: Three, g: Group) => void> = {
   coins: coin,
 
+  // A compass rose: the expedition reward.
+  compass(THREE, g) {
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.14, 40), mat(THREE, 0xb45309))
+    const face = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.15, 40), mat(THREE, 0xf8fafc, 0.5, 0))
+    const north = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.36, 4), mat(THREE, 0xef4444, 0.4, 0))
+    north.rotation.x = -Math.PI / 2
+    north.position.set(0, 0.1, -0.17)
+    const south = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.36, 4), mat(THREE, 0x334155, 0.4, 0))
+    south.rotation.x = Math.PI / 2
+    south.position.set(0, 0.1, 0.17)
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.06, 12), mat(THREE, 0xfbbf24))
+    hub.position.y = 0.12
+    const loop = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.03, 8, 16), mat(THREE, 0xb45309))
+    loop.position.z = -0.56
+    loop.rotation.x = Math.PI / 2
+    g.add(body, face, north, south, hub, loop)
+  },
+
   xp(THREE, g) {
     const star = extrude(THREE, starShape(THREE, 5, 0.5, 0.22), 0.14, 0xfbbf24)
     star.rotation.x = -Math.PI / 2
@@ -84,6 +102,87 @@ const BUILDERS: Record<string, (THREE: Three, g: Group) => void> = {
 
 // These stand upright and face +z already, so buildItemModel does not tilt them.
 const UPRIGHT: Record<string, (THREE: Three, g: Group) => void> = {
+  // A gift box: the reward chest and the "ready to collect" badge.
+  chest(THREE, g) {
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.62, 0.9), mat(THREE, 0x16a34a, 0.5, 0))
+    box.position.y = 0.31
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.2, 1.0), mat(THREE, 0x15803d, 0.5, 0))
+    lid.position.y = 0.72
+    const gold = mat(THREE, 0xfbbf24)
+    const ribbonA = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.86, 1.02), gold)
+    ribbonA.position.y = 0.43
+    const ribbonB = new THREE.Mesh(new THREE.BoxGeometry(1.02, 0.86, 0.16), gold)
+    ribbonB.position.y = 0.43
+    g.add(box, lid, ribbonA, ribbonB)
+    for (const side of [-1, 1]) {
+      const loop = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.05, 8, 16), gold)
+      loop.position.set(side * 0.15, 0.95, 0)
+      loop.rotation.set(0, Math.PI / 2, side * 0.6)
+      g.add(loop)
+    }
+  },
+
+  // A map pin with a white dot: the check-in reward.
+  pin(THREE, g) {
+    const red = mat(THREE, 0xef4444, 0.4, 0.1)
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 24, 18), red)
+    head.position.y = 1.05
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.36, 0.8, 24), red)
+    tip.position.y = 0.55
+    tip.rotation.x = Math.PI
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), mat(THREE, 0xffffff, 0.4, 0))
+    dot.position.set(0, 1.08, 0.33)
+    const shadow = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.03, 24), mat(THREE, 0x94a3b8, 0.8, 0))
+    g.add(head, tip, dot, shadow)
+  },
+
+  // A sneaker seen from the side, toe to +x: steps and the weekly walk.
+  sneaker(THREE, g) {
+    const blue = mat(THREE, 0x2563eb, 0.5, 0)
+    const white = mat(THREE, 0xf8fafc, 0.6, 0)
+    const sole = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.14, 0.5), white)
+    sole.position.y = 0.07
+    const toe = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.14, 20, 1, false, 0, Math.PI), white)
+    toe.position.set(0.62, 0.07, 0)
+    const upper = new THREE.Mesh(new THREE.SphereGeometry(0.42, 22, 14, 0, Math.PI * 2, 0, Math.PI / 2), blue)
+    upper.scale.set(1.45, 0.85, 0.6)
+    upper.position.set(0.05, 0.13, 0)
+    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.25, 0.34, 18), blue)
+    collar.position.set(-0.34, 0.38, 0)
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.07, 0.62), white)
+    stripe.position.set(0.02, 0.3, 0)
+    stripe.rotation.z = 0.35
+    g.add(sole, toe, upper, collar, stripe)
+    for (let i = 0; i < 3; i++) {
+      const lace = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.03, 0.3), white)
+      lace.position.set(0.1 + i * 0.12, 0.47 - i * 0.05, 0)
+      g.add(lace)
+    }
+  },
+
+  // A gold cup: a finished weekly walk.
+  trophy(THREE, g) {
+    const gold = mat(THREE, 0xfbbf24)
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.18, 0.6, 28, 1, true), gold)
+    cup.position.y = 0.95
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.04, 8, 28), gold)
+    rim.rotation.x = Math.PI / 2
+    rim.position.y = 1.25
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.35, 12), gold)
+    stem.position.y = 0.5
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.16, 28), mat(THREE, 0x92400e, 0.5, 0))
+    base.position.y = 0.26
+    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.42, 0.18, 28), mat(THREE, 0x78350f, 0.5, 0))
+    plinth.position.y = 0.09
+    g.add(cup, rim, stem, base, plinth)
+    // Full rings: the inner half hides inside the cup wall.
+    for (const side of [-1, 1]) {
+      const handle = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.035, 8, 20), gold)
+      handle.position.set(side * 0.44, 1.0, 0)
+      g.add(handle)
+    }
+  },
+
   shrine(THREE, g) {
     const red = mat(THREE, 0xdc2626, 0.5, 0)
     const black = mat(THREE, 0x1f2937, 0.6, 0)
