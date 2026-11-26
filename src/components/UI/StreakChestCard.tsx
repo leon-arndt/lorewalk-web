@@ -28,7 +28,7 @@ export function StreakChestCard() {
         { type: 'coins', amount: rewards.coins },
         { type: 'xp', amount: rewards.xp },
       ]
-      if (rewards.food) items.push({ type: 'food', label: rewards.food.name, emoji: rewards.food.emoji })
+      if (rewards.food) items.push({ type: 'food', label: rewards.food.name, emoji: rewards.food.emoji, spriteId: `food_${rewards.food.id}` })
       if (rewards.egg) items.push({ type: 'egg' })
       showReward({
         emoji: '🎁',

@@ -224,7 +224,7 @@ export interface ExpeditionCollectResult {
   xp: number
   coins: number
   egg: boolean
-  food: { name: string; emoji: string } | null
+  food: { id: string; name: string; emoji: string } | null
   levelUps: Array<{ species: string; newLevel: number }>
 }
 
@@ -250,7 +250,7 @@ export interface FoodNode {
 }
 
 export interface FoodCollectResult {
-  food: { name: string; emoji: string }
+  food: { id: string; name: string; emoji: string }
   levelUps: Array<{ species: string; newLevel: number }>
 }
 
@@ -312,10 +312,12 @@ export interface RewardItem {
   amount?: number
   label?: string            // for level_up: creature name; for badge/food: item name
   emoji?: string            // overrides the type's default icon (e.g. the specific food)
+  spriteId?: string         // key for the 3D icon, e.g. food_<id>. Defaults to the emoji
 }
 
 export interface RewardConfig {
   emoji: string
+  spriteId?: string
   title: string
   subtitle?: string
   items: RewardItem[]

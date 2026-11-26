@@ -98,7 +98,7 @@ export function MapPage() {
           ? 'idle'
           : Date.now() >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
         const travelers = n.expedition ? n.expedition.creatureIds.map((id) => byId.get(id)?.emoji ?? '🐾') : []
-        return { id: n.id, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state, travelers }
+        return { id: n.id, foodId: n.foodId, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state, travelers }
       })
     },
     [profile.foodNodes, profile.hatchedCreatures],
@@ -308,11 +308,12 @@ export function MapPage() {
     const result = collectFoodNode(selectedFoodNodeId)
     if (result) {
       const items: RewardItem[] = [
-        { type: 'food', label: result.food.name, emoji: result.food.emoji },
+        { type: 'food', label: result.food.name, emoji: result.food.emoji, spriteId: `food_${result.food.id}` },
       ]
       result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
       showReward({
         emoji: result.food.emoji,
+        spriteId: `food_${result.food.id}`,
         title: t('food_expedition_complete_title'),
         subtitle: t('food_expedition_complete_subtitle', { food: result.food.name }),
         items,

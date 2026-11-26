@@ -89,7 +89,7 @@ export function RewardScreen() {
   const { t } = useLocale()
   if (!pendingReward) return null
 
-  const { emoji, title, subtitle, items, medalMonthKey } = pendingReward
+  const { emoji, spriteId, title, subtitle, items, medalMonthKey } = pendingReward
   const medalConfig = medalMonthKey ? getMedalConfig(medalMonthKey) : null
 
   return (
@@ -125,7 +125,7 @@ export function RewardScreen() {
         }}>
           {medalConfig
             ? <MedalSvg config={medalConfig} size={140} />
-            : <EmojiSprite id={emoji} emoji={emoji} size={72} />
+            : <EmojiSprite id={spriteId ?? emoji} emoji={emoji} size={72} />
           }
         </div>
 
@@ -160,7 +160,7 @@ export function RewardScreen() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 20,
                   }}>
-                    <EmojiSprite id={item.emoji ?? item.type} emoji={item.emoji ?? meta.icon} size={22} />
+                    <EmojiSprite id={item.spriteId ?? item.emoji ?? item.type} emoji={item.emoji ?? meta.icon} size={22} />
                   </div>
                   <span style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textAlign: 'left' }}>
                     {itemLabel(item, t)}

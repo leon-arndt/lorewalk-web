@@ -1,8 +1,8 @@
 import { memo, useEffect, useState } from 'react'
-import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
+import { getSpritePreviewURL } from '@/lib/creaturePreview'
 
-// Generic emoji -> 3D swap-in for anything that isn't a creature (food, rewards,
-// party avatars): a hashed-colour cube until each gets a bespoke model.
+// Emoji -> 3D swap-in for anything that isn't a creature. An id of the form
+// food_<id> gets the dish model. Other ids still get a hashed-colour cube.
 export const EmojiSprite = memo(function EmojiSprite({ id, emoji, size = 32 }: {
   id: string
   emoji: string
@@ -12,7 +12,7 @@ export const EmojiSprite = memo(function EmojiSprite({ id, emoji, size = 32 }: {
 
   useEffect(() => {
     let cancelled = false
-    getPlaceholderPreviewURL(id).then((url) => { if (!cancelled) setSrc(url) })
+    getSpritePreviewURL(id).then((url) => { if (!cancelled) setSrc(url) })
     return () => { cancelled = true }
   }, [id])
 

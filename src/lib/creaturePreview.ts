@@ -261,3 +261,35 @@ export async function getPlaceholderPreviewURL(key: string): Promise<string> {
   return p
 }
 
+
+const foodCache = new Map<string, Promise<string>>()
+
+export function getFoodPreviewURL(foodId: string): Promise<string> {
+  let p = foodCache.get(foodId)
+  if (!p) {
+    p = (async () => {
+      await initRenderer()
+      const THREE = await import('three')
+      const { buildFoodModel, disposeFoodModel } = await import('@/lib/foodModels')
+      const model = buildFoodModel(THREE, foodId)
+      const sphere = new THREE.Box3().setFromObject(model).getBoundingSphere(new THREE.Sphere())
+      const dist = 0.82 * sphere.radius / Math.sin(THREE.MathUtils.degToRad(camera!.fov / 2))
+      const dir = new THREE.Vector3(0.25, 0.85, 1).normalize()
+      camera!.position.copy(sphere.center).addScaledVector(dir, dist)
+      camera!.lookAt(sphere.center)
+      scene!.add(model)
+      renderer!.render(scene!, camera!)
+      const dataURL = renderer!.domElement.toDataURL('image/png')
+      scene!.remove(model)
+      disposeFoodModel(model)
+      return dataURL
+    })()
+    foodCache.set(foodId, p)
+  }
+  return p
+}
+
+// Keys of the form food_<id> get the dish model. Everything else keeps the cube.
+export function getSpritePreviewURL(key: string): Promise<string> {
+  return key.startsWith('food_') ? getFoodPreviewURL(key.slice(5)) : getPlaceholderPreviewURL(key)
+}

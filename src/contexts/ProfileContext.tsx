@@ -581,7 +581,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const foodInventory = [...profile.foodInventory, makeFoodItem(node.foodId)]
     const foodNodes = profile.foodNodes.filter((n) => n.id !== nodeId)
     persist({ ...profile, hatchedCreatures, foodInventory, foodNodes })
-    return { food: { name: def.name, emoji: def.emoji }, levelUps }
+    return { food: { id: def.id, name: def.name, emoji: def.emoji }, levelUps }
   }
 
   function startExpedition(squadId: string, target: ExpeditionTarget, durationMs: number) {

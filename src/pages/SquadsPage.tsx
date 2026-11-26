@@ -72,7 +72,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
       { type: 'xp', amount: r.xp },
       { type: 'coins', amount: r.coins },
     ]
-    if (r.food) items.push({ type: 'food', label: r.food.name, emoji: r.food.emoji })
+    if (r.food) items.push({ type: 'food', label: r.food.name, emoji: r.food.emoji, spriteId: `food_${r.food.id}` })
     if (r.egg) items.push({ type: 'egg' })
     r.levelUps.forEach(({ species, newLevel }) => items.push({ type: 'level_up', amount: newLevel, label: species }))
     showReward({

@@ -12,7 +12,7 @@ import { addMapWeather } from '@/lib/mapWeather'
 import { startWeatherUpdates } from '@/lib/weather'
 import { setAmbienceOverride } from '@/lib/ambience'
 import { setMapPaused } from '@/lib/mapUtils'
-import { getPlaceholderPreviewURL } from '@/lib/creaturePreview'
+import { getSpritePreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
 import type { Poi, PlayerAppearance, PlayerPosition } from '@/types'
 import { accent, accentAlpha } from '@/lib/theme'
@@ -20,11 +20,11 @@ import { SINGAPORE_BOUNDARY } from '@/data/singapore-boundary'
 
 // Map markers are built with raw DOM (MapLibre, not React) - this mirrors EmojiSprite's
 // emoji-fallback-then-3D-swap pattern for that imperative context.
-function spriteEl(emoji: string, sizePx: number): HTMLElement {
+function spriteEl(emoji: string, sizePx: number, key = emoji): HTMLElement {
   const wrap = document.createElement('div')
   wrap.textContent = emoji
   wrap.style.cssText = `width:${sizePx}px;height:${sizePx}px;display:flex;align-items:center;justify-content:center;line-height:1;font-size:${sizePx}px;`
-  getPlaceholderPreviewURL(emoji).then((url) => {
+  getSpritePreviewURL(key).then((url) => {
     wrap.textContent = ''
     const img = document.createElement('img')
     img.src = url
@@ -38,6 +38,7 @@ function spriteEl(emoji: string, sizePx: number): HTMLElement {
 
 export interface FoodNodeMarker {
   id: string
+  foodId: string
   emoji: string
   name: string
   lat: number
@@ -93,7 +94,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
     box-shadow:0 2px 10px ${glow};
     opacity:${state === 'busy' ? '0.6' : '1'};
   `
-  inner.appendChild(spriteEl(node.emoji, 22))
+  inner.appendChild(spriteEl(node.emoji, 22, `food_${node.foodId}`))
   if (state === 'ready') {
     const badge = document.createElement('div')
     badge.textContent = '🎁'
