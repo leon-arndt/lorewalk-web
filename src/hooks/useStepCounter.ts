@@ -15,8 +15,10 @@ const MIN_MOVE_M = 5
 const MAX_ACCURACY_M = 35
 const MAX_JUMP_M = 250
 
-// Above 20 km/h the player rides a bus, a train, or a car. A run stays below it.
-export const MAX_WALK_SPEED_MS = 20 / 3.6
+// Above 15 km/h the player rides a bike, a bus, a train, or a car. A jog stays
+// below it. Pokemon GO stops counting at about 10.5 km/h, which also cuts out
+// a fast jog. GPS speed is noisy, so this keeps some room above a walk.
+export const MAX_WALK_SPEED_MS = 15 / 3.6
 
 const STORAGE_KEY = 'lorewalk.steps'
 
