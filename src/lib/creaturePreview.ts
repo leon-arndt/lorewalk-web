@@ -1,5 +1,5 @@
 // Shared offscreen WebGL renderer for egg + creature thumbnail generation.
-import { creatureDefBySpecies, type CatHat } from '@/data/creatures'
+import { creatureDefBySpecies, type CreatureDef } from '@/data/creatures'
 import { addCatHat, CAT_MODEL_URL, tintCat } from '@/lib/catModel'
 import { createPlayerAvatar } from '@/lib/playerAvatar'
 import type { PlayerAppearance } from '@/types'
@@ -99,17 +99,19 @@ function loadCatTemplate(): Promise<CatTemplate> {
   return catTemplatePromise
 }
 
-// Renders the tinted cat once per turntable angle (radians, about its own centre)
-// and returns one PNG data URL per angle. Angle 0 is the thumbnail pose.
-async function renderCreatureFrames(color: number, isShiny: boolean, angles: number[], hat?: CatHat): Promise<string[]> {
+// Renders the creature once per turntable angle (radians, about its own centre)
+// and returns one PNG data URL per angle. Angle 0 is the thumbnail pose. A
+// creature with a `body` is a critter model, every other one the tinted cat.
+async function renderCreatureFrames(def: CreatureDef, isShiny: boolean, angles: number[]): Promise<string[]> {
   await initRenderer()
   const THREE = await import('three')
+  if (def.body) return renderCritterFrames(THREE, def, isShiny, angles)
   const { clone: skeletonClone } = await import('three/examples/jsm/utils/SkeletonUtils.js')
   const template = await loadCatTemplate()
 
   const root = skeletonClone(template.scene) as import('three').Object3D
-  const clonedMaterials = tintCat(THREE, root, color, isShiny)
-  const hatParts = hat ? addCatHat(THREE, root, hat) : { materials: [], geometries: [] }
+  const clonedMaterials = tintCat(THREE, root, def.color, isShiny)
+  const hatParts = def.hat ? addCatHat(THREE, root, def.hat) : { materials: [], geometries: [] }
 
   // skeletonClone()'d objects need an explicit matrix update before their world-space
   // bounding box is meaningful - otherwise Box3 reads stale/identity bone matrices.
@@ -146,6 +148,32 @@ async function renderCreatureFrames(color: number, isShiny: boolean, angles: num
   return urls
 }
 
+async function renderCritterFrames(THREE: typeof import('three'), def: CreatureDef, isShiny: boolean, angles: number[]): Promise<string[]> {
+  const { buildAnimal, animateAnimal } = await import('@/lib/animalModels')
+  const { disposeModel } = await import('@/lib/foodModels')
+  const root = buildAnimal(THREE, def.body!, def.color, def.color2, isShiny)
+  animateAnimal(root, false, 0)
+  root.updateMatrixWorld(true)
+  const box = new THREE.Box3().setFromObject(root)
+  const center = box.getCenter(new THREE.Vector3())
+  const size = box.getSize(new THREE.Vector3())
+  root.position.sub(center)
+  const pivot = new THREE.Group()
+  pivot.add(root)
+  const dist = Math.max(size.x, size.y, size.z) * 1.35
+  camera!.position.set(dist * 0.75, dist * 0.45, dist * 0.95)
+  camera!.lookAt(0, 0, 0)
+  scene!.add(pivot)
+  const urls = angles.map((angle) => {
+    pivot.rotation.y = angle
+    renderer!.render(scene!, camera!)
+    return renderer!.domElement.toDataURL('image/png')
+  })
+  scene!.remove(pivot)
+  disposeModel(root as import('three').Group)
+  return urls
+}
+
 const creatureCache = new Map<string, string>()
 const creaturePending = new Map<string, Promise<string | null>>()
 
@@ -158,7 +186,7 @@ export async function getCreaturePreviewURL(species: string, isShiny = false): P
   if (creaturePending.has(key)) return creaturePending.get(key)!
 
   const p = (async () => {
-    const [dataURL] = await renderCreatureFrames(def.color, isShiny, [0], def.hat)
+    const [dataURL] = await renderCreatureFrames(def, isShiny, [0])
     creatureCache.set(key, dataURL)
     creaturePending.delete(key)
     return dataURL
@@ -180,7 +208,7 @@ export function getCreatureSpinFrames(species: string, isShiny = false): Promise
   const key = `${def.id}_${isShiny}`
   if (!spinCache.has(key)) {
     const angles = Array.from({ length: SPIN_FRAME_COUNT }, (_, i) => (i / SPIN_FRAME_COUNT) * Math.PI * 2)
-    spinCache.set(key, renderCreatureFrames(def.color, isShiny, angles, def.hat))
+    spinCache.set(key, renderCreatureFrames(def, isShiny, angles))
   }
   return spinCache.get(key)!
 }

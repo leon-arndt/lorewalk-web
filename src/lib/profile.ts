@@ -1,7 +1,7 @@
 import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PartyMember, PlayerProfile, Poi, Squad, SquadExpedition, ShrineNode, VisitRecord, WeeklyPartyWalk } from '@/types'
 import type { FoodDef } from '@/data/foods'
 import { randomFood } from '@/data/foods'
-import { drawCreature, rollEggTier } from '@/data/creatures'
+import { creatureDefBySpecies, drawCreature, rollEggTier } from '@/data/creatures'
 import { DEFAULT_APPEARANCE } from '@/data/cosmetics'
 export { rollEggTier }
 
@@ -538,14 +538,34 @@ const STORAGE_KEY = 'lorewalk_profile'
 // Fills in every field a save from an older build lacks. Both the local save
 // and a cloud save from another device go through this, because either one
 // can come from a build that is older than this one.
+
+// An older roster held species that no longer exist, such as the Stonewarden
+// statue and the Luminary. The app has no model for them, so they showed as a
+// bare emoji. Each becomes the Singapore critter of its POI category and keeps
+// its id, level, XP, nickname, and shine.
+const RETIRED_SPECIES_TO: Record<string, string> = {
+  heritage: 'Kampung Chicken',
+  museum: 'Kampung Chicken',
+  landmark: 'Asian Koel',
+  arts: 'Asian Koel',
+  religious: 'Speckled Koel',
+  nature: 'Cicada',
+}
+
+function migrateRetiredSpecies(c: HatchedCreature): HatchedCreature {
+  if (creatureDefBySpecies(c.species)) return c
+  const def = creatureDefBySpecies(RETIRED_SPECIES_TO[c.poiCategory] ?? 'Cicada')
+  if (!def) return c
+  return { ...c, species: def.species, emoji: def.emoji, creatureType: def.type }
+}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function normalizeProfile(parsed: any): PlayerProfile {
   const squads = parsed.squads ?? createEmptySquads()
   // Migrate bondLevel → level + xp for saves created before the level system.
   const hatchedCreatures = (parsed.hatchedCreatures ?? []).map((c: any) => {
-    if (c.level !== undefined) return c as HatchedCreature
+    if (c.level !== undefined) return migrateRetiredSpecies(c as HatchedCreature)
     const { bondLevel, ...rest } = c
-    return { ...rest, level: bondLevel ?? 1, xp: 0 } as HatchedCreature
+    return migrateRetiredSpecies({ ...rest, level: bondLevel ?? 1, xp: 0 } as HatchedCreature)
   })
   const eggs: Egg[] = (parsed.eggs ?? []).map((e: any) => {
     // Migrate pre-steps saves: rename visitsRequired/visitsProgress → steps fields
@@ -739,7 +759,7 @@ const MOCK_MEMBER_DURATION_MS = import.meta.env.DEV ? 120_000 : 5 * 24 * 3_600_0
 
 const MOCK_PARTY_POOL: Array<{ name: string; emoji: string }> = [
   { name: 'Aisha', emoji: '🌿' },
-  { name: 'Rajan', emoji: '🗿' },
+  { name: 'Rajan', emoji: '🐓' },
   { name: 'Wei Ling', emoji: '🧭' },
   { name: 'Priya', emoji: '🌸' },
 ]

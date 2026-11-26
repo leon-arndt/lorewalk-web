@@ -5,6 +5,7 @@ const TYPE_STYLE: Record<string, { bg: string; border: string }> = {
   stray:     { bg: '#f0f4ff', border: '#c7d2fe' },
   community: { bg: '#fff7ed', border: '#fed7aa' },
   wild:      { bg: '#f0fdf4', border: '#bbf7d0' },
+  critter:   { bg: '#fefce8', border: '#fde68a' },
   mythic:    { bg: '#fdf4ff', border: '#e9d5ff' },
 }
 

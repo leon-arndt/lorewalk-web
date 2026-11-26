@@ -35,6 +35,8 @@ function categoryColor(category?: string): number {
   return (category && categoryColors[category]) || 0x94a3b8
 }
 
+const AMBIENT_SPECIES = ['Kampung Chicken', 'Asian Koel', 'Cicada']
+
 function markerCreature(c?: HatchedCreature): MarkerCreature {
   return c ? { emoji: c.emoji, key: creatureSpriteKey(c.species, c.isShiny) } : { emoji: '🐾', key: '' }
 }
@@ -84,16 +86,24 @@ export function MapPage() {
       .filter((id) => !busyCreatureIds.has(id))
       .map((id) => {
         const c = byId.get(id)
+        const def = c && creatureDefBySpecies(c.species)
         return {
           id,
-          color: (c && creatureDefBySpecies(c.species)?.color) ?? categoryColor(c?.poiCategory),
+          color: def?.color ?? categoryColor(c?.poiCategory),
           category: c?.poiCategory,
           shiny: c?.isShiny,
-          hat: c && creatureDefBySpecies(c.species)?.hat,
+          hat: def?.hat,
+          body: def?.body,
+          color2: def?.color2,
         }
       })
     if (members.length > 0) return members
-    return [0, 1, 2].map((i) => ({ id: `ambient-${i}`, color: 0x94a3b8, category: undefined }))
+    // The ambient wanderers are the neighbourhood regulars: a kampung chicken,
+    // a koel, and a cicada.
+    return AMBIENT_SPECIES.map((species, i) => {
+      const def = creatureDefBySpecies(species)!
+      return { id: `ambient-${i}`, color: def.color, color2: def.color2, body: def.body }
+    })
   }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures, busyCreatureIds])
 
   const foodNodeMarkers = useMemo(

@@ -16,8 +16,8 @@ const READY_EGG = {
 
 const TEST_CREATURE = {
   id: 'creature-1',
-  species: 'Stone Sprite',
-  emoji: '🗿',
+  species: 'Kampung Chicken',
+  emoji: '🐔',
   creatureType: 'heritage',
   poiOriginId: 'poi-test',
   poiOriginName: 'Test Shrine',
@@ -121,15 +121,25 @@ test.describe('Creatures page', () => {
   test('tapping a creature opens the detail view with food section', async ({ page }) => {
     await seedProfile(page, { foodInventory: [TEST_FOOD], hatchedCreatures: [TEST_CREATURE] })
     await page.goto('/creatures')
-    await page.getByText('Stone Sprite').click()
+    await page.getByText('Kampung Chicken').click()
     await expect(page.getByText('Drag a food onto the creature')).toBeVisible()
     await expect(page.getByText('Kaya Toast').last()).toBeVisible()
+  })
+
+  test('a creature of a retired species becomes a Singapore critter and keeps its level', async ({ page }) => {
+    const statue = { ...TEST_CREATURE, id: 'old-1', species: 'Stonewarden', emoji: '🗿', poiCategory: 'religious', level: 4 }
+    await seedProfile(page, { hatchedCreatures: [statue] })
+    await page.goto('/creatures')
+    await expect(page.getByText('Speckled Koel')).toBeVisible()
+    await expect(page.getByText('Stonewarden')).toHaveCount(0)
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('lorewalk_profile')!).hatchedCreatures[0])
+    expect(saved).toMatchObject({ id: 'old-1', species: 'Speckled Koel', level: 4 })
   })
 
   test('creature detail view shows release button', async ({ page }) => {
     await seedProfile(page, { foodInventory: [TEST_FOOD], hatchedCreatures: [TEST_CREATURE] })
     await page.goto('/creatures')
-    await page.getByText('Stone Sprite').click()
+    await page.getByText('Kampung Chicken').click()
     await expect(page.getByRole('button', { name: /release/i })).toBeVisible()
   })
 
@@ -137,16 +147,16 @@ test.describe('Creatures page', () => {
     page.on('dialog', () => { throw new Error('native dialog opened') })
     await seedProfile(page, { foodInventory: [TEST_FOOD], hatchedCreatures: [TEST_CREATURE] })
     await page.goto('/creatures')
-    await page.getByText('Stone Sprite').click()
+    await page.getByText('Kampung Chicken').click()
     await page.getByRole('button', { name: /release/i }).click()
     const dialog = page.getByRole('alertdialog')
-    await expect(dialog.getByText('Release Stone Sprite?')).toBeVisible()
-    await dialog.getByRole('button', { name: 'Keep Stone Sprite' }).click()
+    await expect(dialog.getByText('Release Kampung Chicken?')).toBeVisible()
+    await dialog.getByRole('button', { name: 'Keep Kampung Chicken' }).click()
     await expect(dialog).toBeHidden()
 
     await page.getByRole('button', { name: /release/i }).click()
     await page.getByRole('alertdialog').getByRole('button', { name: 'Release', exact: true }).click()
-    await expect(page.getByText('Stone Sprite')).toHaveCount(0)
+    await expect(page.getByText('Kampung Chicken')).toHaveCount(0)
   })
 })
 
@@ -207,8 +217,8 @@ test.describe('Squads page', () => {
       squads: SQUAD_WITH_CREATURE,
     })
     await page.goto('/squads')
-    // CreaturePreview renders the emoji in a span inside the slot button
-    const slot = page.locator('button').filter({ hasText: '🗿' }).first()
+    // CreaturePreview shows the emoji, then swaps in the 3D render (alt = species)
+    const slot = page.locator('button').filter({ has: page.getByRole('img', { name: 'Kampung Chicken' }) }).first()
     await expect(slot).toBeVisible()
   })
 

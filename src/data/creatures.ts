@@ -1,4 +1,7 @@
-export type CreatureType = 'stray' | 'community' | 'wild' | 'mythic'
+import type { AnimalBody } from '@/lib/animalModels'
+
+// 'mythic' has no species left, but old saves can still hold one.
+export type CreatureType = 'stray' | 'community' | 'wild' | 'critter' | 'mythic'
 export type CreatureRarity = 'common' | 'rare' | 'epic' | 'legendary'
 
 export interface CreatureDef {
@@ -11,6 +14,10 @@ export interface CreatureDef {
   rarity: CreatureRarity
   poiCategory: string
   hat?: CatHat
+  /** A Singapore critter model from lib/animalModels.ts instead of the cat. */
+  body?: AnimalBody
+  /** The critter's second colour: tail and wings, bands, or spots. */
+  color2?: number
 }
 
 export type CatHat = 'party'
@@ -48,11 +55,13 @@ export const CREATURES: CreatureDef[] = [
   { id: 'flat_headed_cat',  species: 'Flat-headed Cat',  emoji: '🐱',   color: 0x6b5a4a, type: 'wild',      rarity: 'epic',      poiCategory: 'nature' },
   { id: 'leopard_cat',      species: 'Leopard Cat',      emoji: '🐆',   color: 0xd1a662, type: 'wild',      rarity: 'epic',      poiCategory: 'nature' },
 
-  // Mythic - Legendary (not in hatch pool)
-  { id: 'merlion',          species: 'Merlion',          emoji: '🦁',   color: 0xe8e8ec, type: 'mythic',    rarity: 'legendary', poiCategory: 'landmark' },
-  { id: 'stone_lion',       species: 'Stone Lion',       emoji: '🦁',   color: 0x9c9c94, type: 'mythic',    rarity: 'legendary', poiCategory: 'heritage' },
-  { id: 'white_tiger',      species: 'White Tiger',      emoji: '🐯',   color: 0xf2f2ef, type: 'mythic',    rarity: 'legendary', poiCategory: 'nature' },
-  { id: 'singa',            species: 'Singa',            emoji: '🦁',   color: 0xd9a13a, type: 'mythic',    rarity: 'legendary', poiCategory: 'landmark' },
+  // Singapore critters: the backyard and park animals every Singaporean hears.
+  { id: 'cicada',           species: 'Cicada',           emoji: '🦗',   color: 0x4d6b2f, color2: 0x1f2a14, type: 'critter',   rarity: 'common',    poiCategory: 'nature',    body: 'cicada' },
+  { id: 'kampung_chicken',  species: 'Kampung Chicken',  emoji: '🐔',   color: 0xb45309, color2: 0x7c2d12, type: 'critter',   rarity: 'common',    poiCategory: 'heritage',  body: 'chicken' },
+  { id: 'asian_koel',       species: 'Asian Koel',       emoji: '🐦',   color: 0x1f2937, color2: 0x1f2937, type: 'critter',   rarity: 'common',    poiCategory: 'landmark',  body: 'koel' },
+  { id: 'red_junglefowl',   species: 'Red Junglefowl',   emoji: '🐓',   color: 0xd9631e, color2: 0x14532d, type: 'critter',   rarity: 'rare',      poiCategory: 'nature',    body: 'chicken' },
+  { id: 'speckled_koel',    species: 'Speckled Koel',    emoji: '🐦',   color: 0x7c5a3a, color2: 0xf5f0e1, type: 'critter',   rarity: 'rare',      poiCategory: 'religious', body: 'koel' },
+  { id: 'emperor_cicada',   species: 'Emperor Cicada',   emoji: '🦗',   color: 0x5b4636, color2: 0x1c1917, type: 'critter',   rarity: 'epic',      poiCategory: 'nature',    body: 'cicada' },
 ]
 
 const BY_SPECIES = new Map(CREATURES.map((c) => [c.species, c]))

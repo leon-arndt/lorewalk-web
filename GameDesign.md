@@ -77,15 +77,20 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 | Epic | 5,000 | Museum |
 
 ### Creatures by category
-| Category | Species | Emoji | Tier |
+`src/data/creatures.ts` holds the roster. Most species are cats: strays (common), community cats (rare), and wild cats (epic), each tied to a POI category. The **Singapore critters** are the animals that every Singaporean hears in the neighbourhood:
+
+| Species | Model | Category | Tier |
 |---|---|---|---|
-| Heritage | Stonewarden | 🗿 | Common |
-| Landmark | Pathfinder | 🧭 | Common |
-| Arts | Muse | 🎨 | Common |
-| Religious | Luminary | 🌟 | Rare |
-| Nature | Fernspark | 🌿 | Rare |
-| Museum | Archivist | 📜 | Epic |
-| Unknown | Wanderer | ✨ | Common |
+| Cicada | cicada | Nature | Common |
+| Kampung Chicken | chicken | Heritage | Common |
+| Asian Koel | koel | Landmark | Common |
+| Red Junglefowl | chicken | Nature | Rare |
+| Speckled Koel (the female koel) | koel | Religious | Rare |
+| Emperor Cicada | cicada | Nature | Epic |
+
+A critter has its own procedural model in `src/lib/animalModels.ts`. The cats share the rigged cat model. The ambient wanderers on the map are a kampung chicken, a koel, and a cicada.
+
+An older roster held species such as the Stonewarden (a statue) and the Luminary. `normalizeProfile()` turns each creature of a species that no longer exists into the critter of its POI category, and the creature keeps its level and XP. The four legendaries (Merlion, Stone Lion, White Tiger, Singa) are gone as well. None of them could hatch.
 
 ### Creature storage cap (from Pikmin Bloom)
 - A cap limits the collection: `creatureCap = 6 + (level − 1) × 2 + shopBonus`. The Creatures tab shows it as **"Collection X / Y"**.
@@ -113,7 +118,7 @@ Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress 
   - `categoryColors` and `categoryCss(category)` hold one colour per creature type (POI category). The 3D map pins, the map companions, and the collection grid all read it.
   - The frosted-glass surface tokens live in `src/lib/glass.ts`. `theme.ts` holds the brand accent colours.
 - **Pages are frosted glass over the live map**, added 2026-09-13. The map stays mounted under every tab. Each full-screen page uses `glassPage`: a translucent mint tint with a strong blur, so the area around the player shows through as soft colour. The 3D map layers stop their frame loop while another tab covers the map. Bottom sheets over a dark scrim use `glassSheet`, which is more opaque, so the scrim does not turn the sheet grey. Tune the see-through amount in `glass.ts` only.
-- **Creature collection follows Pikmin Bloom and the Pokedex, not a card list.** Each creature stands bare on a flat pad in its type colour, in a 4-column grid, with its name and level below. There are no card borders, pills, or XP bars in the grid. The detail view holds that information. The wild and mythic cats render larger than the strays. A row of type-colour dots filters the grid. Each free storage slot shows as an empty pad.
+- **Creature collection follows Pikmin Bloom and the Pokedex, not a card list.** Each creature stands bare on a flat pad in its type colour, in a 4-column grid, with its name and level below. There are no card borders, pills, or XP bars in the grid. The detail view holds that information. The wild cats render larger than the strays. A row of type-colour dots filters the grid. Each free storage slot shows as an empty pad.
 - **Primary accent: quiet green, `accent` (`#166534`)**, added 2026-07-20. The green is muted on purpose, closer to Geocaching than to the saturated Duolingo `#58CC02`. A game about walking to real places reads better quiet than punchy.
   - Reference points from the real brands: Duolingo primary `#58CC02` and secondary `#89E219` (bright, high energy), Geocaching primary `#4A742C` (muted olive), and Pikmin Bloom (no published hex, but a soft pastel mint by reputation).
   - Lorewalk landed between the quietness of Geocaching and a slightly cooler green.
@@ -286,8 +291,8 @@ A **squad** is the team, a noun. An **expedition** is what a squad does, a verb.
 ### Companions on the map (from Pikmin Bloom)
 - The app renders the **creatures of the active squad** as 3D characters that idle and wander around the position of the player. This makes the party physical. An empty slot means one companion fewer.
 - While the active squad is **away on an expedition**, no companion follows. They are all at the landmark.
-- While the active squad is **empty**, a few neutral grey "ambient" wanderers appear, so the map is never lifeless. Real members replace them once the player assigns creatures.
-- Each companion is the same rigged Quaternius cat (`public/models/cat.glb`) that the collection thumbnails use. It plays the Idle and Walk clips of the model. The coat colour comes from the species in `src/data/creatures.ts`, and a shiny creature gets a gold tint. A companion on the map therefore matches its card in the collection. If the model does not load, a procedural shape per POI category replaces it.
+- While the active squad is **empty**, three "ambient" wanderers appear, a kampung chicken, a koel, and a cicada, so the map is never lifeless. Real members replace them once the player assigns creatures.
+- Each cat companion is the same rigged Quaternius cat (`public/models/cat.glb`) that the collection thumbnails use. A critter companion uses its model from `animalModels.ts`, with legs, wings, and head moved in code. It plays the Idle and Walk clips of the model. The coat colour comes from the species in `src/data/creatures.ts`, and a shiny creature gets a gold tint. A companion on the map therefore matches its card in the collection. If the model does not load, a procedural shape per POI category replaces it.
 - **Sizing**: the characters hold a roughly constant on-screen size, in the Pikmin Bloom style, instead of true-to-life metres. This keeps them visible at normal play zoom, about 15 and above. At the whole-island offline view they stay tiny. Zoom to street level to see them.
 
 ### Player avatar

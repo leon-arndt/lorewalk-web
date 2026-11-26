@@ -4,6 +4,7 @@ import { isMapPaused } from '@/lib/mapUtils'
 import type { CatHat } from '@/data/creatures'
 import { addBlink, type Blinker } from '@/lib/blink'
 import { lightScene } from '@/lib/ambience'
+import { buildAnimal, animateAnimal, type AnimalBody } from '@/lib/animalModels'
 
 // Renders little animated characters that wander around a point on the map, à la
 // Pikmin Bloom. MapLibre has no native glTF support, so this is a Three.js custom
@@ -24,6 +25,9 @@ export interface CharacterSpec {
   category?: string
   shiny?: boolean
   hat?: CatHat
+  // A Singapore critter instead of the cat (see lib/animalModels.ts).
+  body?: AnimalBody
+  color2?: number
 }
 
 export interface CharacterLayerHandle {
@@ -95,6 +99,7 @@ export async function addCharacterLayer(
     idleUntil: number
     bobPhase: number
     procedural: boolean
+    animal: boolean
     blink: Blinker | null
     ownedMaterials: T3.Material[]
     ownedGeometries: T3.BufferGeometry[]
@@ -305,9 +310,12 @@ export async function addCharacterLayer(
     let walk: AnimationAction | null = null
     let ownedMaterials: T3.Material[] = []
     let ownedGeometries: T3.BufferGeometry[] = []
-    const procedural = !template
+    const animal = !!spec.body
+    const procedural = !template && !animal
 
-    if (template) {
+    if (animal) {
+      root = buildAnimal(THREE, spec.body!, spec.color, spec.color2, spec.shiny)
+    } else if (template) {
       root = skeletonClone(template.scene)
       ownedMaterials = tintCat(THREE, root, spec.color, spec.shiny)
       if (spec.hat) {
@@ -326,7 +334,7 @@ export async function addCharacterLayer(
     }
     // Procedural eye materials go with disposeObject(); the cat's are owned here.
     const blink = addBlink(THREE, root)
-    if (template) ownedMaterials.push(...blink.materials)
+    if (template && !animal) ownedMaterials.push(...blink.materials)
 
     root.scale.setScalar(modelScale)
     const start = randomPoint()
@@ -338,7 +346,7 @@ export async function addCharacterLayer(
       root, mixer, idle, walk, state: 'idle',
       x: start.x, z: start.z, tx: start.x, tz: start.z,
       speed: 1.1 + Math.random() * 0.7,
-      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, blink, ownedMaterials, ownedGeometries,
+      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, animal, blink, ownedMaterials, ownedGeometries,
     })
   }
 
@@ -380,7 +388,10 @@ export async function addCharacterLayer(
       c.root.position.x = c.x
       c.root.position.z = c.z
 
-      if (c.procedural) {
+      if (c.animal) {
+        c.bobPhase += dt
+        animateAnimal(c.root, c.state === 'walk', c.bobPhase)
+      } else if (c.procedural) {
         c.bobPhase += dt * (c.state === 'walk' ? 9 : 2)
         const amp = c.state === 'walk' ? 0.12 : 0.04
         c.root.position.y = Math.abs(Math.sin(c.bobPhase)) * amp
@@ -425,7 +436,7 @@ export async function addCharacterLayer(
   // Override spawn to use category GLBs when available.
   const originalSpawn = spawn
   function spawnWithGlb(spec: CharacterSpec) {
-    if (!template && categoryGlbCache.has(spec.category ?? 'default')) {
+    if (!template && !spec.body && categoryGlbCache.has(spec.category ?? 'default')) {
       const glbRoot = skeletonClone(categoryGlbCache.get(spec.category ?? 'default')!)
       glbRoot.scale.setScalar(modelScale)
       const start = randomPoint()
@@ -436,7 +447,7 @@ export async function addCharacterLayer(
         x: start.x, z: start.z, tx: start.x, tz: start.z,
         speed: 1.1 + Math.random() * 0.7,
         idleUntil: 0, bobPhase: Math.random() * Math.PI * 2,
-        procedural: true, blink: null, ownedMaterials: [], ownedGeometries: [],
+        procedural: true, animal: false, blink: null, ownedMaterials: [], ownedGeometries: [],
       })
     } else {
       originalSpawn(spec)
@@ -447,7 +458,7 @@ export async function addCharacterLayer(
     for (const c of characters) {
       c.mixer?.stopAllAction()
       worldGroup.remove(c.root)
-      if (c.procedural) disposeObject(c.root)
+      if (c.procedural || c.animal) disposeObject(c.root)
       c.ownedMaterials.forEach((m) => m.dispose())
       c.ownedGeometries.forEach((g) => g.dispose())
     }

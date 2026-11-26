@@ -856,7 +856,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   function seedMockPostcard() {
     const mockSenders = ['Aisha', 'Rajan', 'Wei Ling']
     const mockPois = ['Merlion Park', 'Gardens by the Bay', 'Raffles Hotel']
-    const mockEmojis = ['🗿', '🌿', '🧭']
+    const mockEmojis = ['🐔', '🌿', '🧭']
     const i = profile.postcards.length % 3
     const now = Date.now()
     const card: Postcard = {

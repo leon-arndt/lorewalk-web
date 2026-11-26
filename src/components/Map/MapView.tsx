@@ -528,9 +528,8 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     let cancelled = false
 
     const add = async () => {
-      const c: [number, number] = position
-        ? [position.longitude, position.latitude]
-        : [103.8198, 1.3521]
+      const p = positionRef.current
+      const c: [number, number] = p ? [p.longitude, p.latitude] : DEFAULT_CENTER
       const handle = await addCharacterLayer(map, {
         center: c,
         characters: companionsRef.current,
@@ -541,6 +540,11 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       if (cancelled) { handle.remove(); return }
       charLayerRef.current = handle
       handle.setCharacters(companionsRef.current)
+      // A GPS fix can land while the model loads, before this handle exists,
+      // and a player who stands still sends no new one. Catch up here, or the
+      // companions stay at the default centre.
+      const now = positionRef.current
+      if (now) handle.setCenter(now.longitude, now.latitude)
     }
 
     if (map.loaded()) add()
