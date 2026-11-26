@@ -58,9 +58,11 @@ export const CREATURES: CreatureDef[] = [
   // Singapore critters: the backyard and park animals every Singaporean hears.
   { id: 'cicada',           species: 'Cicada',           emoji: '🦗',   color: 0x4d6b2f, color2: 0x1f2a14, type: 'critter',   rarity: 'common',    poiCategory: 'nature',    body: 'cicada' },
   { id: 'kampung_chicken',  species: 'Kampung Chicken',  emoji: '🐔',   color: 0xb45309, color2: 0x7c2d12, type: 'critter',   rarity: 'common',    poiCategory: 'heritage',  body: 'chicken' },
-  { id: 'asian_koel',       species: 'Asian Koel',       emoji: '🐦',   color: 0x1f2937, color2: 0x1f2937, type: 'critter',   rarity: 'common',    poiCategory: 'landmark',  body: 'koel' },
+  // The Asian koel: the brown, spotted female is common. The black male,
+  // whose call wakes the whole block at dawn, is the rarer find.
+  { id: 'asian_koel_female', species: 'Asian Koel ♀',    emoji: '🐦',   color: 0x7c5a3a, color2: 0xf5f0e1, type: 'critter',   rarity: 'common',    poiCategory: 'landmark',  body: 'koel' },
   { id: 'red_junglefowl',   species: 'Red Junglefowl',   emoji: '🐓',   color: 0xd9631e, color2: 0x14532d, type: 'critter',   rarity: 'rare',      poiCategory: 'nature',    body: 'chicken' },
-  { id: 'speckled_koel',    species: 'Speckled Koel',    emoji: '🐦',   color: 0x7c5a3a, color2: 0xf5f0e1, type: 'critter',   rarity: 'rare',      poiCategory: 'religious', body: 'koel' },
+  { id: 'asian_koel_male',  species: 'Asian Koel ♂',     emoji: '🐦',   color: 0x1f2937, color2: 0x1f2937, type: 'critter',   rarity: 'rare',      poiCategory: 'landmark',  body: 'koel' },
   { id: 'emperor_cicada',   species: 'Emperor Cicada',   emoji: '🦗',   color: 0x5b4636, color2: 0x1c1917, type: 'critter',   rarity: 'epic',      poiCategory: 'nature',    body: 'cicada' },
 ]
 

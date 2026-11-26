@@ -83,12 +83,12 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 |---|---|---|---|
 | Cicada | cicada | Nature | Common |
 | Kampung Chicken | chicken | Heritage | Common |
-| Asian Koel | koel | Landmark | Common |
+| Asian Koel ♀ (brown and spotted) | koel | Landmark | Common |
 | Red Junglefowl | chicken | Nature | Rare |
-| Speckled Koel (the female koel) | koel | Religious | Rare |
+| Asian Koel ♂ (black, with a red eye) | koel | Landmark | Rare |
 | Emperor Cicada | cicada | Nature | Epic |
 
-A critter has its own procedural model in `src/lib/animalModels.ts`. The cats share the rigged cat model. The ambient wanderers on the map are a kampung chicken, a koel, and a cicada.
+A critter has its own procedural model in `src/lib/animalModels.ts`. The cats share the rigged cat model. The ambient wanderers on the map are a kampung chicken, a female koel, and a cicada. The first critter build named the male koel "Asian Koel" and the female "Speckled Koel". `normalizeProfile()` renames both.
 
 An older roster held species such as the Stonewarden (a statue) and the Luminary. `normalizeProfile()` turns each creature of a species that no longer exists into the critter of its POI category, and the creature keeps its level and XP. The four legendaries (Merlion, Stone Lion, White Tiger, Singa) are gone as well. None of them could hatch.
 

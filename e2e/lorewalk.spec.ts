@@ -130,10 +130,22 @@ test.describe('Creatures page', () => {
     const statue = { ...TEST_CREATURE, id: 'old-1', species: 'Stonewarden', emoji: '🗿', poiCategory: 'religious', level: 4 }
     await seedProfile(page, { hatchedCreatures: [statue] })
     await page.goto('/creatures')
-    await expect(page.getByText('Speckled Koel')).toBeVisible()
+    await expect(page.getByText('Asian Koel ♀')).toBeVisible()
     await expect(page.getByText('Stonewarden')).toHaveCount(0)
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('lorewalk_profile')!).hatchedCreatures[0])
-    expect(saved).toMatchObject({ id: 'old-1', species: 'Speckled Koel', level: 4 })
+    expect(saved).toMatchObject({ id: 'old-1', species: 'Asian Koel ♀', level: 4 })
+  })
+
+  test('the koels of the first critter build get their new names', async ({ page }) => {
+    const male = { ...TEST_CREATURE, id: 'k-1', species: 'Asian Koel', emoji: '🐦', poiCategory: 'landmark', level: 2 }
+    const female = { ...TEST_CREATURE, id: 'k-2', species: 'Speckled Koel', emoji: '🐦', poiCategory: 'religious', level: 3 }
+    await seedProfile(page, { hatchedCreatures: [male, female] })
+    await page.goto('/creatures')
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('lorewalk_profile')!).hatchedCreatures)
+    expect(saved).toMatchObject([
+      { id: 'k-1', species: 'Asian Koel ♂', level: 2 },
+      { id: 'k-2', species: 'Asian Koel ♀', level: 3 },
+    ])
   })
 
   test('creature detail view shows release button', async ({ page }) => {

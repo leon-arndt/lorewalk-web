@@ -546,15 +546,22 @@ const STORAGE_KEY = 'lorewalk_profile'
 const RETIRED_SPECIES_TO: Record<string, string> = {
   heritage: 'Kampung Chicken',
   museum: 'Kampung Chicken',
-  landmark: 'Asian Koel',
-  arts: 'Asian Koel',
-  religious: 'Speckled Koel',
+  landmark: 'Asian Koel ♀',
+  arts: 'Asian Koel ♀',
+  religious: 'Asian Koel ♀',
   nature: 'Cicada',
+}
+
+// Species that only changed their name. The first critter build called the
+// black male koel "Asian Koel" and the brown female "Speckled Koel".
+const RENAMED_SPECIES: Record<string, string> = {
+  'Asian Koel': 'Asian Koel ♂',
+  'Speckled Koel': 'Asian Koel ♀',
 }
 
 function migrateRetiredSpecies(c: HatchedCreature): HatchedCreature {
   if (creatureDefBySpecies(c.species)) return c
-  const def = creatureDefBySpecies(RETIRED_SPECIES_TO[c.poiCategory] ?? 'Cicada')
+  const def = creatureDefBySpecies(RENAMED_SPECIES[c.species] ?? RETIRED_SPECIES_TO[c.poiCategory] ?? 'Cicada')
   if (!def) return c
   return { ...c, species: def.species, emoji: def.emoji, creatureType: def.type }
 }

@@ -36,7 +36,7 @@ function categoryColor(category?: string): number {
   return (category && categoryColors[category]) || 0x94a3b8
 }
 
-const AMBIENT_SPECIES = ['Kampung Chicken', 'Asian Koel', 'Cicada']
+const AMBIENT_SPECIES = ['Kampung Chicken', 'Asian Koel ♀', 'Cicada']
 
 function markerCreature(c?: HatchedCreature): MarkerCreature {
   return c ? { emoji: c.emoji, key: creatureSpriteKey(c.species, c.isShiny) } : { emoji: '🐾', key: '' }
