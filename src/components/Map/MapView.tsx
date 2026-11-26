@@ -37,6 +37,12 @@ function spriteEl(emoji: string, sizePx: number, key = emoji): HTMLElement {
   return wrap
 }
 
+// A creature shown on a marker: its 3D render by sprite key, the emoji until then.
+export interface MarkerCreature {
+  emoji: string
+  key: string
+}
+
 export interface FoodNodeMarker {
   id: string
   foodId: string
@@ -45,7 +51,7 @@ export interface FoodNodeMarker {
   lat: number
   lon: number
   state?: 'idle' | 'busy' | 'ready'
-  travelers?: string[]   // emojis of creatures currently dispatched here
+  travelers?: MarkerCreature[]   // creatures currently dispatched here
 }
 
 export interface ShrineNodeMarker {
@@ -54,25 +60,25 @@ export interface ShrineNodeMarker {
   lat: number
   lon: number
   state: 'idle' | 'busy' | 'ready' | 'cleared'
-  travelers?: string[]
+  travelers?: MarkerCreature[]
 }
 
 // Append little creature bubbles that orbit the node marker while an expedition is
 // in progress, so dispatched creatures are visibly "there" working. Pure CSS orbit
 // (screen-space, so it stays visible at every zoom); a static offset ring holds the
 // radius while the body counter-rotates to stay upright.
-function appendOrbitingCreatures(outer: HTMLElement, emojis: string[]) {
+function appendOrbitingCreatures(outer: HTMLElement, creatures: MarkerCreature[]) {
   const R = 32
   const DUR = 8
-  emojis.forEach((emoji, i) => {
-    const delay = -(i / Math.max(1, emojis.length)) * DUR
+  creatures.forEach((c, i) => {
+    const delay = -(i / Math.max(1, creatures.length)) * DUR
     const arm = document.createElement('div')
     arm.style.cssText = `position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:2;animation:tvOrbit ${DUR}s linear infinite;animation-delay:${delay}s;`
     const offset = document.createElement('div')
     offset.style.cssText = `position:absolute;transform:translateX(${R}px);`
     const body = document.createElement('div')
     body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:white;border:1.5px solid #cbd5e1;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
-    body.appendChild(spriteEl(emoji, 15))
+    body.appendChild(spriteEl(c.emoji, 18, c.key))
     offset.appendChild(body)
     arm.appendChild(offset)
     outer.appendChild(arm)
@@ -155,7 +161,7 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
     box-shadow:0 2px 10px ${glow};
     opacity:${node.state === 'busy' ? '0.6' : '1'};
   `
-  inner.appendChild(spriteEl('⛩️', 24))
+  inner.appendChild(spriteEl('⛩️', 28, 'item_shrine'))
   if (node.state === 'ready') {
     const badge = document.createElement('div')
     badge.textContent = '⚔️'
@@ -216,11 +222,11 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
     box-shadow:0 2px 8px rgba(0,0,0,0.18)${squad.isActive ? `,0 0 0 4px ${accentAlpha(0.2)}` : ''};
     align-items:center;justify-items:center;
   `
-  const filled = squad.emojis.slice(0, 4)
+  const filled = squad.creatures.slice(0, 4)
   for (let i = 0; i < 4; i++) {
     const cell = document.createElement('div')
     cell.style.cssText = 'font-size:13px;line-height:1;'
-    if (filled[i]) cell.appendChild(spriteEl(filled[i], 15))
+    if (filled[i]) cell.appendChild(spriteEl(filled[i].emoji, 17, filled[i].key))
     inner.appendChild(cell)
   }
 
@@ -261,7 +267,7 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
 export interface SquadMarker {
   id: string
   name: string
-  emojis: string[]
+  creatures: MarkerCreature[]
   lat: number
   lon: number
   isActive: boolean
@@ -287,7 +293,7 @@ function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
     background:white;border:2px solid ${claim.color};
     box-shadow:0 2px 6px rgba(0,0,0,0.18);
   `
-  inner.appendChild(spriteEl('🚩', 15))
+  inner.appendChild(spriteEl('🚩', 20, 'item_claim'))
   const tooltip = document.createElement('div')
   tooltip.textContent = claim.name + ' · yours'
   tooltip.style.cssText = `

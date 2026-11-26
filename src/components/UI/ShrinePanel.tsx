@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { creaturePower, creatureName, MAX_SHRINE_CREATURES, SHRINE_DURATION_MS } from '@/lib/profile'
@@ -122,7 +123,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
       <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
-          <div style={{ fontSize: 52, marginBottom: 8 }}>⛩️</div>
+          <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><EmojiSprite id="item_shrine" emoji="⛩️" size={64} /></div>
           <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: accent }}>
             {node.poiName}
           </h2>
@@ -146,7 +147,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
       <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-          <div style={{ fontSize: 44, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
+          <div style={{ flexShrink: 0 }}><EmojiSprite id="item_shrine" emoji="⛩️" size={52} /></div>
           <div>
             <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
               {node.poiName}
@@ -213,7 +214,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
         {header}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-            <div style={{ fontSize: 36, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
+            <div style={{ flexShrink: 0 }}><EmojiSprite id="item_shrine" emoji="⛩️" size={44} /></div>
             <div style={{ minWidth: 0 }}>
               <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>{t('shrine_battle_squad')}</h2>
               <p style={{ margin: 0, fontSize: 11, color: '#94a3b8' }}>Up to {MAX_SHRINE_CREATURES} creatures</p>
@@ -315,7 +316,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
     <motion.div {...panelMotion(isClosing)} style={panelStyle}>
       {header}
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-        <div style={{ fontSize: 52, lineHeight: 1, flexShrink: 0 }}>⛩️</div>
+        <div style={{ flexShrink: 0 }}><EmojiSprite id="item_shrine" emoji="⛩️" size={60} /></div>
         <div style={{ minWidth: 0 }}>
           <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
             {node.poiName}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { createPortal } from 'react-dom'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
@@ -427,7 +428,7 @@ function Holdings({ now }: { now: number }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
             }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>🚩 {claim.poiName}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, color: '#1e293b' }}><EmojiSprite id="item_claim" emoji="🚩" size={18} />{claim.poiName}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, fontSize: 10, fontWeight: 600, color: '#64748b', textTransform: 'capitalize' }}>
                   <TypeDot category={claim.poiCategory} />
                   {claim.poiCategory} · ×{claim.affinity.toFixed(2)} rate

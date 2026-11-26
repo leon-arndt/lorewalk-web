@@ -217,7 +217,9 @@ export function getAvatarPortraitURL(appearance: PlayerAppearance): Promise<stri
 const modelCache = new Map<string, Promise<string>>()
 
 // Renders a model built by foodModels.ts or itemModels.ts, framed to fit.
-function getModelPreviewURL(key: string, build: (THREE: typeof import('three')) => Promise<import('three').Group>): Promise<string> {
+// fit scales the camera distance: below 1 crops into the bounding sphere,
+// which suits a round plate but cuts off the ends of a wide icon.
+function getModelPreviewURL(key: string, build: (THREE: typeof import('three')) => Promise<import('three').Group>, fit = 0.82): Promise<string> {
   let p = modelCache.get(key)
   if (!p) {
     p = (async () => {
@@ -226,7 +228,7 @@ function getModelPreviewURL(key: string, build: (THREE: typeof import('three')) 
       const { disposeModel } = await import('@/lib/foodModels')
       const model = await build(THREE)
       const sphere = new THREE.Box3().setFromObject(model).getBoundingSphere(new THREE.Sphere())
-      const dist = 0.82 * sphere.radius / Math.sin(THREE.MathUtils.degToRad(camera!.fov / 2))
+      const dist = fit * sphere.radius / Math.sin(THREE.MathUtils.degToRad(camera!.fov / 2))
       const dir = new THREE.Vector3(0.25, 0.85, 1).normalize()
       camera!.position.copy(sphere.center).addScaledVector(dir, dist)
       camera!.lookAt(sphere.center)
@@ -248,15 +250,21 @@ export function getFoodPreviewURL(foodId: string): Promise<string> {
 
 const EGG_ITEMS = new Set(['egg', 'egg_slot'])
 
-// Sprite keys: food_<id> for a dish, item_<type> for a reward icon (coins, xp,
-// egg, badge, level_up, egg_slot, creature_slots). Any other key has no model,
-// and the caller keeps its emoji.
+export function creatureSpriteKey(species: string, isShiny = false): string {
+  return `creature_${isShiny ? 1 : 0}_${species}`
+}
+
+// Sprite keys: food_<id> for a dish, item_<type> for an icon (coins, xp, egg,
+// badge, level_up, egg_slot, creature_slots, shrine, claim), and
+// creatureSpriteKey() for a creature. Any other key has no model, and the
+// caller keeps its emoji.
 export async function getSpritePreviewURL(key: string): Promise<string | null> {
+  if (key.startsWith('creature_')) return getCreaturePreviewURL(key.slice(11), key[9] === '1')
   if (key.startsWith('food_')) return getFoodPreviewURL(key.slice(5))
   if (!key.startsWith('item_')) return null
   const type = key.slice(5)
   if (EGG_ITEMS.has(type)) return getEggPreviewURL('common')
   const { buildItemModel, hasItemModel } = await import('@/lib/itemModels')
   if (!hasItemModel(type)) return null
-  return getModelPreviewURL(key, async (THREE) => buildItemModel(THREE, type))
+  return getModelPreviewURL(key, async (THREE) => buildItemModel(THREE, type), 0.95)
 }

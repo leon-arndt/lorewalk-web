@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
-import { MapView } from '@/components/Map/MapView'
+import { MapView, type MarkerCreature } from '@/components/Map/MapView'
+import { creatureSpriteKey } from '@/lib/creaturePreview'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
 import { ShrinePanel } from '@/components/UI/ShrinePanel'
@@ -23,7 +24,7 @@ import { haversineDistance } from '@/lib/mapUtils'
 import { isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { creatureDefBySpecies } from '@/data/creatures'
-import type { Poi, RewardItem } from '@/types'
+import type { HatchedCreature, Poi, RewardItem } from '@/types'
 import { accent, categoryColors, rewardGradient } from '@/lib/theme'
 import { motion } from 'motion/react'
 import { popSpring, tapScale } from '@/lib/motion'
@@ -32,6 +33,10 @@ const CHECKIN_RADIUS_M = 50
 
 function categoryColor(category?: string): number {
   return (category && categoryColors[category]) || 0x94a3b8
+}
+
+function markerCreature(c?: HatchedCreature): MarkerCreature {
+  return c ? { emoji: c.emoji, key: creatureSpriteKey(c.species, c.isShiny) } : { emoji: '🐾', key: '' }
 }
 
 export function MapPage() {
@@ -97,7 +102,7 @@ export function MapPage() {
         const state: 'idle' | 'busy' | 'ready' = !n.expedition
           ? 'idle'
           : Date.now() >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
-        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => byId.get(id)?.emoji ?? '🐾') : []
+        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => markerCreature(byId.get(id))) : []
         return { id: n.id, foodId: n.foodId, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state, travelers }
       })
     },
@@ -120,7 +125,7 @@ export function MapPage() {
             : !n.expedition
               ? 'idle'
               : now >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
-        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => byId.get(id)?.emoji ?? '🐾') : []
+        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => markerCreature(byId.get(id))) : []
         return { id: n.id, name: n.poiName, lat: n.lat, lon: n.lon, state, travelers }
       })
     },
@@ -156,9 +161,9 @@ export function MapPage() {
       .map((s) => ({
         id: s.id,
         name: s.name,
-        emojis: s.slots
+        creatures: s.slots
           .filter((id): id is string => !!id)
-          .map((id) => byId.get(id)?.emoji ?? '❓'),
+          .map((id) => markerCreature(byId.get(id))),
         lat: s.expedition!.lat,
         lon: s.expedition!.lon,
         isActive: profile.activeSquadId === s.id,
@@ -279,8 +284,8 @@ export function MapPage() {
       if (result.egg) items.push({ type: 'egg' })
       result.levelUps.forEach((lu) => items.push({ type: 'level_up', amount: lu.newLevel, label: lu.species }))
       showReward(result.won
-        ? { emoji: '⛩️', title: t('shrine_claimed_title'), subtitle: t('shrine_claimed_subtitle'), items }
-        : { emoji: '⛩️', title: t('shrine_defeated_title'), subtitle: t('shrine_defeated_subtitle'), items })
+        ? { emoji: '⛩️', spriteId: 'item_shrine', title: t('shrine_claimed_title'), subtitle: t('shrine_claimed_subtitle'), items }
+        : { emoji: '⛩️', spriteId: 'item_shrine', title: t('shrine_defeated_title'), subtitle: t('shrine_defeated_subtitle'), items })
     }
     handleShrinePanelClose()
   }, [selectedShrineNodeId, collectShrineNode, handleShrinePanelClose, showReward, t])
