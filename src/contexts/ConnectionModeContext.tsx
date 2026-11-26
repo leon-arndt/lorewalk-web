@@ -14,9 +14,9 @@ const ConnectionModeContext = createContext<ConnectionModeContextValue | null>(n
 
 function loadMode(): ConnectionMode {
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'online' ? 'online' : 'offline'
+    return localStorage.getItem(STORAGE_KEY) === 'offline' ? 'offline' : 'online'
   } catch {
-    return 'offline'
+    return 'online'
   }
 }
 
