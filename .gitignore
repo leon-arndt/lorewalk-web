@@ -51,3 +51,5 @@ Thumbs.db
 
 # Supabase CLI link state (project ref, pooler address), machine-specific
 supabase/.temp/
+.vercel
+.env*
