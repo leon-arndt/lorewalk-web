@@ -27,6 +27,7 @@ The map falls back to Singapore (1.3521, 103.8198) when the browser gives no GPS
 | `npm run lint` | ESLint |
 | `npm run test:e2e` | Playwright end-to-end suite. Starts the dev server itself |
 | `npm run android` | Build, `cap sync`, then open Android Studio |
+| `npm run android:apk` | Build, `cap sync`, then make the debug APK. Needs JDK 21 |
 
 Run `npm run test:e2e` before you commit a gameplay change.
 

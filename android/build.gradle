@@ -24,6 +24,15 @@ allprojects {
     }
 }
 
+// The social login plugin asks for androidx.browser 1.9.0 at compile time, and
+// its Google helper brings 1.4.0 at run time. Gradle refuses the mix. 1.9.0
+// needs compileSdk 36 and a newer Android Gradle plugin, so 1.8.0 is the pin.
+subprojects {
+    configurations.configureEach {
+        resolutionStrategy.force 'androidx.browser:browser:1.8.0'
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
