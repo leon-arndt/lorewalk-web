@@ -42,7 +42,7 @@ export function Toast() {
               ...paperTag,
               pointerEvents: 'auto',
               display: 'flex', alignItems: 'center', gap: 10, minHeight: 44,
-              fontFamily: 'inherit', fontSize: 14, fontWeight: 500, lineHeight: 1.4,
+              fontFamily: 'inherit', fontSize: 13, fontWeight: 500, lineHeight: 1.4,
               padding: '8px 16px 8px 12px',
               boxShadow: '2px 3px 0 rgba(51,40,30,0.3)',
               textAlign: 'left', cursor: 'pointer',

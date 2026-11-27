@@ -52,7 +52,7 @@ const panelStyle = {
   zIndex: 10,
 }
 
-const titleStyle = { margin: 0, fontSize: 22, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink } as const
+const titleStyle = { margin: 0, fontSize: 24, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink } as const
 const kicker = { display: 'block', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: inkSoft } as const
 const typed = { display: 'block', fontSize: 12, lineHeight: '18px', color: inkSoft } as const
 
@@ -128,7 +128,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
         <span style={{
           ...paperTag, width: 30, height: 30,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, lineHeight: 1,
+          fontSize: 15, lineHeight: 1,
         }}>x</span>
       </button>
     </>
@@ -204,7 +204,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
             <InkButton
               variant={willWin ? 'ink' : 'paper'}
               onClick={onCollect}
-              style={{ width: '100%', minHeight: 48, fontSize: 16 }}
+              style={{ width: '100%', minHeight: 48, fontSize: 15 }}
             >
               {willWin ? 'Claim Shrine 🏆' : 'Return home'}
             </InkButton>
@@ -237,7 +237,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
             <Mono style={kicker}>Power</Mono>
-            <div style={{ fontSize: 22, fontWeight: 600, color: enough ? forest : ink, lineHeight: '24px' }}>
+            <div style={{ fontSize: 24, fontWeight: 600, color: enough ? forest : ink, lineHeight: '24px' }}>
               {selectedPower} <Mono style={{ fontSize: 13 }}>/ {node.difficulty}</Mono>
             </div>
           </div>
@@ -266,7 +266,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
         </div>
 
         {available.length === 0 ? (
-          <p style={{ margin: '20px 0', fontSize: 14, color: inkHint, textAlign: 'center' }}>
+          <p style={{ margin: '20px 0', fontSize: 13, color: inkHint, textAlign: 'center' }}>
             No creatures available.
           </p>
         ) : (
@@ -313,7 +313,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
           variant={canSend && !enough ? 'paper' : 'ink'}
           onClick={() => canSend && onStart(selected)}
           disabled={!canSend}
-          style={{ width: '100%', minHeight: 48, fontSize: 16 }}
+          style={{ width: '100%', minHeight: 48, fontSize: 15 }}
         >
           {selected.length === 0
             ? 'Select creatures'
@@ -348,14 +348,14 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
       <div style={{
         ...paperCardStyle,
         padding: '10px 12px', marginBottom: 14,
-        fontSize: 14, color: inkSoft, lineHeight: 1.5,
+        fontSize: 13, color: inkSoft, lineHeight: 1.5,
       }}>
         Send creatures to challenge this shrine. If your squad's power reaches {node.difficulty}, you claim it for 24h and earn coins and a rare egg.
       </div>
 
       <InkButton
         onClick={() => setSelecting(true)}
-        style={{ width: '100%', minHeight: 48, fontSize: 16 }}
+        style={{ width: '100%', minHeight: 48, fontSize: 15 }}
       >
         ⚔️ Challenge shrine
       </InkButton>

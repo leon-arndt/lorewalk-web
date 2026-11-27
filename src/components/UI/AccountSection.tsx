@@ -8,7 +8,7 @@ import { InkButton, Mono, NoteCard, SectionTitle } from '@/components/UI/Journal
 import { ink, line, stamp } from '@/lib/theme'
 
 const hint = { display: 'block', fontSize: 12, lineHeight: '16px' } as const
-const actionButton = { flex: 1, minWidth: 0, padding: '6px 10px', fontSize: 14 } as const
+const actionButton = { flex: 1, minWidth: 0, padding: '6px 10px', fontSize: 13 } as const
 
 // The Settings card for the account: sign in, cloud save status, sign out, delete.
 export function AccountSection() {
@@ -42,8 +42,8 @@ export function AccountSection() {
             </div>
             {cloudSave.conflict && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: stamp }}>{t('account_conflict_title')}</div>
-                <InkButton onClick={() => setCloudConflictOpen(true)} style={{ flexShrink: 0, fontSize: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: stamp }}>{t('account_conflict_title')}</div>
+                <InkButton onClick={() => setCloudConflictOpen(true)} style={{ flexShrink: 0, fontSize: 13 }}>
                   {t('account_conflict_choose')}
                 </InkButton>
               </div>
@@ -51,7 +51,7 @@ export function AccountSection() {
           </>
         ) : (
           <>
-            <div style={{ fontSize: 14, lineHeight: '20px', color: ink }}>{t('account_desc')}</div>
+            <div style={{ fontSize: 13, lineHeight: '20px', color: ink }}>{t('account_desc')}</div>
             {mode !== 'online' && <Mono style={hint}>{t('account_offline_hint')}</Mono>}
             {mode === 'online' && (account ? <GoogleSignInButton /> : <Mono style={hint}>{t('account_unavailable')}</Mono>)}
           </>

@@ -26,8 +26,8 @@ function MapUnavailable() {
   // The map sits under every tab, so its fallback shows only on the map tab.
   if (useLocation().pathname !== '/') return null
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, color: '#75634C', fontSize: 14 }}>
-      <span style={{ fontSize: 40 }}>🗺</span>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, color: '#75634C', fontSize: 13 }}>
+      <span style={{ fontSize: 48 }}>🗺</span>
       Map unavailable
     </div>
   )

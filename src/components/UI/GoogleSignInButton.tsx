@@ -42,7 +42,7 @@ export function GoogleSignInButton() {
           onClick={async () => signIn(await getNativeGoogleToken())}
           style={{
             padding: '10px 16px', borderRadius: 8, border: '1px solid #dadce0',
-            background: '#FFFDF6', color: '#33281E', fontWeight: 500, fontSize: 14, cursor: 'pointer',
+            background: '#FFFDF6', color: '#33281E', fontWeight: 500, fontSize: 13, cursor: 'pointer',
           }}
         >
           {t('account_sign_in_google')}

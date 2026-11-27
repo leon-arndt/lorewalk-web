@@ -36,17 +36,17 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
         background: paperLight, border: `1px solid ${edge}`, borderRadius: 10,
         boxShadow: '2px 3px 0 rgba(51,40,30,0.35)', display: 'flex', flexDirection: 'column', gap: 12,
       }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, lineHeight: '26px', color: ink }}>{t('account_delete_title')}</h2>
-        <p style={{ margin: 0, fontSize: 14, color: inkSoft, lineHeight: 1.45 }}>{t('account_delete_body')}</p>
+        <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, lineHeight: '26px', color: ink }}>{t('account_delete_title')}</h2>
+        <p style={{ margin: 0, fontSize: 13, color: inkSoft, lineHeight: 1.45 }}>{t('account_delete_body')}</p>
         {profile.isPremium && (
           <p style={{
-            margin: 0, fontSize: 14, color: ink, lineHeight: 1.45,
+            margin: 0, fontSize: 13, color: ink, lineHeight: 1.45,
             background: paperCard, border: `1.5px dashed ${ochre}`, borderRadius: 6, padding: '10px 12px',
           }}>
             {t('account_delete_subscription')}
           </p>
         )}
-        {failed && <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: stamp }}>{t('account_delete_failed')}</p>}
+        {failed && <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: stamp }}>{t('account_delete_failed')}</p>}
 
         <InkButton variant="danger" disabled={busy} onClick={() => void handleDelete()} style={{ marginTop: 4 }}>
           {busy ? t('account_delete_busy') : t('account_delete_confirm')}

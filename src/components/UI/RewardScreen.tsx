@@ -215,7 +215,7 @@ export function RewardScreen() {
           {title}
         </h2>
         {subtitle && (
-          <p style={{ margin: '0 0 20px', fontSize: 14, lineHeight: '20px', color: inkSoft }}>
+          <p style={{ margin: '0 0 20px', fontSize: 13, lineHeight: '20px', color: inkSoft }}>
             {subtitle}
           </p>
         )}
@@ -238,7 +238,7 @@ export function RewardScreen() {
                 <div style={{ width: 26, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <EmojiSprite id={item.spriteId ?? `item_${item.type}`} emoji={item.emoji ?? ITEM_ICON[item.type]} size={24} />
                 </div>
-                <Mono style={{ fontSize: 14, lineHeight: '20px', fontWeight: 500, color: ink, textAlign: 'left' }}>
+                <Mono style={{ fontSize: 13, lineHeight: '20px', fontWeight: 500, color: ink, textAlign: 'left' }}>
                   {itemLabel(item, t)}
                 </Mono>
               </div>
@@ -246,7 +246,7 @@ export function RewardScreen() {
           </div>
         )}
 
-        <InkButton style={{ width: '100%', minHeight: 48, fontSize: 17 }}>
+        <InkButton style={{ width: '100%', minHeight: 48, fontSize: 15 }}>
           {t('reward_collect')}
         </InkButton>
       </NoteCard>

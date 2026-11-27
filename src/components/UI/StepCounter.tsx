@@ -77,7 +77,7 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
       <StepRing progress={steps / DAILY_STEP_GOAL} size={RING_SIZE} stroke={RING_STROKE}>
         <div
           style={{
-            width: iconSize, height: iconSize, borderRadius: '50%', fontSize: 16,
+            width: iconSize, height: iconSize, borderRadius: '50%', fontSize: 15,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'rgba(255,255,255,0.7)',
           }}
@@ -86,10 +86,10 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
         </div>
       </StepRing>
       <div style={{ lineHeight: 1.1, textAlign: 'center' }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#33281E' }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: '#33281E' }}>
           {(animatedSteps ?? steps).toLocaleString()} {t('steps_unit')}
         </div>
-        <div style={{ fontSize: 10, color: '#6A5843' }}>{t('steps_today', { distance })}</div>
+        <div style={{ fontSize: 11, color: '#6A5843' }}>{t('steps_today', { distance })}</div>
       </div>
       {celebrate && <Confetti onDone={() => setCelebrate(false)} />}
       {ringCelebrate && <Confetti onDone={() => setRingCelebrate(false)} />}

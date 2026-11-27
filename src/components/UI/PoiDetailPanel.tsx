@@ -126,7 +126,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           <span style={{
             ...paperTag, width: 30, height: 30,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, lineHeight: 1,
+            fontSize: 19, lineHeight: 1,
           }}>
             ×
           </span>
@@ -142,7 +142,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
         </div>
       )}
       <p style={{
-        margin: 0, padding: '0 0 0 10px', fontSize: 14, color: inkSoft, lineHeight: 1.55,
+        margin: 0, padding: '0 0 0 10px', fontSize: 13, color: inkSoft, lineHeight: 1.55,
         borderLeft: `3px solid ${wash}`,
       }}>
         {wikiExtract ?? poi.description}
@@ -163,8 +163,8 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
               marginBottom: pickingFriend || sent ? 10 : 0,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                <span style={{ fontSize: 20 }}>😊</span>
-                <span style={{ fontSize: 14, fontWeight: 500, color: forest }}>{t('poi_visited')}</span>
+                <span style={{ fontSize: 19 }}>😊</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: forest }}>{t('poi_visited')}</span>
               </div>
               {!sent && (
                 <InkButton
@@ -223,7 +223,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           </div>
         ) : isLocked ? (
           <div>
-            <p style={{ margin: '0 0 10px', fontSize: 14, color: inkSoft, fontWeight: 500, textAlign: 'center' }}>
+            <p style={{ margin: '0 0 10px', fontSize: 13, color: inkSoft, fontWeight: 500, textAlign: 'center' }}>
               {t('poi_premium_locked_desc')}
             </p>
             <InkButton
@@ -253,7 +253,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           style={{
             position: 'fixed',
             left: plane.x, top: plane.y,
-            fontSize: 22, zIndex: 1000, pointerEvents: 'none',
+            fontSize: 24, zIndex: 1000, pointerEvents: 'none',
             animation: 'postcardPlaneOut 0.85s cubic-bezier(0.3,0,0.4,1) forwards',
           }}
         >

@@ -78,11 +78,11 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
 
           <NoteCard style={{ marginTop: 20, padding: '12px 0', display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             <div style={{ padding: '0 8px', textAlign: 'center', borderRight: `1px solid ${line}` }}>
-              <div style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, lineHeight: '28px', color: ink }}>{friend.totalSteps.toLocaleString()}</div>
+              <div style={{ fontFamily: MONO, fontSize: 24, fontWeight: 500, lineHeight: '28px', color: ink }}>{friend.totalSteps.toLocaleString()}</div>
               <Mono>{t('friend_total_steps')}</Mono>
             </div>
             <div style={{ padding: '0 8px', textAlign: 'center' }}>
-              <div style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, lineHeight: '28px', color: ink }}>{unlocked.length}/{achievements.length}</div>
+              <div style={{ fontFamily: MONO, fontSize: 24, fontWeight: 500, lineHeight: '28px', color: ink }}>{unlocked.length}/{achievements.length}</div>
               <Mono>Achievements</Mono>
             </div>
           </NoteCard>

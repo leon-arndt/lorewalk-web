@@ -50,8 +50,8 @@ export function ConfirmDialog({ open, icon, title, body, confirmLabel, cancelLab
             }}
           >
             {icon && <div style={{ marginBottom: 4 }}>{icon}</div>}
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: ink, lineHeight: 1.25 }}>{title}</h2>
-            {body && <p style={{ margin: 0, fontSize: 14, color: inkSoft, lineHeight: 1.45 }}>{body}</p>}
+            <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, color: ink, lineHeight: 1.25 }}>{title}</h2>
+            {body && <p style={{ margin: 0, fontSize: 13, color: inkSoft, lineHeight: 1.45 }}>{body}</p>}
             <motion.div whileTap={tapScale} style={{ marginTop: 10, width: '100%', display: 'flex' }}>
               <InkButton variant={danger ? 'danger' : 'ink'} onClick={onConfirm} style={{ flex: 1 }}>
                 {confirmLabel}

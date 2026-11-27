@@ -46,8 +46,8 @@ export function CloudConflictDialog() {
         background: paperLight, border: `1px solid ${edge}`, borderRadius: 10,
         boxShadow: '2px 3px 0 rgba(51,40,30,0.35)', display: 'flex', flexDirection: 'column', gap: 12,
       }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, lineHeight: '26px', color: ink }}>{t('account_conflict_title')}</h2>
-        <p style={{ margin: 0, fontSize: 14, color: inkSoft, lineHeight: 1.45 }}>{t('account_conflict_body')}</p>
+        <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, lineHeight: '26px', color: ink }}>{t('account_conflict_title')}</h2>
+        <p style={{ margin: 0, fontSize: 13, color: inkSoft, lineHeight: 1.45 }}>{t('account_conflict_body')}</p>
 
         {options.map((option) => {
           const selected = choice === option.id

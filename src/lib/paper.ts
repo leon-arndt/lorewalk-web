@@ -9,6 +9,11 @@ export const RADIUS = 10
 
 export const MONO = "'DM Mono', ui-monospace, monospace"
 
+// The type scale. Text uses these seven sizes and no other. An ESLint rule
+// (eslint.config.js) rejects a fontSize that is not in the scale. An emoji
+// that stands in for an icon can be 48 or 64.
+export const TYPE = { caption: 11, small: 12, body: 13, lead: 15, title: 19, heading: 24, display: 28 } as const
+
 // Small caps captions, counters, and stamps.
 export const monoLabel: CSSProperties = {
   fontFamily: MONO, fontSize: 11, lineHeight: '14px', letterSpacing: '0.01em', color: inkHint,

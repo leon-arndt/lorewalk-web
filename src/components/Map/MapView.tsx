@@ -101,7 +101,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
     width:40px;height:40px;border-radius:10px;box-sizing:border-box;
     background:#FBF6E9;border:${state === 'ready' ? 2.5 : 1.5}px solid ${borderColor};
     display:flex;align-items:center;justify-content:center;
-    font-size:22px;line-height:1;
+    font-size:24px;line-height:1;
     box-shadow:1px 2px 0 rgba(51,40,30,0.3);
     opacity:${state === 'busy' ? '0.6' : '1'};
   `
@@ -110,7 +110,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
     const badge = document.createElement('div')
     badge.appendChild(spriteEl('🎁', 16, 'item_chest'))
     badge.style.cssText = `
-      position:absolute;top:-8px;right:-8px;font-size:14px;
+      position:absolute;top:-8px;right:-8px;font-size:13px;
       background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;
       display:flex;align-items:center;justify-content:center;
     `
@@ -166,7 +166,7 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   if (node.state === 'ready') {
     const badge = document.createElement('div')
     badge.textContent = '⚔️'
-    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:13px;background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
     outer.appendChild(badge)
   } else if (node.state === 'busy') {
     const badge = document.createElement('div')
@@ -176,7 +176,7 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   } else if (node.state === 'cleared') {
     const badge = document.createElement('div')
     badge.textContent = '🏆'
-    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:13px;background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
     outer.appendChild(badge)
   }
   const tooltip = document.createElement('div')
@@ -235,7 +235,7 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
     const badge = document.createElement('div')
     badge.appendChild(spriteEl('🎁', 16, 'item_chest'))
     badge.style.cssText = `
-      position:absolute;top:-8px;right:-8px;font-size:14px;
+      position:absolute;top:-8px;right:-8px;font-size:13px;
       background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;
       display:flex;align-items:center;justify-content:center;
     `

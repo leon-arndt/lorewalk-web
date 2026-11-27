@@ -151,7 +151,7 @@ export function ProfilePage() {
               maxLength={24}
               style={{
                 flex: 1, minWidth: 0, height: 44, boxSizing: 'border-box', fontFamily: 'inherit',
-                fontSize: 20, fontWeight: 600, color: ink, background: paperCard,
+                fontSize: 19, fontWeight: 600, color: ink, background: paperCard,
                 border: `1px solid ${edge}`, borderRadius: 10,
                 padding: '0 10px', outline: 'none',
               }}
@@ -264,7 +264,7 @@ export function ProfilePage() {
                 borderRight: i < stats.length - 1 ? `1px solid ${line}` : 'none',
               }}>
                 <div style={{ height: 24, display: 'flex', alignItems: 'center' }}>{icon}</div>
-                <div style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, color: ink, lineHeight: '28px' }}>{value}</div>
+                <div style={{ fontFamily: MONO, fontSize: 24, fontWeight: 500, color: ink, lineHeight: '28px' }}>{value}</div>
                 <Mono>{t(labelKey)}</Mono>
               </div>
             ))}
@@ -369,15 +369,15 @@ export function ProfilePage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
                   <span style={{ fontSize: 28, lineHeight: 1 }}>🛡️</span>
                   <div>
-                    <div style={{ fontSize: 17, fontWeight: 600, lineHeight: '22px', color: ink }}>{t('premium_go_premium')}</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, lineHeight: '22px', color: ink }}>{t('premium_go_premium')}</div>
                     <Mono style={{ display: 'block' }}>{t('premium_unlock_everything')}</Mono>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                   {premiumBenefits.map((b) => (
-                    <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: ink }}>
-                      <span style={{ width: 22, flexShrink: 0, display: 'flex', justifyContent: 'center', fontSize: 16, lineHeight: 1 }}>{b.icon}</span> {b.text}
+                    <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: ink }}>
+                      <span style={{ width: 22, flexShrink: 0, display: 'flex', justifyContent: 'center', fontSize: 15, lineHeight: 1 }}>{b.icon}</span> {b.text}
                     </div>
                   ))}
                 </div>
@@ -401,7 +401,7 @@ export function ProfilePage() {
             <button
               onClick={() => setShowMedalHistory(true)}
               aria-label={t('medal_view_all_aria')}
-              style={{ ...iconButton, marginRight: -12, color: ink, fontSize: 22, fontWeight: 500, lineHeight: 1 }}
+              style={{ ...iconButton, marginRight: -12, color: ink, fontSize: 24, fontWeight: 500, lineHeight: 1 }}
             >
               ›
             </button>
@@ -467,8 +467,8 @@ export function ProfilePage() {
 
           {profile.visitHistory.length === 0 ? (
             <div style={{ border: '1.5px dashed #8C7A5C', borderRadius: 6, padding: 20, textAlign: 'center' }}>
-              <div style={{ fontSize: 34, marginBottom: 6 }}>🗺️</div>
-              <p style={{ margin: 0, fontSize: 14, color: inkSoft }}>
+              <div style={{ fontSize: 28, marginBottom: 6 }}>🗺️</div>
+              <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
                 {t('profile_no_visits')}
               </p>
             </div>
@@ -605,7 +605,7 @@ export function ProfilePage() {
             <h3 style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>
               How the monthly challenge works
             </h3>
-            <p style={{ margin: '0 0 16px', fontSize: 14, color: inkSoft, lineHeight: 1.5 }}>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: inkSoft, lineHeight: 1.5 }}>
               Finish this challenge to earn a real physical medal, which you can pick up at the next community event. Terms and conditions apply.
             </p>
             <InkButton onClick={() => setShowChallengeInfo(false)} style={{ width: '100%' }}>

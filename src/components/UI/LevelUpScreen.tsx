@@ -136,7 +136,7 @@ function RewardCard({
           <Mono style={{ display: 'block', marginTop: 3 }}>{info.sub}</Mono>
         </motion.div>
       ) : (
-        <div style={{ fontSize: 30, fontWeight: 500, color: isNext ? ink : inkHint, lineHeight: 1, paddingTop: 24 }}>?</div>
+        <div style={{ fontSize: 28, fontWeight: 500, color: isNext ? ink : inkHint, lineHeight: 1, paddingTop: 24 }}>?</div>
       )}
     </motion.div>
   )

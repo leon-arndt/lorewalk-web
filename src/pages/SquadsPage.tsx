@@ -127,7 +127,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             onClick={() => hasMembers && setExpeditionOpen(true)}
             disabled={!hasMembers}
             style={{
-              marginTop: 10, width: '100%', fontSize: 14,
+              marginTop: 10, width: '100%', fontSize: 13,
               ...(hasMembers ? null : { background: 'transparent', border: `1.5px dashed ${pencil}`, color: inkHint, opacity: 1 }),
             }}
           >
@@ -145,13 +145,13 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
           {ready ? (
             <InkButton
               onClick={handleCollect}
-              style={{ width: '100%', fontSize: 14, background: stamp, borderColor: stamp }}
+              style={{ width: '100%', fontSize: 13, background: stamp, borderColor: stamp }}
             >
               {t('squads_collect_reward')}
             </InkButton>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, color: ink, fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontFamily: MONO, fontSize: 24, fontWeight: 500, color: ink, fontVariantNumeric: 'tabular-nums' }}>
                 {formatCountdown(new Date(exp.returnsAt).getTime() - now)}
               </span>
               <InkButton variant="danger" onClick={() => recallSquad(squad.id)} style={{ fontSize: 13, padding: '0 12px' }}>
@@ -208,7 +208,7 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
               display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 14, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
+            <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 13, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
           </button>
         </div>
         <div style={{ overflowY: 'auto', padding: '6px 16px calc(24px + env(safe-area-inset-bottom))' }}>
@@ -294,7 +294,7 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
                 style={{
                   ...paperCardStyle,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-                  minHeight: 56, textAlign: 'left', fontFamily: 'inherit', fontSize: 14, color: ink,
+                  minHeight: 56, textAlign: 'left', fontFamily: 'inherit', fontSize: 13, color: ink,
                   padding: '9px 12px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
                 }}
               >
@@ -386,7 +386,7 @@ function Holdings({ now }: { now: number }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
             }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 500, color: ink }}><EmojiSprite id="item_claim" emoji="🚩" size={18} />{claim.poiName}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 500, color: ink }}><EmojiSprite id="item_claim" emoji="🚩" size={18} />{claim.poiName}</div>
                 <Mono style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, textTransform: 'capitalize' }}>
                   <TypeDot category={claim.poiCategory} />
                   {claim.poiCategory} · ×{claim.affinity.toFixed(2)} rate

@@ -31,7 +31,7 @@ const panelStyle = {
   zIndex: 10,
 }
 
-const titleStyle = { margin: 0, fontSize: 22, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink } as const
+const titleStyle = { margin: 0, fontSize: 24, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink } as const
 const kicker = { display: 'block', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: inkSoft } as const
 const typed = { display: 'block', fontSize: 12, lineHeight: '18px', color: inkSoft } as const
 
@@ -85,7 +85,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <span style={{
           ...paperTag, width: 30, height: 30,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, lineHeight: 1,
+          fontSize: 15, lineHeight: 1,
         }}>x</span>
       </button>
     </>
@@ -99,13 +99,13 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🗓️</div>
           <h2 style={{ ...titleStyle, margin: '0 0 6px' }}>{t('weekly_walk_ended')}</h2>
-          <p style={{ margin: '0 0 20px', fontSize: 14, lineHeight: 1.5, color: inkSoft }}>
+          <p style={{ margin: '0 0 20px', fontSize: 13, lineHeight: 1.5, color: inkSoft }}>
             Last week's party walk has ended. A new one starts every Monday.
           </p>
           <InkButton
             onClick={() => { expireWeeklyWalkIfStale(); onClose() }}
             data-sfx="close"
-            style={{ minHeight: 48, padding: '0 28px', fontSize: 16 }}
+            style={{ minHeight: 48, padding: '0 28px', fontSize: 15 }}
           >
             Got it
           </InkButton>
@@ -173,13 +173,13 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
                   width: 36, height: 36, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
                   background: paperShade, border: `1.5px solid ${done ? forest : ink}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16,
+                  fontSize: 15,
                 }}>
                   <PlayerFaceIcon appearance={m.isPlayer ? profile.appearance : deterministicAppearance(m.name)} size={30} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontSize: 14, fontWeight: 500, color: m.isPlayer ? ink : inkSoft, whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: m.isPlayer ? ink : inkSoft, whiteSpace: 'nowrap' }}>
                       {m.name} {m.isPlayer ? '(you)' : ''}
                     </span>
                     <Mono style={{ fontWeight: done ? 500 : 400, color: done ? forest : inkSoft, textAlign: 'right' }}>
@@ -197,7 +197,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
           <InkButton
             onClick={handleClaim}
             style={{
-              width: '100%', minHeight: 52, fontSize: 17, fontWeight: 600,
+              width: '100%', minHeight: 52, fontSize: 15, fontWeight: 600,
               background: stamp, color: paperLight,
               animation: 'rewardPop 0.4s cubic-bezier(0.16,1,0.3,1)',
             }}
@@ -252,7 +252,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         <EmojiSprite id="item_sneaker" emoji="🚶" size={44} />
         <h2 style={titleStyle}>{t('weekly_party_walk_title')}</h2>
       </div>
-      <p style={{ margin: '0 0 16px', fontSize: 14, color: inkSoft, lineHeight: 1.5 }}>
+      <p style={{ margin: '0 0 16px', fontSize: 13, color: inkSoft, lineHeight: 1.5 }}>
         Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.
         Your own steps count toward the whole goal, so you can finish it solo if the rest of the party falls behind.
         Resets every Monday.
@@ -272,7 +272,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
           ].map((r) => (
             <div key={r.text} style={{
               display: 'flex', alignItems: 'center', gap: 6, minWidth: 0,
-              fontSize: 14, fontWeight: 500, color: ink,
+              fontSize: 13, fontWeight: 500, color: ink,
             }}>
               <EmojiSprite id={r.sprite} emoji={r.icon} size={22} /> {r.text}
             </div>
@@ -286,7 +286,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, minHeight: 44 }}>
-          <span style={{ fontSize: 22 }}>🎟️</span>
+          <span style={{ fontSize: 24 }}>🎟️</span>
           <div>
             <div style={{ fontSize: 15, fontWeight: 500, color: ink }}>
               {profile.tickets} ticket{profile.tickets !== 1 ? 's' : ''}
@@ -299,7 +299,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
             variant="paper"
             onClick={handleBuyTicket}
             disabled={!canBuyTicket}
-            style={{ flexShrink: 0, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5 }}
+            style={{ flexShrink: 0, padding: '0 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 5 }}
           >
             Buy - <EmojiSprite id="item_coins" emoji="🪙" size={18} /> {TICKET_COST_COINS}
           </InkButton>
@@ -309,7 +309,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
       <InkButton
         onClick={handleJoin}
         disabled={!hasTicket}
-        style={{ width: '100%', minHeight: 48, fontSize: 16 }}
+        style={{ width: '100%', minHeight: 48, fontSize: 15 }}
       >
         {hasTicket ? 'Join party walk - 🎟️ 1 ticket' : 'Need a ticket to join'}
       </InkButton>

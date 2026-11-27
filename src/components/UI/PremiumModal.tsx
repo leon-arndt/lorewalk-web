@@ -161,7 +161,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 14, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
+          <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 13, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
         </button>
 
         <div style={{ overflowY: 'auto', overflowX: 'hidden', padding: '40px 16px calc(24px + env(safe-area-inset-bottom))' }}>
@@ -175,10 +175,10 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                 background: ochre, border: `1px solid ${edge}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontSize: 26, lineHeight: 1 }}>👑</span>
+                <span style={{ fontSize: 24, lineHeight: 1 }}>👑</span>
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 22, fontWeight: 600, lineHeight: '28px', color: ink }}>
+                <div style={{ fontSize: 24, fontWeight: 600, lineHeight: '28px', color: ink }}>
                   {isManaging ? t('premium_youre_premium') : t('premium_go_premium')}
                 </div>
                 <div style={{ fontSize: 13, lineHeight: '18px', color: inkSoft, marginTop: 2 }}>
@@ -214,10 +214,10 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                       ? <EmojiSprite id={row.sprite} emoji={row.icon} size={20} />
                       : <span style={{ width: 20, fontSize: 15, lineHeight: 1, textAlign: 'center' }}>{row.icon}</span>} {row.label}
                   </span>
-                  <span style={{ textAlign: 'center', color: row.basic ? forest : inkHint, fontSize: 16, fontWeight: 600 }}>
+                  <span style={{ textAlign: 'center', color: row.basic ? forest : inkHint, fontSize: 15, fontWeight: 600 }}>
                     {row.basic ? '✓' : '—'}
                   </span>
-                  <span style={{ textAlign: 'center', color: forest, fontSize: 16, fontWeight: 600 }}>✓</span>
+                  <span style={{ textAlign: 'center', color: forest, fontSize: 15, fontWeight: 600 }}>✓</span>
                 </div>
               ))}
             </div>
@@ -242,7 +242,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                   <div style={{ display: 'flex', gap: 8 }}>
                     <InkButton
                       onClick={() => setConfirmingCancel(false)}
-                      style={{ flex: 1, padding: '0 8px', fontSize: 14 }}
+                      style={{ flex: 1, padding: '0 8px', fontSize: 13 }}
                     >
                       {mode === 'online' ? t('premium_not_now') : t('premium_keep_premium')}
                     </InkButton>
@@ -250,7 +250,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                       variant="danger"
                       onClick={handleCancel}
                       disabled={cancelled}
-                      style={{ flex: 1, padding: '0 8px', fontSize: 14 }}
+                      style={{ flex: 1, padding: '0 8px', fontSize: 13 }}
                     >
                       {mode === 'online' ? t('premium_open_play') : t('premium_yes_cancel')}
                     </InkButton>
@@ -260,7 +260,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                 <InkButton
                   variant="paper"
                   onClick={() => setConfirmingCancel(true)}
-                  style={{ width: '100%', marginTop: 18, fontSize: 14 }}
+                  style={{ width: '100%', marginTop: 18, fontSize: 13 }}
                 >
                   {t('premium_cancel_subscription')}
                 </InkButton>
@@ -303,7 +303,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
               <InkButton
                 onClick={handleSubscribe}
                 disabled={subscribed || purchasing}
-                style={{ width: '100%', marginTop: 14, minHeight: 50, fontSize: 16, opacity: (subscribed || purchasing) ? 0.7 : 1 }}
+                style={{ width: '100%', marginTop: 14, minHeight: 50, fontSize: 15, opacity: (subscribed || purchasing) ? 0.7 : 1 }}
               >
                 {subscribed ? t('premium_youre_premium_exclaim') : purchasing ? t('premium_processing') : t('premium_subscribe_btn', { price: planPrice(interval) })}
               </InkButton>

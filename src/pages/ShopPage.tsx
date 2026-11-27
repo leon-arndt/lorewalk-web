@@ -141,14 +141,14 @@ export function ShopPage() {
         padding: '10px 16px 10px', borderBottom: `1px solid ${edge}`,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
-        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, lineHeight: '34px', letterSpacing: '-0.01em', color: ink }}>{t('shop_title')}</h1>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600, lineHeight: '34px', letterSpacing: '-0.01em', color: ink }}>{t('shop_title')}</h1>
         <button
           onClick={scrollToCoins}
           title={t('shop_get_more_coins')}
           style={{
             ...paperTag, background: paperCard,
             flexShrink: 0, minHeight: 44, display: 'flex', alignItems: 'center', gap: 6,
-            fontFamily: MONO, fontSize: 14, fontWeight: 500, cursor: 'pointer', padding: '0 12px',
+            fontFamily: MONO, fontSize: 13, fontWeight: 500, cursor: 'pointer', padding: '0 12px',
             WebkitTapHighlightColor: 'transparent',
           }}
         >
@@ -172,12 +172,12 @@ export function ShopPage() {
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <span style={{ fontSize: 26, lineHeight: 1 }}>👑</span>
+            <span style={{ fontSize: 24, lineHeight: 1 }}>👑</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, color: ink }}>{t('premium_go_premium')}</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: ink }}>{t('premium_go_premium')}</div>
               <div style={{ fontSize: 12, lineHeight: '16px', color: inkSoft }}>{t('premium_shop_teaser')}</div>
             </div>
-            <span aria-hidden style={{ fontSize: 22, fontWeight: 500, color: ink }}>›</span>
+            <span aria-hidden style={{ fontSize: 24, fontWeight: 500, color: ink }}>›</span>
           </button>
         </div>
       )}
@@ -205,7 +205,7 @@ export function ShopPage() {
                 onClick={it.buy}
                 disabled={it.disabled}
                 style={{
-                  flexShrink: 0, minWidth: 72, padding: '0 10px', fontFamily: MONO, fontSize: 14,
+                  flexShrink: 0, minWidth: 72, padding: '0 10px', fontFamily: MONO, fontSize: 13,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                 }}
               >
@@ -237,12 +237,12 @@ export function ShopPage() {
               <span style={{ ...specimenWindow, height: 68 }}>
                 <EmojiSprite id="item_coins" emoji="🪙" size={44} />
               </span>
-              <span style={{ fontSize: 20, fontWeight: 600, lineHeight: '24px', color: ink, textAlign: 'center' }}>{pack.coins.toLocaleString()}</span>
+              <span style={{ fontSize: 19, fontWeight: 600, lineHeight: '24px', color: ink, textAlign: 'center' }}>{pack.coins.toLocaleString()}</span>
               <InkButton
                 onClick={() => buyPack(pack)}
                 disabled={buying !== null}
                 style={{
-                  width: '100%', padding: '0 4px', fontFamily: MONO, fontSize: 14,
+                  width: '100%', padding: '0 4px', fontFamily: MONO, fontSize: 13,
                   cursor: buying ? 'default' : 'pointer',
                   opacity: buying && buying !== pack.productId ? 0.5 : 1,
                 }}

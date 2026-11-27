@@ -105,7 +105,7 @@ function PostDetail({ post, onClose }: { post: NewsPost; onClose: () => void }) 
   )
 }
 
-const emptyNote = { margin: 0, padding: '32px 4px', textAlign: 'center', fontSize: 14, color: inkHint } as const
+const emptyNote = { margin: 0, padding: '32px 4px', textAlign: 'center', fontSize: 13, color: inkHint } as const
 
 export function NewsOverlay({ onClose }: { onClose: () => void }) {
   const { t, locale } = useLocale()
@@ -142,7 +142,7 @@ export function NewsOverlay({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             style={{
               ...paperTag, width: 44, height: 44, padding: 0,
-              fontSize: 22, lineHeight: 1, cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 24, lineHeight: 1, cursor: 'pointer', fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
             }}
@@ -151,7 +151,7 @@ export function NewsOverlay({ onClose }: { onClose: () => void }) {
           >×</button>
         }
       />
-      <p style={{ margin: 0, padding: '8px 16px 4px', fontSize: 14, color: inkSoft }}>{t('news_subtitle')}</p>
+      <p style={{ margin: 0, padding: '8px 16px 4px', fontSize: 13, color: inkSoft }}>{t('news_subtitle')}</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '16px 18px 8px' }}>
         {loading && sorted.length === 0 && (
@@ -211,11 +211,11 @@ export function NewsOverlay({ onClose }: { onClose: () => void }) {
                   {new Date(post.publishedAt).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
                 </Mono>
               </div>
-              <div style={{ fontSize: 17, fontWeight: 500, lineHeight: '23px', color: ink, marginBottom: 4 }}>
+              <div style={{ fontSize: 15, fontWeight: 500, lineHeight: '23px', color: ink, marginBottom: 4 }}>
                 {newsText(post.title, locale)}
               </div>
               <div style={{
-                fontSize: 14, lineHeight: 1.5, color: inkSoft,
+                fontSize: 13, lineHeight: 1.5, color: inkSoft,
                 display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
               }}>
                 {newsText(post.body, locale)}

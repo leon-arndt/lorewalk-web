@@ -30,7 +30,7 @@ export function VisitHistoryItem({ visit }: { visit: VisitRecord }) {
         width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
         background: `${categoryCss(visit.poiCategory)}40`, border: `1px solid ${edge}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 18,
+        fontSize: 19,
       }}>
         {CATEGORY_ICONS[visit.poiCategory] ?? '📍'}
       </div>

@@ -284,7 +284,7 @@ export function CharacterCustomizationPage() {
                 data-sfx="close"
                 style={{
                   ...paperTag, width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 22, lineHeight: 1,
+                  fontFamily: 'inherit', fontSize: 24, lineHeight: 1,
                 }}
               >
                 ←
@@ -321,7 +321,7 @@ export function CharacterCustomizationPage() {
               aria-selected={x.id === tab}
               onClick={() => setTab(x.id)}
               data-sfx="click"
-              style={{ ...choiceStyle(x.id === tab), padding: '0 12px', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap' }}
+              style={{ ...choiceStyle(x.id === tab), padding: '0 12px', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}
             >
               {t(x.label)}
             </button>

@@ -94,7 +94,7 @@ export function SettingsPage() {
             width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
             display: 'grid', placeItems: 'center',
             background: paperCard, border: `1px solid ${edge}`, borderRadius: 10,
-            fontFamily: 'inherit', fontSize: 22, fontWeight: 500, color: ink, lineHeight: 1,
+            fontFamily: 'inherit', fontSize: 24, fontWeight: 500, color: ink, lineHeight: 1,
           }}
         >
           ←

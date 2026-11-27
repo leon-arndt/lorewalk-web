@@ -85,7 +85,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
               : <EmojiSprite id="item_sneaker" emoji="👟" size={26} />}
           </StepRing>
           <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 22, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink }}>{title}</h2>
+            <h2 style={{ margin: '0 0 2px', fontSize: 24, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink }}>{title}</h2>
             <Mono style={{ display: 'block', fontSize: 12, lineHeight: '18px', color: inkSoft }}>
               {steps.toLocaleString()} / {DAILY_STEP_GOAL.toLocaleString()} steps
             </Mono>
@@ -132,7 +132,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
               color: ink, fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <span style={{ fontSize: 26, lineHeight: 1 }}>{busy ? '⏳' : '📷'}</span>
+            <span style={{ fontSize: 24, lineHeight: 1 }}>{busy ? '⏳' : '📷'}</span>
             <Mono style={{ fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: inkSoft }}>{busy ? 'Adding' : 'Add'}</Mono>
           </button>
         </div>
@@ -199,13 +199,13 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
         right={
           <button
             onClick={onClose}
-            style={{ ...roundBtn, fontSize: 22 }}
+            style={{ ...roundBtn, fontSize: 24 }}
             aria-label={t('journal_close')}
             data-sfx="close"
           >×</button>
         }
       />
-      <p style={{ margin: 0, padding: '8px 16px 4px', fontSize: 14, color: inkSoft }}>{t('journal_subtitle')}</p>
+      <p style={{ margin: 0, padding: '8px 16px 4px', fontSize: 13, color: inkSoft }}>{t('journal_subtitle')}</p>
 
       <NoteCard taped tilt={-0.4} style={{ margin: '22px 14px 0', padding: '14px 8px 10px' }}>
         {/* Month header */}

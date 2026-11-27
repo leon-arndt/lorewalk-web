@@ -21,7 +21,7 @@ export function PageHeader({ title, right, kicker }: { title: ReactNode; right?:
         <Mono style={{ fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: inkSoft }}>
           {kicker ?? t('journal_kicker')}
         </Mono>
-        <h1 style={{ margin: 0, fontSize: 32, fontWeight: 600, lineHeight: '42px', letterSpacing: '-0.01em', color: ink }}>{title}</h1>
+        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 600, lineHeight: '36px', letterSpacing: '-0.01em', color: ink }}>{title}</h1>
         <span aria-hidden style={{ width: 44, height: 3, borderRadius: 2, background: stamp, marginTop: 2 }} />
       </div>
       {right && <div style={{ flexShrink: 0, marginBottom: 10 }}>{right}</div>}
@@ -70,7 +70,7 @@ export function Stamp({ children, color = stamp, tilt = 4, style }: { children: 
 export function Postmark({ figure, word, tilt = 10 }: { figure: ReactNode; word: ReactNode; tilt?: number }) {
   return (
     <div style={{
-      width: 70, height: 70, flexShrink: 0, border: `2px solid ${stamp}`, borderRadius: '50%', padding: 4,
+      width: 78, height: 78, flexShrink: 0, border: `2px solid ${stamp}`, borderRadius: '50%', padding: 4,
       transform: `rotate(${tilt}deg)`,
     }}>
       <div style={{
@@ -78,8 +78,8 @@ export function Postmark({ figure, word, tilt = 10 }: { figure: ReactNode; word:
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         color: stamp, fontFamily: MONO, fontWeight: 500, lineHeight: 1.1, textAlign: 'center',
       }}>
-        <span style={{ fontSize: 17 }}>{figure}</span>
-        <span style={{ fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase', maxWidth: 54, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{word}</span>
+        <span style={{ fontSize: 15 }}>{figure}</span>
+        <span style={{ fontSize: 11, textTransform: 'uppercase', maxWidth: 62, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{word}</span>
       </div>
     </div>
   )

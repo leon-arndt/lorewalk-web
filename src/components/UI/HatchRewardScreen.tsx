@@ -85,7 +85,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
               maxLength={24}
               style={{
                 flex: 1, minWidth: 0, height: 44,
-                fontFamily: MONO, fontSize: 17, fontWeight: 500, color: ink,
+                fontFamily: MONO, fontSize: 15, fontWeight: 500, color: ink,
                 background: 'transparent', border: 'none', borderBottom: `1px solid ${edge}`, borderRadius: 0,
                 padding: '0 4px', outline: 'none', textAlign: 'center',
               }}
@@ -111,7 +111,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
               title="Rename"
               style={{
                 width: 44, height: 44, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: 16, color: inkSoft, padding: 0,
+                fontSize: 15, color: inkSoft, padding: 0,
               }}
             >
               ✏️

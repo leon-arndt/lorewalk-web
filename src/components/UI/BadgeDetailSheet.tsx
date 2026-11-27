@@ -42,7 +42,7 @@ export function AchievementCard({ icon, name, unlocked, tilt = 0, onClick }: {
         height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: unlocked ? `${ochre}33` : undefined,
       }}>
-        <span style={{ fontSize: 26, lineHeight: 1, filter: unlocked ? undefined : 'grayscale(1)', opacity: unlocked ? 1 : 0.45 }}>
+        <span style={{ fontSize: 24, lineHeight: 1, filter: unlocked ? undefined : 'grayscale(1)', opacity: unlocked ? 1 : 0.45 }}>
           {icon}
         </span>
       </span>
@@ -91,9 +91,9 @@ export function BadgeDetailSheet({ icon, name, description, status, statusColor,
             </div>
           </div>
 
-          <div style={{ fontSize: 22, fontWeight: 600, lineHeight: '28px', color: ink }}>{name}</div>
+          <div style={{ fontSize: 24, fontWeight: 600, lineHeight: '28px', color: ink }}>{name}</div>
 
-          <p style={{ margin: '8px 0 0', fontSize: 14, color: inkSoft, lineHeight: 1.5 }}>
+          <p style={{ margin: '8px 0 0', fontSize: 13, color: inkSoft, lineHeight: 1.5 }}>
             {description}
           </p>
 

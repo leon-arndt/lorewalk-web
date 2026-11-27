@@ -49,7 +49,7 @@ export function NextGoalCard({ goal, onAct }: { goal: NextGoal; onAct: () => voi
       {/* The action sits in a red cap at the end of the bar. */}
       <span style={{
         flexShrink: 0, alignSelf: 'stretch', display: 'flex', alignItems: 'center', padding: '0 14px', marginLeft: 2,
-        background: stamp, color: paperLight, fontSize: 14, fontWeight: 600,
+        background: stamp, color: paperLight, fontSize: 13, fontWeight: 600,
       }}>
         {action}
       </span>

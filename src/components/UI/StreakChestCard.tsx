@@ -63,7 +63,7 @@ export function StreakChestCard() {
           <EmojiSprite id="item_chest" emoji="🎁" size={48} />
         </span>
         <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          <span style={{ fontSize: 17, fontWeight: 600, lineHeight: '22px', color: ink }}>{t('streak_chest_card_title')}</span>
+          <span style={{ fontSize: 15, fontWeight: 600, lineHeight: '22px', color: ink }}>{t('streak_chest_card_title')}</span>
           <Mono style={{ color: stamp, fontWeight: 500 }}>{t('streak_chest_card_sub')}</Mono>
         </span>
       </button>

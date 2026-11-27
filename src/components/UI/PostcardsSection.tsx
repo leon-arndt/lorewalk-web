@@ -56,10 +56,10 @@ function CardPill({ card, now, onOpen }: { card: Postcard; now: number; onOpen?:
         width: 44, height: 44, borderRadius: 6, flexShrink: 0,
         background: `${categoryCss(card.poiCategory)}${delivered ? '40' : '1f'}`, border: `1px solid ${line}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 22, position: 'relative',
+        fontSize: 24, position: 'relative',
       }}>
         {CATEGORY_ICONS[card.poiCategory] ?? '📍'}
-        <span style={{ position: 'absolute', bottom: -4, right: -4, fontSize: 16 }}>
+        <span style={{ position: 'absolute', bottom: -4, right: -4, fontSize: 15 }}>
           {card.creatureEmoji}
         </span>
       </div>
@@ -139,7 +139,7 @@ export function PostcardsSection() {
             key={t}
             variant={tab === t ? 'ink' : 'paper'}
             onClick={() => setTab(t)}
-            style={{ display: 'inline-flex', alignItems: 'center', fontSize: 14 }}
+            style={{ display: 'inline-flex', alignItems: 'center', fontSize: 13 }}
           >
             {t === 'inbox' ? 'Inbox' : 'Sent'}
             {t === 'inbox' && unread > 0 && (
@@ -159,7 +159,7 @@ export function PostcardsSection() {
       {tab === 'inbox' ? (
         inbox.length === 0 ? (
           <div style={empty}>
-            <div style={{ fontSize: 32, marginBottom: 6 }}>📬</div>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>📬</div>
             <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
               No postcards yet. Friends can send them after you check in at landmarks.
             </p>
@@ -179,7 +179,7 @@ export function PostcardsSection() {
       ) : (
         sent.length === 0 ? (
           <div style={empty}>
-            <div style={{ fontSize: 32, marginBottom: 6 }}>📮</div>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>📮</div>
             <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
               No sent postcards. Check in at a landmark and send one to a friend.
             </p>

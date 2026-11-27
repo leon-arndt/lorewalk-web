@@ -119,7 +119,7 @@ export function FriendsSection() {
               title={t('friends_tap_to_copy')}
               style={{
                 display: 'block', width: '100%', minHeight: 44, textAlign: 'center',
-                fontSize: 20, fontWeight: 500, letterSpacing: 3, color: ink,
+                fontSize: 19, fontWeight: 500, letterSpacing: 3, color: ink,
                 fontFamily: MONO,
                 background: paperLight, border: '1.5px dashed #8C7A5C',
                 borderRadius: 10, padding: '6px 8px', cursor: 'pointer',
@@ -138,7 +138,7 @@ export function FriendsSection() {
               variant="paper"
               onClick={() => void handleRegenerate()}
               disabled={regenerating}
-              style={{ marginTop: 6, width: '100%', fontSize: 14 }}
+              style={{ marginTop: 6, width: '100%', fontSize: 13 }}
             >
               {t('friends_regenerate')}
             </InkButton>
@@ -159,7 +159,7 @@ export function FriendsSection() {
             placeholder={t('friends_placeholder')}
             maxLength={9}
             style={{
-              flex: 1, minWidth: 0, height: 44, boxSizing: 'border-box', fontSize: 16, fontWeight: 500, letterSpacing: 2,
+              flex: 1, minWidth: 0, height: 44, boxSizing: 'border-box', fontSize: 15, fontWeight: 500, letterSpacing: 2,
               fontFamily: MONO, padding: '0 12px',
               border: `1px solid ${edge}`, borderRadius: 10,
               outline: 'none', color: ink, background: paperCard,
@@ -185,7 +185,7 @@ export function FriendsSection() {
       {/* Friends list */}
       {!loading && friends.length === 0 ? (
         <div style={{ border: '1.5px dashed #8C7A5C', borderRadius: 6, padding: 20, textAlign: 'center' }}>
-          <div style={{ fontSize: 32, marginBottom: 6 }}>👥</div>
+          <div style={{ fontSize: 28, marginBottom: 6 }}>👥</div>
           <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
             {t('friends_empty_text')}
           </p>
@@ -232,7 +232,7 @@ export function FriendsSection() {
                   {f.totalSteps.toLocaleString()} steps · {t('friends_added_date', { date: formatAdded(f.addedAt) })}
                 </Mono>
               </div>
-              <span style={{ flexShrink: 0, color: inkHint, fontSize: 18, fontWeight: 600 }}>›</span>
+              <span style={{ flexShrink: 0, color: inkHint, fontSize: 19, fontWeight: 600 }}>›</span>
             </button>
           ))}
         </div>

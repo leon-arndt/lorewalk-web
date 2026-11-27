@@ -72,7 +72,7 @@ export function CoinCapsule() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
-                <span style={{ ...paperTag, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, lineHeight: 1 }}>×</span>
+                <span style={{ ...paperTag, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, lineHeight: 1 }}>×</span>
               </button>
             </div>
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
