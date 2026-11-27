@@ -4,7 +4,7 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { InkButton } from '@/components/UI/Journal'
 import { SCRIM } from '@/lib/paper'
-import { ink, inkSoft, ochre, paperCard, paperLight, stamp } from '@/lib/theme'
+import { ink, inkSoft, ochre, paperCard, paperLight, stamp, edge } from '@/lib/theme'
 
 // The last stop before an account deletion. On success the app reloads as a
 // new guest, so this dialog only ever has to show the wait and the failure.
@@ -33,7 +33,7 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
     >
       <div style={{
         width: '100%', maxWidth: 380, boxSizing: 'border-box', padding: 20,
-        background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6,
+        background: paperLight, border: `1px solid ${edge}`, borderRadius: 10,
         boxShadow: '2px 3px 0 rgba(51,40,30,0.35)', display: 'flex', flexDirection: 'column', gap: 12,
       }}>
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, lineHeight: '26px', color: ink }}>{t('account_delete_title')}</h2>
@@ -41,7 +41,7 @@ export function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
         {profile.isPremium && (
           <p style={{
             margin: 0, fontSize: 14, color: ink, lineHeight: 1.45,
-            background: paperCard, border: `1.5px dashed ${ochre}`, borderRadius: 4, padding: '10px 12px',
+            background: paperCard, border: `1.5px dashed ${ochre}`, borderRadius: 6, padding: '10px 12px',
           }}>
             {t('account_delete_subscription')}
           </p>

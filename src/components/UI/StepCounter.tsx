@@ -1,7 +1,7 @@
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useEffect, useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { paperTag } from '@/lib/paper'
+import { hudTag } from '@/lib/paper'
 import { Confetti } from '@/components/UI/Confetti'
 import { StepRing } from '@/components/UI/StepRing'
 import { DAILY_STEP_GOAL, localDateKey } from '@/lib/profile'
@@ -68,7 +68,7 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
     <div
       style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        ...paperTag,
+        ...hudTag,
         padding: '3px 12px 3px 4px',
         pointerEvents: 'none', userSelect: 'none',
         animation: ringCelebrate ? 'stepRingPulse 0.6s ease' : undefined,

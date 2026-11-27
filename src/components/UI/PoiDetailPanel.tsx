@@ -10,7 +10,7 @@ import { PremiumModal } from '@/components/UI/PremiumModal'
 import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
 import type { Translations } from '@/i18n/types'
-import { categoryCss, forest, ink, inkSoft, line, ochre, paperShade, ochreInk } from '@/lib/theme'
+import { categoryCss, forest, ink, inkSoft, line, ochre, paperShade, ochreInk, edge } from '@/lib/theme'
 import { InkButton, Mono, Stamp } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
@@ -92,7 +92,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px 10px', flexWrap: 'wrap', minHeight: 44, minWidth: 0 }}>
           {poi.category && CATEGORY_META[poi.category] && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span aria-hidden style={{ width: 12, height: 12, borderRadius: '50%', background: wash, border: `1.5px solid ${ink}`, flexShrink: 0 }} />
+              <span aria-hidden style={{ width: 12, height: 12, borderRadius: '50%', background: wash, border: `1px solid ${edge}`, flexShrink: 0 }} />
               <Mono style={{ ...typed, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: ink }}>
                 {CATEGORY_META[poi.category].icon} {CATEGORY_META[poi.category].label}
               </Mono>
@@ -124,7 +124,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           aria-label={t('common_close')}
         >
           <span style={{
-            ...paperTag, width: 30, height: 30, borderRadius: '50%',
+            ...paperTag, width: 30, height: 30,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 18, lineHeight: 1,
           }}>
@@ -179,8 +179,8 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
 
             {sent && (
               <div style={{
-                padding: '10px 14px', borderRadius: 4, textAlign: 'center',
-                border: `1.5px dashed ${line}`,
+                padding: '10px 14px', borderRadius: 6, textAlign: 'center',
+                border: `1px solid ${line}`,
               }}>
                 <Mono style={{ fontSize: 12, lineHeight: '18px', color: ink }}>
                   Postcard to {sent} - arrives in {import.meta.env.DEV ? '30s' : '48h'} ✉️
@@ -206,7 +206,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                   >
                     <div style={{
                       position: 'relative', width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                      background: paperShade, border: `1.5px solid ${ink}`, overflow: 'hidden',
+                      background: paperShade, border: `1px solid ${edge}`, overflow: 'hidden',
                     }}>
                       <div style={{
                         position: 'absolute', inset: 0,
@@ -235,7 +235,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           </div>
         ) : mode === 'online' ? (
           <div style={{
-            padding: '12px 14px', borderRadius: 4, textAlign: 'center',
+            padding: '12px 14px', borderRadius: 6, textAlign: 'center',
             border: '1.5px dashed #8C7A5C',
           }}>
             <Mono style={{ fontSize: 12, lineHeight: '18px', color: inkSoft }}>

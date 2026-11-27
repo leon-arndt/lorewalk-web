@@ -31,7 +31,7 @@ export function CreatureTile({ creature, onTap, disabled, note }: {
       transition={popSpring}
       className="flex min-w-0 flex-col items-stretch disabled:opacity-45"
       style={{
-        ...paperCardStyle, borderRadius: 3, padding: 4, gap: 2,
+        ...paperCardStyle, borderRadius: 6, padding: 4, gap: 2,
         color: ink, fontFamily: 'inherit', textAlign: 'center',
         cursor: disabled ? 'default' : 'pointer', WebkitTapHighlightColor: 'transparent',
       }}
@@ -57,7 +57,7 @@ export function CreatureTile({ creature, onTap, disabled, note }: {
 // onTap it becomes an add button with a plus in the middle.
 export function EmptyPad({ onTap, disabled }: { onTap?: () => void; disabled?: boolean }) {
   const { t } = useLocale()
-  const slot = { minHeight: 112, border: `1.5px dashed ${pencil}`, borderRadius: 3 } as const
+  const slot = { minHeight: 112, border: `1.5px dashed ${pencil}`, borderRadius: 6 } as const
   if (!onTap) {
     return <div aria-hidden style={slot} />
   }

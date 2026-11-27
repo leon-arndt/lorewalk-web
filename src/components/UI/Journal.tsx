@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { MONO, monoLabel, tape } from '@/lib/paper'
-import { ink, inkSoft, paperCard, paperLight, stamp } from '@/lib/theme'
+import { MONO, monoLabel, RADIUS, tape } from '@/lib/paper'
+import { edge, ink, inkSoft, paperCard, paperLight, stamp } from '@/lib/theme'
 
 // The building blocks of the field journal look. Use these before you write a
 // new inline style: a screen that mixes its own cards and buttons stops looking
@@ -12,7 +12,7 @@ export function Mono({ children, style }: { children: ReactNode; style?: CSSProp
   return <span style={{ ...monoLabel, ...style }}>{children}</span>
 }
 
-// The top of a full page: a typed kicker, the title, and a red ink underline.
+// The top of a full page: a typed kicker, the title, and a short red bar.
 export function PageHeader({ title, right, kicker }: { title: ReactNode; right?: ReactNode; kicker?: ReactNode }) {
   const { t } = useLocale()
   return (
@@ -22,9 +22,7 @@ export function PageHeader({ title, right, kicker }: { title: ReactNode; right?:
           {kicker ?? t('journal_kicker')}
         </Mono>
         <h1 style={{ margin: 0, fontSize: 32, fontWeight: 600, lineHeight: '42px', letterSpacing: '-0.01em', color: ink }}>{title}</h1>
-        <svg aria-hidden width="150" height="8" viewBox="0 0 150 8" fill="none" style={{ display: 'block', marginTop: -2 }}>
-          <path d="M2 5c12-5 22 4 34 0s22-4 34 0 22 4 34 0 28-4 44 1" stroke={stamp} strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
+        <span aria-hidden style={{ width: 44, height: 3, borderRadius: 2, background: stamp, marginTop: 2 }} />
       </div>
       {right && <div style={{ flexShrink: 0, marginBottom: 10 }}>{right}</div>}
     </header>
@@ -41,20 +39,15 @@ export function SectionTitle({ children, note, style }: { children: ReactNode; n
   )
 }
 
-// A note on the page: lighter paper with an ink edge. `taped` adds two strips of
-// tape on the top edge, and `tilt` turns the note a little, in degrees.
+// A note on the page: a translucent white panel with a hairline edge. `taped`
+// adds a strip of tape on the top edge, and `tilt` turns the note a little, in degrees.
 export function NoteCard({ children, taped, tilt = 0, style }: { children: ReactNode; taped?: boolean; tilt?: number; style?: CSSProperties }) {
   return (
     <div style={{
-      position: 'relative', background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6,
-      padding: 12, transform: tilt ? `rotate(${tilt}deg)` : undefined, ...style,
+      position: 'relative', background: 'rgba(255,255,255,0.6)', border: `1px solid ${edge}`, borderRadius: 12,
+      padding: 14, transform: tilt ? `rotate(${tilt}deg)` : undefined, ...style,
     }}>
-      {taped && (
-        <>
-          <span aria-hidden style={{ ...tape, top: -9, left: 18, transform: 'rotate(-5deg)' }} />
-          <span aria-hidden style={{ ...tape, top: -9, right: 18, transform: 'rotate(4deg)' }} />
-        </>
-      )}
+      {taped && <span aria-hidden style={{ ...tape, top: -8, left: 22, transform: 'rotate(-5deg)' }} />}
       {children}
     </div>
   )
@@ -73,6 +66,25 @@ export function Stamp({ children, color = stamp, tilt = 4, style }: { children: 
   )
 }
 
+// A round postmark: a big figure over a small word, in red ink.
+export function Postmark({ figure, word, tilt = 10 }: { figure: ReactNode; word: ReactNode; tilt?: number }) {
+  return (
+    <div style={{
+      width: 70, height: 70, flexShrink: 0, border: `2px solid ${stamp}`, borderRadius: '50%', padding: 4,
+      transform: `rotate(${tilt}deg)`,
+    }}>
+      <div style={{
+        width: '100%', height: '100%', border: `1px solid ${stamp}`, borderRadius: '50%',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        color: stamp, fontFamily: MONO, fontWeight: 500, lineHeight: 1.1, textAlign: 'center',
+      }}>
+        <span style={{ fontSize: 17 }}>{figure}</span>
+        <span style={{ fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase', maxWidth: 54, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{word}</span>
+      </div>
+    </div>
+  )
+}
+
 type InkButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   // ink: the main action. paper: a secondary action. danger: a red, destructive action.
   variant?: 'ink' | 'paper' | 'danger'
@@ -81,16 +93,16 @@ type InkButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 // The app's button. 44 px tall, so it is a full touch target.
 export function InkButton({ variant = 'ink', style, disabled, children, ...rest }: InkButtonProps) {
   const look: CSSProperties =
-    variant === 'ink' ? { background: ink, color: paperLight, border: `1.5px solid ${ink}` }
-    : variant === 'danger' ? { background: paperCard, color: stamp, border: `1.5px solid ${stamp}` }
-    : { background: paperCard, color: ink, border: `1.5px solid ${ink}` }
+    variant === 'ink' ? { background: ink, color: paperLight, border: `1px solid ${ink}` }
+    : variant === 'danger' ? { background: paperCard, color: stamp, border: `1px solid ${stamp}` }
+    : { background: paperCard, color: ink, border: `1px solid ${edge}` }
   return (
     <button
       type="button"
       disabled={disabled}
       {...rest}
       style={{
-        minHeight: 44, padding: '0 16px', borderRadius: 6, fontFamily: 'inherit', fontSize: 15, fontWeight: 500,
+        minHeight: 44, padding: '0 16px', borderRadius: RADIUS, fontFamily: 'inherit', fontSize: 15, fontWeight: 500,
         cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.45 : 1,
         WebkitTapHighlightColor: 'transparent', ...look, ...style,
       }}

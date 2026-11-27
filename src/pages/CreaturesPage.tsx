@@ -7,7 +7,7 @@ import { EggPreview } from '@/components/UI/EggPreview'
 import { HatchRewardScreen } from '@/components/UI/HatchRewardScreen'
 import { CreatureDetailView } from '@/components/UI/CreatureDetailView'
 import { CreatureSceneCard } from '@/components/UI/CreatureDetailView'
-import { InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
+import { InkButton, Mono, NoteCard, PageHeader, Postmark, SectionTitle } from '@/components/UI/Journal'
 import { CREATURES } from '@/data/creatures'
 import { getCreaturePreviewURL } from '@/lib/creaturePreview'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
@@ -15,8 +15,8 @@ import { ConfirmDialog } from '@/components/UI/ConfirmDialog'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { Egg, HatchedCreature } from '@/types'
 import type { Translations } from '@/i18n/types'
-import { categoryCss, forest, ink, inkHint, inkSoft, line, ochreInk, paperCard, pencil, stamp } from '@/lib/theme'
-import { paperPage } from '@/lib/paper'
+import { categoryCss, forest, ink, inkHint, inkSoft, line, ochreInk, paperCard, pencil, stamp, paperLight, edge } from '@/lib/theme'
+import { paperPage, tape, TAPES } from '@/lib/paper'
 
 const TIER_KEY = { common: 'egg_tier_common', rare: 'egg_tier_rare', epic: 'egg_tier_epic' } as const
 const TIER_INK = { common: inkHint, rare: ochreInk, epic: stamp } as const
@@ -26,7 +26,7 @@ function EggSlotCard({ egg, last, onHatch }: { egg: Egg | null; last: boolean; o
   const { t } = useLocale()
   const column = {
     minHeight: 150, padding: '0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-    borderRight: last ? 'none' : `1.5px dashed ${line}`,
+    borderRight: last ? 'none' : '1px solid rgba(51,40,30,0.14)',
   } as const
 
   if (!egg) {
@@ -60,8 +60,8 @@ function EggSlotCard({ egg, last, onHatch }: { egg: Egg | null; last: boolean; o
         </InkButton>
       ) : (
         <div style={{ width: '100%' }}>
-          <div style={{ height: 8, border: `1.5px solid ${ink}`, borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{ height: '100%', background: forest, width: `${pct}%`, transition: 'width 0.4s ease' }} />
+          <div style={{ height: 6, background: 'rgba(51,40,30,0.12)', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: '100%', background: forest, borderRadius: 3, width: `${pct}%`, transition: 'width 0.4s ease' }} />
           </div>
           <Mono style={{ marginTop: 4, display: 'block', textAlign: 'center' }}>
             {t('creatures_steps_left', { n: remaining })}
@@ -73,8 +73,9 @@ function EggSlotCard({ egg, last, onHatch }: { egg: Egg | null; last: boolean; o
 }
 
 // A specimen card: the creature on a wash of its type colour, then its name and
-// a typed caption with its number in the field guide.
-function SpecimenCard({ creature, tilt, onTap }: { creature: HatchedCreature; tilt: number; onTap: () => void }) {
+// its number in the field guide. The level is a red sticker on the edge, and
+// every other card has a strip of tape.
+function SpecimenCard({ creature, index, tilt, onTap }: { creature: HatchedCreature; index: number; tilt: number; onTap: () => void }) {
   const { t } = useLocale()
   const no = CREATURES.findIndex((c) => c.species === creature.species) + 1
   return (
@@ -82,15 +83,33 @@ function SpecimenCard({ creature, tilt, onTap }: { creature: HatchedCreature; ti
       type="button"
       onClick={onTap}
       style={{
-        minWidth: 0, background: paperCard, border: `1px solid ${line}`, borderRadius: 3,
-        boxShadow: '1px 2px 0 rgba(51,40,30,0.22)', padding: 6,
+        position: 'relative',
+        minWidth: 0, background: paperCard, border: `1px solid ${line}`, borderRadius: 6,
+        boxShadow: '1px 2px 0 rgba(51,40,30,0.14)', padding: '6px 6px 7px',
         display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 3, textAlign: 'left',
         cursor: 'pointer', transform: `rotate(${tilt}deg)`, color: ink, fontFamily: 'inherit',
         WebkitTapHighlightColor: 'transparent',
       }}
     >
+      {index % 2 === 0 && (
+        <span aria-hidden style={{
+          ...tape, width: 44, height: 14, top: -8, left: '50%', marginLeft: -22,
+          backgroundImage: TAPES[(index / 2) % TAPES.length], transform: `rotate(${index % 4 === 0 ? 4 : -4}deg)`,
+        }} />
+      )}
+      <span
+        aria-label={t('level_badge', { level: creature.level })}
+        style={{
+          position: 'absolute', right: -7, top: 60, zIndex: 1, minWidth: 28, height: 28, padding: '0 4px',
+          background: stamp, color: paperLight, border: '2px solid #fff', borderRadius: 14,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 13, fontWeight: 600, transform: `rotate(${index % 2 ? -9 : 9}deg)`,
+        }}
+      >
+        {creature.level}
+      </span>
       <span style={{
-        height: 74, background: `${categoryCss(creature.poiCategory)}40`, borderRadius: 2, overflow: 'hidden',
+        height: 74, background: `${categoryCss(creature.poiCategory)}33`, borderRadius: 4, overflow: 'hidden',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       }}>
         <CreatureSceneCard creature={creature} />
@@ -98,10 +117,7 @@ function SpecimenCard({ creature, tilt, onTap }: { creature: HatchedCreature; ti
       <span style={{ fontSize: 13, fontWeight: 500, lineHeight: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {creatureName(creature)}
       </span>
-      <span style={{ display: 'flex', justifyContent: 'space-between', gap: 4, whiteSpace: 'nowrap' }}>
-        <Mono>{t('creatures_specimen_no', { n: String(no).padStart(2, '0') })}</Mono>
-        <Mono style={{ color: ink }}>{t('level_badge', { level: creature.level })}</Mono>
-      </span>
+      <Mono>{t('creatures_specimen_no', { n: String(no).padStart(2, '0') })}</Mono>
     </button>
   )
 }
@@ -117,7 +133,7 @@ function UnseenCard({ species, no, tilt }: { species: string; no: number; tilt: 
   }, [species])
   return (
     <div style={{
-      minWidth: 0, border: `1.5px dashed ${pencil}`, borderRadius: 3, padding: 6,
+      minWidth: 0, border: `1.5px dashed ${pencil}`, borderRadius: 6, padding: 6,
       display: 'flex', flexDirection: 'column', gap: 3, transform: `rotate(${tilt}deg)`,
     }}>
       <span style={{ height: 74, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -159,7 +175,7 @@ function PantrySection() {
           if (!def) return null
           return (
             <div key={item.id} style={{
-              background: paperCard, border: `1px solid ${line}`, borderRadius: 3, padding: '12px 8px',
+              background: paperCard, border: `1px solid ${line}`, borderRadius: 6, padding: '12px 8px',
               boxShadow: '1px 2px 0 rgba(51,40,30,0.18)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
             }}>
@@ -214,7 +230,7 @@ export function CreaturesPage() {
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <PageHeader
         title={t('creatures_title')}
-        right={<Stamp style={{ maxWidth: 104 }}>{t('creatures_recorded', { n: recorded, total: CREATURES.length })}</Stamp>}
+        right={<Postmark figure={`${recorded}/${CREATURES.length}`} word={t('creatures_recorded_word')} />}
       />
 
       {/* The nest: egg slots */}
@@ -253,7 +269,7 @@ export function CreaturesPage() {
           {t('creatures_collection')}
         </SectionTitle>
         {full && (
-          <p style={{ margin: '0 0 12px', padding: '8px 10px', border: `1.5px solid ${stamp}`, borderRadius: 4, fontSize: 12, color: stamp }}>
+          <p style={{ margin: '0 0 12px', padding: '8px 10px', border: `1.5px solid ${stamp}`, borderRadius: 6, fontSize: 12, color: stamp }}>
             {t('creatures_storage_full')}
           </p>
         )}
@@ -272,7 +288,7 @@ export function CreaturesPage() {
                   className="size-7 shrink-0 rounded-full transition-all"
                   style={{
                     background: categoryCss(type),
-                    border: `1.5px solid ${ink}`,
+                    border: `1px solid ${edge}`,
                     boxShadow: on ? `0 0 0 2px ${paperCard}, 0 0 0 4px ${ink}` : undefined,
                     opacity: activeType && !on ? 0.4 : 1,
                   }}
@@ -288,6 +304,7 @@ export function CreaturesPage() {
             <SpecimenCard
               key={creature.id}
               creature={creature}
+              index={i}
               tilt={TILTS[i % TILTS.length]}
               onTap={() => setSelectedCreature(creature)}
             />

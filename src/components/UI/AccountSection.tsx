@@ -58,7 +58,7 @@ export function AccountSection() {
         )}
         {/* Both always show. Only a Google account has a login to sign out of.
             Delete works for every player, guest or signed in, online or not. */}
-        <div style={{ borderTop: `1.5px dashed ${line}`, paddingTop: 12, display: 'flex', gap: 10 }}>
+        <div style={{ borderTop: `1px solid ${line}`, paddingTop: 12, display: 'flex', gap: 10 }}>
           <InkButton variant="paper" onClick={() => void signOut()} disabled={!linked} style={actionButton}>
             {t('account_sign_out')}
           </InkButton>

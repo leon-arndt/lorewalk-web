@@ -7,7 +7,7 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useReward } from '@/contexts/RewardContext'
 import { MONO, paperSheet, paperTag, SCRIM } from '@/lib/paper'
-import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, stamp } from '@/lib/theme'
+import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, stamp, edge } from '@/lib/theme'
 import { InkButton, Mono, NoteCard, Stamp } from '@/components/UI/Journal'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import {
@@ -172,7 +172,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: isManaging ? 84 : 0 }}>
               <div style={{
                 flexShrink: 0, width: 52, height: 52, borderRadius: '50%',
-                background: ochre, border: `1.5px solid ${ink}`,
+                background: ochre, border: `1px solid ${edge}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{ fontSize: 26, lineHeight: 1 }}>👑</span>
@@ -189,7 +189,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
               </div>
             </div>
 
-            <div style={{ marginTop: 14, borderTop: `1.5px dashed ${line}` }}>
+            <div style={{ marginTop: 14, borderTop: `1px solid ${line}` }}>
               <div style={{
                 display: 'grid', gridTemplateColumns: '1fr 56px 64px',
                 alignItems: 'center', padding: '8px 0 6px',
@@ -231,7 +231,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
             <>
               {confirmingCancel ? (
                 <div style={{
-                  marginTop: 18, borderRadius: 4, padding: 12,
+                  marginTop: 18, borderRadius: 6, padding: 12,
                   background: paperCard, border: `1.5px solid ${stamp}`,
                 }}>
                   <p style={{ margin: '0 0 12px', fontSize: 13, color: stamp, lineHeight: 1.5 }}>
@@ -278,7 +278,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                       onClick={() => setInterval(key)}
                       style={{
                         flex: 1, minWidth: 0, position: 'relative', textAlign: 'left', cursor: 'pointer',
-                        minHeight: 76, borderRadius: 4, padding: '10px 10px 8px', fontFamily: 'inherit', color: ink,
+                        minHeight: 76, borderRadius: 6, padding: '10px 10px 8px', fontFamily: 'inherit', color: ink,
                         display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
                         border: selected ? `1.5px solid ${ink}` : `1px solid ${line}`,
                         borderBottom: selected ? `5px solid ${ochre}` : `1px solid ${line}`,

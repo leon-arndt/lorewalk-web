@@ -2,7 +2,8 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { isEggReady } from '@/lib/profile'
-import { ink, paperLight, paperShade, stamp } from '@/lib/theme'
+import { edge, ink, inkSoft, paperLight, stamp } from '@/lib/theme'
+import { vellum } from '@/lib/paper'
 import { motion, AnimatePresence } from 'motion/react'
 import { popSpring, tapScale } from '@/lib/motion'
 
@@ -36,11 +37,8 @@ const ProfileIcon = () => (
   </svg>
 )
 
-// The tabs of a notebook index. They rise from the bottom edge of the screen, and
-// the open one stands taller, on lighter paper, under a red stripe.
-const TAB_H = 56
-const ACTIVE_H = 66
-
+// One floating bar of tracing paper. The open tab sits on a lighter patch with
+// a red line under it.
 export function BottomNav() {
   const { t } = useLocale()
   const { profile } = useProfile()
@@ -57,10 +55,12 @@ export function BottomNav() {
 
   return (
     <nav style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
-      display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6,
-      alignItems: 'end', padding: '0 12px', maxWidth: 480, margin: '0 auto',
-      pointerEvents: 'none',
+      position: 'fixed', left: 12, right: 12, zIndex: 40,
+      bottom: 'calc(env(safe-area-inset-bottom) + 12px)',
+      maxWidth: 456, margin: '0 auto', height: 62, padding: 5,
+      display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 4,
+      ...vellum(251, 246, 233),
+      border: `1px solid ${edge}`, borderRadius: 14,
     }}>
       {tabs.map(({ to, icon, label, dot }, i) => {
         const active = i === activeIndex
@@ -72,17 +72,13 @@ export function BottomNav() {
             style={{
               position: 'relative',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
-              height: `calc(${active ? ACTIVE_H : TAB_H}px + env(safe-area-inset-bottom))`,
-              paddingBottom: 'env(safe-area-inset-bottom)',
-              background: active ? paperLight : paperShade,
-              border: `1.5px solid ${ink}`, borderBottom: 'none',
-              borderTop: active ? `5px solid ${stamp}` : `1.5px solid ${ink}`,
-              borderRadius: '10px 10px 0 0',
-              textDecoration: 'none', color: ink,
+              borderRadius: 10,
+              background: active ? 'rgba(255,255,255,0.7)' : 'transparent',
+              boxShadow: active ? `inset 0 -3px 0 ${stamp}` : 'none',
+              textDecoration: 'none', color: active ? ink : inkSoft,
               fontSize: 12, fontWeight: active ? 600 : 500, lineHeight: '14px',
-              transition: 'height 0.22s cubic-bezier(0.34,1.4,0.64,1), background 0.2s ease',
+              transition: 'background 0.2s ease, color 0.2s ease',
               WebkitTapHighlightColor: 'transparent',
-              pointerEvents: 'auto',
             }}
           >
             <AnimatePresence>
@@ -93,7 +89,7 @@ export function BottomNav() {
                   exit={{ scale: 0 }}
                   transition={{ scale: { duration: 1.6, repeat: Infinity, repeatDelay: 1.2 } }}
                   style={{
-                    position: 'absolute', top: 7, right: 12, width: 10, height: 10,
+                    position: 'absolute', top: 5, right: 14, width: 10, height: 10,
                     borderRadius: '50%', background: stamp, border: `1.5px solid ${paperLight}`,
                   }}
                 />

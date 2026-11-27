@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
 import type { Locale } from '@/contexts/LocaleContext'
-import { ink, line, paperLight, paperShade } from '@/lib/theme'
+import { ink, line, paperLight, paperShade, edge } from '@/lib/theme'
 import { paperCardStyle } from '@/lib/paper'
 
 const ENTRIES = Object.entries(LOCALE_LABELS) as [Locale, string][]
@@ -61,9 +61,9 @@ export function LanguageDropdown() {
         }}
       >
         <span style={{
-          width: 34, height: 34, boxSizing: 'border-box', borderRadius: 6, flexShrink: 0,
+          width: 34, height: 34, boxSizing: 'border-box', borderRadius: 10, flexShrink: 0,
           display: 'grid', placeItems: 'center',
-          background: paperLight, border: `1.5px solid ${ink}`, color: ink,
+          background: paperLight, border: `1px solid ${edge}`, color: ink,
         }}>
           <LanguagesIcon />
         </span>
@@ -92,7 +92,7 @@ export function LanguageDropdown() {
             style={{
               position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 1,
               padding: 0, overflow: 'hidden',
-              background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6, transformOrigin: 'top center',
+              background: paperLight, border: `1px solid ${edge}`, borderRadius: 10, transformOrigin: 'top center',
               boxShadow: '2px 3px 0 rgba(51,40,30,0.18)',
             }}
           >
@@ -112,7 +112,7 @@ export function LanguageDropdown() {
                   style={{
                     width: '100%', minHeight: 44, display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
                     padding: '0 14px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                    borderTop: i > 0 ? `1.5px dashed ${line}` : 'none',
+                    borderTop: i > 0 ? `1px solid ${line}` : 'none',
                     fontSize: 15, fontWeight: selected ? 600 : 500, color: ink,
                     background: selected ? paperShade : 'transparent',
                   }}

@@ -44,7 +44,7 @@ function CardPill({ card, now, onOpen }: { card: Postcard; now: number; onOpen?:
       onClick={canOpen ? onOpen : undefined}
       style={{
         display: 'flex', alignItems: 'center', gap: 12, minHeight: 44,
-        borderRadius: 4, padding: '10px 12px',
+        borderRadius: 6, padding: '10px 12px',
         cursor: canOpen ? 'pointer' : 'default',
         ...(card.openedAt
           ? { border: `1px dashed ${line}` }
@@ -53,7 +53,7 @@ function CardPill({ card, now, onOpen }: { card: Postcard; now: number; onOpen?:
     >
       {/* POI category icon */}
       <div style={{
-        width: 44, height: 44, borderRadius: 3, flexShrink: 0,
+        width: 44, height: 44, borderRadius: 6, flexShrink: 0,
         background: `${categoryCss(card.poiCategory)}${delivered ? '40' : '1f'}`, border: `1px solid ${line}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 22, position: 'relative',
@@ -111,7 +111,7 @@ export function PostcardsSection() {
   const unread = inbox.filter((c) => !c.openedAt && now >= new Date(c.deliverAt).getTime()).length
 
   const empty = {
-    border: '1.5px dashed #8C7A5C', borderRadius: 4, padding: '20px 20px', textAlign: 'center',
+    border: '1.5px dashed #8C7A5C', borderRadius: 6, padding: '20px 20px', textAlign: 'center',
   } as const
 
   return (
@@ -121,7 +121,7 @@ export function PostcardsSection() {
           <button
             onClick={seedMockPostcard}
             style={{
-              font: 'inherit', color: 'inherit', padding: '4px 8px', borderRadius: 6,
+              font: 'inherit', color: 'inherit', padding: '4px 8px', borderRadius: 10,
               background: 'none', border: `1px dashed ${line}`, cursor: 'pointer',
             }}
           >

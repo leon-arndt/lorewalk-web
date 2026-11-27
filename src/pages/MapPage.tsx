@@ -7,7 +7,8 @@ import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
 import { ShrinePanel } from '@/components/UI/ShrinePanel'
 import { WeeklyWalkPanel } from '@/components/UI/WeeklyWalkPanel'
-import { WeekStrip } from '@/components/UI/WeekStrip'
+import { NextGoalCard } from '@/components/UI/NextGoalCard'
+import { pickNextGoal } from '@/lib/nextGoal'
 import { JournalOverlay } from '@/components/UI/JournalOverlay'
 import { NewsOverlay } from '@/components/UI/NewsOverlay'
 import { useReward } from '@/contexts/RewardContext'
@@ -20,13 +21,13 @@ import { usePois } from '@/hooks/usePois'
 import { useNews, unreadCount } from '@/hooks/useNews'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
-import { paperTag } from '@/lib/paper'
+import { hudTag } from '@/lib/paper'
 import { haversineDistance } from '@/lib/mapUtils'
-import { isPoiLocked } from '@/lib/profile'
+import { isPoiLocked, isWeeklyWalkLocked, WEEKLY_WALK_UNLOCK_LEVEL } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { creatureDefBySpecies } from '@/data/creatures'
 import type { HatchedCreature, Poi, RewardItem } from '@/types'
-import { accent, categoryColors, paperLight, stamp } from '@/lib/theme'
+import { accent, categoryColors, paperLight, stamp, inkHint } from '@/lib/theme'
 import { motion } from 'motion/react'
 import { popSpring } from '@/lib/motion'
 
@@ -71,6 +72,7 @@ export function MapPage() {
   const [bearing, setBearing] = useState(0)
   const compassResetRef = useRef<(() => void) | null>(null)
   const recenterRef = useRef<(() => void) | null>(null)
+  const focusRef = useRef<((lat: number, lon: number) => void) | null>(null)
   const [cameraAway, setCameraAway] = useState(false)
 
   // The active squad's creatures become the 3D companions that walk with you -
@@ -230,6 +232,33 @@ export function MapPage() {
     }
   }, [mode, visitedPois, checkIn, profile])
 
+  // The "next stop" bar: a ready reward first, then the nearest open landmark.
+  const readySquadName = squadMarkers.find((m) => m.ready)?.name ?? null
+  const nextGoal = useMemo(
+    () => pickNextGoal({ profile, readySquadName, pois, visitedPois, position }),
+    [profile, readySquadName, pois, visitedPois, position],
+  )
+  const walkLocked = isWeeklyWalkLocked(profile)
+  const panelOpen = !!selectedPoi || !!selectedFoodNodeId || !!selectedShrineNodeId || weeklyWalkOpen
+
+  const goalPoi = nextGoal?.kind === 'poi' && !panelOpen ? nextGoal.poi : null
+  const goalPoint = useMemo(() => (goalPoi ? { lat: goalPoi.lat, lon: goalPoi.lon } : null), [goalPoi])
+
+  const handleGoal = useCallback(() => {
+    if (!nextGoal) return
+    if (nextGoal.kind === 'egg') navigate('/creatures')
+    else if (nextGoal.kind === 'squad') navigate('/squads')
+    else if (nextGoal.kind === 'chest') navigate('/profile')
+    else {
+      // Shows the landmark and its panel. It does not check in, in any mode:
+      // the player still has to walk there, or tap the pin in offline mode.
+      focusRef.current?.(nextGoal.poi.lat, nextGoal.poi.lon)
+      if (panelCloseTimer.current) { clearTimeout(panelCloseTimer.current); panelCloseTimer.current = null }
+      setIsPanelClosing(false)
+      setSelectedPoi(nextGoal.poi)
+    }
+  }, [nextGoal, navigate])
+
   const handleClose = useCallback(() => {
     setIsPanelClosing(true)
     panelCloseTimer.current = setTimeout(() => {
@@ -360,6 +389,8 @@ export function MapPage() {
         compassResetRef={compassResetRef}
         onAwayChange={setCameraAway}
         recenterRef={recenterRef}
+        focusRef={focusRef}
+        goal={goalPoint}
         paused={!onMapTab}
       />
 
@@ -376,10 +407,18 @@ export function MapPage() {
             <LevelCapsule level={profile.level} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <StepCounter steps={steps} distanceM={distanceM} />
+            {/* Today's steps. A tap opens the journal with the month calendar. */}
+            <button
+              type="button"
+              onClick={() => setJournalOpen(true)}
+              aria-label={t('journal_open')}
+              style={{ pointerEvents: 'auto', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', WebkitTapHighlightColor: 'transparent' }}
+            >
+              <StepCounter steps={steps} distanceM={distanceM} />
+            </button>
             {gpsLoading && (
               <div style={{
-                ...paperTag, color: '#6A5843', fontSize: 12,
+                ...hudTag, color: '#6A5843', fontSize: 12,
                 padding: '4px 10px',
               }}>
                 {t('hud_locating')}
@@ -387,7 +426,7 @@ export function MapPage() {
             )}
             {gpsError && !position && (
               <div style={{
-                ...paperTag,
+                ...hudTag,
                 borderColor: '#A8361F',
                 color: '#A8361F', fontSize: 12,
                 padding: '4px 10px',
@@ -401,10 +440,6 @@ export function MapPage() {
           </div>
         </div>
 
-        {/* Journal week strip - tap to open the full calendar (Pikmin-Bloom-style) */}
-        <div style={{ pointerEvents: 'auto' }}>
-          <WeekStrip dailySteps={profile.dailySteps} onOpen={() => setJournalOpen(true)} />
-        </div>
 
         {/* Compass: right-aligned inside the column so it always sits below
             the week strip and never overlaps it, whatever its height. Only
@@ -419,8 +454,8 @@ export function MapPage() {
             onClick={() => compassResetRef.current?.()}
             title={t('map_reset_to_north')}
             style={{
-              width: 44, height: 44, borderRadius: 6, padding: 0,
-              ...paperTag,
+              width: 44, height: 44, borderRadius: 10, padding: 0,
+              ...hudTag,
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
@@ -452,8 +487,8 @@ export function MapPage() {
             aria-label={t('map_recenter')}
             title={t('map_recenter')}
             style={{
-              width: 44, height: 44, borderRadius: 6, padding: 0,
-              ...paperTag,
+              width: 44, height: 44, borderRadius: 10, padding: 0,
+              ...hudTag,
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
@@ -480,31 +515,52 @@ export function MapPage() {
         />
       )}
 
+      {/* The next thing to do: a slim bar above the two bottom buttons. It hides
+          while a panel is open, because the panel covers this part of the map. */}
+      {nextGoal && !panelOpen && (
+        <div style={{
+          position: 'absolute', left: 16, right: 16, zIndex: 8,
+          bottom: 'calc(env(safe-area-inset-bottom) + 140px)',
+        }}>
+          <NextGoalCard goal={nextGoal} onAct={handleGoal} />
+        </div>
+      )}
+
       {/* Weekly walk floating button - bottom left above nav */}
       <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ ...popSpring, delay: 0.25 }}
-        onClick={handleWeeklyWalkOpen}
+        onClick={walkLocked
+          ? () => showToast(t('weekly_walk_locked', { level: WEEKLY_WALK_UNLOCK_LEVEL }))
+          : handleWeeklyWalkOpen}
         style={{
           position: 'absolute',
           bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
           left: 16,
           display: 'flex', alignItems: 'center', gap: 7,
           minHeight: 44, padding: '0 13px 0 8px',
-          ...paperTag,
+          ...hudTag,
+          background: 'rgba(198,230,218,0.78)',
           ...(profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed && {
             background: stamp, borderColor: stamp, color: paperLight,
           }),
+          ...(walkLocked && { background: 'rgba(226,211,174,0.8)', color: inkHint, borderColor: inkHint }),
           cursor: 'pointer',
           WebkitTapHighlightColor: 'transparent',
           fontSize: 15, fontWeight: 500, fontFamily: 'inherit',
           zIndex: 8,
         }}
       >
-        <EmojiSprite id="item_sneaker" emoji="🚶" size={22} />
+        {walkLocked ? (
+          <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 2px' }}>
+            <rect x="5" y="11" width="14" height="9" rx="1.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
+          </svg>
+        ) : (
+          <EmojiSprite id="item_sneaker" emoji="🚶" size={22} />
+        )}
         <span>{t('weekly_walk_button')}</span>
-        {profile.tickets > 0 && !profile.weeklyWalk && (
+        {profile.tickets > 0 && !profile.weeklyWalk && !walkLocked && (
           <span style={{
             background: accent, color: paperLight,
-            borderRadius: 4, fontSize: 11, fontWeight: 600,
+            borderRadius: 6, fontSize: 11, fontWeight: 600,
             padding: '1px 6px', marginLeft: 2,
           }}>
             {profile.tickets}🎟️
@@ -523,7 +579,8 @@ export function MapPage() {
           bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
           right: 16,
           width: 44, height: 44, padding: 0,
-          ...paperTag,
+          ...hudTag,
+          background: 'rgba(243,220,154,0.8)',
           cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           WebkitTapHighlightColor: 'transparent',

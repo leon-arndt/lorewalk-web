@@ -8,7 +8,7 @@ import {
   CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   STREAK_FREEZE_MAX, STREAK_FREEZE_COST,
 } from '@/lib/profile'
-import { forest, ink, inkSoft, ochre, paperCard, paperLight } from '@/lib/theme'
+import { forest, ink, inkSoft, ochre, paperCard, paperLight, edge } from '@/lib/theme'
 import { MONO, paperCardStyle, paperTag } from '@/lib/paper'
 import { InkButton, Mono, SectionTitle, Stamp } from '@/components/UI/Journal'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
@@ -138,7 +138,7 @@ export function ShopPage() {
     <div style={{ background: paperLight, paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div style={{
         position: 'sticky', top: 0, zIndex: 2, background: paperLight,
-        padding: '10px 16px 10px', borderBottom: `1.5px solid ${ink}`,
+        padding: '10px 16px 10px', borderBottom: `1px solid ${edge}`,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, lineHeight: '34px', letterSpacing: '-0.01em', color: ink }}>{t('shop_title')}</h1>
@@ -167,8 +167,8 @@ export function ShopPage() {
             style={{
               width: '100%', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', gap: 12, minHeight: 64,
-              background: paperCard, border: `1.5px solid ${ink}`, borderLeft: `8px solid ${ochre}`,
-              borderRadius: 6, padding: '10px 12px', color: ink, transform: 'rotate(-0.5deg)',
+              background: paperCard, border: `1px solid ${edge}`, borderLeft: `8px solid ${ochre}`,
+              borderRadius: 10, padding: '10px 12px', color: ink, transform: 'rotate(-0.5deg)',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
@@ -188,7 +188,7 @@ export function ShopPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {upgrades.map((it) => (
             <div key={it.key} style={{
-              ...paperCardStyle, borderRadius: 3,
+              ...paperCardStyle, borderRadius: 6,
               display: 'flex', alignItems: 'center', gap: 12, padding: 8,
             }}>
               <span style={{ ...specimenWindow, flexShrink: 0, width: 52, height: 52 }}>
@@ -225,7 +225,7 @@ export function ShopPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '18px 12px' }}>
           {COIN_PACKS.map((pack, i) => (
             <div key={pack.coins} style={{
-              ...paperCardStyle, borderRadius: 3,
+              ...paperCardStyle, borderRadius: 6,
               position: 'relative', padding: 6, transform: `rotate(${PACK_TILTS[i % PACK_TILTS.length]}deg)`,
               display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 6,
             }}>

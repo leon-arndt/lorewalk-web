@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
@@ -113,7 +114,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
                 aria-label={t('journal_delete_photo')}
               >
                 <span style={{
-                  width: 24, height: 24, borderRadius: '50%', background: ink, color: paperLight,
+                  width: 24, height: 24, borderRadius: 10, background: ink, color: paperLight,
                   border: `1.5px solid ${paperLight}`, fontSize: 15, lineHeight: 1,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>×</span>
@@ -125,7 +126,7 @@ function DayDetail({ dateKey, steps, onClose, onPhotosChanged }: {
             onClick={() => fileRef.current?.click()}
             disabled={busy}
             style={{
-              aspectRatio: '1', borderRadius: 3, cursor: busy ? 'default' : 'pointer',
+              aspectRatio: '1', borderRadius: 6, cursor: busy ? 'default' : 'pointer',
               border: '1.5px dashed #8C7A5C', background: 'none',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
               color: ink, fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
@@ -186,7 +187,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
 
   const isCurrentOrPastMonth = new Date(year, month, 1) <= new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 
-  return (
+  return createPortal(
     <motion.div {...sheetIn} style={{
       position: 'fixed', inset: 0, zIndex: 50, overflowY: 'auto',
       ...paperPage,
@@ -245,7 +246,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
                 disabled={isFuture}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                  padding: '6px 0', borderRadius: 4,
+                  padding: '6px 0', borderRadius: 6,
                   border: `1.5px solid ${isToday ? ink : 'transparent'}`,
                   background: isToday ? paperCard : 'transparent',
                   cursor: isFuture ? 'default' : 'pointer', opacity: isFuture ? 0.35 : 1,
@@ -275,7 +276,8 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
           onPhotosChanged={refreshPhotoDates}
         />
       )}
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }
 
@@ -283,7 +285,7 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
 const PHOTO_TILTS = [-1.5, 1, -0.8, 1.6, -1.2, 0.7]
 
 const roundBtn: React.CSSProperties = {
-  ...paperTag, width: 44, height: 44, borderRadius: '50%', padding: 0, flexShrink: 0,
+  ...paperTag, width: 44, height: 44, padding: 0, flexShrink: 0,
   fontSize: 24, lineHeight: 1, fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   WebkitTapHighlightColor: 'transparent',

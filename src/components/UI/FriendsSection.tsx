@@ -10,7 +10,7 @@ import { deterministicAppearance } from '@/data/cosmetics'
 import { FriendProfileScreen } from '@/components/UI/FriendProfileScreen'
 import { InkButton, Mono, SectionTitle } from '@/components/UI/Journal'
 import { MONO, paperCardStyle } from '@/lib/paper'
-import { forest, ink, inkHint, inkSoft, line, paperCard, paperLight, paperShade, stamp } from '@/lib/theme'
+import { forest, ink, inkHint, inkSoft, line, paperCard, paperLight, paperShade, stamp, edge } from '@/lib/theme'
 
 function formatAdded(iso: string): string {
   return new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })
@@ -103,7 +103,7 @@ export function FriendsSection() {
         </Mono>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
           <div style={{
-            width: 96, height: 96, borderRadius: 3, flexShrink: 0,
+            width: 96, height: 96, borderRadius: 6, flexShrink: 0,
             background: '#ffffff', border: `1px solid ${line}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
@@ -122,7 +122,7 @@ export function FriendsSection() {
                 fontSize: 20, fontWeight: 500, letterSpacing: 3, color: ink,
                 fontFamily: MONO,
                 background: paperLight, border: '1.5px dashed #8C7A5C',
-                borderRadius: 6, padding: '6px 8px', cursor: 'pointer',
+                borderRadius: 10, padding: '6px 8px', cursor: 'pointer',
               }}
             >
               {friendCode?.code ?? '-'}
@@ -161,7 +161,7 @@ export function FriendsSection() {
             style={{
               flex: 1, minWidth: 0, height: 44, boxSizing: 'border-box', fontSize: 16, fontWeight: 500, letterSpacing: 2,
               fontFamily: MONO, padding: '0 12px',
-              border: `1.5px solid ${ink}`, borderRadius: 6,
+              border: `1px solid ${edge}`, borderRadius: 10,
               outline: 'none', color: ink, background: paperCard,
             }}
           />
@@ -184,7 +184,7 @@ export function FriendsSection() {
 
       {/* Friends list */}
       {!loading && friends.length === 0 ? (
-        <div style={{ border: '1.5px dashed #8C7A5C', borderRadius: 4, padding: 20, textAlign: 'center' }}>
+        <div style={{ border: '1.5px dashed #8C7A5C', borderRadius: 6, padding: 20, textAlign: 'center' }}>
           <div style={{ fontSize: 32, marginBottom: 6 }}>👥</div>
           <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
             {t('friends_empty_text')}
@@ -204,7 +204,7 @@ export function FriendsSection() {
             >
               <div style={{
                 position: 'relative', width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                background: paperShade, border: `1.5px solid ${ink}`, boxSizing: 'border-box', overflow: 'hidden',
+                background: paperShade, border: `1px solid ${edge}`, boxSizing: 'border-box', overflow: 'hidden',
               }}>
                 <div style={{
                   position: 'absolute', inset: 0,

@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { ShopPage } from '@/pages/ShopPage'
-import { paperPanel, paperTag, SCRIM } from '@/lib/paper'
+import { hudTag, paperPanel, paperTag, SCRIM } from '@/lib/paper'
 import { ink } from '@/lib/theme'
 import { AnimatePresence, motion } from 'motion/react'
 import { CountBump } from '@/components/UI/CountBump'
@@ -20,7 +20,7 @@ export function CoinCapsule() {
         onClick={() => setOpen(true)}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
-          ...paperTag,
+          ...hudTag,
           minHeight: 40, padding: '0 11px 0 7px',
           fontSize: 15, fontWeight: 500, fontFamily: 'inherit',
           cursor: 'pointer',

@@ -14,7 +14,7 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background: #F2E8D0;
+  background: #F5EEDC;
   color: #33281E;
   font-family: 'Fredoka Variable', system-ui, -apple-system, sans-serif;
 }
@@ -24,9 +24,9 @@ html, body, #root {
   flex-direction: column;
 }
 
-/* The map credit is a small (i) above the news button, clear of the index tabs. */
+/* The map credit is a small (i) above the next stop bar, clear of the index tabs. */
 .maplibregl-ctrl-bottom-right {
-  bottom: calc(env(safe-area-inset-bottom) + 136px);
+  bottom: calc(env(safe-area-inset-bottom) + 188px);
   right: 8px;
 }
 .maplibregl-ctrl-attrib.maplibregl-compact {

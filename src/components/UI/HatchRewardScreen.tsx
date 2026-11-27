@@ -7,7 +7,7 @@ import { InkButton, Mono, NoteCard, Stamp } from '@/components/UI/Journal'
 import { useLocale } from '@/contexts/LocaleContext'
 import { CREATURES } from '@/data/creatures'
 import { MONO, SCRIM_DEEP, tape } from '@/lib/paper'
-import { categoryCss, ink, inkSoft, line, paperCard, ochreInk } from '@/lib/theme'
+import { categoryCss, ink, inkSoft, line, paperCard, ochreInk, edge } from '@/lib/theme'
 
 
 export function HatchRewardScreen({ creature, onRename, onDismiss }: {
@@ -46,7 +46,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
           transition={{ type: 'spring', stiffness: 260, damping: 12, delay: 0.15 }}
           style={{
             position: 'relative', padding: '8px 8px 6px',
-            background: paperCard, border: `1px solid ${creature.isShiny ? ochreInk : line}`, borderRadius: 3,
+            background: paperCard, border: `1px solid ${creature.isShiny ? ochreInk : line}`, borderRadius: 6,
             boxShadow: '1px 2px 0 rgba(51,40,30,0.22)',
           }}
         >
@@ -86,7 +86,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
               style={{
                 flex: 1, minWidth: 0, height: 44,
                 fontFamily: MONO, fontSize: 17, fontWeight: 500, color: ink,
-                background: 'transparent', border: 'none', borderBottom: `1.5px solid ${ink}`, borderRadius: 0,
+                background: 'transparent', border: 'none', borderBottom: `1px solid ${edge}`, borderRadius: 0,
                 padding: '0 4px', outline: 'none', textAlign: 'center',
               }}
             />
@@ -97,7 +97,7 @@ export function HatchRewardScreen({ creature, onRename, onDismiss }: {
         ) : (
           <div style={{
             display: 'flex', alignItems: 'center', width: '100%', minHeight: 44,
-            borderBottom: `1.5px dashed ${line}`,
+            borderBottom: `1px solid ${line}`,
           }}>
             <span aria-hidden style={{ width: 44, flexShrink: 0 }} />
             <span style={{

@@ -1,11 +1,12 @@
-// Field journal palette. The app looks like an explorer's notebook: ruled paper,
-// ink outlines, red stamps. See GameDesign.md "UI / UX Decisions".
+// Field journal palette. The app looks like an explorer's scrapbook on smooth
+// paper: hairline edges, striped tape, sticker outlines, red stamps. See GameDesign.md "UI / UX Decisions".
 // Single source of truth - do not hardcode these hex values elsewhere.
-export const paper = '#F2E8D0'        // the page itself
+export const paper = '#F5EEDC'        // the page itself
 export const paperLight = '#FBF6E9'   // tags, notes, and panels taped on the page
-export const paperCard = '#FFFDF6'    // specimen cards and list rows
+export const paperCard = '#FFFFFF'    // specimen cards and list rows
 export const paperShade = '#E2D3AE'   // inactive tabs, tracks, pressed areas
-export const line = '#B9A885'         // hairlines and card edges
+export const line = '#D2CABA'         // hairlines and card edges
+export const edge = 'rgba(51,40,30,0.28)' // the hairline around a tag, a button, or a panel
 export const ink = '#33281E'          // text and outlines
 export const inkSoft = '#6A5843'      // secondary text
 export const inkHint = '#75634C'      // hints and captions, still AA on paper

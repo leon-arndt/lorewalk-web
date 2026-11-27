@@ -54,7 +54,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
         <div style={{ overflowY: 'auto', padding: '18px 20px calc(28px + env(safe-area-inset-bottom))' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
             <div style={{
-              flexShrink: 0, padding: '5px 5px 14px', background: paperCard, border: `1px solid ${line}`, borderRadius: 3,
+              flexShrink: 0, padding: '5px 5px 14px', background: paperCard, border: `1px solid ${line}`, borderRadius: 6,
               boxShadow: '1px 2px 0 rgba(51,40,30,0.18)', transform: 'rotate(-3deg)',
             }}>
               <div style={{
@@ -77,7 +77,7 @@ export function FriendProfileScreen({ friend, onClose }: Props) {
           </div>
 
           <NoteCard style={{ marginTop: 20, padding: '12px 0', display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
-            <div style={{ padding: '0 8px', textAlign: 'center', borderRight: `1.5px dashed ${line}` }}>
+            <div style={{ padding: '0 8px', textAlign: 'center', borderRight: `1px solid ${line}` }}>
               <div style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, lineHeight: '28px', color: ink }}>{friend.totalSteps.toLocaleString()}</div>
               <Mono>{t('friend_total_steps')}</Mono>
             </div>

@@ -15,12 +15,14 @@ import { VisitHistoryItem } from '@/components/UI/VisitHistoryItem'
 import { VisitHistoryScreen } from '@/components/UI/VisitHistoryScreen'
 import { getMedalConfig } from '@/data/medals'
 import { StreakChestCard } from '@/components/UI/StreakChestCard'
+import { WeekStrip } from '@/components/UI/WeekStrip'
+import { JournalOverlay } from '@/components/UI/JournalOverlay'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
 import type { Achievement, EarnedMedal } from '@/types'
-import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, paperLight, paperShade, stamp, ochreInk } from '@/lib/theme'
+import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, paperLight, paperShade, stamp, ochreInk, edge } from '@/lib/theme'
 import { MONO, paperPage, paperTag, SCRIM } from '@/lib/paper'
 
 
@@ -34,8 +36,8 @@ const iconButton = {
 const inlineIcon = { verticalAlign: 'middle', marginTop: -4, marginBottom: -2 } as const
 
 const cheatButton = {
-  flex: 1, minHeight: 44, padding: '0 4px', borderRadius: 6, cursor: 'pointer',
-  background: paperCard, border: `1.5px solid ${ink}`, color: ink,
+  flex: 1, minHeight: 44, padding: '0 4px', borderRadius: 10, cursor: 'pointer',
+  background: paperCard, border: `1px solid ${edge}`, color: ink,
   fontFamily: MONO, fontWeight: 500, fontSize: 12,
 } as const
 
@@ -64,6 +66,7 @@ export function ProfilePage() {
   } | null>(null)
   const [showMedalHistory, setShowMedalHistory] = useState(false)
   const [showVisitHistory, setShowVisitHistory] = useState(false)
+  const [journalOpen, setJournalOpen] = useState(false)
 
   const xpNeeded = xpForNextLevel(profile.level)
   const xpPct = Math.min((profile.xp / xpNeeded) * 100, 100)
@@ -149,7 +152,7 @@ export function ProfilePage() {
               style={{
                 flex: 1, minWidth: 0, height: 44, boxSizing: 'border-box', fontFamily: 'inherit',
                 fontSize: 20, fontWeight: 600, color: ink, background: paperCard,
-                border: `1.5px solid ${ink}`, borderRadius: 6,
+                border: `1px solid ${edge}`, borderRadius: 10,
                 padding: '0 10px', outline: 'none',
               }}
             />
@@ -206,7 +209,7 @@ export function ProfilePage() {
               data-sfx="click"
               style={{
                 flexShrink: 0, padding: '5px 5px 14px', cursor: 'pointer',
-                background: paperCard, border: `1px solid ${line}`, borderRadius: 3,
+                background: paperCard, border: `1px solid ${line}`, borderRadius: 6,
                 boxShadow: '1px 2px 0 rgba(51,40,30,0.22)', transform: 'rotate(-4deg)',
               }}
             >
@@ -233,7 +236,7 @@ export function ProfilePage() {
 
               {/* XP bar */}
               <div style={{ marginTop: 14 }}>
-                <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, background: paperCard, overflow: 'hidden' }}>
+                <div style={{ height: 8, background: 'rgba(51,40,30,0.12)', borderRadius: 4, overflow: 'hidden' }}>
                   <div style={{
                     height: '100%',
                     background: forest,
@@ -252,13 +255,13 @@ export function ProfilePage() {
           {/* Stats row */}
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-            marginTop: 16, paddingTop: 12, borderTop: `1.5px dashed ${line}`,
+            marginTop: 16, paddingTop: 12, borderTop: `1px solid ${line}`,
           }}>
             {stats.map(({ labelKey, value, icon }, i) => (
               <div key={labelKey} style={{
                 padding: '0 6px', textAlign: 'center',
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                borderRight: i < stats.length - 1 ? `1.5px dashed ${line}` : 'none',
+                borderRight: i < stats.length - 1 ? `1px solid ${line}` : 'none',
               }}>
                 <div style={{ height: 24, display: 'flex', alignItems: 'center' }}>{icon}</div>
                 <div style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, color: ink, lineHeight: '28px' }}>{value}</div>
@@ -268,6 +271,12 @@ export function ProfilePage() {
           </div>
         </NoteCard>
       </section>
+
+      {/* This week's step rings. A tap opens the journal with the month calendar. */}
+      <section style={{ padding: '16px 16px 0' }}>
+        <WeekStrip dailySteps={profile.dailySteps} onOpen={() => setJournalOpen(true)} />
+      </section>
+      {journalOpen && <JournalOverlay onClose={() => setJournalOpen(false)} />}
 
       <div style={{ padding: '24px 16px 20px', display: 'flex', flexDirection: 'column', gap: 26 }}>
 
@@ -281,9 +290,9 @@ export function ProfilePage() {
 
           {profile.isPremium ? (
             <div style={{
-              background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6, overflow: 'hidden',
+              background: paperLight, border: `1px solid ${edge}`, borderRadius: 10, overflow: 'hidden',
             }}>
-              <div aria-hidden style={{ height: 6, background: ochre, borderBottom: `1.5px solid ${ink}` }} />
+              <div aria-hidden style={{ height: 6, background: ochre, borderBottom: `1px solid ${edge}` }} />
               <div style={{ padding: '12px 12px 4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
@@ -303,7 +312,7 @@ export function ProfilePage() {
                       style={{ ...iconButton, marginRight: -8 }}
                     >
                       <span style={{
-                        width: 24, height: 24, borderRadius: '50%', border: `1.5px solid ${ink}`, boxSizing: 'border-box',
+                        width: 24, height: 24, borderRadius: 10, border: `1px solid ${edge}`, boxSizing: 'border-box',
                         background: paperCard, color: ink, fontFamily: MONO, fontSize: 13, fontWeight: 500,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
                       }}>
@@ -313,7 +322,7 @@ export function ProfilePage() {
                   </div>
                 </div>
 
-                <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, background: paperCard, overflow: 'hidden', marginBottom: 5 }}>
+                <div style={{ height: 8, background: 'rgba(51,40,30,0.12)', borderRadius: 4, overflow: 'hidden', marginBottom: 5 }}>
                   <div style={{
                     height: '100%',
                     background: ochre,
@@ -352,10 +361,10 @@ export function ProfilePage() {
               onClick={() => setShowPremiumModal(true)}
               style={{
                 display: 'block', width: '100%', padding: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
-                background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6, overflow: 'hidden',
+                background: paperLight, border: `1px solid ${edge}`, borderRadius: 10, overflow: 'hidden',
               }}
             >
-              <div aria-hidden style={{ height: 6, background: ochre, borderBottom: `1.5px solid ${ink}` }} />
+              <div aria-hidden style={{ height: 6, background: ochre, borderBottom: `1px solid ${edge}` }} />
               <div style={{ padding: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
                   <span style={{ fontSize: 28, lineHeight: 1 }}>🛡️</span>
@@ -375,9 +384,9 @@ export function ProfilePage() {
 
                 <div
                   style={{
-                    minHeight: 44, boxSizing: 'border-box', borderRadius: 6,
+                    minHeight: 44, boxSizing: 'border-box', borderRadius: 10,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: paperCard, border: `1.5px solid ${ink}`,
+                    background: paperCard, border: `1px solid ${edge}`,
                     color: ink, fontSize: 15, fontWeight: 500, textAlign: 'center',
                   }}
                 >
@@ -457,7 +466,7 @@ export function ProfilePage() {
           </SectionTitle>
 
           {profile.visitHistory.length === 0 ? (
-            <div style={{ border: '1.5px dashed #8C7A5C', borderRadius: 4, padding: 20, textAlign: 'center' }}>
+            <div style={{ border: '1.5px dashed #8C7A5C', borderRadius: 6, padding: 20, textAlign: 'center' }}>
               <div style={{ fontSize: 34, marginBottom: 6 }}>🗺️</div>
               <p style={{ margin: 0, fontSize: 14, color: inkSoft }}>
                 {t('profile_no_visits')}
@@ -486,7 +495,7 @@ export function ProfilePage() {
         </Mono>
 
         {import.meta.env.DEV && (
-          <section style={{ marginTop: 16, padding: 12, background: paperLight, border: `1.5px dashed ${ink}`, borderRadius: 6 }}>
+          <section style={{ marginTop: 16, padding: 12, background: paperLight, border: `1.5px dashed ${ink}`, borderRadius: 10 }}>
             <p style={{ margin: '0 0 10px', fontFamily: MONO, fontSize: 11, fontWeight: 500, color: inkSoft, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               🛠 Dev cheats
             </p>
@@ -585,7 +594,7 @@ export function ProfilePage() {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 340, boxSizing: 'border-box',
-              background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6,
+              background: paperLight, border: `1px solid ${edge}`, borderRadius: 10,
               padding: '20px 18px 18px', boxShadow: '3px 4px 0 rgba(51,40,30,0.35)',
               textAlign: 'center',
             }}

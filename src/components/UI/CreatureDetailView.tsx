@@ -8,8 +8,8 @@ import { CREATURES, creatureDefBySpecies } from '@/data/creatures'
 import type { FoodItem, HatchedCreature } from '@/types'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { InkButton, Mono, SectionTitle, Stamp } from '@/components/UI/Journal'
-import { SCRIM, paperSheet } from '@/lib/paper'
-import { accentAlpha, categoryCss, forest, ink, inkSoft, line, ochre, paperLight, ochreInk, pencil } from '@/lib/theme'
+import { SCRIM, STICKER, paperSheet } from '@/lib/paper'
+import { accentAlpha, categoryCss, forest, ink, inkSoft, line, ochre, paperLight, ochreInk, pencil, edge } from '@/lib/theme'
 import { useLocale } from '@/contexts/LocaleContext'
 import { motion } from 'motion/react'
 import { sheetIn, backdropIn } from '@/lib/motion'
@@ -99,7 +99,7 @@ function CreatureScene({ creature, size, nomming, highlight }: {
       ? 'creatureNom 0.55s ease forwards'
       : `creatureBob 2.2s ease-in-out infinite`,
     animationDelay: spinning || nomming ? '0s' : bobDelay(creature.id),
-    filter: creature.isShiny ? SHINY_OUTLINE : undefined,
+    filter: creature.isShiny ? SHINY_OUTLINE : STICKER,
   }
   const shown = spinSrc ?? src
   const figure = shown
@@ -166,7 +166,7 @@ function buildGhostStyle(w: number, h: number): string {
     'position:fixed', 'pointer-events:none', `width:${w}px`, `height:${h}px`,
     'z-index:9999', 'display:flex', 'flex-direction:column', 'align-items:center',
     'gap:3px', 'padding:8px 10px 7px', `background:${paperLight}`, 'border-radius:6px',
-    `box-shadow:${TAG_LIFTED}`, `border:1.5px solid ${ink}`,
+    `box-shadow:${TAG_LIFTED}`, `border:1px solid ${edge}`,
     'transform:rotate(-3deg)', 'transition:none',
   ].join(';')
 }
@@ -256,14 +256,14 @@ function FoodChip({ item, onFed }: { item: FoodItem; onFed: () => void }) {
       onTouchEnd={onTouchEnd}
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-        minWidth: 76, padding: '8px 10px 7px', background: paperLight, borderRadius: 6,
+        minWidth: 76, padding: '8px 10px 7px', background: paperLight, borderRadius: 10,
         boxShadow: TAG_SHADOW,
         border: `1.5px solid ${overZone ? forest : ink}`,
         cursor: 'grab', userSelect: 'none', touchAction: 'none', flexShrink: 0,
       }}
     >
       {/* The hole for the tag's string. */}
-      <span aria-hidden style={{ width: 7, height: 7, border: `1.5px solid ${ink}`, borderRadius: '50%', marginBottom: 1 }} />
+      <span aria-hidden style={{ width: 7, height: 7, border: `1px solid ${edge}`, borderRadius: '50%', marginBottom: 1 }} />
       <EmojiSprite id={`food_${item.foodId}`} emoji={def.emoji} size={32} />
       <span style={{ fontSize: 12, fontWeight: 500, color: ink, textAlign: 'center', maxWidth: 76, lineHeight: '14px' }}>
         {def.name}
@@ -328,7 +328,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
           {/* The plate: the creature on a wash of its type colour. The scene is the drop zone */}
           <div style={{
             position: 'relative', display: 'flex', justifyContent: 'center', padding: '14px 0 4px',
-            background: `${typeColor}40`, border: `1px solid ${line}`, borderRadius: 3,
+            background: `${typeColor}40`, border: `1px solid ${line}`, borderRadius: 6,
           }}>
             {creature.isShiny && (
               <Stamp color={ochreInk} tilt={-4} style={{ position: 'absolute', top: 10, left: 10 }}>
@@ -349,7 +349,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
               </Mono>
               <span aria-hidden style={{
                 width: 10, height: 10, marginLeft: 6, flexShrink: 0,
-                background: typeColor, border: `1.5px solid ${ink}`, borderRadius: '50%',
+                background: typeColor, border: `1px solid ${edge}`, borderRadius: '50%',
               }} />
               <Mono style={{ fontSize: 12 }}>{creature.poiCategory}</Mono>
             </div>
@@ -357,7 +357,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
 
           {!atCap ? (
             <div style={{ padding: '12px 0 0' }}>
-              <div style={{ height: 12, border: `1.5px solid ${ink}`, borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ height: 8, background: 'rgba(51,40,30,0.12)', borderRadius: 4, overflow: 'hidden' }}>
                 <div style={{
                   height: '100%',
                   background: creature.isShiny ? ochre : forest,
@@ -379,7 +379,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
             Found at {creature.poiOriginName}
           </Mono>
 
-          <div style={{ borderTop: `1.5px dashed ${line}`, margin: '18px 0' }} />
+          <div style={{ borderTop: `1px solid ${line}`, margin: '18px 0' }} />
 
           {feedQueue.length > 0 ? (
             <div>
@@ -394,14 +394,14 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
               </div>
             </div>
           ) : (
-            <div style={{ padding: '12px 14px', border: `1.5px dashed ${pencil}`, borderRadius: 4 }}>
+            <div style={{ padding: '12px 14px', border: `1.5px dashed ${pencil}`, borderRadius: 6 }}>
               <p style={{ margin: 0, fontSize: 13, lineHeight: '18px', color: inkSoft }}>
                 No food yet. Send a squad on an expedition to bring some back.
               </p>
             </div>
           )}
 
-          <div style={{ borderTop: `1.5px dashed ${line}`, margin: '18px 0' }} />
+          <div style={{ borderTop: `1px solid ${line}`, margin: '18px 0' }} />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <InkButton variant="danger" onClick={onRelease} style={{ width: '100%' }}>

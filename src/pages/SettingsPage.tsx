@@ -6,7 +6,7 @@ import { useMusic } from '@/contexts/MusicContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { NotificationPrefKey } from '@/types'
-import { forest, ink, inkHint, line, paperCard, paperLight, paperShade, stamp } from '@/lib/theme'
+import { forest, ink, inkHint, line, paperCard, paperLight, paperShade, stamp, edge } from '@/lib/theme'
 import { paperCardStyle, paperPage } from '@/lib/paper'
 import { Mono, SectionTitle } from '@/components/UI/Journal'
 import { AccountSection } from '@/components/UI/AccountSection'
@@ -25,7 +25,7 @@ declare const __APP_VERSION__: string
 declare const __GIT_COMMIT__: string
 declare const __BUILD_DATE__: string
 
-const HAIRLINE = `1.5px dashed ${line}`
+const HAIRLINE = `1px solid ${line}`
 const rowTitle: React.CSSProperties = { fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }
 const rowNote: React.CSSProperties = { display: 'block', marginTop: 2, fontSize: 12, lineHeight: '16px' }
 const slider: React.CSSProperties = { width: '100%', minWidth: 0, height: 44, margin: 0, accentColor: ink, cursor: 'pointer' }
@@ -46,13 +46,13 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () =>
       }}
     >
       <span style={{
-        width: 50, height: 28, boxSizing: 'border-box', borderRadius: 6, padding: 2,
+        width: 50, height: 28, boxSizing: 'border-box', borderRadius: 10, padding: 2,
         border: `1.5px solid ${ink}`, background: checked ? forest : paperShade,
         display: 'flex', alignItems: 'center', transition: 'background 0.15s',
       }}>
         <span style={{
-          width: 21, height: 21, boxSizing: 'border-box', borderRadius: 4, display: 'block',
-          background: paperCard, border: `1.5px solid ${ink}`,
+          width: 21, height: 21, boxSizing: 'border-box', borderRadius: 6, display: 'block',
+          background: paperCard, border: `1px solid ${edge}`,
           transform: checked ? 'translateX(22px)' : 'none', transition: 'transform 0.15s',
         }} />
       </span>
@@ -84,7 +84,7 @@ export function SettingsPage() {
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{
         position: 'sticky', top: 0, zIndex: 2, background: paperLight,
-        padding: '16px 16px 10px', borderBottom: `1.5px solid ${ink}`,
+        padding: '16px 16px 10px', borderBottom: `1px solid ${edge}`,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button
@@ -93,7 +93,7 @@ export function SettingsPage() {
           style={{
             width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
             display: 'grid', placeItems: 'center',
-            background: paperCard, border: `1.5px solid ${ink}`, borderRadius: 6,
+            background: paperCard, border: `1px solid ${edge}`, borderRadius: 10,
             fontFamily: 'inherit', fontSize: 22, fontWeight: 500, color: ink, lineHeight: 1,
           }}
         >
@@ -104,9 +104,7 @@ export function SettingsPage() {
             {t('journal_kicker')}
           </Mono>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600, lineHeight: '30px', letterSpacing: '-0.01em', color: ink }}>{t('settings_title')}</h1>
-          <svg aria-hidden width="96" height="6" viewBox="0 0 96 6" fill="none" style={{ display: 'block', marginTop: -1 }}>
-            <path d="M2 4c9-4 16 3 24 0s16-3 24 0 16 3 24 0 12-2 20 0" stroke={stamp} strokeWidth="2" strokeLinecap="round" />
-          </svg>
+          <span aria-hidden style={{ display: 'block', width: 36, height: 3, borderRadius: 2, background: stamp, marginTop: 1 }} />
         </div>
       </div>
 

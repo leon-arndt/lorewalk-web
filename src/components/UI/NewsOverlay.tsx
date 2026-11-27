@@ -3,7 +3,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useNews } from '@/hooks/useNews'
 import { newsText } from '@/data/news'
-import { forest, indigo, ink, inkHint, inkSoft, ochre, paperCard, paperShade, stamp, line } from '@/lib/theme'
+import { forest, indigo, ink, inkHint, inkSoft, ochre, paperCard, paperShade, stamp, line, edge } from '@/lib/theme'
 import { paperCardStyle, paperPage, paperSheet, paperTag, SCRIM } from '@/lib/paper'
 import { InkButton, Mono, PageHeader, Stamp } from '@/components/UI/Journal'
 import type { NewsCategory, NewsPost } from '@/types'
@@ -30,7 +30,7 @@ function CategoryTag({ category }: { category: NewsCategory }) {
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       <span aria-hidden style={{
         width: 10, height: 10, borderRadius: 2, flexShrink: 0,
-        background: CATEGORY_COLOR[category], border: `1.5px solid ${ink}`,
+        background: CATEGORY_COLOR[category], border: `1px solid ${edge}`,
       }} />
       <Mono style={{ fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: ink }}>
         {t(CATEGORY_KEY[category])}
@@ -141,7 +141,7 @@ export function NewsOverlay({ onClose }: { onClose: () => void }) {
           <button
             onClick={onClose}
             style={{
-              ...paperTag, width: 44, height: 44, borderRadius: '50%', padding: 0,
+              ...paperTag, width: 44, height: 44, padding: 0,
               fontSize: 22, lineHeight: 1, cursor: 'pointer', fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
@@ -189,7 +189,7 @@ export function NewsOverlay({ onClose }: { onClose: () => void }) {
             <span aria-hidden style={{
               position: 'absolute', top: -7, left: '50%', marginLeft: -7, zIndex: 1,
               width: 14, height: 14, borderRadius: '50%',
-              background: stamp, border: `1.5px solid ${ink}`,
+              background: stamp, border: `1px solid ${edge}`,
               boxShadow: '1px 2px 0 rgba(51,40,30,0.18)',
             }} />
             {post.heroUrl && (

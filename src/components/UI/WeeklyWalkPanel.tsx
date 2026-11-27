@@ -38,7 +38,7 @@ const typed = { display: 'block', fontSize: 12, lineHeight: '18px', color: inkSo
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = Math.min(100, (value / max) * 100)
   return (
-    <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, overflow: 'hidden' }}>
+    <div style={{ height: 8, background: 'rgba(51,40,30,0.12)', borderRadius: 4, overflow: 'hidden' }}>
       <div style={{
         height: '100%', background: forest,
         width: `${pct}%`, transition: 'width 0.6s ease',
@@ -83,7 +83,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         }}
       >
         <span style={{
-          ...paperTag, width: 30, height: 30, borderRadius: '50%',
+          ...paperTag, width: 30, height: 30,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, lineHeight: 1,
         }}>x</span>
@@ -206,7 +206,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
           </InkButton>
         ) : (
           <div style={{
-            padding: '10px 14px', borderRadius: 4, border: '1.5px dashed #8C7A5C', textAlign: 'center',
+            padding: '10px 14px', borderRadius: 6, border: '1.5px dashed #8C7A5C', textAlign: 'center',
           }}>
             <Mono style={typed}>
               Keep walking! Your steps are being tracked automatically.

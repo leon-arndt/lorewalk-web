@@ -136,6 +136,9 @@ function RisingMotes() {
 // Ignore taps for a moment after the screen opens, so the tap that triggered the
 // reward (or a quick double tap) does not skip it before the player sees it.
 const TAP_GUARD_MS = 600
+// Each reward line slides in after the one before it.
+const ROW_DELAY_S = 0.35
+const ROW_STAGGER_S = 0.14
 
 export function RewardScreen() {
   const { pendingReward, dismissReward } = useReward()
@@ -144,6 +147,20 @@ export function RewardScreen() {
   useEffect(() => {
     if (pendingReward) openedAt.current = performance.now()
   }, [pendingReward])
+  // The ledger follows each line as it slides in, so the newest reward is in view.
+  const listRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!pendingReward) return
+    const timers = pendingReward.items.map((_, i) => setTimeout(() => {
+      const list = listRef.current
+      const row = list?.children[i] as HTMLElement | undefined
+      if (!list || !row) return
+      const bottom = row.offsetTop + row.offsetHeight
+      if (bottom > list.scrollTop + list.clientHeight) list.scrollTo({ top: bottom - list.clientHeight, behavior: 'smooth' })
+    }, (ROW_DELAY_S + i * ROW_STAGGER_S) * 1000))
+    return () => timers.forEach(clearTimeout)
+  }, [pendingReward])
+
   if (!pendingReward) return null
 
   function handleTap() {
@@ -206,15 +223,17 @@ export function RewardScreen() {
 
         {/* Reward rows: ledger lines. Each slides in on a stagger, so items feel added one by one */}
         {items.length > 0 && (
-          <div style={{
-            borderTop: `1.5px dashed ${line}`, borderBottom: `1.5px dashed ${line}`, marginBottom: 20,
+          <div ref={listRef} style={{
+            borderTop: `1px solid ${line}`, borderBottom: `1px solid ${line}`, marginBottom: 20,
+            // A long list scrolls inside the card. The screen itself never scrolls.
+            position: 'relative', maxHeight: 'min(38dvh, 230px)', overflowY: 'auto', overscrollBehavior: 'contain',
           }}>
             {items.map((item, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 4px',
-                borderTop: i > 0 ? `1.5px dashed ${line}` : 'none',
-                animation: `rewardRowIn 0.42s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.14}s both`,
+                borderTop: i > 0 ? `1px solid ${line}` : 'none',
+                animation: `rewardRowIn 0.42s cubic-bezier(0.16,1,0.3,1) ${ROW_DELAY_S + i * ROW_STAGGER_S}s both`,
               }}>
                 <div style={{ width: 26, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <EmojiSprite id={item.spriteId ?? `item_${item.type}`} emoji={item.emoji ?? ITEM_ICON[item.type]} size={24} />
@@ -235,7 +254,7 @@ export function RewardScreen() {
       <div className="reward-tap-hint" style={{
         ...monoLabel,
         position: 'relative', zIndex: 10, marginTop: 18, padding: '5px 10px',
-        background: ink, borderRadius: 6,
+        background: ink, borderRadius: 10,
         color: paperLight, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em',
         pointerEvents: 'none',
       }}>

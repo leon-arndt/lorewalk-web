@@ -44,7 +44,7 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
         </div>
 
         <div style={{
-          flexShrink: 0, margin: '0 20px', padding: '12px 0 10px', borderBottom: `1.5px dashed ${line}`,
+          flexShrink: 0, margin: '0 20px', padding: '12px 0 10px', borderBottom: `1px solid ${line}`,
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12,
         }}>
           <div style={{ fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>{t('profile_visit_history')}</div>

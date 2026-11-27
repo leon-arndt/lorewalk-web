@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useReward } from '@/contexts/RewardContext'
-import { ink, stamp } from '@/lib/theme'
+import { stamp, edge } from '@/lib/theme'
 import { paperTag } from '@/lib/paper'
 import { AnimatePresence, motion } from 'motion/react'
 import { popSpring } from '@/lib/motion'
@@ -21,7 +21,7 @@ export function Toast() {
   return (
     <div style={{
       position: 'fixed', left: 16, right: 16,
-      bottom: 'calc(env(safe-area-inset-bottom) + 144px)',
+      bottom: 'calc(env(safe-area-inset-bottom) + 194px)',
       display: 'flex', justifyContent: 'center',
       zIndex: 10000, pointerEvents: 'none',
     }}>
@@ -51,7 +51,7 @@ export function Toast() {
           >
             <span aria-hidden style={{
               width: 10, height: 10, boxSizing: 'border-box', flexShrink: 0, borderRadius: '50%',
-              border: `1.5px solid ${ink}`, background: stamp,
+              border: `1px solid ${edge}`, background: stamp,
             }} />
             <span>{toast.message}</span>
           </motion.button>

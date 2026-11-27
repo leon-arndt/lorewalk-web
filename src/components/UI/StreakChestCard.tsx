@@ -48,7 +48,7 @@ export function StreakChestCard() {
         onClick={handleTap}
         style={{
           width: '100%', minHeight: 44, display: 'flex', alignItems: 'center', gap: 14,
-          padding: '12px 14px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
+          padding: '12px 14px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
           background: paperCard, border: `1.5px solid ${stamp}`,
           boxShadow: `inset 0 0 0 3px ${paperCard}, inset 0 0 0 4px ${stamp}`,
           transform: 'rotate(0.6deg)',

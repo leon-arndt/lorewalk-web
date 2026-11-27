@@ -5,8 +5,8 @@ import { forest, ink, inkHint } from '@/lib/theme'
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-// This week's step rings, pinned to the top of the map. Tap to open the full
-// journal calendar. Mirrors Pikmin Bloom's home-screen diary strip.
+// This week's step rings, on the Profile page. Tap to open the full journal
+// calendar. The idea comes from Pikmin Bloom's diary strip.
 export function WeekStrip({ dailySteps = {}, onOpen }: {
   dailySteps?: Record<string, number>
   onOpen: () => void

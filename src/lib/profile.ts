@@ -691,6 +691,13 @@ export function isPoiLocked(poi: Poi, profile: PlayerProfile): boolean {
 // around the step counter both read off this. Matches Google Fit's default.
 export const DAILY_STEP_GOAL = 10_000
 
+// The weekly party walk opens at this level. A player who already has a walk
+// keeps it, so a level rule that arrives later takes nothing away.
+export const WEEKLY_WALK_UNLOCK_LEVEL = 5
+export function isWeeklyWalkLocked(profile: PlayerProfile): boolean {
+  return profile.level < WEEKLY_WALK_UNLOCK_LEVEL && !profile.weeklyWalk
+}
+
 // Local (not UTC) YYYY-MM-DD, so calendar days match the player's wall clock.
 export function localDateKey(d: Date): string {
   const p = (n: number) => n.toString().padStart(2, '0')

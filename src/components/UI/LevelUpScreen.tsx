@@ -118,7 +118,7 @@ function RewardCard({
       ref={cardRef}
       style={{
         flex: '1 1 0', minWidth: 84, maxWidth: 112, minHeight: 112,
-        borderRadius: 3,
+        borderRadius: 6,
         padding: '14px 6px 10px',
         textAlign: 'center',
         background: revealed ? paperCard : 'rgba(255,253,246,0)',
@@ -154,6 +154,16 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
 
   const allRevealed = revealed >= rewards.length
 
+  // Keep the next slot to reveal in view, so a tap never reveals a hidden one.
+  const listRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const list = listRef.current
+    const card = cardRefs.current[Math.min(revealed, rewards.length - 1)]
+    if (!list || !card) return
+    const bottom = card.offsetTop + card.offsetHeight + 6
+    if (bottom > list.scrollTop + list.clientHeight) list.scrollTo({ top: bottom - list.clientHeight, behavior: 'smooth' })
+  }, [revealed, rewards.length])
+
   function revealNextAt(idx: number) {
     const card = cardRefs.current[idx]
     if (card) {
@@ -185,7 +195,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
         position: 'fixed', inset: 0, zIndex: 200,
         background: SCRIM_DEEP,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '24px 20px', overflowX: 'hidden', overflowY: 'auto',
+        padding: '24px 20px', overflow: 'hidden',
         userSelect: 'none',
       }}
     >
@@ -209,11 +219,15 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
 
           {rewards.length > 0 && (
             <>
-              <div style={{ borderTop: `1.5px dashed ${line}`, margin: '16px 0 10px' }} />
+              <div style={{ borderTop: `1px solid ${line}`, margin: '16px 0 10px' }} />
               <Mono style={{ display: 'block', marginBottom: 10, color: inkSoft, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                 {t('levelup_rewards')}
               </Mono>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {/* Many rewards scroll inside this window, and it follows each reveal. */}
+              <div ref={listRef} style={{
+                position: 'relative', display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center',
+                maxHeight: 'min(32dvh, 236px)', overflowY: 'auto', overscrollBehavior: 'contain', padding: '2px 2px 6px',
+              }}>
                 {rewards.map((r, i) => (
                   <RewardCard
                     key={i}

@@ -1,4 +1,5 @@
 import { useState, useEffect, memo } from 'react'
+import { STICKER } from '@/lib/paper'
 import { getEggPreviewURL } from '@/lib/creaturePreview'
 import { LoadingDot } from '@/components/UI/LoadingDot'
 
@@ -22,6 +23,6 @@ export const EggPreview = memo(function EggPreview({
   const src = result?.tier === tier ? result.url : undefined
   if (src === undefined) return <LoadingDot size={size} />
   return src
-    ? <img src={src} width={size} height={size} alt={`${tier} egg`} style={{ display: 'block' }} />
+    ? <img src={src} width={size} height={size} alt={`${tier} egg`} style={{ display: 'block', filter: STICKER }} />
     : <span style={{ fontSize: size * 0.48, lineHeight: 1, opacity: 0.4 }}>🥚</span>
 })

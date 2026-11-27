@@ -10,7 +10,7 @@ import {
 import type { PlayerAppearance } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { Mono, PageHeader } from '@/components/UI/Journal'
-import { ink, line, paperCard, paperLight, paperShade } from '@/lib/theme'
+import { ink, line, paperCard, paperLight, paperShade, edge } from '@/lib/theme'
 import { paperCardStyle, paperPage, paperTag } from '@/lib/paper'
 
 // A choice in the options panel: a paper tag, filled with ink when selected.
@@ -37,7 +37,7 @@ function ColorSwatchRow({ swatches, selectedId, onSelect }: {
           style={{
             width: 44, height: 44, padding: 0, borderRadius: '50%', cursor: 'pointer',
             background: toCssColor(s.color),
-            border: `1.5px solid ${ink}`,
+            border: `1px solid ${edge}`,
             boxShadow: selectedId === s.id ? `0 0 0 2px ${paperLight}, 0 0 0 4px ${ink}` : undefined,
           }}
         />
@@ -67,10 +67,10 @@ function ItemRow({ slot, selectedId, onSelect }: {
           }}
         >
           <span style={{
-            width: 26, height: 26, borderRadius: 3, boxSizing: 'border-box',
+            width: 26, height: 26, borderRadius: 6, boxSizing: 'border-box',
             ...(item.id === 'none'
               ? { border: '1.5px dashed #8C7A5C' }
-              : { background: toCssColor(item.color), border: `1.5px solid ${ink}` }),
+              : { background: toCssColor(item.color), border: `1px solid ${edge}` }),
           }} />
           <Mono style={{ fontWeight: 500, color: ink, whiteSpace: 'nowrap' }}>
             {item.label}
@@ -299,7 +299,7 @@ export function CharacterCustomizationPage() {
       {/* The avatar is a large photo glued on the page */}
       <div style={{
         flex: 1, minHeight: 160, margin: '16px 20px 14px', padding: 8, boxSizing: 'border-box',
-        background: paperCard, border: `1px solid ${line}`, borderRadius: 3,
+        background: paperCard, border: `1px solid ${line}`, borderRadius: 6,
         boxShadow: '1px 2px 0 rgba(51,40,30,0.22)', transform: 'rotate(-0.6deg)',
         display: 'flex',
       }}>
@@ -309,8 +309,8 @@ export function CharacterCustomizationPage() {
       </div>
 
       <div style={{
-        flexShrink: 0, margin: '0 16px 10px', padding: '12px 0', borderRadius: 6,
-        background: paperLight, border: `1.5px solid ${ink}`,
+        flexShrink: 0, margin: '0 16px 10px', padding: '12px 0', borderRadius: 10,
+        background: paperLight, border: `1px solid ${edge}`,
         display: 'flex', flexDirection: 'column', gap: 10,
       }}>
         <div role="tablist" style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '0 12px', scrollbarWidth: 'none' }}>
@@ -328,7 +328,7 @@ export function CharacterCustomizationPage() {
           ))}
         </div>
 
-        <div role="tabpanel" style={{ padding: '10px 12px 0', minHeight: 70, display: 'flex', alignItems: 'center', borderTop: `1.5px dashed ${line}` }}>
+        <div role="tabpanel" style={{ padding: '10px 12px 0', minHeight: 70, display: 'flex', alignItems: 'center', borderTop: `1px solid ${line}` }}>
           {tab === 'style' && <BodyRow selectedId={appearance.bodyId} onSelect={(id) => updateAppearance({ bodyId: id })} />}
           {tab === 'skin' && <ColorSwatchRow swatches={SKIN_TONES} selectedId={appearance.skinToneId} onSelect={(id) => updateAppearance({ skinToneId: id })} />}
           {tab === 'hair' && <ColorSwatchRow swatches={HAIR_COLORS} selectedId={appearance.hairColorId} onSelect={(id) => updateAppearance({ hairColorId: id })} />}

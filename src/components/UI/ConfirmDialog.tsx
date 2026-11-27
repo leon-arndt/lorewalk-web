@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { backdropIn, popSpring, tapScale } from '@/lib/motion'
 import { InkButton } from '@/components/UI/Journal'
 import { SCRIM } from '@/lib/paper'
-import { ink, inkSoft, paperLight } from '@/lib/theme'
+import { ink, inkSoft, paperLight, edge } from '@/lib/theme'
 
 // In-game replacement for window.confirm. `danger` paints the confirm button
 // red, for an action that destroys something, such as a creature release.
@@ -44,7 +44,7 @@ export function ConfirmDialog({ open, icon, title, body, confirmLabel, cancelLab
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 340, boxSizing: 'border-box', padding: '24px 20px 20px',
-              background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6,
+              background: paperLight, border: `1px solid ${edge}`, borderRadius: 10,
               boxShadow: '2px 3px 0 rgba(51,40,30,0.35)', textAlign: 'center',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
             }}

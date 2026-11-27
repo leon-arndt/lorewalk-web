@@ -96,6 +96,7 @@ export interface Translations {
   creatures_release_keep: string
   journal_kicker: string
   creatures_recorded: string
+  creatures_recorded_word: string
   creatures_not_seen: string
   creatures_field_guide: string
   creatures_specimen_no: string
@@ -188,6 +189,15 @@ export interface Translations {
   journal_delete_photo: string
   journal_subtitle: string
   journal_close: string
+  goal_go: string
+  goal_egg_title: string
+  goal_hatch: string
+  goal_squad_title: string
+  goal_collect: string
+  goal_chest_title: string
+  goal_open: string
+  goal_distance: string
+  journal_open: string
 
   news_title: string
   news_subtitle: string
@@ -224,6 +234,7 @@ export interface Translations {
   creature_drag_food: string
 
   weekly_walk_button: string
+  weekly_walk_locked: string
   weekly_walk_ended: string
   weekly_walk_complete_title: string
   weekly_walker_label: string

@@ -1,7 +1,7 @@
 import type { VisitRecord } from '@/types'
 import { Mono } from '@/components/UI/Journal'
 import { paperCardStyle } from '@/lib/paper'
-import { categoryCss, forest, ink } from '@/lib/theme'
+import { categoryCss, forest, ink, edge } from '@/lib/theme'
 
 const CATEGORY_ICONS: Record<string, string> = {
   heritage: '🏛', nature: '🌿', religious: '🕌',
@@ -28,7 +28,7 @@ export function VisitHistoryItem({ visit }: { visit: VisitRecord }) {
     }}>
       <div style={{
         width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-        background: `${categoryCss(visit.poiCategory)}40`, border: `1.5px solid ${ink}`,
+        background: `${categoryCss(visit.poiCategory)}40`, border: `1px solid ${edge}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 18,
       }}>

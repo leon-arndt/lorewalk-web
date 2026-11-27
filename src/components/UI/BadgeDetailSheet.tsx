@@ -29,7 +29,7 @@ export function AchievementCard({ icon, name, unlocked, tilt = 0, onClick }: {
       type="button"
       onClick={onClick}
       style={{
-        minWidth: 0, minHeight: 44, padding: 5, borderRadius: 3, cursor: 'pointer', fontFamily: 'inherit',
+        minWidth: 0, minHeight: 44, padding: 5, borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
         display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 4,
         background: unlocked ? paperCard : 'transparent',
         border: unlocked ? `1px solid ${line}` : '1.5px dashed #8C7A5C',
@@ -83,7 +83,7 @@ export function BadgeDetailSheet({ icon, name, description, status, statusColor,
         <div style={{ overflowY: 'auto', padding: '8px 24px calc(28px + env(safe-area-inset-bottom))', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'center', padding: '18px 0 16px' }}>
             <div style={{
-              padding: 14, background: paperCard, border: `1px solid ${line}`, borderRadius: 3,
+              padding: 14, background: paperCard, border: `1px solid ${line}`, borderRadius: 6,
               boxShadow: '1px 2px 0 rgba(51,40,30,0.18)', transform: 'rotate(-1.5deg)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
             }}>

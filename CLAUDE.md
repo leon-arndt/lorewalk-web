@@ -74,7 +74,7 @@ The design keeps its tensions simple on purpose. There is no combat, no PvP, and
 - **3D**: three.js. Custom MapLibre layers draw the animated creature companions, the POI pins, and the MRT lines (`mapCharacters.ts`, `mapPoiPins.ts`, `mapMrt.ts`)
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`), against the same Supabase project as the Unity client
 - **Native**: a Capacitor 7 Android wrapper. `@devmaxime/capacitor-health-connect` reads step data. `qrcode` renders the friend-invite QR. `@revenuecat/purchases-capacitor` handles Play Billing for Premium subscriptions (see `src/lib/billing.ts`). `@capgo/capacitor-social-login` opens the native Google sign-in sheet (see `src/lib/googleAuth.ts`)
-- **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`. The app has a field journal look. `src/lib/theme.ts` holds the palette, `src/lib/paper.ts` holds the paper surfaces, and `src/components/UI/Journal.tsx` holds the building blocks (`PageHeader`, `SectionTitle`, `NoteCard`, `Stamp`, `InkButton`, `Mono`). Fredoka is the main font and DM Mono is the typewriter font, both from `@fontsource`. GameDesign.md's "UI and UX Decisions" section holds the rules
+- **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`. The app has a field journal look. `src/lib/theme.ts` holds the palette, `src/lib/paper.ts` holds the paper surfaces, the tape, and the corner size, and `src/components/UI/Journal.tsx` holds the building blocks (`PageHeader`, `SectionTitle`, `NoteCard`, `Stamp`, `Postmark`, `InkButton`, `Mono`). Fredoka is the main font and DM Mono is the typewriter font, both from `@fontsource`. GameDesign.md's "UI and UX Decisions" section holds the rules
 - **Animation**: `motion` (the new name of Framer Motion). Import from `motion/react`. `src/lib/motion.ts` holds the shared springs and presets: `sheetIn`, `panelMotion`, `backdropIn`, `popIn`. Use them for a new sheet or panel. `src/lib/ripple.ts` gives every button a press squish and a Material-style ripple from one listener in `App.tsx`. Add `data-no-ripple` to a button that must not show them
 - **PWA**: `vite-plugin-pwa` and Workbox, with `registerType: autoUpdate`
 - **Routing**: React Router v7 (BrowserRouter)
@@ -105,6 +105,7 @@ src/
   lib/
     supabase.ts            # Supabase client (env vars VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
     profile.ts             # profile persistence + game rules (achievements, XP, eggs)
+    nextGoal.ts            # picks the "next stop" bar on the map: a ready reward, or the nearest landmark
     cloudSave.ts           # cloud save: sync rules + the engine that uploads and downloads
     googleAuth.ts          # Google sign-in: web button, native sheet, Supabase link
     journalDb.ts           # IndexedDB store for journal photos / postcards
@@ -317,7 +318,7 @@ The web code follows the same conventions as the Unity project:
 - No comments unless the WHY is non-obvious.
 - No `#region` blocks. No barrel `index.ts` re-exports unless one is genuinely needed.
 - Prefer Tailwind utility classes over custom CSS. Reach for custom CSS only when Tailwind cannot express the rule.
-- Take a colour from `theme.ts`, a surface from `paper.ts`, and a button, a stamp, or a heading from `Journal.tsx`. Do not add a blur, a colour gradient, or a soft drop shadow: the look is ink on paper.
+- Take a colour from `theme.ts`, a surface from `paper.ts`, and a button, a stamp, or a heading from `Journal.tsx`. Do not add a colour gradient or a soft drop shadow. A blur is only for the controls over the map, through `hudTag` and `vellum()`.
 - Never open a native browser dialog (`window.confirm`, `alert`, `prompt`) in the game. Use `ConfirmDialog.tsx`, and set `danger` for an action that deletes something.
 - Never put an em dash in a UI-facing string. Use a period, a colon, or a hyphen instead. The same rule applies to the Markdown docs, per the Documentation style section.
 

@@ -1,7 +1,7 @@
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
-import { paperTag } from '@/lib/paper'
+import { hudTag } from '@/lib/paper'
 import { CountBump } from '@/components/UI/CountBump'
 
 export function LevelCapsule({ level }: { level: number }) {
@@ -14,7 +14,7 @@ export function LevelCapsule({ level }: { level: number }) {
       onClick={() => navigate('/profile')}
       style={{
         display: 'flex', alignItems: 'center', gap: 5,
-        ...paperTag,
+        ...hudTag,
         minHeight: 40, padding: '0 11px 0 7px',
         fontSize: 15, fontWeight: 500, fontFamily: 'inherit',
         cursor: 'pointer',

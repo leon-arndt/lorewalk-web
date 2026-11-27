@@ -93,7 +93,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
           }}
           style={{
             flex: 1, minWidth: 0, minHeight: 44, fontFamily: 'inherit', fontSize: 19, fontWeight: 500, color: ink,
-            border: 'none', borderBottom: `1.5px dashed ${line}`, borderRadius: 0, outline: 'none',
+            border: 'none', borderBottom: `1px solid ${line}`, borderRadius: 0, outline: 'none',
             background: 'transparent', padding: 0,
           }}
           onFocus={(e) => (e.target.style.borderBottomColor = ink)}

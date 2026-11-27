@@ -8,7 +8,7 @@ import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import type { FoodNode, HatchedCreature, PlayerPosition } from '@/types'
-import { categoryCss, forest, ink, inkHint, inkSoft, paperLight } from '@/lib/theme'
+import { categoryCss, forest, ink, inkHint, inkSoft, paperLight, edge } from '@/lib/theme'
 import { InkButton, Mono } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
@@ -54,7 +54,7 @@ const typed = { display: 'block', fontSize: 12, lineHeight: '18px', color: inkSo
 function InkBar({ value }: { value: number }) {
   const pct = Math.max(0, Math.min(1, value)) * 100
   return (
-    <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, overflow: 'hidden' }}>
+    <div style={{ height: 8, background: 'rgba(51,40,30,0.12)', borderRadius: 4, overflow: 'hidden' }}>
       <div style={{ height: '100%', background: forest, width: `${pct}%`, transition: 'width 0.6s ease' }} />
     </div>
   )
@@ -129,7 +129,7 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
         }}
       >
         <span style={{
-          ...paperTag, width: 30, height: 30, borderRadius: '50%',
+          ...paperTag, width: 30, height: 30,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 18, lineHeight: 1,
         }}>×</span>
@@ -140,8 +140,8 @@ export function FoodNodePanel({ node, position, onStart, onCollect, onClose, isC
   // The food sprite on a wash of the landmark's category colour.
   const foodTile = (size: number) => (
     <div style={{
-      flexShrink: 0, padding: 4, borderRadius: 3,
-      background: `${categoryCss(node.poiCategory)}40`, border: `1.5px solid ${ink}`,
+      flexShrink: 0, padding: 4, borderRadius: 6,
+      background: `${categoryCss(node.poiCategory)}40`, border: `1px solid ${edge}`,
     }}>
       <EmojiSprite id={`food_${node.foodId}`} emoji={def.emoji} size={size} />
     </div>

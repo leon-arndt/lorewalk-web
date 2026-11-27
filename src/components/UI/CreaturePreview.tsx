@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from 'react'
 import { getCreaturePreviewURL } from '@/lib/creaturePreview'
 import { LoadingDot } from '@/components/UI/LoadingDot'
+import { STICKER } from '@/lib/paper'
 import { categoryCss, line, ochre, paperCard } from '@/lib/theme'
 
 // A wash per creature type, in the same muted colours as the map pins.
@@ -43,7 +44,7 @@ export const CreaturePreview = memo(function CreaturePreview({
 
   return (
     <div style={{
-      width: size, height: size, borderRadius: 3,
+      width: size, height: size, borderRadius: 6,
       // Two flat layers, so the tile stays opaque over a scrim.
       backgroundColor: paperCard,
       backgroundImage: `linear-gradient(${tint}38, ${tint}38)`,
@@ -52,7 +53,7 @@ export const CreaturePreview = memo(function CreaturePreview({
       flexShrink: 0,
     }}>
       {src === undefined ? <LoadingDot size={Math.round(size * 0.6)} /> : src
-        ? <img src={src} width={Math.round(size * 0.86)} height={Math.round(size * 0.86)} alt={species} style={{ display: 'block' }} />
+        ? <img src={src} width={Math.round(size * 0.86)} height={Math.round(size * 0.86)} alt={species} style={{ display: 'block', filter: STICKER }} />
         : <span style={{ fontSize: Math.round(size * 0.52), lineHeight: 1 }}>{emoji}</span>}
     </div>
   )

@@ -81,7 +81,7 @@ function appendOrbitingCreatures(outer: HTMLElement, creatures: MarkerCreature[]
     const offset = document.createElement('div')
     offset.style.cssText = `position:absolute;transform:translateX(${R}px);`
     const body = document.createElement('div')
-    body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:white;border:1.5px solid #CDBF9F;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
+    body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#FBF6E9;border:1px solid rgba(51,40,30,0.45);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
     body.appendChild(spriteEl(c.emoji, 18, c.key))
     offset.appendChild(body)
     arm.appendChild(offset)
@@ -95,14 +95,14 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
   outer.setAttribute('role', 'button')
   const inner = document.createElement('div')
-  const borderColor = state === 'ready' ? '#2F6B4F' : state === 'busy' ? '#CDBF9F' : '#C98A1E'
-  const glow = state === 'ready' ? 'rgba(47,107,79,0.5)' : state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(201,138,30,0.45)'
+  // A paper tag with the same corner as every other button. Green ink means ready.
+  const borderColor = state === 'ready' ? '#2F6B4F' : '#33281E'
   inner.style.cssText = `
-    width:38px;height:38px;border-radius:50%;
-    background:white;border:2.5px solid ${borderColor};
+    width:40px;height:40px;border-radius:10px;box-sizing:border-box;
+    background:#FBF6E9;border:${state === 'ready' ? 2.5 : 1.5}px solid ${borderColor};
     display:flex;align-items:center;justify-content:center;
     font-size:22px;line-height:1;
-    box-shadow:0 2px 10px ${glow};
+    box-shadow:1px 2px 0 rgba(51,40,30,0.3);
     opacity:${state === 'busy' ? '0.6' : '1'};
   `
   inner.appendChild(spriteEl(node.emoji, 22, `food_${node.foodId}`))
@@ -111,9 +111,8 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
     badge.appendChild(spriteEl('🎁', 16, 'item_chest'))
     badge.style.cssText = `
       position:absolute;top:-8px;right:-8px;font-size:14px;
-      background:white;border-radius:50%;width:20px;height:20px;
+      background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;
       display:flex;align-items:center;justify-content:center;
-      box-shadow:0 1px 4px rgba(0,0,0,0.25);
     `
     outer.appendChild(badge)
   } else if (state === 'busy') {
@@ -121,9 +120,8 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
     badge.textContent = '⏳'
     badge.style.cssText = `
       position:absolute;top:-8px;right:-8px;font-size:12px;
-      background:white;border-radius:50%;width:18px;height:18px;
+      background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:18px;height:18px;
       display:flex;align-items:center;justify-content:center;
-      box-shadow:0 1px 4px rgba(0,0,0,0.25);
     `
     outer.appendChild(badge)
   }
@@ -131,9 +129,9 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   tooltip.textContent = node.name
   tooltip.style.cssText = `
     position:absolute;bottom:46px;left:50%;transform:translateX(-50%);
-    background:white;color:#33281E;font-size:11px;font-weight:600;
-    padding:3px 9px;border-radius:7px;white-space:nowrap;
-    box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;
+    background:#FBF6E9;color:#33281E;border:1px solid rgba(51,40,30,0.45);font-size:11px;font-weight:500;
+    padding:3px 9px;border-radius:10px;white-space:nowrap;
+    pointer-events:none;
     opacity:0;transition:opacity 0.12s ease;
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
@@ -153,38 +151,37 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   const outer = document.createElement('div')
   outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
   outer.setAttribute('role', 'button')
-  const borderColor = node.state === 'ready' ? '#2F6B4F' : node.state === 'cleared' ? '#2E4A7D' : node.state === 'busy' ? '#CDBF9F' : '#2E4A7D'
-  const glow = node.state === 'ready' ? 'rgba(47,107,79,0.5)' : node.state === 'cleared' ? 'rgba(46,74,125,0.4)' : node.state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(147,51,234,0.45)'
+  const borderColor = node.state === 'ready' ? '#2F6B4F' : node.state === 'cleared' ? '#2E4A7D' : '#33281E'
   const inner = document.createElement('div')
   inner.style.cssText = `
-    width:42px;height:42px;border-radius:10px;
-    background:${node.state === 'cleared' ? 'linear-gradient(135deg,#2E4A7D,#2E4A7D)' : 'white'};
-    border:2.5px solid ${borderColor};
+    width:42px;height:42px;border-radius:10px;box-sizing:border-box;
+    background:${node.state === 'cleared' ? '#2E4A7D' : '#FBF6E9'};
+    border:${node.state === 'ready' ? 2.5 : 1.5}px solid ${borderColor};
     display:flex;align-items:center;justify-content:center;
     font-size:24px;line-height:1;
-    box-shadow:0 2px 10px ${glow};
+    box-shadow:1px 2px 0 rgba(51,40,30,0.3);
     opacity:${node.state === 'busy' ? '0.6' : '1'};
   `
   inner.appendChild(spriteEl('⛩️', 28, 'item_shrine'))
   if (node.state === 'ready') {
     const badge = document.createElement('div')
     badge.textContent = '⚔️'
-    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
     outer.appendChild(badge)
   } else if (node.state === 'busy') {
     const badge = document.createElement('div')
     badge.textContent = '⏳'
-    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:12px;background:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:12px;background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;'
     outer.appendChild(badge)
   } else if (node.state === 'cleared') {
     const badge = document.createElement('div')
     badge.textContent = '🏆'
-    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.25);'
+    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;font-size:14px;background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;'
     outer.appendChild(badge)
   }
   const tooltip = document.createElement('div')
   tooltip.textContent = node.name
-  tooltip.style.cssText = 'position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:white;color:#33281E;font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;opacity:0;transition:opacity 0.12s ease;'
+  tooltip.style.cssText = 'position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:#FBF6E9;color:#33281E;border:1px solid rgba(51,40,30,0.45);font-size:11px;font-weight:500;padding:3px 9px;border-radius:10px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.12s ease;'
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
   outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
@@ -220,10 +217,10 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   const inner = document.createElement('div')
   inner.style.cssText = `
     display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
-    width:42px;height:42px;padding:3px;border-radius:12px;
-    background:white;box-sizing:border-box;
-    border:2.5px solid ${squad.isActive ? accent : '#CDBF9F'};
-    box-shadow:0 2px 8px rgba(0,0,0,0.18)${squad.isActive ? `,0 0 0 4px ${accentAlpha(0.2)}` : ''};
+    width:42px;height:42px;padding:3px;border-radius:10px;
+    background:#FBF6E9;box-sizing:border-box;
+    border:${squad.isActive ? 2.5 : 1.5}px solid ${accent};
+    box-shadow:1px 2px 0 rgba(51,40,30,0.3)${squad.isActive ? `,0 0 0 3px ${accentAlpha(0.2)}` : ''};
     align-items:center;justify-items:center;
   `
   const filled = squad.creatures.slice(0, 4)
@@ -239,9 +236,8 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
     badge.appendChild(spriteEl('🎁', 16, 'item_chest'))
     badge.style.cssText = `
       position:absolute;top:-8px;right:-8px;font-size:14px;
-      background:white;border-radius:50%;width:20px;height:20px;
+      background:#FBF6E9;border:1px solid #33281E;box-sizing:border-box;border-radius:50%;width:20px;height:20px;
       display:flex;align-items:center;justify-content:center;
-      box-shadow:0 1px 4px rgba(0,0,0,0.25);
     `
     outer.appendChild(badge)
   }
@@ -250,9 +246,9 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   tooltip.textContent = squad.name + (squad.ready ? ' · ready!' : squad.isActive ? ' ★' : '')
   tooltip.style.cssText = `
     position:absolute;bottom:50px;left:50%;transform:translateX(-50%);
-    background:white;color:#33281E;font-size:12px;font-weight:600;
-    padding:4px 10px;border-radius:8px;white-space:nowrap;
-    box-shadow:0 2px 10px rgba(0,0,0,0.12);pointer-events:none;
+    background:#FBF6E9;color:#33281E;border:1px solid rgba(51,40,30,0.45);font-size:12px;font-weight:500;
+    padding:4px 10px;border-radius:10px;white-space:nowrap;
+    pointer-events:none;
     opacity:0;transition:opacity 0.12s ease;
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
@@ -292,19 +288,19 @@ function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
   outer.setAttribute('role', 'button')
   const inner = document.createElement('div')
   inner.style.cssText = `
-    width:26px;height:26px;border-radius:8px;
+    width:28px;height:28px;border-radius:10px;box-sizing:border-box;
     display:flex;align-items:center;justify-content:center;font-size:15px;
-    background:white;border:2px solid ${claim.color};
-    box-shadow:0 2px 6px rgba(0,0,0,0.18);
+    background:#FBF6E9;border:2px solid ${claim.color};
+    box-shadow:1px 2px 0 rgba(51,40,30,0.3);
   `
   inner.appendChild(spriteEl('🚩', 20, 'item_claim'))
   const tooltip = document.createElement('div')
   tooltip.textContent = claim.name + ' · yours'
   tooltip.style.cssText = `
     position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
-    background:white;color:#33281E;font-size:12px;font-weight:600;
-    padding:4px 10px;border-radius:8px;white-space:nowrap;
-    box-shadow:0 2px 10px rgba(0,0,0,0.12);pointer-events:none;
+    background:#FBF6E9;color:#33281E;border:1px solid rgba(51,40,30,0.45);font-size:12px;font-weight:500;
+    padding:4px 10px;border-radius:10px;white-space:nowrap;
+    pointer-events:none;
     opacity:0;transition:opacity 0.12s ease;
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
@@ -340,10 +336,14 @@ interface MapViewProps {
   // button then, which calls recenterRef.
   onAwayChange?: (away: boolean) => void
   recenterRef?: MutableRefObject<(() => void) | null>
+  // Moves the camera to a place, for the "next stop" bar.
+  focusRef?: MutableRefObject<((lat: number, lon: number) => void) | null>
+  // The next stop. The map draws a dashed red line from the player to it.
+  goal?: { lat: number; lon: number } | null
   paused?: boolean
 }
 
-export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef, onAwayChange, recenterRef, paused = false }: MapViewProps) {
+export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef, onAwayChange, recenterRef, focusRef, goal = null, paused = false }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -459,6 +459,16 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       }
     }
 
+    if (focusRef) {
+      // The camera leaves the player, so it stops following and the recenter button shows.
+      focusRef.current = (lat, lon) => {
+        followingRef.current = false
+        setAway(true)
+        // The landmark's panel covers the lower half, so the place sits above the middle.
+        map.easeTo({ center: [lon, lat], zoom: PLAYER_ZOOM, duration: 800, offset: [0, -140] })
+      }
+    }
+
     if (compassResetRef) {
       compassResetRef.current = () => map.easeTo({ bearing: 0, duration: 300 })
     }
@@ -481,6 +491,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     return () => {
       if (compassResetRef) compassResetRef.current = null
       if (recenterRef) recenterRef.current = null
+      if (focusRef) focusRef.current = null
       stopWeather()
       ambience.forEach((a) => a.remove())
       map.remove()
@@ -745,6 +756,38 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (map.loaded()) sync()
     else map.once('load', sync)
   }, [shrineNodeMarkers, onShrineNodeClick])
+
+  // A dashed red line from the player to the next stop, as on a treasure map.
+  // It runs straight, not along the streets: it shows the direction, not a route.
+  const routeReadyRef = useRef(false)
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const data = {
+      type: 'FeatureCollection' as const,
+      features: goal && position ? [{
+        type: 'Feature' as const, properties: {},
+        geometry: { type: 'LineString' as const, coordinates: [[position.longitude, position.latitude], [goal.lon, goal.lat]] },
+      }] : [],
+    }
+    const sync = () => {
+      if (routeReadyRef.current) {
+        (map.getSource('goal-route') as maplibregl.GeoJSONSource | undefined)?.setData(data)
+        return
+      }
+      map.addSource('goal-route', { type: 'geojson', data })
+      // Below the 3D layers, so the line passes under the avatar and the pins.
+      const firstCustom = map.getStyle().layers.find((l) => (l as { type: string }).type === 'custom')?.id
+      map.addLayer({
+        id: 'goal-route', type: 'line', source: 'goal-route',
+        layout: { 'line-cap': 'round' },
+        paint: { 'line-color': '#A8361F', 'line-width': 3, 'line-dasharray': [0.6, 2.4], 'line-opacity': 0.9 },
+      }, firstCustom)
+      routeReadyRef.current = true
+    }
+    if (routeReadyRef.current || map.loaded()) sync()
+    else map.once('load', sync)
+  }, [goal, position])
 
   return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
 }
