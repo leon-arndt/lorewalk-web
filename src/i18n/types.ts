@@ -94,6 +94,16 @@ export interface Translations {
   creatures_release_body: string
   creatures_release_yes: string
   creatures_release_keep: string
+  journal_kicker: string
+  creatures_recorded: string
+  creatures_not_seen: string
+  creatures_field_guide: string
+  creatures_specimen_no: string
+  creatures_ready: string
+  creatures_tap_to_hatch: string
+  egg_tier_common: string
+  egg_tier_rare: string
+  egg_tier_epic: string
 
   squads_title: string
   squads_subtitle: string

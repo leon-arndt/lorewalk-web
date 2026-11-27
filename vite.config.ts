@@ -54,8 +54,8 @@ export default defineConfig({
         name: 'Lorewalk',
         short_name: 'Lorewalk',
         description: 'Explore Singapore\'s history through geo-exploration',
-        theme_color: '#1a0a2e',
-        background_color: '#1a0a2e',
+        theme_color: '#F2E8D0',
+        background_color: '#F2E8D0',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

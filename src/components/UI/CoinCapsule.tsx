@@ -2,7 +2,8 @@ import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { ShopPage } from '@/pages/ShopPage'
-import { glassPanel } from '@/lib/glass'
+import { paperPanel, paperTag, SCRIM } from '@/lib/paper'
+import { ink } from '@/lib/theme'
 import { AnimatePresence, motion } from 'motion/react'
 import { CountBump } from '@/components/UI/CountBump'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
@@ -19,19 +20,14 @@ export function CoinCapsule() {
         onClick={() => setOpen(true)}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
-          background: 'rgba(255,251,235,0.80)',
-          backdropFilter: 'blur(40px) saturate(200%) brightness(1.04)',
-          WebkitBackdropFilter: 'blur(40px) saturate(200%) brightness(1.04)',
-          border: '1px solid rgba(253,230,138,0.70)',
-          borderRadius: 999,
-          padding: '6px 13px',
-          fontSize: 13, fontWeight: 700, color: '#b45309',
-          boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.92), inset 0 -0.5px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(180,83,9,0.12), 0 1px 4px rgba(180,83,9,0.06)',
+          ...paperTag,
+          minHeight: 40, padding: '0 11px 0 7px',
+          fontSize: 15, fontWeight: 500, fontFamily: 'inherit',
           cursor: 'pointer',
           WebkitTapHighlightColor: 'transparent',
         }}
       >
-        <EmojiSprite id="item_coins" emoji="🪙" size={18} /> <CountBump value={profile.coins.toLocaleString()} />
+        <EmojiSprite id="item_coins" emoji="🪙" size={22} /> <CountBump value={profile.coins.toLocaleString()} />
       </button>
 
       {createPortal(
@@ -46,7 +42,7 @@ export function CoinCapsule() {
             onClick={() => setOpen(false)}
             style={{
               position: 'fixed', inset: 0, zIndex: 60,
-              background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(2px)',
+              background: SCRIM,
             }}
           />
           <motion.div
@@ -56,26 +52,27 @@ export function CoinCapsule() {
             style={{
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 70,
               maxHeight: '88dvh',
-              ...glassPanel,
-              borderRadius: '24px 24px 0 0',
+              ...paperPanel,
+              borderRadius: '10px 10px 0 0',
               overflow: 'hidden',
               display: 'flex', flexDirection: 'column',
             }}
           >
             <div style={{
               flexShrink: 0, display: 'flex', justifyContent: 'center',
-              padding: '10px 0 4px', position: 'relative',
+              padding: '10px 0 4px', position: 'relative', zIndex: 2,
             }}>
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: ink }} />
               <button
                 onClick={() => setOpen(false)}
+                data-sfx="close"
                 style={{
-                  position: 'absolute', right: 16, top: 8,
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: 22, color: '#94a3b8', lineHeight: 1, padding: 4,
+                  position: 'absolute', right: 8, top: 4, width: 44, height: 44,
+                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
-                ×
+                <span style={{ ...paperTag, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, lineHeight: 1 }}>×</span>
               </button>
             </div>
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>

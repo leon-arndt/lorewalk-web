@@ -2,7 +2,9 @@ import { useState } from 'react'
 import type { PlayerProfile } from '@/types'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
-import { accent, accentSoft } from '@/lib/theme'
+import { InkButton, Mono } from '@/components/UI/Journal'
+import { SCRIM } from '@/lib/paper'
+import { accentSoft, forest, ink, inkSoft, line, paperCard, paperLight } from '@/lib/theme'
 
 type Choice = 'device' | 'cloud'
 
@@ -35,16 +37,17 @@ export function CloudConflictDialog() {
       role="dialog"
       aria-modal="true"
       style={{
-        position: 'fixed', inset: 0, zIndex: 4000, background: 'rgba(15,23,42,0.55)',
+        position: 'fixed', inset: 0, zIndex: 4000, background: SCRIM,
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
       }}
     >
       <div style={{
-        width: '100%', maxWidth: 380, background: 'white', borderRadius: 20, padding: 20,
-        boxShadow: '0 12px 40px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', gap: 12,
+        width: '100%', maxWidth: 380, boxSizing: 'border-box', padding: 20,
+        background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6,
+        boxShadow: '2px 3px 0 rgba(51,40,30,0.35)', display: 'flex', flexDirection: 'column', gap: 12,
       }}>
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1e293b' }}>{t('account_conflict_title')}</h2>
-        <p style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.45 }}>{t('account_conflict_body')}</p>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600, lineHeight: '26px', color: ink }}>{t('account_conflict_title')}</h2>
+        <p style={{ margin: 0, fontSize: 14, color: inkSoft, lineHeight: 1.45 }}>{t('account_conflict_body')}</p>
 
         {options.map((option) => {
           const selected = choice === option.id
@@ -54,44 +57,42 @@ export function CloudConflictDialog() {
               aria-pressed={selected}
               onClick={() => setChoice(option.id)}
               style={{
-                textAlign: 'left', padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
-                border: `2px solid ${selected ? accent : '#e2e8f0'}`,
-                background: selected ? accentSoft : 'white',
+                display: 'flex', alignItems: 'center', gap: 12, minHeight: 44,
+                textAlign: 'left', padding: '10px 12px', borderRadius: 4, cursor: 'pointer', fontFamily: 'inherit',
+                border: `1.5px solid ${selected ? ink : line}`,
+                background: selected ? accentSoft : paperCard,
+                boxShadow: selected ? 'none' : '1px 2px 0 rgba(51,40,30,0.18)',
               }}
             >
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{option.title}</div>
-              {option.lines.map((line) => (
-                <div key={line} style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{line}</div>
-              ))}
+              <span aria-hidden style={{
+                width: 18, height: 18, boxSizing: 'border-box', flexShrink: 0, borderRadius: '50%',
+                border: `1.5px solid ${ink}`, background: selected ? forest : paperCard,
+                boxShadow: selected ? `inset 0 0 0 3px ${paperCard}` : 'none',
+              }} />
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                <span style={{ fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }}>{option.title}</span>
+                {option.lines.map((text) => (
+                  <Mono key={text} style={{ fontSize: 12, lineHeight: '16px' }}>{text}</Mono>
+                ))}
+              </span>
             </button>
           )
         })}
 
-        <button
+        <InkButton
           disabled={!choice}
           onClick={() => {
             if (!choice) return
             setChoice(null)
             void resolveCloudConflict(choice)
           }}
-          style={{
-            padding: '12px 0', borderRadius: 14, border: 'none', fontWeight: 700, fontSize: 14,
-            background: choice ? accent : '#e2e8f0', color: choice ? 'white' : '#94a3b8',
-            cursor: choice ? 'pointer' : 'default',
-          }}
+          style={{ marginTop: 4 }}
         >
           {t('account_conflict_confirm')}
-        </button>
-        <button
-          data-sfx="close"
-          onClick={() => { setChoice(null); setCloudConflictOpen(false) }}
-          style={{
-            padding: '6px 0', border: 'none', background: 'none',
-            color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-          }}
-        >
+        </InkButton>
+        <InkButton variant="paper" data-sfx="close" onClick={() => { setChoice(null); setCloudConflictOpen(false) }}>
           {t('account_conflict_later')}
-        </button>
+        </InkButton>
       </div>
     </div>
   )

@@ -4,7 +4,9 @@ import { getMedalConfig } from '@/data/medals'
 import { useLocale } from '@/contexts/LocaleContext'
 import { currentMonthKey } from '@/lib/profile'
 import type { EarnedMedal } from '@/types'
-import { glassSheet } from '@/lib/glass'
+import { paperSheet, SCRIM } from '@/lib/paper'
+import { ink, line } from '@/lib/theme'
+import { Mono } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { sheetIn, backdropIn } from '@/lib/motion'
 
@@ -26,7 +28,7 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
   const nowKey = currentMonthKey()
 
   return createPortal(
-    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
+    <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
       data-sfx="close"
       style={{
@@ -38,25 +40,25 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          ...glassSheet,
-          borderRadius: '24px 24px 0 0',
+          ...paperSheet,
+          borderRadius: '10px 10px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: line }} />
         </div>
 
-        <div style={{ flexShrink: 0, padding: '14px 20px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: '#1e293b' }}>{t('medal_history_title')}</div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{t('medal_history_subtitle')}</div>
+        <div style={{ flexShrink: 0, margin: '0 20px', padding: '12px 0 10px', borderBottom: `1.5px dashed ${line}` }}>
+          <div style={{ fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>{t('medal_history_title')}</div>
+          <Mono style={{ display: 'block', marginTop: 2 }}>{t('medal_history_subtitle')}</Mono>
         </div>
 
-        <div style={{ overflowY: 'auto', padding: '4px 20px calc(28px + env(safe-area-inset-bottom))' }}>
+        <div style={{ overflowY: 'auto', padding: '14px 20px calc(28px + env(safe-area-inset-bottom))' }}>
           {years.map((year) => (
             <div key={year} style={{ marginBottom: 22 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#78350f', marginBottom: 10 }}>{year}</div>
+              <Mono style={{ display: 'block', marginBottom: 10, fontSize: 13, fontWeight: 500, letterSpacing: '0.12em', color: ink }}>{year}</Mono>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                 {MONTH_ABBR.map((label, i) => {
                   const monthKey = `${year}-${String(i + 1).padStart(2, '0')}`
@@ -69,14 +71,14 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
                       key={monthKey}
                       onClick={() => onSelectMonth(monthKey, earned)}
                       style={{
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                        background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minHeight: 44,
+                        background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit',
                       }}
                     >
                       <div style={{ filter: earned ? undefined : 'grayscale(1)', opacity: earned ? 1 : 0.4 }}>
                         <MedalSvg config={cfg} size={56} />
                       </div>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8' }}>{label}</span>
+                      <Mono style={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</Mono>
                     </button>
                   )
                 })}

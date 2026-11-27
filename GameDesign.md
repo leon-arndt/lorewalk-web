@@ -52,6 +52,7 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 - **Default centre**: Singapore (1.3521, 103.8198), used when the browser has no GPS fix.
 - **Player marker**: an indigo dot with a soft halo ring.
 - **Tile source**: OpenFreeMap "Liberty" vector tiles. They are free, need no key, and carry 3D buildings and transit POIs. The map tilts 45 degrees for depth. The community funds the tiles, so self-host them or move to a paid provider for high-volume production.
+- **Parchment**: the map is drawn in sepia tones, like a map in the journal. `mapAmbience.ts` moves each colour of the Liberty style onto a sepia ramp and keeps a share of its hue, so water stays blue-grey and a park stays sage. Labels are ink on paper by day.
 - **Day, night, and weather**: the map follows the Singapore clock and the real weather from data.gov.sg. The map turns blue at night, and building windows stay lit until people go to bed. Clouds and rain show when the nearest forecast and rain gauge report them. These effects are visual only and change no game rule.
 
 ---
@@ -111,22 +112,23 @@ Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress 
 
 ## UI and UX Decisions
 
-- **Theme**: a white background with pastel accents. There is no dark mode for now.
-- **Colour tokens live in `src/lib/theme.ts`.** Import them. Do not hardcode a hex value for an accent or reward colour.
-  - `accent` (`#166534`), `accentSoft` (`#eaf6ec`), and `accentAlpha(n)` hold the quiet green described below.
-  - `rewardGradient` and `rewardGradientHorizontal` (`#818cf8` to `#c084fc`) hold the indigo-to-purple rarity and premium family.
-  - `categoryColors` and `categoryCss(category)` hold one colour per creature type (POI category). The 3D map pins, the map companions, and the collection grid all read it.
-  - The frosted-glass surface tokens live in `src/lib/glass.ts`. `theme.ts` holds the brand accent colours.
-- **Pages are frosted glass over the live map**, added 2026-09-13. The map stays mounted under every tab. Each full-screen page uses `glassPage`: a translucent mint tint with a strong blur, so the area around the player shows through as soft colour. The 3D map layers stop their frame loop while another tab covers the map. Bottom sheets over a dark scrim use `glassSheet`, which is more opaque, so the scrim does not turn the sheet grey. Tune the see-through amount in `glass.ts` only.
-- **Creature collection follows Pikmin Bloom and the Pokedex, not a card list.** Each creature stands bare on a flat pad in its type colour, in a 4-column grid, with its name and level below. There are no card borders, pills, or XP bars in the grid. The detail view holds that information. The wild cats render larger than the strays. A row of type-colour dots filters the grid. Each free storage slot shows as an empty pad.
-- **Primary accent: quiet green, `accent` (`#166534`)**, added 2026-07-20. The green is muted on purpose, closer to Geocaching than to the saturated Duolingo `#58CC02`. A game about walking to real places reads better quiet than punchy.
-  - Reference points from the real brands: Duolingo primary `#58CC02` and secondary `#89E219` (bright, high energy), Geocaching primary `#4A742C` (muted olive), and Pikmin Bloom (no published hex, but a soft pastel mint by reputation).
-  - Lorewalk landed between the quietness of Geocaching and a slightly cooler green.
-  - The accent covers the mint tint of the frosted pages, every `h1`, `h2`, and `h3` heading, the navigation and selection controls, and the solid-colour CTA buttons. Body text stays neutral slate `#1e293b`. The controls include the bottom nav, the Settings pickers, tabs, sort pills, selection rings, the "today" indicators, and the active-squad states. The CTA buttons include Send postcard, Add friend, Regenerate code, Save name, Send expedition, and the "Got it" dismiss.
-  - One CTA stays off-brand on purpose: the rename Save button on the "Hatched!" reveal screen. It sits inside an all-violet dark reward scene. Green would clash with the palette of that scene, which differs from the everyday white-background chrome of the rest of the app.
-- **Indigo to purple stays its own "reward and premium" language, separate from the accent.** It covers the egg XP bars, the level-up screen, the hatch reveal, the MAX LEVEL badges, the gradient buttons ("Collect reward", "Claim reward", "Join party walk"), and the coin-pack purchase buttons. These are *not* accent green on purpose. The contrast marks a reward or premium moment as different from ordinary navigation and everyday actions. Small text badges, such as XP pills and price and coin counts, also stay indigo and match this family.
-- **Bottom navigation**: 4 tabs. Map, Creatures, Squads, Profile. Squads replaced the old Expeditions tab. See "Squad against expedition" below.
-- **POI detail**: a white panel that slides up from the bottom, with a drag handle. It shows the name, the description, the category badge, the points badge, the distance when online, a learn-more link, and the check-in button.
+- **Theme: a field journal**, decided 2026-11-27. The app looks like the notebook of an explorer: ruled paper, ink outlines, specimen cards, red stamps, and index tabs. There is no dark mode. This look replaced the frosted glass and the quiet green accent that the app had before.
+- **Colour tokens live in `src/lib/theme.ts`.** Import them. Do not hardcode a hex value.
+  - `paper`, `paperLight`, `paperCard`, and `paperShade` are the paper tones. `line` is the hairline colour.
+  - `ink`, `inkSoft`, and `inkHint` are the text colours. All three pass the contrast check on paper.
+  - `stamp` is red ink. It marks stamps, alerts, destructive actions, reward moments, and the open tab.
+  - `forest` shows progress and success. `ochre` shows coins, medals, and Premium. `indigo` shows links.
+  - `accent` equals `ink`. Headings, selection, and filled buttons use it.
+  - `categoryColors` and `categoryCss(category)` hold one colour per creature type (POI category). The colours are muted, like watercolour washes. The 3D map pins, the map companions, and the collection grid all read them.
+- **Surfaces live in `src/lib/paper.ts`.** `paperPage` is the ruled page. `paperPanel` and `paperSheet` are the panel and the sheet over the map. `paperTag` is a HUD tag. `paperCardStyle` is a card. `SCRIM` is the dark veil behind a sheet. Every surface is opaque. Do not add a blur or a colour gradient.
+- **Building blocks live in `src/components/UI/Journal.tsx`**: `PageHeader`, `SectionTitle`, `NoteCard`, `Stamp`, `InkButton`, and `Mono`. Use them before you write a new inline style.
+- **Fonts**: Fredoka is the display font and the body font. DM Mono is the typewriter font for captions, counters, and labels. The app uses the weights 400, 500, and 600 only.
+- **Shapes**: corners are almost square. A card has 3 to 4 px, and a tag or a button has 6 px. A card has a hard offset shadow, not a soft one. A feature card can sit a little crooked, and one card on a screen can carry strips of tape.
+- **Pages cover the map.** The map stays mounted under every tab, and its 3D layers stop their frame loop while a page covers it. A page is opaque paper, so the map does not show through.
+- **Creature collection is a specimen album.** Each creature sits on a card with a wash of its type colour, in a 3-column grid. The card shows the name and a typed caption with the field-guide number and the level. A row of type-colour dots filters the grid. Below it, the "Field guide" section shows each species that the player has not hatched yet as a grey outline with its number. A species counts as recorded while the player holds one creature of it.
+- **Reward and Premium moments use red stamp ink and ochre**, not the ink accent. The contrast marks a reward as different from ordinary navigation. This covers the reward screen, the level-up screen, the hatch reveal, and the purchase buttons.
+- **Bottom navigation**: 4 tabs. Map, Creatures, Squads, Profile. Squads replaced the old Expeditions tab. The tabs look like the index tabs of a notebook. The open tab stands taller, under a red stripe. See "Squad against expedition" below.
+- **POI detail**: a paper panel that slides up from the bottom, with a drag handle. It shows the name, the description, the category badge, the points badge, the distance when online, a learn-more link, and the check-in button.
 - **Mode toggle**: an "Online mode" switch in Settings, under Connection. `localStorage` keeps the choice. Online mode is the default. A player who never touched the switch starts online. Offline mode is a test mode: a tap on a landmark checks in, and purchases are simulated. The switch stays off the map, so a player does not see a test tool on the main screen.
 - **Feedback**: the app uses two patterns only.
   - The **reward screen** (`showReward`) shows a real payout: a check-in, an expedition, a shrine, a food node, a medal, or a chest.

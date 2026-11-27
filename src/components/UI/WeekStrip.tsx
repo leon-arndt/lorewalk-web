@@ -1,7 +1,7 @@
 import { DAILY_STEP_GOAL, localDateKey } from '@/lib/profile'
-import { glassPanel } from '@/lib/glass'
+import { MONO, paperTag } from '@/lib/paper'
 import { StepRing } from '@/components/UI/StepRing'
-import { accent } from '@/lib/theme'
+import { forest, ink, inkHint } from '@/lib/theme'
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
@@ -32,8 +32,8 @@ export function WeekStrip({ dailySteps = {}, onOpen }: {
     <button
       onClick={onOpen}
       style={{
-        width: '100%', border: 'none', cursor: 'pointer',
-        ...glassPanel, borderRadius: 18, padding: '8px 6px',
+        width: '100%', cursor: 'pointer',
+        ...paperTag, padding: '7px 6px', fontFamily: 'inherit',
         display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2,
         WebkitTapHighlightColor: 'transparent',
       }}
@@ -45,11 +45,11 @@ export function WeekStrip({ dailySteps = {}, onOpen }: {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             opacity: d.isFuture ? 0.4 : 1,
           }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: d.isToday ? accent : '#94a3b8' }}>{d.dow}</span>
+            <span style={{ fontFamily: MONO, fontSize: 11, lineHeight: '13px', fontWeight: d.isToday ? 500 : 400, color: d.isToday ? ink : inkHint }}>{d.dow}</span>
             <StepRing progress={d.steps / DAILY_STEP_GOAL} size={30} stroke={3}>
               {goalMet
-                ? <span style={{ fontSize: 12 }}>😄</span>
-                : <span style={{ fontSize: 10, fontWeight: 700, color: d.isToday ? accent : '#475569' }}>{d.date}</span>}
+                ? <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={forest} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4 10-11" /></svg>
+                : <span style={{ fontSize: 11, fontWeight: d.isToday ? 600 : 500, color: ink }}>{d.date}</span>}
             </StepRing>
           </div>
         )

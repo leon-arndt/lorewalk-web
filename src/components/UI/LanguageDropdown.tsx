@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLocale, LOCALE_LABELS } from '@/contexts/LocaleContext'
 import type { Locale } from '@/contexts/LocaleContext'
-import { accent } from '@/lib/theme'
+import { ink, line, paperLight, paperShade } from '@/lib/theme'
+import { paperCardStyle } from '@/lib/paper'
 
 const ENTRIES = Object.entries(LOCALE_LABELS) as [Locale, string][]
 
@@ -54,24 +55,23 @@ export function LanguageDropdown() {
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
         style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-          background: 'white', borderRadius: 16, padding: '12px 16px',
-          border: 'none', cursor: 'pointer', textAlign: 'left',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+          ...paperCardStyle,
+          width: '100%', minHeight: 56, display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 14px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
         }}
       >
         <span style={{
-          width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+          width: 34, height: 34, boxSizing: 'border-box', borderRadius: 6, flexShrink: 0,
           display: 'grid', placeItems: 'center',
-          background: `color-mix(in srgb, ${accent} 12%, white)`, color: accent,
+          background: paperLight, border: `1.5px solid ${ink}`, color: ink,
         }}>
           <LanguagesIcon />
         </span>
-        <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: '#1e293b' }}>
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: ink }}>
           {LOCALE_LABELS[locale]}
         </span>
         <motion.svg
-          width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8"
+          width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ink}
           strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 28 }}
@@ -91,9 +91,9 @@ export function LanguageDropdown() {
             transition={{ type: 'spring', stiffness: 500, damping: 34 }}
             style={{
               position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 1,
-              padding: 6,
-              background: 'white', borderRadius: 16, transformOrigin: 'top center',
-              boxShadow: '0 12px 32px rgba(15,23,42,0.16), 0 2px 8px rgba(15,23,42,0.08)',
+              padding: 0, overflow: 'hidden',
+              background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6, transformOrigin: 'top center',
+              boxShadow: '2px 3px 0 rgba(51,40,30,0.18)',
             }}
           >
             {ENTRIES.map(([code, label], i) => {
@@ -110,11 +110,11 @@ export function LanguageDropdown() {
                   transition={{ delay: i * 0.02 }}
                   onClick={() => { setLocale(code); setOpen(false) }}
                   style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
-                    padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                    fontSize: 14, fontWeight: selected ? 700 : 500,
-                    color: selected ? accent : '#334155',
-                    background: selected ? `color-mix(in srgb, ${accent} 10%, white)` : 'transparent',
+                    width: '100%', minHeight: 44, display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+                    padding: '0 14px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                    borderTop: i > 0 ? `1.5px dashed ${line}` : 'none',
+                    fontSize: 15, fontWeight: selected ? 600 : 500, color: ink,
+                    background: selected ? paperShade : 'transparent',
                   }}
                 >
                   <span style={{ flex: 1 }}>{label}</span>

@@ -3,6 +3,9 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { STREAK_CHEST_INTERVAL } from '@/lib/profile'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { Mono } from '@/components/UI/Journal'
+import { ink, paperCard, stamp } from '@/lib/theme'
 import type { RewardItem } from '@/types'
 
 // Duolingo-style: the chest sits tappable until opened, rather than popping up
@@ -44,24 +47,25 @@ export function StreakChestCard() {
       <button
         onClick={handleTap}
         style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: 14,
-          padding: '16px 18px', borderRadius: 18, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-          boxShadow: '0 4px 16px rgba(245,158,11,0.35)',
+          width: '100%', minHeight: 44, display: 'flex', alignItems: 'center', gap: 14,
+          padding: '12px 14px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
+          background: paperCard, border: `1.5px solid ${stamp}`,
+          boxShadow: `inset 0 0 0 3px ${paperCard}, inset 0 0 0 4px ${stamp}`,
+          transform: 'rotate(0.6deg)',
           WebkitTapHighlightColor: 'transparent', textAlign: 'left',
         }}
       >
         <span style={{
-          fontSize: 40, lineHeight: 1, flexShrink: 0,
+          lineHeight: 1, flexShrink: 0,
           display: 'inline-block',
           animation: shaking ? `chestShake ${SHAKE_MS}ms ease` : undefined,
         }}>
-          🎁
+          <EmojiSprite id="item_chest" emoji="🎁" size={48} />
         </span>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#78350f' }}>{t('streak_chest_card_title')}</div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>{t('streak_chest_card_sub')}</div>
-        </div>
+        <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+          <span style={{ fontSize: 17, fontWeight: 600, lineHeight: '22px', color: ink }}>{t('streak_chest_card_title')}</span>
+          <Mono style={{ color: stamp, fontWeight: 500 }}>{t('streak_chest_card_sub')}</Mono>
+        </span>
       </button>
     </section>
   )

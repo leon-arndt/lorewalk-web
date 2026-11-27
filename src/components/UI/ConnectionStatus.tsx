@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { ensureSession, subscribeSessionError } from '@/lib/supabase'
-import { accent } from '@/lib/theme'
+import { InkButton, Mono } from '@/components/UI/Journal'
+import { forest, ink, inkSoft, ochre, stamp } from '@/lib/theme'
 
 // One line under the online switch: is there a server session, of which kind,
 // and if not, why. The first 8 characters of the user id are enough to match
@@ -22,42 +23,34 @@ export function ConnectionStatus() {
   }
 
   let text: string
-  let color = '#64748b'
+  let color = inkSoft
   if (account) {
     const id = account.userId.slice(0, 8)
     text = account.isAnonymous ? t('settings_conn_guest', { id }) : t('settings_conn_google', { id })
-    color = accent
+    color = ink
   } else if (error === 'not_configured') {
     text = t('settings_conn_not_configured')
-    color = '#b91c1c'
+    color = stamp
   } else if (error) {
     text = t('settings_conn_failed', { error })
-    color = '#b91c1c'
+    color = stamp
   } else {
     text = t('settings_conn_connecting')
   }
 
   return (
     <div data-testid="connection-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color, minWidth: 0, overflowWrap: 'anywhere' }}>
+      <Mono style={{ display: 'block', fontSize: 12, lineHeight: '16px', fontWeight: 500, color, minWidth: 0, overflowWrap: 'anywhere' }}>
         <span style={{
-          display: 'inline-block', width: 8, height: 8, borderRadius: '50%', marginRight: 6,
-          background: account ? '#22c55e' : error ? '#ef4444' : '#f59e0b',
+          display: 'inline-block', width: 9, height: 9, boxSizing: 'border-box', borderRadius: '50%', marginRight: 7,
+          border: `1px solid ${ink}`, background: account ? forest : error ? stamp : ochre,
         }} />
         {text}
-      </div>
+      </Mono>
       {!account && error && error !== 'not_configured' && (
-        <button
-          onClick={() => void retry()}
-          disabled={retrying}
-          style={{
-            flexShrink: 0, padding: '6px 12px', borderRadius: 10, border: 'none',
-            background: '#f1f5f9', color: '#475569', fontWeight: 600, fontSize: 12,
-            cursor: retrying ? 'default' : 'pointer', opacity: retrying ? 0.6 : 1,
-          }}
-        >
+        <InkButton variant="paper" onClick={() => void retry()} disabled={retrying} style={{ flexShrink: 0, fontSize: 13 }}>
           {t('settings_conn_retry')}
-        </button>
+        </InkButton>
       )}
     </div>
   )

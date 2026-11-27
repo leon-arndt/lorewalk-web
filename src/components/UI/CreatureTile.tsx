@@ -1,12 +1,18 @@
 import { useLocale } from '@/contexts/LocaleContext'
 import { creatureName } from '@/lib/profile'
 import { CreatureSceneCard } from '@/components/UI/CreatureDetailView'
+import { Mono } from '@/components/UI/Journal'
 import type { HatchedCreature } from '@/types'
-import { accent } from '@/lib/theme'
+import { categoryCss, ink, inkSoft, pencil } from '@/lib/theme'
+import { paperCardStyle } from '@/lib/paper'
 import { motion } from 'motion/react'
 import { popSpring } from '@/lib/motion'
 
-// Pikmin Bloom-style roster: bare creatures on type-coloured pads, no card chrome.
+
+const clip = { width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } as const
+
+// A small specimen card: the creature on a wash of its type colour, then its
+// name and a typed level. Squad slots and the creature picker share it.
 export function CreatureTile({ creature, onTap, disabled, note }: {
   creature: HatchedCreature
   onTap: () => void
@@ -23,30 +29,37 @@ export function CreatureTile({ creature, onTap, disabled, note }: {
       animate={{ scale: 1, y: 0 }}
       whileTap={disabled ? undefined : { rotate: -4 }}
       transition={popSpring}
-      className="flex min-w-0 flex-col items-center rounded-2xl px-1 pt-2 pb-2 transition-colors enabled:hover:bg-white/40 enabled:active:bg-white/70 disabled:opacity-45"
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      className="flex min-w-0 flex-col items-stretch disabled:opacity-45"
+      style={{
+        ...paperCardStyle, borderRadius: 3, padding: 4, gap: 2,
+        color: ink, fontFamily: 'inherit', textAlign: 'center',
+        cursor: disabled ? 'default' : 'pointer', WebkitTapHighlightColor: 'transparent',
+      }}
     >
-      <CreatureSceneCard creature={creature} />
-      <span className="mt-0.5 w-full truncate text-center text-[11px] font-semibold text-slate-800">
+      <span style={{
+        height: 70, background: `${categoryCss(creature.poiCategory)}40`, borderRadius: 2, overflow: 'hidden',
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      }}>
+        <CreatureSceneCard creature={creature} />
+      </span>
+      <span style={{ ...clip, fontSize: 12, fontWeight: 500, lineHeight: '15px' }}>
         {creatureName(creature)}
       </span>
-      <span className="text-[10px] font-semibold tabular-nums" style={{ color: accent }}>
+      <Mono style={{ ...clip, fontVariantNumeric: 'tabular-nums' }}>
         {t('level_badge', { level: creature.level })}
-      </span>
-      {note && <span className="w-full truncate text-center text-[9px] font-medium text-slate-500">{note}</span>}
+      </Mono>
+      {note && <Mono style={{ color: inkSoft, overflowWrap: 'anywhere' }}>{note}</Mono>}
     </motion.button>
   )
 }
 
-// A free slot: just the empty pad a creature would stand on. With onTap it
-// becomes an add button with a plus hovering where the creature would be.
+// A free slot: a dashed pencil outline where a specimen card would go. With
+// onTap it becomes an add button with a plus in the middle.
 export function EmptyPad({ onTap, disabled }: { onTap?: () => void; disabled?: boolean }) {
   const { t } = useLocale()
-  const pad = <div className="h-[14px] w-14 rounded-[50%] bg-slate-500/10" />
+  const slot = { minHeight: 112, border: `1.5px dashed ${pencil}`, borderRadius: 3 } as const
   if (!onTap) {
-    return (
-      <div aria-hidden className="flex min-h-[112px] justify-center pt-[64px]">{pad}</div>
-    )
+    return <div aria-hidden style={slot} />
   }
   return (
     <motion.button
@@ -54,16 +67,13 @@ export function EmptyPad({ onTap, disabled }: { onTap?: () => void; disabled?: b
       onClick={onTap}
       disabled={disabled}
       aria-label={t('squads_add_creature')}
-      className="flex min-h-[112px] flex-col items-center rounded-2xl pt-4 transition-colors enabled:hover:bg-white/40 enabled:active:bg-white/70 disabled:opacity-40"
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      className="flex min-w-0 items-center justify-center disabled:opacity-40"
+      style={{
+        ...slot, background: 'transparent', color: inkSoft, fontFamily: 'inherit',
+        cursor: disabled ? 'default' : 'pointer', WebkitTapHighlightColor: 'transparent',
+      }}
     >
-      <span
-        className="mb-2 flex size-9 items-center justify-center rounded-full border-2 border-dashed text-lg font-semibold"
-        style={{ borderColor: 'rgba(22,101,52,0.30)', color: accent }}
-      >
-        +
-      </span>
-      {pad}
+      <span aria-hidden style={{ fontSize: 24, fontWeight: 400, lineHeight: 1 }}>+</span>
     </motion.button>
   )
 }

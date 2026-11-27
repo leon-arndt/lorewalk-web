@@ -3,14 +3,15 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useWikipediaExtract } from '@/hooks/useWikipediaExtract'
 import { useProfile } from '@/contexts/ProfileContext'
-import { glassChrome, glassPanel } from '@/lib/glass'
+import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
 import { haversineDistance } from '@/lib/mapUtils'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
 import type { Translations } from '@/i18n/types'
-import { accent, rewardGradient } from '@/lib/theme'
+import { categoryCss, forest, ink, inkSoft, line, ochre, paperShade, ochreInk } from '@/lib/theme'
+import { InkButton, Mono, Stamp } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
 
@@ -23,16 +24,19 @@ const MOCK_FRIENDS = [
 const CHECKIN_RADIUS_M = 50
 
 // Same category set as the map pins (mapPoiPins.ts) and creature companions (mapCharacters.ts).
-function categoryMeta(t: (key: keyof Translations, vars?: Record<string, string | number>) => string): Record<string, { icon: string; label: string; color: string; bg: string }> {
+function categoryMeta(t: (key: keyof Translations, vars?: Record<string, string | number>) => string): Record<string, { icon: string; label: string }> {
   return {
-    heritage:  { icon: '🏛', label: t('category_heritage'),  color: '#b45309', bg: 'rgba(255,237,213,0.80)' },
-    landmark:  { icon: '📍', label: t('poi_landmark'),       color: '#4338ca', bg: 'rgba(224,231,255,0.80)' },
-    arts:      { icon: '🎭', label: t('category_arts'),      color: '#9333ea', bg: 'rgba(250,245,255,0.80)' },
-    religious: { icon: '🕌', label: t('category_religious'), color: '#a16207', bg: 'rgba(254,249,195,0.80)' },
-    museum:    { icon: '🎨', label: t('category_museum'),    color: '#be185d', bg: 'rgba(253,242,248,0.80)' },
-    nature:    { icon: '🌿', label: t('category_nature'),    color: '#16a34a', bg: 'rgba(240,253,244,0.80)' },
+    heritage:  { icon: '🏛', label: t('category_heritage') },
+    landmark:  { icon: '📍', label: t('poi_landmark') },
+    arts:      { icon: '🎭', label: t('category_arts') },
+    religious: { icon: '🕌', label: t('category_religious') },
+    museum:    { icon: '🎨', label: t('category_museum') },
+    nature:    { icon: '🌿', label: t('category_nature') },
   }
 }
+
+
+const typed = { fontSize: 12, lineHeight: '16px', color: inkSoft } as const
 
 interface PoiDetailPanelProps {
   poi: Poi
@@ -69,154 +73,140 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
     ? Math.round(haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon))
     : null
 
+  const wash = categoryCss(poi.category ?? '')
+
   return (
     <motion.div {...panelMotion(isClosing)} style={{
       position: 'absolute',
       bottom: 0, left: 0, right: 0,
-      ...glassPanel,
-      border: 'none',
-      borderRadius: '24px 24px 0 0',
-      padding: '20px 20px',
+      ...paperSheet,
+      boxShadow: '0 -3px 0 rgba(51,40,30,0.12)',
+      borderRadius: '10px 10px 0 0',
+      padding: '10px 20px',
       paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
       zIndex: 10,
     }}>
-      <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
+      <div style={{ width: 36, height: 4, borderRadius: 2, background: ink, margin: '0 auto 6px' }} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px 10px', flexWrap: 'wrap', minHeight: 44, minWidth: 0 }}>
           {poi.category && CATEGORY_META[poi.category] && (
-            <span style={{
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
-              background: CATEGORY_META[poi.category].bg,
-              color: CATEGORY_META[poi.category].color,
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}>
-              {CATEGORY_META[poi.category].icon} {CATEGORY_META[poi.category].label}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span aria-hidden style={{ width: 12, height: 12, borderRadius: '50%', background: wash, border: `1.5px solid ${ink}`, flexShrink: 0 }} />
+              <Mono style={{ ...typed, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: ink }}>
+                {CATEGORY_META[poi.category].icon} {CATEGORY_META[poi.category].label}
+              </Mono>
             </span>
           )}
-          <span style={{
-            fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
-            background: isPermanent ? 'rgba(255,237,213,0.80)' : 'rgba(250,245,255,0.80)',
-            color: isPermanent ? '#ea580c' : '#9333ea',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-          }}>
+          <Mono style={{ ...typed, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {isPermanent ? t('poi_landmark') : t('poi_event')}
-          </span>
-          {isLocked && (
-            <span style={{
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
-              background: 'rgba(254,249,195,0.80)',
-              color: '#a16207',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}>
-              {t('poi_premium_locked')}
-            </span>
-          )}
+          </Mono>
           {poi.points !== undefined && (
-            <span style={{
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
-              background: 'rgba(240,253,244,0.80)',
-              color: '#16a34a',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}>
+            <Mono style={{ ...typed, fontWeight: 500, color: forest }}>
               {t('poi_pts', { pts: poi.points })}
-            </span>
+            </Mono>
           )}
           {distanceM !== null && mode === 'online' && (
-            <span style={{ fontSize: 11, color: '#94a3b8' }}>
+            <Mono style={typed}>
               {distanceM < 1000 ? `${distanceM}m away` : `${(distanceM / 1000).toFixed(1)}km away`}
-            </span>
+            </Mono>
           )}
         </div>
         <button
           onClick={onClose}
           data-sfx="close"
           style={{
-            ...glassChrome,
-            cursor: 'pointer',
-            width: 28, height: 28, borderRadius: '50%', border: 'none',
+            flexShrink: 0, width: 44, height: 44, marginRight: -8, padding: 0,
+            background: 'none', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, color: '#64748b',
-            WebkitTapHighlightColor: 'transparent',
+            fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
           }}
           aria-label={t('common_close')}
         >
-          ×
+          <span style={{
+            ...paperTag, width: 30, height: 30, borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18, lineHeight: 1,
+          }}>
+            ×
+          </span>
         </button>
       </div>
 
-      <h2 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 700, color: accent, lineHeight: 1.3 }}>
+      <h2 style={{ margin: '2px 0 8px', fontSize: 24, fontWeight: 600, color: ink, lineHeight: '30px', letterSpacing: '-0.01em' }}>
         {poi.name}
       </h2>
-      <p style={{ margin: 0, fontSize: 14, color: '#64748b', lineHeight: 1.6 }}>
+      {isLocked && (
+        <div style={{ margin: '0 0 10px' }}>
+          <Stamp color={ochreInk} tilt={-2}>{t('poi_premium_locked')}</Stamp>
+        </div>
+      )}
+      <p style={{
+        margin: 0, padding: '0 0 0 10px', fontSize: 14, color: inkSoft, lineHeight: 1.55,
+        borderLeft: `3px solid ${wash}`,
+      }}>
         {wikiExtract ?? poi.description}
       </p>
       {wikiExtract && (
-        <p style={{ margin: '6px 0 0', fontSize: 10, color: '#94a3b8' }}>
+        <Mono style={{ display: 'block', margin: '6px 0 0 13px' }}>
           {t('poi_from_wikipedia')}
-        </p>
+        </Mono>
       )}
 
-      <div style={{ marginTop: 20 }}>
+      <div style={{ marginTop: 18 }}>
         {isVisited ? (
           <div>
             <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '12px 16px', borderRadius: 16,
-              background: 'rgba(240,253,244,0.80)',
-              backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+              ...paperCardStyle,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+              padding: '8px 8px 8px 12px',
               marginBottom: pickingFriend || sent ? 10 : 0,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                 <span style={{ fontSize: 20 }}>😊</span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#15803d' }}>{t('poi_visited')}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: forest }}>{t('poi_visited')}</span>
               </div>
               {!sent && (
-                <button
+                <InkButton
+                  variant={pickingFriend ? 'paper' : 'ink'}
                   onClick={() => setPickingFriend((v) => !v)}
-                  style={{
-                    fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 10,
-                    border: 'none', cursor: 'pointer',
-                    background: pickingFriend ? '#f1f5f9' : accent,
-                    color: pickingFriend ? '#64748b' : 'white',
-                  }}
+                  style={{ flexShrink: 0, padding: '0 12px', fontSize: 13 }}
                 >
                   {pickingFriend ? 'Cancel' : '📮 Send postcard'}
-                </button>
+                </InkButton>
               )}
             </div>
 
             {sent && (
               <div style={{
-                padding: '10px 14px', borderRadius: 12, fontSize: 13, fontWeight: 600,
-                background: '#fef3c7', color: '#b45309', textAlign: 'center',
+                padding: '10px 14px', borderRadius: 4, textAlign: 'center',
+                border: `1.5px dashed ${line}`,
               }}>
-                Postcard to {sent} - arrives in {import.meta.env.DEV ? '30s' : '48h'} ✉️
+                <Mono style={{ fontSize: 12, lineHeight: '18px', color: ink }}>
+                  Postcard to {sent} - arrives in {import.meta.env.DEV ? '30s' : '48h'} ✉️
+                </Mono>
               </div>
             )}
 
             {pickingFriend && !sent && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 2 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Mono style={{ display: 'block', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   Send to:
-                </div>
+                </Mono>
                 {MOCK_FRIENDS.map((f) => (
                   <button
                     key={f.id}
                     onClick={(e) => handleSend(f.id, f.name, e)}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '10px 14px', borderRadius: 12, border: '1.5px solid #e2e8f0',
-                      background: 'white', cursor: 'pointer', textAlign: 'left',
+                      ...paperCardStyle,
+                      display: 'flex', alignItems: 'center', gap: 10, minHeight: 48,
+                      padding: '6px 12px', cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
                     }}
                   >
                     <div style={{
-                      position: 'relative', width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                      background: rewardGradient,
+                      position: 'relative', width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                      background: paperShade, border: `1.5px solid ${ink}`, overflow: 'hidden',
                     }}>
                       <div style={{
                         position: 'absolute', inset: 0,
@@ -225,43 +215,33 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
                         <PlayerFaceIcon appearance={deterministicAppearance(f.id)} size={24} />
                       </div>
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>{f.name}</span>
+                    <span style={{ fontSize: 15, fontWeight: 500, color: ink }}>{f.name}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
         ) : isLocked ? (
-          <div style={{
-            padding: '14px 16px', borderRadius: 16, textAlign: 'center',
-            background: 'rgba(254,249,195,0.70)',
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          }}>
-            <p style={{ margin: '0 0 10px', fontSize: 13, color: '#a16207', fontWeight: 500 }}>
+          <div>
+            <p style={{ margin: '0 0 10px', fontSize: 14, color: inkSoft, fontWeight: 500, textAlign: 'center' }}>
               {t('poi_premium_locked_desc')}
             </p>
-            <button
+            <InkButton
               onClick={() => setShowPremiumModal(true)}
-              style={{
-                width: '100%', padding: '11px 0', borderRadius: 12, border: 'none',
-                background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                color: '#78350f', fontSize: 13, fontWeight: 800, cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(245,158,11,0.30)',
-              }}
+              style={{ width: '100%', background: ochre, color: ink }}
             >
               🛡️ Unlock with Premium
-            </button>
+            </InkButton>
           </div>
         ) : mode === 'online' ? (
           <div style={{
-            padding: '12px 16px', borderRadius: 16, textAlign: 'center',
-            background: 'rgba(248,250,252,0.70)',
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+            padding: '12px 14px', borderRadius: 4, textAlign: 'center',
+            border: '1.5px dashed #8C7A5C',
           }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+            <Mono style={{ fontSize: 12, lineHeight: '18px', color: inkSoft }}>
               {t('poi_get_closer', { radius: CHECKIN_RADIUS_M })}
               {distanceM !== null && ' ' + t('poi_currently_away', { dist: distanceM })}
-            </p>
+            </Mono>
           </div>
         ) : null}
       </div>

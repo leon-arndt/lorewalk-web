@@ -6,7 +6,10 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useReward } from '@/contexts/RewardContext'
-import { glassSheet } from '@/lib/glass'
+import { MONO, paperSheet, paperTag, SCRIM } from '@/lib/paper'
+import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, stamp } from '@/lib/theme'
+import { InkButton, Mono, NoteCard, Stamp } from '@/components/UI/Journal'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import {
   fetchPremiumOfferings, isBillingAvailable, playSubscriptionManagementUrl, purchasePremiumPackage,
   type PremiumOfferings,
@@ -30,10 +33,10 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const { mode } = useConnectionMode()
   const { t } = useLocale()
   const { showToast } = useReward()
-  const FEATURE_ROWS: { icon: string; label: string; basic: boolean; premium: string }[] = [
+  const FEATURE_ROWS: { icon: string; sprite?: string; label: string; basic: boolean; premium: string }[] = [
     { icon: '🗺️', label: t('premium_feature_standard_landmarks'), basic: true, premium: t('premium_feature_all_landmarks') },
     { icon: '🔓', label: t('premium_feature_premium_landmarks'), basic: false, premium: t('premium_feature_unlocked') },
-    { icon: '🏅', label: t('premium_feature_medal_challenge'), basic: false, premium: t('premium_feature_real_medal') },
+    { icon: '🏅', sprite: 'item_badge', label: t('premium_feature_medal_challenge'), basic: false, premium: t('premium_feature_real_medal') },
   ]
   const PLANS: Record<PremiumInterval, { label: string; price: string; sub?: string; badge?: string }> = {
     monthly: { label: t('premium_plan_monthly'), price: PLAN_PRICES.monthly.price },
@@ -126,7 +129,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const currentPlan = profile.premiumInterval ? PLANS[profile.premiumInterval] : PLANS.monthly
 
   return createPortal(
-    <motion.div {...backdropIn('rgba(15,23,42,0.55)')}
+    <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
       data-sfx="close"
       style={{
@@ -137,15 +140,15 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
       <motion.div {...sheetIn}
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '100%', maxHeight: '92vh',
-          ...glassSheet,
-          borderRadius: '24px 24px 0 0',
+          position: 'relative', width: '100%', maxHeight: '92vh',
+          ...paperSheet,
+          borderRadius: '10px 10px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: line }} />
         </div>
 
         <button
@@ -153,123 +156,119 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
           data-sfx="close"
           aria-label={t('common_close')}
           style={{
-            position: 'absolute', top: 12, right: 14, border: 'none', background: 'transparent',
-            fontSize: 20, color: '#94a3b8', cursor: 'pointer', lineHeight: 1, padding: 4,
+            position: 'absolute', top: 4, right: 6, zIndex: 1, width: 44, height: 44, padding: 0,
+            border: 'none', background: 'transparent', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent',
           }}
         >
-          ✕
+          <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 14, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
         </button>
 
-        <div style={{ overflowY: 'auto', padding: '4px 20px calc(24px + env(safe-area-inset-bottom))' }}>
-          <div style={{ textAlign: 'center', padding: '14px 8px 4px' }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: '50%', margin: '0 auto 10px',
-              background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
-            }}>
-              <span style={{ fontSize: 28 }}>👑</span>
-            </div>
-            <div style={{ fontSize: 19, fontWeight: 800, color: '#1e293b' }}>
-              {isManaging ? t('premium_youre_premium') : t('premium_go_premium')}
-            </div>
-            <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 2 }}>
-              {isManaging
-                ? t('premium_plan_summary', { label: currentPlan.label, price: currentPlan.price })
-                : (context ?? t('premium_unlock_everything'))}
-            </div>
-          </div>
-
-          <div style={{
-            marginTop: 14, borderRadius: 18, overflow: 'hidden',
-            background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-          }}>
-            <div style={{
-              display: 'grid', gridTemplateColumns: '1fr 52px 52px',
-              alignItems: 'center', padding: '10px 14px',
-              borderBottom: '1px solid #f1f5f9',
-            }}>
-              <span />
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textAlign: 'center' }}>{t('premium_basic_col')}</span>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#b45309', textAlign: 'center' }}>{t('premium_premium_col')}</span>
-            </div>
-
-            {FEATURE_ROWS.map((row, i) => (
-              <div
-                key={row.label}
-                style={{
-                  display: 'grid', gridTemplateColumns: '1fr 52px 52px',
-                  alignItems: 'center', padding: '10px 14px',
-                  borderBottom: i === FEATURE_ROWS.length - 1 ? 'none' : '1px solid #f8fafc',
-                }}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: '#1e293b' }}>
-                  <span style={{ fontSize: 15 }}>{row.icon}</span> {row.label}
-                </span>
-                <span style={{ textAlign: 'center', color: row.basic ? '#16a34a' : '#e2e8f0', fontSize: 16 }}>
-                  {row.basic ? '✓' : '—'}
-                </span>
-                <span style={{ textAlign: 'center', color: '#f59e0b', fontSize: 16 }}>✓</span>
+        <div style={{ overflowY: 'auto', overflowX: 'hidden', padding: '40px 16px calc(24px + env(safe-area-inset-bottom))' }}>
+          <NoteCard taped tilt={-0.5} style={{ padding: '18px 12px 12px', background: paperCard }}>
+            {isManaging && (
+              <Stamp tilt={6} style={{ position: 'absolute', top: 18, right: 12 }}>{t('premium_premium_col')}</Stamp>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: isManaging ? 84 : 0 }}>
+              <div style={{
+                flexShrink: 0, width: 52, height: 52, borderRadius: '50%',
+                background: ochre, border: `1.5px solid ${ink}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 26, lineHeight: 1 }}>👑</span>
               </div>
-            ))}
-          </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 22, fontWeight: 600, lineHeight: '28px', color: ink }}>
+                  {isManaging ? t('premium_youre_premium') : t('premium_go_premium')}
+                </div>
+                <div style={{ fontSize: 13, lineHeight: '18px', color: inkSoft, marginTop: 2 }}>
+                  {isManaging
+                    ? t('premium_plan_summary', { label: currentPlan.label, price: currentPlan.price })
+                    : (context ?? t('premium_unlock_everything'))}
+                </div>
+              </div>
+            </div>
 
-          <div style={{ fontSize: 10.5, color: '#94a3b8', textAlign: 'center', margin: '8px 6px 0' }}>
+            <div style={{ marginTop: 14, borderTop: `1.5px dashed ${line}` }}>
+              <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 56px 64px',
+                alignItems: 'center', padding: '8px 0 6px',
+                borderBottom: `1px solid ${line}`,
+              }}>
+                <span />
+                <Mono style={{ textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>{t('premium_basic_col')}</Mono>
+                <Mono style={{ fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: ink, textAlign: 'center' }}>{t('premium_premium_col')}</Mono>
+              </div>
+
+              {FEATURE_ROWS.map((row, i) => (
+                <div
+                  key={row.label}
+                  style={{
+                    display: 'grid', gridTemplateColumns: '1fr 56px 64px',
+                    alignItems: 'center', minHeight: 40, padding: '6px 0',
+                    borderBottom: i === FEATURE_ROWS.length - 1 ? 'none' : `1px solid ${line}`,
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: ink }}>
+                    {row.sprite
+                      ? <EmojiSprite id={row.sprite} emoji={row.icon} size={20} />
+                      : <span style={{ width: 20, fontSize: 15, lineHeight: 1, textAlign: 'center' }}>{row.icon}</span>} {row.label}
+                  </span>
+                  <span style={{ textAlign: 'center', color: row.basic ? forest : inkHint, fontSize: 16, fontWeight: 600 }}>
+                    {row.basic ? '✓' : '—'}
+                  </span>
+                  <span style={{ textAlign: 'center', color: forest, fontSize: 16, fontWeight: 600 }}>✓</span>
+                </div>
+              ))}
+            </div>
+          </NoteCard>
+
+          <Mono style={{ display: 'block', textAlign: 'center', margin: '10px 6px 0' }}>
             {t('premium_medal_note')}
-          </div>
+          </Mono>
 
           {isManaging ? (
             <>
               {confirmingCancel ? (
                 <div style={{
-                  marginTop: 18, borderRadius: 14, padding: 14,
-                  background: 'rgba(254,242,242,0.9)', border: '1px solid #fecaca',
+                  marginTop: 18, borderRadius: 4, padding: 12,
+                  background: paperCard, border: `1.5px solid ${stamp}`,
                 }}>
-                  <p style={{ margin: '0 0 12px', fontSize: 12.5, color: '#991b1b', lineHeight: 1.5 }}>
+                  <p style={{ margin: '0 0 12px', fontSize: 13, color: stamp, lineHeight: 1.5 }}>
                     {mode === 'online'
                       ? t('premium_cancel_confirm_online')
                       : t('premium_cancel_confirm_offline')}
                   </p>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button
+                    <InkButton
                       onClick={() => setConfirmingCancel(false)}
-                      style={{
-                        flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
-                        background: 'linear-gradient(135deg, #fde68a, #f59e0b)', color: '#78350f',
-                        fontSize: 13, fontWeight: 800,
-                      }}
+                      style={{ flex: 1, padding: '0 8px', fontSize: 14 }}
                     >
                       {mode === 'online' ? t('premium_not_now') : t('premium_keep_premium')}
-                    </button>
-                    <button
+                    </InkButton>
+                    <InkButton
+                      variant="danger"
                       onClick={handleCancel}
                       disabled={cancelled}
-                      style={{
-                        flex: 1, padding: '11px 0', borderRadius: 12, border: '1px solid #fca5a5', cursor: cancelled ? 'default' : 'pointer',
-                        background: 'white', color: '#b91c1c', fontSize: 13, fontWeight: 800,
-                        opacity: cancelled ? 0.6 : 1,
-                      }}
+                      style={{ flex: 1, padding: '0 8px', fontSize: 14 }}
                     >
                       {mode === 'online' ? t('premium_open_play') : t('premium_yes_cancel')}
-                    </button>
+                    </InkButton>
                   </div>
                 </div>
               ) : (
-                <button
+                <InkButton
+                  variant="paper"
                   onClick={() => setConfirmingCancel(true)}
-                  style={{
-                    width: '100%', marginTop: 18, padding: '12px 0', borderRadius: 14,
-                    border: '1px solid #e2e8f0', background: 'transparent',
-                    color: '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                  }}
+                  style={{ width: '100%', marginTop: 18, fontSize: 14 }}
                 >
                   {t('premium_cancel_subscription')}
-                </button>
+                </InkButton>
               )}
             </>
           ) : (
             <>
-              <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                 {(Object.keys(PLANS) as PremiumInterval[]).map((key) => {
                   const plan = PLANS[key]
                   const selected = interval === key
@@ -278,44 +277,39 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
                       key={key}
                       onClick={() => setInterval(key)}
                       style={{
-                        flex: 1, position: 'relative', textAlign: 'left', cursor: 'pointer',
-                        borderRadius: 14, padding: '10px 12px',
-                        border: selected ? '2px solid #f59e0b' : '2px solid #e2e8f0',
-                        background: selected ? '#fffbeb' : 'white',
+                        flex: 1, minWidth: 0, position: 'relative', textAlign: 'left', cursor: 'pointer',
+                        minHeight: 76, borderRadius: 4, padding: '10px 10px 8px', fontFamily: 'inherit', color: ink,
+                        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+                        border: selected ? `1.5px solid ${ink}` : `1px solid ${line}`,
+                        borderBottom: selected ? `5px solid ${ochre}` : `1px solid ${line}`,
+                        background: paperCard,
+                        boxShadow: selected ? '1px 2px 0 rgba(51,40,30,0.18)' : 'none',
+                        WebkitTapHighlightColor: 'transparent',
                       }}
                     >
                       {plan.badge && (
-                        <span style={{
-                          position: 'absolute', top: -9, right: 10,
-                          fontSize: 9, fontWeight: 800, letterSpacing: '0.03em', textTransform: 'uppercase',
-                          background: '#f59e0b', color: 'white', padding: '2px 7px', borderRadius: 20,
-                        }}>
+                        <Stamp tilt={4} style={{ position: 'absolute', top: -12, right: 6, background: paperCard, whiteSpace: 'nowrap' }}>
                           {plan.badge}
-                        </span>
+                        </Stamp>
                       )}
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#1e293b' }}>{plan.label}</div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#78350f', marginTop: 2 }}>{planPrice(key)}</div>
-                      {plan.sub && <div style={{ fontSize: 10.5, color: '#94a3b8' }}>{plan.sub}</div>}
+                      <div style={{ fontSize: 15, fontWeight: 500, color: ink }}>{plan.label}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 500, color: ink, marginTop: 2 }}>{planPrice(key)}</div>
+                      {plan.sub && <Mono>{plan.sub}</Mono>}
                     </button>
                   )
                 })}
               </div>
 
-              <button
+              <InkButton
                 onClick={handleSubscribe}
                 disabled={subscribed || purchasing}
-                style={{
-                  width: '100%', marginTop: 12, padding: '14px 0', borderRadius: 14, border: 'none',
-                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                  color: '#78350f', fontSize: 15, fontWeight: 800, cursor: (subscribed || purchasing) ? 'default' : 'pointer',
-                  boxShadow: '0 4px 14px rgba(245,158,11,0.35)', opacity: (subscribed || purchasing) ? 0.7 : 1,
-                }}
+                style={{ width: '100%', marginTop: 14, minHeight: 50, fontSize: 16, opacity: (subscribed || purchasing) ? 0.7 : 1 }}
               >
                 {subscribed ? t('premium_youre_premium_exclaim') : purchasing ? t('premium_processing') : t('premium_subscribe_btn', { price: planPrice(interval) })}
-              </button>
-              <div style={{ fontSize: 10.5, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+              </InkButton>
+              <Mono style={{ display: 'block', textAlign: 'center', marginTop: 8 }}>
                 {t('premium_cancel_anytime')}
-              </div>
+              </Mono>
             </>
           )}
         </div>

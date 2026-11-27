@@ -20,13 +20,13 @@ import { usePois } from '@/hooks/usePois'
 import { useNews, unreadCount } from '@/hooks/useNews'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
-import { glassChrome } from '@/lib/glass'
+import { paperTag } from '@/lib/paper'
 import { haversineDistance } from '@/lib/mapUtils'
 import { isPoiLocked } from '@/lib/profile'
 import { getFoodDef } from '@/data/foods'
 import { creatureDefBySpecies } from '@/data/creatures'
 import type { HatchedCreature, Poi, RewardItem } from '@/types'
-import { accent, categoryColors } from '@/lib/theme'
+import { accent, categoryColors, paperLight, stamp } from '@/lib/theme'
 import { motion } from 'motion/react'
 import { popSpring } from '@/lib/motion'
 
@@ -379,18 +379,18 @@ export function MapPage() {
             <StepCounter steps={steps} distanceM={distanceM} />
             {gpsLoading && (
               <div style={{
-                ...glassChrome, color: '#64748b', fontSize: 12,
-                padding: '4px 10px', borderRadius: 999,
+                ...paperTag, color: '#6A5843', fontSize: 12,
+                padding: '4px 10px',
               }}>
                 {t('hud_locating')}
               </div>
             )}
             {gpsError && !position && (
               <div style={{
-                ...glassChrome,
-                background: 'rgba(255,241,242,0.72)',
-                color: '#e11d48', fontSize: 12,
-                padding: '4px 10px', borderRadius: 999,
+                ...paperTag,
+                borderColor: '#A8361F',
+                color: '#A8361F', fontSize: 12,
+                padding: '4px 10px',
               }}>
                 {t('hud_gps_unavailable')}
               </div>
@@ -419,8 +419,8 @@ export function MapPage() {
             onClick={() => compassResetRef.current?.()}
             title={t('map_reset_to_north')}
             style={{
-              width: 44, height: 44, borderRadius: 14, padding: 0,
-              ...glassChrome,
+              width: 44, height: 44, borderRadius: 6, padding: 0,
+              ...paperTag,
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
@@ -435,9 +435,9 @@ export function MapPage() {
                 display: 'block',
               }}
             >
-              <polygon points="0,-11 -5.5,0 5.5,0" fill="#ef4444" />
-              <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
-              <circle r="2" fill="#334155" />
+              <polygon points="0,-11 -5.5,0 5.5,0" fill="#A8361F" />
+              <polygon points="0,11 -5.5,0 5.5,0" fill="white" stroke="#CDBF9F" strokeWidth="0.5" />
+              <circle r="2" fill="#33281E" />
             </svg>
           </motion.button>
           </div>
@@ -452,8 +452,8 @@ export function MapPage() {
             aria-label={t('map_recenter')}
             title={t('map_recenter')}
             style={{
-              width: 44, height: 44, borderRadius: 14, padding: 0,
-              ...glassChrome,
+              width: 44, height: 44, borderRadius: 6, padding: 0,
+              ...paperTag,
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
@@ -488,15 +488,14 @@ export function MapPage() {
           bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
           left: 16,
           display: 'flex', alignItems: 'center', gap: 7,
-          padding: '9px 14px', borderRadius: 22,
-          ...glassChrome,
+          minHeight: 44, padding: '0 13px 0 8px',
+          ...paperTag,
           ...(profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed && {
-            background: 'linear-gradient(135deg, rgba(129,140,248,0.82), rgba(192,132,252,0.82))',
+            background: stamp, borderColor: stamp, color: paperLight,
           }),
           cursor: 'pointer',
           WebkitTapHighlightColor: 'transparent',
-          color: profile.weeklyWalk && !profile.weeklyWalk.rewardClaimed ? 'white' : '#334155',
-          fontSize: 13, fontWeight: 700,
+          fontSize: 15, fontWeight: 500, fontFamily: 'inherit',
           zIndex: 8,
         }}
       >
@@ -504,8 +503,8 @@ export function MapPage() {
         <span>{t('weekly_walk_button')}</span>
         {profile.tickets > 0 && !profile.weeklyWalk && (
           <span style={{
-            background: accent, color: 'white',
-            borderRadius: 10, fontSize: 10, fontWeight: 800,
+            background: accent, color: paperLight,
+            borderRadius: 4, fontSize: 11, fontWeight: 600,
             padding: '1px 6px', marginLeft: 2,
           }}>
             {profile.tickets}🎟️
@@ -523,20 +522,22 @@ export function MapPage() {
           position: 'absolute',
           bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
           right: 16,
-          width: 44, height: 44, borderRadius: 22, padding: 0,
-          ...glassChrome,
+          width: 44, height: 44, padding: 0,
+          ...paperTag,
           cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           WebkitTapHighlightColor: 'transparent',
           zIndex: 8,
         }}
       >
-        <span style={{ fontSize: 20, lineHeight: 1 }}>📰</span>
+        <svg aria-hidden width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 5h13v14H6a2 2 0 0 1-2-2V5z" /><path d="M17 9h3v8a2 2 0 0 1-2 2" /><path d="M8 9h5" /><path d="M8 13h5" />
+        </svg>
         {unreadCount(newsPosts, profile.lastReadNewsAt) > 0 && (
           <span style={{
             position: 'absolute', top: 6, right: 6,
             width: 9, height: 9, borderRadius: '50%',
-            background: '#ef4444', border: '1.5px solid white',
+            background: stamp, border: `1.5px solid ${paperLight}`,
           }} />
         )}
       </motion.button>

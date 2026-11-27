@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { Postcard } from '@/types'
-import { accent } from '@/lib/theme'
+import { InkButton, Mono, SectionTitle, Stamp } from '@/components/UI/Journal'
+import { paperCardStyle } from '@/lib/paper'
+import { categoryCss, ink, inkSoft, line, paperLight, stamp } from '@/lib/theme'
 
 const CATEGORY_ICONS: Record<string, string> = {
   heritage: '🏛', nature: '🌿', religious: '🕌',
@@ -35,24 +37,24 @@ function CardPill({ card, now, onOpen }: { card: Postcard; now: number; onOpen?:
   const delivered = now >= new Date(card.deliverAt).getTime()
   const msLeft = new Date(card.deliverAt).getTime() - now
 
+  const canOpen = delivered && !card.openedAt && !!onOpen
+
   return (
     <div
-      onClick={delivered && !card.openedAt && onOpen ? onOpen : undefined}
+      onClick={canOpen ? onOpen : undefined}
       style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        background: card.openedAt ? '#f8fafc' : 'white',
-        borderRadius: 14, padding: '12px 14px',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-        cursor: delivered && !card.openedAt && onOpen ? 'pointer' : 'default',
-        border: !card.openedAt && delivered && onOpen ? '1.5px solid #f59e0b' : '1.5px solid transparent',
-        opacity: card.openedAt ? 0.6 : 1,
-        transition: 'opacity 0.2s',
+        display: 'flex', alignItems: 'center', gap: 12, minHeight: 44,
+        borderRadius: 4, padding: '10px 12px',
+        cursor: canOpen ? 'pointer' : 'default',
+        ...(card.openedAt
+          ? { border: `1px dashed ${line}` }
+          : { ...paperCardStyle, border: canOpen ? `1.5px solid ${ink}` : paperCardStyle.border }),
       }}
     >
       {/* POI category icon */}
       <div style={{
-        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-        background: delivered ? 'linear-gradient(135deg,#fef3c7,#fde68a)' : '#f1f5f9',
+        width: 44, height: 44, borderRadius: 3, flexShrink: 0,
+        background: `${categoryCss(card.poiCategory)}${delivered ? '40' : '1f'}`, border: `1px solid ${line}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 22, position: 'relative',
       }}>
@@ -63,34 +65,31 @@ function CardPill({ card, now, onOpen }: { card: Postcard; now: number; onOpen?:
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
+        <div style={{ fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }}>
           {onOpen ? card.fromName : card.toName}
         </div>
         <div style={{
-          fontSize: 12, color: '#64748b',
+          fontSize: 13, color: inkSoft,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {card.poiName}
         </div>
-        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+        <Mono style={{ display: 'block', marginTop: 1 }}>
           {formatDate(card.sentAt)}
-        </div>
+        </Mono>
       </div>
 
       <div style={{ flexShrink: 0, textAlign: 'right' }}>
         {card.openedAt ? (
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>opened</span>
-        ) : delivered && onOpen ? (
-          <span style={{
-            fontSize: 11, fontWeight: 700, color: '#b45309',
-            background: '#fef3c7', padding: '3px 8px', borderRadius: 8,
-          }}>
+          <Mono>opened</Mono>
+        ) : canOpen ? (
+          <Stamp tilt={-3}>
             Open +10 XP
-          </span>
+          </Stamp>
         ) : (
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>
+          <Mono>
             {formatCountdown(msLeft)}
-          </span>
+          </Mono>
         )}
       </div>
     </div>
@@ -111,59 +110,57 @@ export function PostcardsSection() {
 
   const unread = inbox.filter((c) => !c.openedAt && now >= new Date(c.deliverAt).getTime()).length
 
+  const empty = {
+    border: '1.5px dashed #8C7A5C', borderRadius: 4, padding: '20px 20px', textAlign: 'center',
+  } as const
+
   return (
     <section>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: accent }}>
-          Postcards{unread > 0 ? ` · ${unread} new` : ''}
-        </h2>
-        {import.meta.env.DEV && (
+      <SectionTitle
+        note={import.meta.env.DEV ? (
           <button
             onClick={seedMockPostcard}
             style={{
-              fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
-              background: '#1e1e2e', color: '#a78bfa', border: 'none', cursor: 'pointer',
+              font: 'inherit', color: 'inherit', padding: '4px 8px', borderRadius: 6,
+              background: 'none', border: `1px dashed ${line}`, cursor: 'pointer',
             }}
           >
             + mock card
           </button>
-        )}
-      </div>
+        ) : undefined}
+      >
+        Postcards{unread > 0 ? ` · ${unread} new` : ''}
+      </SectionTitle>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
         {(['inbox', 'sent'] as const).map((t) => (
-          <button
+          <InkButton
             key={t}
+            variant={tab === t ? 'ink' : 'paper'}
             onClick={() => setTab(t)}
-            style={{
-              fontSize: 12, fontWeight: 700, padding: '6px 16px', borderRadius: 20,
-              border: 'none', cursor: 'pointer',
-              background: tab === t ? accent : '#f1f5f9',
-              color: tab === t ? 'white' : '#64748b',
-            }}
+            style={{ display: 'inline-flex', alignItems: 'center', fontSize: 14 }}
           >
             {t === 'inbox' ? 'Inbox' : 'Sent'}
             {t === 'inbox' && unread > 0 && (
               <span style={{
-                marginLeft: 6, background: '#f59e0b', color: 'white',
-                borderRadius: '50%', fontSize: 10, padding: '1px 5px', fontWeight: 800,
+                marginLeft: 8, minWidth: 20, height: 20, padding: '0 5px', boxSizing: 'border-box',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: stamp, color: paperLight, border: `1px solid ${tab === t ? paperLight : stamp}`,
+                borderRadius: 10, fontSize: 11, fontWeight: 600, lineHeight: 1,
               }}>
                 {unread}
               </span>
             )}
-          </button>
+          </InkButton>
         ))}
       </div>
 
       {tab === 'inbox' ? (
         inbox.length === 0 ? (
-          <div style={{
-            background: 'white', borderRadius: 16, padding: '24px 20px', textAlign: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-          }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📬</div>
-            <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+          <div style={empty}>
+            <div style={{ fontSize: 32, marginBottom: 6 }}>📬</div>
+            <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
               No postcards yet. Friends can send them after you check in at landmarks.
             </p>
           </div>
@@ -181,12 +178,9 @@ export function PostcardsSection() {
         )
       ) : (
         sent.length === 0 ? (
-          <div style={{
-            background: 'white', borderRadius: 16, padding: '24px 20px', textAlign: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-          }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📮</div>
-            <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+          <div style={empty}>
+            <div style={{ fontSize: 32, marginBottom: 6 }}>📮</div>
+            <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
               No sent postcards. Check in at a landmark and send one to a friend.
             </p>
           </div>

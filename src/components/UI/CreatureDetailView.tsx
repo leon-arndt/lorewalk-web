@@ -4,15 +4,22 @@ import { getFoodDef } from '@/data/foods'
 import { getCreaturePreviewURL, getCreatureSpinFrames } from '@/lib/creaturePreview'
 import { LoadingDot } from '@/components/UI/LoadingDot'
 import { creatureName, xpForCreatureLevel } from '@/lib/profile'
-import { creatureDefBySpecies } from '@/data/creatures'
+import { CREATURES, creatureDefBySpecies } from '@/data/creatures'
 import type { FoodItem, HatchedCreature } from '@/types'
-import { glassSheet } from '@/lib/glass'
-import { accent, categoryCss, rewardGradientHorizontal } from '@/lib/theme'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { InkButton, Mono, SectionTitle, Stamp } from '@/components/UI/Journal'
+import { SCRIM, paperSheet } from '@/lib/paper'
+import { accentAlpha, categoryCss, forest, ink, inkSoft, line, ochre, paperLight, ochreInk, pencil } from '@/lib/theme'
 import { useLocale } from '@/contexts/LocaleContext'
 import { motion } from 'motion/react'
 import { sheetIn, backdropIn } from '@/lib/motion'
 
 const DROPZONE = 'creature'
+
+
+// A shiny creature has a gold ink outline, drawn as four hard shadows.
+const SHINY_OUTLINE = [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5]]
+  .map(([x, y]) => `drop-shadow(${x}px ${y}px 0 ${ochre})`).join(' ')
 
 // Tapping the creature in the detail view spins it SPIN_TURNS times with a hop.
 const SPIN_MS = 900
@@ -29,14 +36,14 @@ function CreatureScene({ creature, size, nomming, highlight }: {
   highlight?: boolean
 }) {
   const large = size === 'lg'
-  const boxSize = large ? 96 : 60
+  const boxSize = large ? 120 : 60
   // Pokedex-style size variety: the wild and mythic cats stand taller than strays.
   const type = creatureDefBySpecies(creature.species)?.type
   const emojiSize = Math.round(boxSize * (type === 'wild' || type === 'mythic' ? 1 : 0.84))
-  const groundW = large ? 150 : 64
-  const groundH = large ? 38 : 18
-  const shadowW = large ? 70 : 34
-  const shadowH = large ? 14 : 7
+  const groundW = large ? 184 : 64
+  const groundH = large ? 46 : 18
+  const shadowW = large ? 88 : 34
+  const shadowH = large ? 17 : 7
   const typeColor = categoryCss(creature.poiCategory)
 
   // undefined while the render loads, null when it failed.
@@ -92,7 +99,7 @@ function CreatureScene({ creature, size, nomming, highlight }: {
       ? 'creatureNom 0.55s ease forwards'
       : `creatureBob 2.2s ease-in-out infinite`,
     animationDelay: spinning || nomming ? '0s' : bobDelay(creature.id),
-    filter: creature.isShiny ? 'drop-shadow(0 0 10px rgba(245,158,11,0.75))' : undefined,
+    filter: creature.isShiny ? SHINY_OUTLINE : undefined,
   }
   const shown = spinSrc ?? src
   const figure = shown
@@ -105,9 +112,9 @@ function CreatureScene({ creature, size, nomming, highlight }: {
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
         userSelect: 'none', isolation: 'isolate',
-        padding: large ? '12px 32px 12px' : undefined,
-        borderRadius: large ? 20 : undefined,
-        background: highlight ? 'rgba(99,102,241,0.08)' : undefined,
+        padding: large ? '8px 32px 4px' : undefined,
+        borderRadius: large ? 6 : undefined,
+        background: highlight ? accentAlpha(0.08) : undefined,
         transition: 'background 0.15s',
       }}
     >
@@ -132,7 +139,7 @@ function CreatureScene({ creature, size, nomming, highlight }: {
       <div style={{
         width: shadowW, height: shadowH,
         borderRadius: '50%',
-        background: 'rgba(15,23,42,0.18)',
+        background: 'rgba(51,40,30,0.18)',
         marginTop: large ? -10 : -5,
         animation: nomming ? undefined : `shadowPulse 2.2s ease-in-out infinite`,
         animationDelay: bobDelay(creature.id),
@@ -142,21 +149,25 @@ function CreatureScene({ creature, size, nomming, highlight }: {
       <div style={{
         width: groundW, height: groundH,
         borderRadius: '50%',
-        background: `radial-gradient(ellipse at center, ${typeColor}59 0%, ${typeColor}2e 55%, ${typeColor}00 72%)`,
-        marginTop: large ? -24 : -12,
+        background: `${typeColor}4d`,
+        transform: 'scale(0.7)',
+        marginTop: large ? -30 : -12,
         position: 'relative', zIndex: -1,
       }} />
     </div>
   )
 }
 
+const TAG_SHADOW = '1px 2px 0 rgba(51,40,30,0.18)'
+const TAG_LIFTED = '3px 5px 0 rgba(51,40,30,0.22)'
+
 function buildGhostStyle(w: number, h: number): string {
   return [
     'position:fixed', 'pointer-events:none', `width:${w}px`, `height:${h}px`,
     'z-index:9999', 'display:flex', 'flex-direction:column', 'align-items:center',
-    'gap:3px', 'padding:10px 14px', 'background:white', 'border-radius:18px',
-    'box-shadow:0 8px 28px rgba(0,0,0,0.22)', 'border:1.5px solid #f1f5f9',
-    'opacity:0.95', 'transition:none',
+    'gap:3px', 'padding:8px 10px 7px', `background:${paperLight}`, 'border-radius:6px',
+    `box-shadow:${TAG_LIFTED}`, `border:1.5px solid ${ink}`,
+    'transform:rotate(-3deg)', 'transition:none',
   ].join(';')
 }
 
@@ -197,9 +208,7 @@ function FoodChip({ item, onFed }: { item: FoodItem; onFed: () => void }) {
     g.style.top = `${cy - r.height / 2}px`
     const onZone = !!getZoneEl(cx, cy)
     setOverZone(onZone)
-    g.style.boxShadow = onZone
-      ? '0 0 0 3px #818cf8, 0 8px 28px rgba(99,102,241,0.35)'
-      : '0 8px 28px rgba(0,0,0,0.22)'
+    g.style.boxShadow = onZone ? `0 0 0 2.5px ${forest}` : TAG_LIFTED
   }
 
   function dropGhost(cx: number, cy: number) {
@@ -247,19 +256,21 @@ function FoodChip({ item, onFed }: { item: FoodItem; onFed: () => void }) {
       onTouchEnd={onTouchEnd}
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-        padding: '10px 14px', background: 'white', borderRadius: 18,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.10)',
-        border: `1.5px solid ${overZone ? '#818cf8' : '#f1f5f9'}`,
+        minWidth: 76, padding: '8px 10px 7px', background: paperLight, borderRadius: 6,
+        boxShadow: TAG_SHADOW,
+        border: `1.5px solid ${overZone ? forest : ink}`,
         cursor: 'grab', userSelect: 'none', touchAction: 'none', flexShrink: 0,
       }}
     >
-      <span style={{ fontSize: 34, lineHeight: 1 }}>{def.emoji}</span>
-      <span style={{ fontSize: 10, fontWeight: 700, color: '#1e293b', textAlign: 'center', maxWidth: 72, lineHeight: 1.2 }}>
+      {/* The hole for the tag's string. */}
+      <span aria-hidden style={{ width: 7, height: 7, border: `1.5px solid ${ink}`, borderRadius: '50%', marginBottom: 1 }} />
+      <EmojiSprite id={`food_${item.foodId}`} emoji={def.emoji} size={32} />
+      <span style={{ fontSize: 12, fontWeight: 500, color: ink, textAlign: 'center', maxWidth: 76, lineHeight: '14px' }}>
         {def.name}
       </span>
-      <span style={{ fontSize: 9, fontWeight: 700, color: '#6366f1', background: '#eef2ff', borderRadius: 20, padding: '1px 7px' }}>
+      <Mono style={{ color: forest }}>
         +{def.xp} XP
-      </span>
+      </Mono>
     </div>
   )
 }
@@ -278,6 +289,8 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
   const xpNeeded = xpForCreatureLevel(creature.level)
   const xpPct = Math.min(1, creature.xp / xpNeeded) * 100
   const atCap = creature.level >= 20
+  const typeColor = categoryCss(creature.poiCategory)
+  const no = CREATURES.findIndex((c) => c.species === creature.species) + 1
 
   function handleFed(foodItemId: string) {
     onFeed(creature.id, foodItemId)
@@ -288,7 +301,7 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
   }
 
   return createPortal(
-    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
+    <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
       data-sfx="close"
       style={{
@@ -300,101 +313,103 @@ export function CreatureDetailView({ creature, foodInventory, onFeed, onRelease,
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '88vh',
-          ...glassSheet,
-          borderRadius: '24px 24px 0 0',
+          ...paperSheet,
+          borderRadius: '10px 10px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: line }} />
         </div>
 
-        <div style={{ overflowY: 'auto', padding: '8px 0 calc(24px + env(safe-area-inset-bottom))' }}>
+        <div style={{ overflowY: 'auto', padding: '12px 16px calc(24px + env(safe-area-inset-bottom))' }}>
 
-          {/* Scene — this is the drop zone */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 24px 8px' }}>
+          {/* The plate: the creature on a wash of its type colour. The scene is the drop zone */}
+          <div style={{
+            position: 'relative', display: 'flex', justifyContent: 'center', padding: '14px 0 4px',
+            background: `${typeColor}40`, border: `1px solid ${line}`, borderRadius: 3,
+          }}>
             {creature.isShiny && (
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 4, color: '#d97706', textTransform: 'uppercase', marginBottom: 8 }}>
+              <Stamp color={ochreInk} tilt={-4} style={{ position: 'absolute', top: 10, left: 10 }}>
                 ✨ Shiny
-              </div>
+              </Stamp>
             )}
             <CreatureScene creature={creature} size="lg" nomming={nomming} highlight={highlight} />
           </div>
 
-          <div style={{ textAlign: 'center', padding: '8px 24px' }}>
-            <div style={{ fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{creatureName(creature)}</div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-              <span style={{
-                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-                background: creature.isShiny ? 'linear-gradient(135deg, #f59e0b, #fbbf24)' : accent,
-                color: 'white',
-              }}>
+          <div style={{ padding: '14px 0 0' }}>
+            <div style={{ fontSize: 28, fontWeight: 600, lineHeight: '34px', letterSpacing: '-0.01em', color: ink, overflowWrap: 'anywhere' }}>
+              {creatureName(creature)}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 2 }}>
+              <Mono style={{ fontSize: 12, fontWeight: 500, color: creature.isShiny ? ochreInk : inkSoft }}>
+                {no > 0 && <>{t('creatures_specimen_no', { n: String(no).padStart(2, '0') })} · </>}
                 {t('level_badge', { level: creature.level })}
-              </span>
-              <span style={{ fontSize: 12, color: '#94a3b8' }}>{creature.poiCategory}</span>
+              </Mono>
+              <span aria-hidden style={{
+                width: 10, height: 10, marginLeft: 6, flexShrink: 0,
+                background: typeColor, border: `1.5px solid ${ink}`, borderRadius: '50%',
+              }} />
+              <Mono style={{ fontSize: 12 }}>{creature.poiCategory}</Mono>
             </div>
           </div>
 
           {!atCap ? (
-            <div style={{ padding: '4px 32px 0' }}>
-              <div style={{ height: 6, borderRadius: 3, background: '#e2e8f0', overflow: 'hidden' }}>
+            <div style={{ padding: '12px 0 0' }}>
+              <div style={{ height: 12, border: `1.5px solid ${ink}`, borderRadius: 2, overflow: 'hidden' }}>
                 <div style={{
-                  height: '100%', borderRadius: 3,
-                  background: creature.isShiny ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : rewardGradientHorizontal,
+                  height: '100%',
+                  background: creature.isShiny ? ochre : forest,
                   width: `${xpPct}%`, transition: 'width 0.4s ease',
                 }} />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: '#94a3b8' }}>
-                <span>{creature.xp} / {xpNeeded} XP</span>
-                <span>{t('creature_next_level')}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 4 }}>
+                <Mono>{creature.xp} / {xpNeeded} XP</Mono>
+                <Mono>{t('creature_next_level')}</Mono>
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#818cf8', marginTop: 4 }}>{t('creature_max_level')}</div>
+            <div style={{ marginTop: 12 }}>
+              <Stamp color={forest} tilt={-2}>{t('creature_max_level')}</Stamp>
+            </div>
           )}
 
-          <div style={{ textAlign: 'center', padding: '8px 24px 0', fontSize: 12, color: '#94a3b8' }}>
+          <Mono style={{ display: 'block', marginTop: 10 }}>
             Found at {creature.poiOriginName}
-          </div>
+          </Mono>
 
-          <div style={{ height: 1, background: '#e2e8f0', margin: '20px 24px' }} />
+          <div style={{ borderTop: `1.5px dashed ${line}`, margin: '18px 0' }} />
 
           {feedQueue.length > 0 ? (
-            <div style={{ padding: '0 24px' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Feed</div>
-              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 14 }}>{t('creature_drag_food')}</div>
-              <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8 }}>
+            <div>
+              <SectionTitle style={{ marginBottom: 2 }}>
+                Feed
+              </SectionTitle>
+              <Mono style={{ display: 'block', marginBottom: 12 }}>{t('creature_drag_food')}</Mono>
+              <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '2px 4px 8px 0' }}>
                 {feedQueue.map((item) => (
                   <FoodChip key={item.id} item={item} onFed={() => handleFed(item.id)} />
                 ))}
               </div>
             </div>
           ) : (
-            <div style={{ padding: '0 24px' }}>
-              <div style={{ padding: '12px 16px', background: '#eef2ff', borderRadius: 12 }}>
-                <p style={{ margin: 0, fontSize: 13, color: '#6366f1' }}>
-                  No food yet. Send a squad on an expedition to bring some back.
-                </p>
-              </div>
+            <div style={{ padding: '12px 14px', border: `1.5px dashed ${pencil}`, borderRadius: 4 }}>
+              <p style={{ margin: 0, fontSize: 13, lineHeight: '18px', color: inkSoft }}>
+                No food yet. Send a squad on an expedition to bring some back.
+              </p>
             </div>
           )}
 
-          <div style={{ height: 1, background: '#e2e8f0', margin: '20px 24px' }} />
+          <div style={{ borderTop: `1.5px dashed ${line}`, margin: '18px 0' }} />
 
-          <div style={{ padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button onClick={onRelease} style={{
-              width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
-              background: '#fff1f2', color: '#e11d48', fontWeight: 700, fontSize: 13, cursor: 'pointer',
-            }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <InkButton variant="danger" onClick={onRelease} style={{ width: '100%' }}>
               Release {creature.species}
-            </button>
-            <button onClick={onClose} data-sfx="close" style={{
-              width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
-              background: '#f1f5f9', color: '#64748b', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-            }}>
+            </InkButton>
+            <InkButton variant="paper" onClick={onClose} data-sfx="close" style={{ width: '100%' }}>
               Close
-            </button>
+            </InkButton>
           </div>
 
         </div>

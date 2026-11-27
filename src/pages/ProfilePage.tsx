@@ -9,7 +9,7 @@ import { xpForNextLevel, currentMonthKey, monthLabel, recentMonthKeys, stepsThis
 import { FriendsSection } from '@/components/UI/FriendsSection'
 import { PostcardsSection } from '@/components/UI/PostcardsSection'
 import { MedalSvg } from '@/components/UI/MedalSvg'
-import { BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
+import { AchievementCard, BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
 import { MedalHistoryScreen } from '@/components/UI/MedalHistoryScreen'
 import { VisitHistoryItem } from '@/components/UI/VisitHistoryItem'
 import { VisitHistoryScreen } from '@/components/UI/VisitHistoryScreen'
@@ -17,9 +17,27 @@ import { getMedalConfig } from '@/data/medals'
 import { StreakChestCard } from '@/components/UI/StreakChestCard'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { PremiumModal } from '@/components/UI/PremiumModal'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
+import { InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
 import type { Achievement, EarnedMedal } from '@/types'
-import { accent, rewardGradient, rewardGradientHorizontal } from '@/lib/theme'
-import { glassPage } from '@/lib/glass'
+import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, paperLight, paperShade, stamp, ochreInk } from '@/lib/theme'
+import { MONO, paperPage, paperTag, SCRIM } from '@/lib/paper'
+
+
+const iconButton = {
+  width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  background: 'none', border: 'none', color: inkSoft,
+} as const
+
+// An icon button that flows after the last word of the name.
+const inlineIcon = { verticalAlign: 'middle', marginTop: -4, marginBottom: -2 } as const
+
+const cheatButton = {
+  flex: 1, minHeight: 44, padding: '0 4px', borderRadius: 6, cursor: 'pointer',
+  background: paperCard, border: `1.5px solid ${ink}`, color: ink,
+  fontFamily: MONO, fontWeight: 500, fontSize: 12,
+} as const
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-SG', {
@@ -39,7 +57,7 @@ export function ProfilePage() {
   const [showChallengeInfo, setShowChallengeInfo] = useState(false)
   const premiumBenefits = [
     { icon: '🔓', text: t('premium_benefit_landmarks') },
-    { icon: '🏅', text: t('premium_benefit_medal') },
+    { icon: <EmojiSprite id="item_badge" emoji="🏅" size={22} />, text: t('premium_benefit_medal') },
   ]
   const [badgeDetail, setBadgeDetail] = useState<{
     icon: ReactNode; name: string; description: string; status: string; statusColor: string
@@ -74,7 +92,7 @@ export function ProfilePage() {
       name: a.name,
       description: a.description,
       status: a.unlockedAt ? `Acquired on ${formatDate(a.unlockedAt)}` : 'Not yet unlocked',
-      statusColor: a.unlockedAt ? '#16a34a' : '#94a3b8',
+      statusColor: a.unlockedAt ? forest : inkHint,
     })
   }
 
@@ -90,7 +108,7 @@ export function ProfilePage() {
       name: cfg.title,
       description: cfg.challenge,
       status: earned ? `Acquired on ${formatDate(earned.claimedAt)}` : 'Not yet earned',
-      statusColor: earned ? '#16a34a' : '#94a3b8',
+      statusColor: earned ? forest : inkHint,
     })
   }
 
@@ -109,322 +127,277 @@ export function ProfilePage() {
     })
   }
 
-  return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+  const stats = [
+    { labelKey: 'profile_stat_visited' as const, value: profile.visitHistory.length, icon: <EmojiSprite id="item_pin" emoji="📍" size={24} /> },
+    { labelKey: 'profile_stat_streak' as const, value: profile.streakDays, icon: <span style={{ fontSize: 19, lineHeight: '24px' }}>🔥</span> },
+    { labelKey: 'profile_stat_total_xp' as const, value: profile.totalXp, icon: <EmojiSprite id="item_xp" emoji="⭐" size={24} /> },
+  ]
 
-      {/* Header card */}
-      <div style={{ position: 'relative', background: 'white', padding: '44px 20px 24px', borderBottom: '1px solid #f1f5f9' }}>
-        <button
-          onClick={() => navigate('/settings')}
-          aria-label={t('profile_settings')}
-          style={{
-            position: 'absolute', top: 12, right: 16,
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#94a3b8', padding: 4,
-            display: 'flex', alignItems: 'center',
-          }}
-        >
-          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Avatar - premium members get a shield-shaped background instead of a circle. Tapping it opens character customization. */}
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+
+      {/* The explorer's name is the title of the page */}
+      <PageHeader
+        title={editingName ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
+              autoFocus
+              maxLength={24}
+              style={{
+                flex: 1, minWidth: 0, height: 44, boxSizing: 'border-box', fontFamily: 'inherit',
+                fontSize: 20, fontWeight: 600, color: ink, background: paperCard,
+                border: `1.5px solid ${ink}`, borderRadius: 6,
+                padding: '0 10px', outline: 'none',
+              }}
+            />
+            <InkButton onClick={handleNameSave} style={{ flexShrink: 0 }}>
+              {t('profile_save')}
+            </InkButton>
+          </span>
+        ) : (
+          <span style={{ overflowWrap: 'anywhere' }}>
+            {profile.displayName}
+            <button
+              onClick={() => { setNameInput(profile.displayName); setEditingName(true) }}
+              style={{ ...iconButton, ...inlineIcon, fontSize: 15, marginLeft: 2 }}
+            >
+              ✏️
+            </button>
+            <button
+              onClick={() => navigate('/customize')}
+              aria-label={t('profile_customize')}
+              style={{ ...iconButton, ...inlineIcon, marginLeft: -8 }}
+            >
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a4 4 0 0 0-4 4v2a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z" />
+                <path d="M4 21c0-4 3-7 8-7s8 3 8 7" />
+              </svg>
+            </button>
+          </span>
+        )}
+        right={
           <button
-            onClick={() => navigate('/customize')}
-            aria-label={t('profile_customize')}
-            data-sfx="click"
+            onClick={() => navigate('/settings')}
+            aria-label={t('profile_settings')}
             style={{
-              position: 'relative', width: 64, height: 64, flexShrink: 0,
-              background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+              ...paperTag, width: 44, height: 44, padding: 0, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            {profile.isPremium ? (
-              <svg width={64} height={64} viewBox="0 0 100 100" style={{ filter: 'drop-shadow(0 4px 10px rgba(245,158,11,0.45))' }}>
-                <defs>
-                  <linearGradient id="premiumShieldFill" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fde68a" />
-                    <stop offset="55%" stopColor="#f59e0b" />
-                    <stop offset="100%" stopColor="#b45309" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M50 4 L88 18 L88 50 C88 77 70 92 50 98 C30 92 12 77 12 50 L12 18 Z"
-                  fill="url(#premiumShieldFill)"
-                  stroke="#fff7ed"
-                  strokeWidth={2}
-                />
-              </svg>
-            ) : (
-              <div style={{
-                width: 64, height: 64, borderRadius: '50%',
-                background: rewardGradient,
-                boxShadow: '0 4px 12px rgba(129,140,248,0.35)',
-              }} />
-            )}
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <PlayerFaceIcon appearance={profile.appearance} size={48} />
-            </div>
+            <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
           </button>
+        }
+      />
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {editingName ? (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
-                  autoFocus
-                  maxLength={24}
-                  style={{
-                    flex: 1, fontSize: 18, fontWeight: 700, color: '#1e293b',
-                    border: `2px solid ${accent}`, borderRadius: 10,
-                    padding: '4px 10px', outline: 'none',
-                  }}
-                />
-                <button
-                  onClick={handleNameSave}
-                  style={{
-                    background: accent, color: 'white', border: 'none',
-                    borderRadius: 10, padding: '4px 14px', fontWeight: 600,
-                    fontSize: 13, cursor: 'pointer',
-                  }}
-                >
-                  {t('profile_save')}
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#1e293b' }}>
-                  {profile.displayName}
-                </span>
-                <button
-                  onClick={() => { setNameInput(profile.displayName); setEditingName(true) }}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: 14, color: '#94a3b8', padding: 0,
-                  }}
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => navigate('/customize')}
-                  aria-label={t('profile_customize')}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: '#94a3b8', padding: 0,
-                    display: 'flex', alignItems: 'center',
-                  }}
-                >
-                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2a4 4 0 0 0-4 4v2a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z" />
-                    <path d="M4 21c0-4 3-7 8-7s8 3 8 7" />
-                  </svg>
-                </button>
-              </div>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
-                background: accent,
-                color: 'white',
+      {/* Explorer card: the photo, the level, the XP bar, and the three figures */}
+      <section style={{ padding: '18px 16px 0' }}>
+        <NoteCard taped tilt={-0.5} style={{ padding: '18px 14px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            {/* Avatar: a photo glued in. Tapping it opens character customization. */}
+            <button
+              onClick={() => navigate('/customize')}
+              aria-label={t('profile_customize')}
+              data-sfx="click"
+              style={{
+                flexShrink: 0, padding: '5px 5px 14px', cursor: 'pointer',
+                background: paperCard, border: `1px solid ${line}`, borderRadius: 3,
+                boxShadow: '1px 2px 0 rgba(51,40,30,0.22)', transform: 'rotate(-4deg)',
+              }}
+            >
+              <div style={{
+                width: 76, height: 76, borderRadius: 2,
+                background: profile.isPremium ? `${ochre}4d` : paperShade,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                {t('level_badge', { level: profile.level })}
-              </span>
-              {profile.isPremium && (
-                <span style={{
-                  fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
-                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                  color: '#78350f',
-                  display: 'inline-flex', alignItems: 'center', gap: 3,
-                }}>
-                  👑 {t('profile_premium_badge')}
-                </span>
-              )}
-            </div>
-
-            {/* XP bar - grouped under the level, constrained to the name column */}
-            <div style={{ marginTop: 10 }}>
-              <div style={{ height: 6, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%', borderRadius: 3,
-                  background: rewardGradientHorizontal,
-                  width: `${xpPct}%`,
-                  transition: 'width 0.4s ease',
-                }} />
+                <PlayerFaceIcon appearance={profile.appearance} size={64} />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, fontSize: 11, color: '#94a3b8' }}>
-                <span>{t('profile_xp_to_level', { xp: xpNeeded - profile.xp, level: profile.level + 1 })}</span>
-                <span>{profile.xp} / {xpNeeded}</span>
+            </button>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <Stamp tilt={-3} style={{ fontSize: 13, lineHeight: '16px' }}>
+                  {t('level_badge', { level: profile.level })}
+                </Stamp>
+                {profile.isPremium && (
+                  <Stamp color={ochreInk} tilt={2}>
+                    👑 {t('profile_premium_badge')}
+                  </Stamp>
+                )}
+              </div>
+
+              {/* XP bar */}
+              <div style={{ marginTop: 14 }}>
+                <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, background: paperCard, overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    background: forest,
+                    width: `${xpPct}%`,
+                    transition: 'width 0.4s ease',
+                  }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', columnGap: 8, marginTop: 5 }}>
+                  <Mono>{t('profile_xp_to_level', { xp: xpNeeded - profile.xp, level: profile.level + 1 })}</Mono>
+                  <Mono style={{ color: ink }}>{profile.xp} / {xpNeeded}</Mono>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Stats row */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: 1, background: '#f1f5f9',
-        borderBottom: '1px solid #f1f5f9',
-      }}>
-        {[
-          { labelKey: 'profile_stat_visited' as const, value: profile.visitHistory.length, icon: '📍' },
-          { labelKey: 'profile_stat_streak' as const, value: profile.streakDays, icon: '🔥' },
-          { labelKey: 'profile_stat_total_xp' as const, value: profile.totalXp, icon: '⭐' },
-        ].map(({ labelKey, value, icon }) => (
-          <div key={labelKey} style={{
-            background: 'white', padding: '16px 8px', textAlign: 'center',
+          {/* Stats row */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+            marginTop: 16, paddingTop: 12, borderTop: `1.5px dashed ${line}`,
           }}>
-            <div style={{ fontSize: 22 }}>{icon}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', lineHeight: 1.2 }}>{value}</div>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{t(labelKey)}</div>
+            {stats.map(({ labelKey, value, icon }, i) => (
+              <div key={labelKey} style={{
+                padding: '0 6px', textAlign: 'center',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                borderRight: i < stats.length - 1 ? `1.5px dashed ${line}` : 'none',
+              }}>
+                <div style={{ height: 24, display: 'flex', alignItems: 'center' }}>{icon}</div>
+                <div style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, color: ink, lineHeight: '28px' }}>{value}</div>
+                <Mono>{t(labelKey)}</Mono>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </NoteCard>
+      </section>
 
-      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ padding: '24px 16px 20px', display: 'flex', flexDirection: 'column', gap: 26 }}>
 
         <StreakChestCard />
 
         {/* Premium */}
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
+          <SectionTitle>
             👑 Lorewalk Premium
-          </h2>
+          </SectionTitle>
 
           {profile.isPremium ? (
             <div style={{
-              background: 'white', borderRadius: 18, padding: 18,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-              border: '1px solid #fde68a',
+              background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6, overflow: 'hidden',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 22 }}>🏅</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{monthLabel(currentMonth)} challenge</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>Walk {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps this month</div>
+              <div aria-hidden style={{ height: 6, background: ochre, borderBottom: `1.5px solid ${ink}` }} />
+              <div style={{ padding: '12px 12px 4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                    <span style={{ flexShrink: 0 }}><EmojiSprite id="item_badge" emoji="🏅" size={30} /></span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }}>{monthLabel(currentMonth)} challenge</div>
+                      <Mono style={{ display: 'block' }}>Walk {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps this month</Mono>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                    <Stamp color={ochreInk} tilt={3}>
+                      Premium
+                    </Stamp>
+                    <button
+                      onClick={() => setShowChallengeInfo(true)}
+                      aria-label={t('medal_challenge_info_aria')}
+                      style={{ ...iconButton, marginRight: -8 }}
+                    >
+                      <span style={{
+                        width: 24, height: 24, borderRadius: '50%', border: `1.5px solid ${ink}`, boxSizing: 'border-box',
+                        background: paperCard, color: ink, fontFamily: MONO, fontSize: 13, fontWeight: 500,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
+                      }}>
+                        i
+                      </span>
+                    </button>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  <span style={{
-                    fontSize: 11, fontWeight: 700, color: '#78350f', padding: '3px 10px', borderRadius: 20,
-                    background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                  }}>
-                    Premium
-                  </span>
-                  <button
-                    onClick={() => setShowChallengeInfo(true)}
-                    aria-label={t('medal_challenge_info_aria')}
-                    style={{
-                      width: 20, height: 20, borderRadius: '50%', border: '1px solid #fbbf24',
-                      background: 'white', color: '#b45309', fontSize: 12, fontWeight: 800,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', padding: 0, lineHeight: 1,
-                    }}
-                  >
-                    i
-                  </button>
-                </div>
-              </div>
 
-              <div style={{ height: 8, borderRadius: 4, background: '#f1f5f9', overflow: 'hidden', marginBottom: 6 }}>
-                <div style={{
-                  height: '100%', borderRadius: 4,
-                  background: 'linear-gradient(90deg, #fde68a, #f59e0b)',
-                  width: `${Math.min(100, (monthSteps / MEDAL_EVENT_TARGET_STEPS) * 100)}%`,
-                  transition: 'width 0.4s ease',
-                }} />
-              </div>
-              <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: medalClaimed || medalComplete ? 12 : 0 }}>
-                {Math.min(monthSteps, MEDAL_EVENT_TARGET_STEPS).toLocaleString()} / {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps
-              </div>
-
-              {medalClaimed ? (
-                <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#16a34a' }}>
-                  ✅ Medal claimed for {monthLabel(currentMonth)}
+                <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, background: paperCard, overflow: 'hidden', marginBottom: 5 }}>
+                  <div style={{
+                    height: '100%',
+                    background: ochre,
+                    width: `${Math.min(100, (monthSteps / MEDAL_EVENT_TARGET_STEPS) * 100)}%`,
+                    transition: 'width 0.4s ease',
+                  }} />
                 </div>
-              ) : medalComplete ? (
+                <Mono style={{ display: 'block', marginBottom: medalClaimed || medalComplete ? 12 : 0 }}>
+                  {Math.min(monthSteps, MEDAL_EVENT_TARGET_STEPS).toLocaleString()} / {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps
+                </Mono>
+
+                {medalClaimed ? (
+                  <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: forest }}>
+                    ✅ Medal claimed for {monthLabel(currentMonth)}
+                  </div>
+                ) : medalComplete ? (
+                  <InkButton onClick={handleClaimMedal} style={{ width: '100%' }}>
+                    🏅 Claim this month's medal
+                  </InkButton>
+                ) : null}
+
                 <button
-                  onClick={handleClaimMedal}
+                  onClick={() => setShowPremiumModal(true)}
                   style={{
-                    width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
-                    background: 'linear-gradient(135deg, #fde68a, #f59e0b)', color: '#78350f',
-                    fontSize: 14, fontWeight: 800, cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
+                    width: '100%', minHeight: 44, marginTop: 2, padding: 0, border: 'none', background: 'none',
+                    fontFamily: MONO, fontSize: 12, fontWeight: 500, color: ochreInk, cursor: 'pointer', textAlign: 'center',
+                    textDecoration: 'underline', textUnderlineOffset: 3,
                   }}
                 >
-                  🏅 Claim this month's medal
+                  {t('premium_manage_subscription')}
                 </button>
-              ) : null}
-
-              <button
-                onClick={() => setShowPremiumModal(true)}
-                style={{
-                  width: '100%', marginTop: 12, padding: 0, border: 'none', background: 'none',
-                  fontSize: 11.5, fontWeight: 600, color: '#b45309', cursor: 'pointer', textAlign: 'center',
-                }}
-              >
-                {t('premium_manage_subscription')}
-              </button>
+              </div>
             </div>
           ) : (
             <button
               onClick={() => setShowPremiumModal(true)}
               style={{
-                width: '100%', textAlign: 'left', cursor: 'pointer',
-                background: 'linear-gradient(160deg, #fffbeb 0%, #fff7ed 100%)',
-                border: '2px solid #fde68a', borderRadius: 18, padding: 18,
+                display: 'block', width: '100%', padding: 0, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
+                background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6, overflow: 'hidden',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                <span style={{ fontSize: 32 }}>🛡️</span>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: '#78350f' }}>{t('premium_go_premium')}</div>
-                  <div style={{ fontSize: 12, color: '#92400e' }}>{t('premium_unlock_everything')}</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
-                {premiumBenefits.map((b) => (
-                  <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#78350f', fontWeight: 600 }}>
-                    <span style={{ fontSize: 16 }}>{b.icon}</span> {b.text}
+              <div aria-hidden style={{ height: 6, background: ochre, borderBottom: `1.5px solid ${ink}` }} />
+              <div style={{ padding: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                  <span style={{ fontSize: 28, lineHeight: 1 }}>🛡️</span>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 600, lineHeight: '22px', color: ink }}>{t('premium_go_premium')}</div>
+                    <Mono style={{ display: 'block' }}>{t('premium_unlock_everything')}</Mono>
                   </div>
-                ))}
-              </div>
+                </div>
 
-              <div
-                style={{
-                  width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
-                  background: 'linear-gradient(135deg, #fde68a, #f59e0b)',
-                  color: '#78350f', fontSize: 15, fontWeight: 800, textAlign: 'center',
-                  boxShadow: '0 4px 14px rgba(245,158,11,0.35)',
-                }}
-              >
-                {t('premium_see_included')}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                  {premiumBenefits.map((b) => (
+                    <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: ink }}>
+                      <span style={{ width: 22, flexShrink: 0, display: 'flex', justifyContent: 'center', fontSize: 16, lineHeight: 1 }}>{b.icon}</span> {b.text}
+                    </div>
+                  ))}
+                </div>
+
+                <div
+                  style={{
+                    minHeight: 44, boxSizing: 'border-box', borderRadius: 6,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: paperCard, border: `1.5px solid ${ink}`,
+                    color: ink, fontSize: 15, fontWeight: 500, textAlign: 'center',
+                  }}
+                >
+                  {t('premium_see_included')}
+                </div>
               </div>
             </button>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#78350f' }}>{t('medal_history_title')}</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 }}>
+            <span style={{ fontSize: 15, fontWeight: 500, color: ink }}>{t('medal_history_title')}</span>
             <button
               onClick={() => setShowMedalHistory(true)}
               aria-label={t('medal_view_all_aria')}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: '#b45309', fontSize: 18, fontWeight: 800, padding: 4, lineHeight: 1,
-              }}
+              style={{ ...iconButton, marginRight: -12, color: ink, fontSize: 22, fontWeight: 500, lineHeight: 1 }}
             >
               ›
             </button>
           </div>
-          <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 12 }}>
             {recentMonthKeys(4).map((monthKey) => {
               const cfg = getMedalConfig(monthKey)
               if (!cfg) return null
@@ -434,16 +407,16 @@ export function ProfilePage() {
                   key={monthKey}
                   onClick={() => openMedalDetail(monthKey, earned)}
                   style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 0,
                     background: 'none', border: 'none', padding: 0, cursor: 'pointer', flex: 1,
                   }}
                 >
                   <div style={{ filter: earned ? undefined : 'grayscale(1)', opacity: earned ? 1 : 0.4 }}>
                     <MedalSvg config={cfg} size={72} />
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#78350f', textAlign: 'center', lineHeight: 1.3 }}>
+                  <Mono style={{ textAlign: 'center', color: earned ? ink : undefined }}>
                     {monthLabel(monthKey)}
-                  </span>
+                  </Mono>
                 </button>
               )
             })}
@@ -456,50 +429,22 @@ export function ProfilePage() {
 
         {/* Achievements */}
         <section>
-          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
+          <SectionTitle note={`${unlockedAchievements.length} / ${profile.achievements.length}`}>
             {t('profile_achievements')}
-          </h2>
+          </SectionTitle>
 
           {unlockedAchievements.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-              {unlockedAchievements.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => openAchievementDetail(a)}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: 4, padding: '10px 12px', borderRadius: 14, border: 'none',
-                    background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                    minWidth: 72, cursor: 'pointer',
-                  }}
-                >
-                  <span style={{ fontSize: 26 }}>{a.icon}</span>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: '#1e293b', textAlign: 'center', lineHeight: 1.3 }}>
-                    {a.name}
-                  </span>
-                </button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, marginBottom: 10 }}>
+              {unlockedAchievements.map((a, i) => (
+                <AchievementCard key={a.id} icon={a.icon} name={a.name} unlocked tilt={i % 2 ? 0.8 : -0.8} onClick={() => openAchievementDetail(a)} />
               ))}
             </div>
           )}
 
           {lockedAchievements.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
               {lockedAchievements.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => openAchievementDetail(a)}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: 4, padding: '10px 12px', borderRadius: 14, border: '1px dashed #e2e8f0',
-                    background: '#f8fafc',
-                    minWidth: 72, opacity: 0.5, cursor: 'pointer',
-                  }}
-                >
-                  <span style={{ fontSize: 26, filter: 'grayscale(1)' }}>{a.icon}</span>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textAlign: 'center', lineHeight: 1.3 }}>
-                    {a.name}
-                  </span>
-                </button>
+                <AchievementCard key={a.id} icon={a.icon} name={a.name} unlocked={false} onClick={() => openAchievementDetail(a)} />
               ))}
             </div>
           )}
@@ -507,17 +452,14 @@ export function ProfilePage() {
 
         {/* Visit history */}
         <section>
-          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
+          <SectionTitle>
             {t('profile_visit_history')}
-          </h2>
+          </SectionTitle>
 
           {profile.visitHistory.length === 0 ? (
-            <div style={{
-              background: 'white', borderRadius: 16, padding: 24, textAlign: 'center',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            }}>
-              <div style={{ fontSize: 40, marginBottom: 10 }}>🗺️</div>
-              <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
+            <div style={{ border: '1.5px dashed #8C7A5C', borderRadius: 4, padding: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 34, marginBottom: 6 }}>🗺️</div>
+              <p style={{ margin: 0, fontSize: 14, color: inkSoft }}>
                 {t('profile_no_visits')}
               </p>
             </div>
@@ -527,28 +469,25 @@ export function ProfilePage() {
                 <VisitHistoryItem key={`${visit.poiId}-${visit.visitedAt}-${i}`} visit={visit} />
               ))}
               {profile.visitHistory.length > 10 && (
-                <button
+                <InkButton
+                  variant="paper"
                   onClick={() => setShowVisitHistory(true)}
-                  style={{
-                    display: 'block', width: '100%', marginTop: 4, padding: '12px',
-                    background: 'white', border: '1px solid #e2e8f0', borderRadius: 14,
-                    fontSize: 13, fontWeight: 700, color: accent, cursor: 'pointer',
-                  }}
+                  style={{ display: 'block', width: '100%', marginTop: 4 }}
                 >
                   {t('profile_visit_history_see_all', { count: profile.visitHistory.length })}
-                </button>
+                </InkButton>
               )}
             </div>
           )}
         </section>
 
-        <p style={{ margin: 0, textAlign: 'center', fontSize: 12, color: '#cbd5e1' }}>
+        <Mono style={{ display: 'block', textAlign: 'center' }}>
           {t('profile_explorer_since', { date: formatDate(profile.createdAt) })}
-        </p>
+        </Mono>
 
         {import.meta.env.DEV && (
-          <section style={{ marginTop: 24, padding: '14px 16px', background: '#1e1e2e', borderRadius: 14 }}>
-            <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <section style={{ marginTop: 16, padding: 12, background: paperLight, border: `1.5px dashed ${ink}`, borderRadius: 6 }}>
+            <p style={{ margin: '0 0 10px', fontFamily: MONO, fontSize: 11, fontWeight: 500, color: inkSoft, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
               🛠 Dev cheats
             </p>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -556,11 +495,7 @@ export function ProfilePage() {
                 <button
                   key={n}
                   onClick={() => addDevSteps(n)}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-                    background: '#312e81', color: '#c4b5fd', fontWeight: 700, fontSize: 12,
-                    cursor: 'pointer',
-                  }}
+                  style={cheatButton}
                 >
                   +{n.toLocaleString()} steps
                 </button>
@@ -571,11 +506,7 @@ export function ProfilePage() {
                 <button
                   key={n}
                   onClick={() => addXp(n)}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-                    background: '#1e3a5f', color: '#93c5fd', fontWeight: 700, fontSize: 12,
-                    cursor: 'pointer',
-                  }}
+                  style={cheatButton}
                 >
                   +{n.toLocaleString()} XP
                 </button>
@@ -586,11 +517,7 @@ export function ProfilePage() {
                 <button
                   key={n}
                   onClick={() => addCoins(n)}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-                    background: '#422006', color: '#fcd34d', fontWeight: 700, fontSize: 12,
-                    cursor: 'pointer',
-                  }}
+                  style={cheatButton}
                 >
                   +{n.toLocaleString()} 🪙
                 </button>
@@ -599,51 +526,34 @@ export function ProfilePage() {
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               <button
                 onClick={() => addDevEgg(false)}
-                style={{
-                  flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-                  background: '#1a2e1a', color: '#86efac', fontWeight: 700, fontSize: 12,
-                  cursor: 'pointer',
-                }}
+                style={cheatButton}
               >
                 +Egg
               </button>
               <button
                 onClick={() => addDevEgg(true)}
-                style={{
-                  flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-                  background: '#2e2000', color: '#fcd34d', fontWeight: 700, fontSize: 12,
-                  cursor: 'pointer',
-                }}
+                style={cheatButton}
               >
                 ✨ Shiny Egg
               </button>
             </div>
-            <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', marginTop: 8 }}>
               <button
                 onClick={() => addDevStreakDays(7)}
-                style={{
-                  width: '100%', padding: '8px 0', borderRadius: 10, border: 'none',
-                  background: '#422006', color: '#fcd34d', fontWeight: 700, fontSize: 12,
-                  cursor: 'pointer',
-                }}
+                style={cheatButton}
               >
                 🔥 +7 streak days (grant chest)
               </button>
             </div>
-            <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', marginTop: 8 }}>
               <button
                 onClick={toggleDevPremium}
-                style={{
-                  width: '100%', padding: '8px 0', borderRadius: 10, border: 'none',
-                  background: profile.isPremium ? '#422006' : '#1e1e2e',
-                  color: profile.isPremium ? '#fcd34d' : '#a78bfa',
-                  fontWeight: 700, fontSize: 12, cursor: 'pointer',
-                }}
+                style={{ ...cheatButton, ...(profile.isPremium ? { background: ochre } : null) }}
               >
                 {profile.isPremium ? '👑 Premium ON' : '👑 Toggle Premium (dev)'}
               </button>
             </div>
-            <div style={{ marginTop: 8 }}>
+            <div style={{ display: 'flex', marginTop: 8 }}>
               <button
                 onClick={() => {
                   localStorage.removeItem('lorewalk_profile')
@@ -652,11 +562,7 @@ export function ProfilePage() {
                   localStorage.removeItem('lorewalk.stepRingCelebratedDate')
                   window.location.reload()
                 }}
-                style={{
-                  width: '100%', padding: '8px 0', borderRadius: 10, border: 'none',
-                  background: '#450a0a', color: '#fca5a5', fontWeight: 700, fontSize: 12,
-                  cursor: 'pointer',
-                }}
+                style={{ ...cheatButton, color: stamp, borderColor: stamp }}
               >
                 🗑 Reset save data
               </button>
@@ -670,7 +576,7 @@ export function ProfilePage() {
           onClick={() => setShowChallengeInfo(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(15,10,30,0.6)',
+            background: SCRIM,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '24px 20px',
           }}
@@ -678,29 +584,24 @@ export function ProfilePage() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: '100%', maxWidth: 340,
-              background: 'white', borderRadius: 20,
-              padding: '22px 20px', boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
+              width: '100%', maxWidth: 340, boxSizing: 'border-box',
+              background: paperLight, border: `1.5px solid ${ink}`, borderRadius: 6,
+              padding: '20px 18px 18px', boxShadow: '3px 4px 0 rgba(51,40,30,0.35)',
               textAlign: 'center',
             }}
           >
-            <div style={{ fontSize: 32, marginBottom: 8 }}>🏅</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 800, color: accent }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+              <EmojiSprite id="item_badge" emoji="🏅" size={44} />
+            </div>
+            <h3 style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>
               How the monthly challenge works
             </h3>
-            <p style={{ margin: '0 0 16px', fontSize: 13, color: '#475569', lineHeight: 1.5 }}>
+            <p style={{ margin: '0 0 16px', fontSize: 14, color: inkSoft, lineHeight: 1.5 }}>
               Finish this challenge to earn a real physical medal, which you can pick up at the next community event. Terms and conditions apply.
             </p>
-            <button
-              onClick={() => setShowChallengeInfo(false)}
-              style={{
-                width: '100%', padding: '11px 0', borderRadius: 12, border: 'none',
-                background: 'linear-gradient(135deg, #fde68a, #f59e0b)', color: '#78350f',
-                fontSize: 14, fontWeight: 800, cursor: 'pointer',
-              }}
-            >
+            <InkButton onClick={() => setShowChallengeInfo(false)} style={{ width: '100%' }}>
               Got it
-            </button>
+            </InkButton>
           </div>
         </div>,
         document.body,

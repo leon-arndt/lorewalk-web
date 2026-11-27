@@ -9,8 +9,17 @@ import {
 } from '@/data/cosmetics'
 import type { PlayerAppearance } from '@/types'
 import type { Translations } from '@/i18n/types'
-import { accent, accentSoft } from '@/lib/theme'
-import { glassPage } from '@/lib/glass'
+import { Mono, PageHeader } from '@/components/UI/Journal'
+import { ink, line, paperCard, paperLight, paperShade } from '@/lib/theme'
+import { paperCardStyle, paperPage, paperTag } from '@/lib/paper'
+
+// A choice in the options panel: a paper tag, filled with ink when selected.
+function choiceStyle(selected: boolean) {
+  return {
+    ...paperTag, minHeight: 44, flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
+    background: selected ? ink : paperCard, color: selected ? paperLight : ink,
+  } as const
+}
 
 function ColorSwatchRow({ swatches, selectedId, onSelect }: {
   swatches: ColorSwatch[]
@@ -18,7 +27,7 @@ function ColorSwatchRow({ swatches, selectedId, onSelect }: {
   onSelect: (id: string) => void
 }) {
   return (
-    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', padding: 4 }}>
       {swatches.map((s) => (
         <button
           key={s.id}
@@ -26,10 +35,10 @@ function ColorSwatchRow({ swatches, selectedId, onSelect }: {
           aria-label={s.label}
           data-sfx="click"
           style={{
-            width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
+            width: 44, height: 44, padding: 0, borderRadius: '50%', cursor: 'pointer',
             background: toCssColor(s.color),
-            border: selectedId === s.id ? `3px solid ${accent}` : '3px solid white',
-            boxShadow: selectedId === s.id ? `0 0 0 2px ${accent}` : '0 1px 4px rgba(0,0,0,0.15)',
+            border: `1.5px solid ${ink}`,
+            boxShadow: selectedId === s.id ? `0 0 0 2px ${paperLight}, 0 0 0 4px ${ink}` : undefined,
           }}
         />
       ))}
@@ -44,27 +53,28 @@ function ItemRow({ slot, selectedId, onSelect }: {
 }) {
   const items = cosmeticItemsBySlot(slot)
   return (
-    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 2px 6px', scrollbarWidth: 'none' }}>
       {items.map((item) => (
         <button
           key={item.id}
           onClick={() => onSelect(item.id)}
           data-sfx="click"
           style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-            padding: '8px 10px', borderRadius: 12, cursor: 'pointer', flexShrink: 0,
-            background: selectedId === item.id ? accentSoft : 'white',
-            border: selectedId === item.id ? `2px solid ${accent}` : '2px solid transparent',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+            padding: '7px 9px', cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
+            ...paperCardStyle,
+            ...(selectedId === item.id ? { border: `1.5px solid ${ink}`, background: paperShade } : { margin: 0.5 }),
           }}
         >
           <span style={{
-            width: 24, height: 24, borderRadius: 8,
-            background: item.id === 'none' ? '#e2e8f0' : toCssColor(item.color),
+            width: 26, height: 26, borderRadius: 3, boxSizing: 'border-box',
+            ...(item.id === 'none'
+              ? { border: '1.5px dashed #8C7A5C' }
+              : { background: toCssColor(item.color), border: `1.5px solid ${ink}` }),
           }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>
+          <Mono style={{ fontWeight: 500, color: ink, whiteSpace: 'nowrap' }}>
             {item.label}
-          </span>
+          </Mono>
         </button>
       ))}
     </div>
@@ -85,13 +95,7 @@ function BodyRow({ selectedId, onSelect }: { selectedId: string; onSelect: (id: 
           key={body.id}
           onClick={() => onSelect(body.id)}
           data-sfx="click"
-          style={{
-            padding: '10px 16px', borderRadius: 12, cursor: 'pointer',
-            fontSize: 13, fontWeight: 600, color: '#475569',
-            background: selectedId === body.id ? accentSoft : 'white',
-            border: selectedId === body.id ? `2px solid ${accent}` : '2px solid transparent',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-          }}
+          style={{ ...choiceStyle(selectedId === body.id), padding: '0 16px', fontSize: 15, fontWeight: 500 }}
         >
           {t(BODY_LABEL_KEYS[body.id])}
         </button>
@@ -269,34 +273,45 @@ export function CharacterCustomizationPage() {
   return (
     <div style={{
       position: 'absolute', inset: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
-      ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))',
+      ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))',
     }}>
+      <div style={{ flexShrink: 0 }}>
+        <PageHeader
+          kicker={
+            <span style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+              <button
+                onClick={() => navigate('/profile')}
+                data-sfx="close"
+                style={{
+                  ...paperTag, width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 22, lineHeight: 1,
+                }}
+              >
+                ←
+              </button>
+              {t('journal_kicker')}
+            </span>
+          }
+          title={t('customize_title')}
+        />
+      </div>
+
+      {/* The avatar is a large photo glued on the page */}
       <div style={{
-        background: '#f8fafc',
-        padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',
-        display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
+        flex: 1, minHeight: 160, margin: '16px 20px 14px', padding: 8, boxSizing: 'border-box',
+        background: paperCard, border: `1px solid ${line}`, borderRadius: 3,
+        boxShadow: '1px 2px 0 rgba(51,40,30,0.22)', transform: 'rotate(-0.6deg)',
+        display: 'flex',
       }}>
-        <button
-          onClick={() => navigate('/profile')}
-          data-sfx="close"
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 22, color: '#1e293b', padding: 0, lineHeight: 1,
-          }}
-        >
-          ←
-        </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: accent }}>{t('customize_title')}</h1>
-      </div>
-
-      <div style={{ flex: 1, minHeight: 160 }}>
-        <AvatarPreview appearance={appearance} focus={active.focus} />
+        <div style={{ flex: 1, minWidth: 0, minHeight: 0, borderRadius: 2, background: `${paperShade}99`, overflow: 'hidden' }}>
+          <AvatarPreview appearance={appearance} focus={active.focus} />
+        </div>
       </div>
 
       <div style={{
-        flexShrink: 0, margin: '0 12px 10px', padding: '12px 0 14px', borderRadius: 20,
-        background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-        display: 'flex', flexDirection: 'column', gap: 12,
+        flexShrink: 0, margin: '0 16px 10px', padding: '12px 0', borderRadius: 6,
+        background: paperLight, border: `1.5px solid ${ink}`,
+        display: 'flex', flexDirection: 'column', gap: 10,
       }}>
         <div role="tablist" style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '0 12px', scrollbarWidth: 'none' }}>
           {TABS.map((x) => (
@@ -306,20 +321,14 @@ export function CharacterCustomizationPage() {
               aria-selected={x.id === tab}
               onClick={() => setTab(x.id)}
               data-sfx="click"
-              style={{
-                flexShrink: 0, padding: '7px 12px', borderRadius: 999, cursor: 'pointer',
-                fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap',
-                border: 'none',
-                background: x.id === tab ? accent : accentSoft,
-                color: x.id === tab ? 'white' : accent,
-              }}
+              style={{ ...choiceStyle(x.id === tab), padding: '0 12px', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap' }}
             >
               {t(x.label)}
             </button>
           ))}
         </div>
 
-        <div role="tabpanel" style={{ padding: '0 12px', minHeight: 66, display: 'flex', alignItems: 'center' }}>
+        <div role="tabpanel" style={{ padding: '10px 12px 0', minHeight: 70, display: 'flex', alignItems: 'center', borderTop: `1.5px dashed ${line}` }}>
           {tab === 'style' && <BodyRow selectedId={appearance.bodyId} onSelect={(id) => updateAppearance({ bodyId: id })} />}
           {tab === 'skin' && <ColorSwatchRow swatches={SKIN_TONES} selectedId={appearance.skinToneId} onSelect={(id) => updateAppearance({ skinToneId: id })} />}
           {tab === 'hair' && <ColorSwatchRow swatches={HAIR_COLORS} selectedId={appearance.hairColorId} onSelect={(id) => updateAppearance({ hairColorId: id })} />}

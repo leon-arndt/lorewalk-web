@@ -1,4 +1,7 @@
 import type { VisitRecord } from '@/types'
+import { Mono } from '@/components/UI/Journal'
+import { paperCardStyle } from '@/lib/paper'
+import { categoryCss, forest, ink } from '@/lib/theme'
 
 const CATEGORY_ICONS: Record<string, string> = {
   heritage: '🏛', nature: '🌿', religious: '🕌',
@@ -21,12 +24,11 @@ export function VisitHistoryItem({ visit }: { visit: VisitRecord }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
-      background: 'white', borderRadius: 14, padding: '12px 14px',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+      ...paperCardStyle, padding: '10px 12px',
     }}>
       <div style={{
         width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-        background: '#f0fdf4', border: '2px solid #bbf7d0',
+        background: `${categoryCss(visit.poiCategory)}40`, border: `1.5px solid ${ink}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 18,
       }}>
@@ -34,22 +36,18 @@ export function VisitHistoryItem({ visit }: { visit: VisitRecord }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 14, fontWeight: 600, color: '#1e293b',
+          fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {visit.poiName}
         </div>
-        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+        <Mono style={{ display: 'block', marginTop: 1 }}>
           {formatDate(visit.visitedAt)} · {formatTime(visit.visitedAt)}
-        </div>
+        </Mono>
       </div>
-      <div style={{
-        fontSize: 12, fontWeight: 700, color: '#16a34a',
-        background: '#f0fdf4', padding: '3px 8px', borderRadius: 10,
-        flexShrink: 0,
-      }}>
+      <Mono style={{ flexShrink: 0, fontWeight: 500, color: forest }}>
         +{visit.xpEarned} XP
-      </div>
+      </Mono>
     </div>
   )
 }

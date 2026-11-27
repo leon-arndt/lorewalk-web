@@ -10,8 +10,9 @@ import { haversineDistance } from '@/lib/mapUtils'
 import { CreatureTile, EmptyPad } from '@/components/UI/CreatureTile'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import type { ExpeditionTarget, HatchedCreature, RewardItem, Squad } from '@/types'
-import { accent, accentAlpha, accentSoft, categoryCss, rewardGradient } from '@/lib/theme'
-import { glassPage, glassSheet } from '@/lib/glass'
+import { InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
+import { categoryCss, forest, ink, inkHint, inkSoft, line, paperCard, stamp, pencil } from '@/lib/theme'
+import { MONO, paperCardStyle, paperPage, paperSheet, paperTag, SCRIM } from '@/lib/paper'
 import { motion } from 'motion/react'
 import { sheetIn, backdropIn } from '@/lib/motion'
 
@@ -21,14 +22,9 @@ const SG_CENTRE = { lat: 1.3521, lon: 103.8198 }
 
 interface LatLon { lat: number; lon: number }
 
-// Frosted card on the page glass, same material as the egg and pantry cards.
-const card: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.58)',
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 3px rgba(15,23,42,0.04)',
-}
 
 function TypeDot({ category }: { category: string }) {
-  return <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: categoryCss(category), flexShrink: 0 }} />
+  return <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: categoryCss(category), border: `1px solid ${ink}`, flexShrink: 0 }} />
 }
 
 function matchCount(squad: Squad, category: string, byId: Map<string, HatchedCreature>) {
@@ -85,12 +81,8 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
   }
 
   return (
-    <div style={{
-      ...card, borderRadius: 20, padding: '14px 12px 12px', marginBottom: 14,
-      border: `2px solid ${isActive ? accentAlpha(0.45) : 'transparent'}`,
-      transition: 'border-color 0.25s ease',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 4px 4px' }}>
+    <NoteCard taped={isActive} tilt={isActive ? -0.5 : 0} style={{ padding: '10px 12px 12px', marginBottom: isActive ? 20 : 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <input
           value={nameDraft}
           onChange={(e) => setNameDraft(e.target.value)}
@@ -100,29 +92,28 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
             else setNameDraft(squad.name)
           }}
           style={{
-            flex: 1, minWidth: 0, fontSize: 16, fontWeight: 700, color: '#1e293b',
-            border: 'none', borderBottom: '1px solid transparent', outline: 'none',
-            background: 'transparent', padding: '2px 0',
+            flex: 1, minWidth: 0, minHeight: 44, fontFamily: 'inherit', fontSize: 19, fontWeight: 500, color: ink,
+            border: 'none', borderBottom: `1.5px dashed ${line}`, borderRadius: 0, outline: 'none',
+            background: 'transparent', padding: 0,
           }}
-          onFocus={(e) => (e.target.style.borderBottomColor = accentAlpha(0.35))}
+          onFocus={(e) => (e.target.style.borderBottomColor = ink)}
         />
         <button
           onClick={() => setActiveSquad(squad.id)}
           disabled={isActive}
           style={{
-            flexShrink: 0, fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 20,
-            border: 'none', cursor: isActive ? 'default' : 'pointer',
-            background: isActive ? accent : 'rgba(255,255,255,0.75)',
-            color: isActive ? 'white' : accent,
-            boxShadow: isActive ? 'none' : `inset 0 0 0 1px ${accentAlpha(0.18)}`,
-            transition: 'background 0.2s ease, color 0.2s ease',
+            flexShrink: 0, minHeight: 44, display: 'flex', alignItems: 'center',
+            padding: 0, border: 'none', background: 'transparent', fontFamily: 'inherit',
+            cursor: isActive ? 'default' : 'pointer', WebkitTapHighlightColor: 'transparent',
           }}
         >
-          {isActive ? t('squads_active') : t('squads_set_active')}
+          {isActive
+            ? <Stamp tilt={-4}>{t('squads_active')}</Stamp>
+            : <span style={{ ...paperTag, background: paperCard, fontSize: 13, fontWeight: 500, lineHeight: '18px', padding: '5px 10px' }}>{t('squads_set_active')}</span>}
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-1">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6 }}>
         {members.map((c, i) => c
           ? <CreatureTile key={i} creature={c} disabled={away} onTap={() => handleSlotTap(i)} />
           : <EmptyPad key={i} disabled={away} onTap={() => handleSlotTap(i)} />)}
@@ -131,62 +122,41 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
       {!away && (() => {
         const hasMembers = members.some(Boolean)
         return (
-          <button
+          <InkButton
+            variant={hasMembers ? 'ink' : 'paper'}
             onClick={() => hasMembers && setExpeditionOpen(true)}
             disabled={!hasMembers}
             style={{
-              marginTop: 6, width: '100%', textAlign: 'center',
-              fontSize: 13, fontWeight: 700,
-              color: hasMembers ? 'white' : '#94a3b8',
-              background: hasMembers ? accent : 'rgba(241,245,249,0.7)',
-              boxShadow: hasMembers ? `inset 0 1px 0 rgba(255,255,255,0.25), 0 4px 12px ${accentAlpha(0.22)}` : 'none',
-              border: 'none', borderRadius: 14,
-              padding: '11px 12px',
-              cursor: hasMembers ? 'pointer' : 'not-allowed',
-              opacity: hasMembers ? 1 : 0.7,
+              marginTop: 10, width: '100%', fontSize: 14,
+              ...(hasMembers ? null : { background: 'transparent', border: `1.5px dashed ${pencil}`, color: inkHint, opacity: 1 }),
             }}
           >
             {hasMembers ? t('squads_send_expedition') : t('squads_add_member_first')}
-          </button>
+          </InkButton>
         )
       })()}
 
       {away && exp && (
-        <div style={{
-          marginTop: 6, background: 'rgba(255,255,255,0.55)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9)',
-          borderRadius: 14, padding: '12px 14px',
-        }}>
-          <div style={{ fontSize: 12, color: '#475569', marginBottom: 8 }}>
+        <div style={{ ...paperCardStyle, marginTop: 10, padding: '10px 12px' }}>
+          <div style={{ fontSize: 13, color: ink, marginBottom: 8 }}>
             {t('squads_exploring', { name: exp.poiName })}
-            {isActive && <span style={{ color: '#94a3b8' }}>{t('squads_boost_paused')}</span>}
+            {isActive && <span style={{ color: inkHint }}>{t('squads_boost_paused')}</span>}
           </div>
           {ready ? (
-            <button
+            <InkButton
               onClick={handleCollect}
-              style={{
-                width: '100%', fontSize: 13, fontWeight: 700, color: 'white',
-                background: rewardGradient,
-                border: 'none', borderRadius: 14, padding: '11px', cursor: 'pointer',
-              }}
+              style={{ width: '100%', fontSize: 14, background: stamp, borderColor: stamp }}
             >
               {t('squads_collect_reward')}
-            </button>
+            </InkButton>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: accent, fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontFamily: MONO, fontSize: 22, fontWeight: 500, color: ink, fontVariantNumeric: 'tabular-nums' }}>
                 {formatCountdown(new Date(exp.returnsAt).getTime() - now)}
               </span>
-              <button
-                onClick={() => recallSquad(squad.id)}
-                style={{
-                  fontSize: 11, fontWeight: 600, color: '#e11d48',
-                  background: 'rgba(255,241,242,0.8)', border: 'none', borderRadius: 20,
-                  padding: '5px 12px', cursor: 'pointer',
-                }}
-              >
+              <InkButton variant="danger" onClick={() => recallSquad(squad.id)} style={{ fontSize: 13, padding: '0 12px' }}>
                 {t('squads_recall')}
-              </button>
+              </InkButton>
             </div>
           )}
         </div>
@@ -203,14 +173,14 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
           onClose={() => setExpeditionOpen(false)}
         />
       )}
-    </div>
+    </NoteCard>
   )
 }
 
 function Sheet({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
   const { t } = useLocale()
   return createPortal(
-    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
+    <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
       data-sfx="close"
       style={{
@@ -221,28 +191,27 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '75vh', display: 'flex', flexDirection: 'column',
-          ...glassSheet, borderRadius: '24px 24px 0 0', overflow: 'hidden',
+          ...paperSheet, borderRadius: '10px 10px 0 0', overflow: 'hidden',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: line }} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px 8px', flexShrink: 0 }}>
-          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#1e293b' }}>{title}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '2px 8px 4px 16px', flexShrink: 0 }}>
+          <h3 style={{ margin: 0, fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>{title}</h3>
           <button
             onClick={onClose}
             data-sfx="close"
             aria-label={t('common_close')}
             style={{
-              width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer',
-              background: 'rgba(100,116,139,0.12)', color: '#64748b', fontSize: 14,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, width: 44, height: 44, padding: 0, border: 'none', cursor: 'pointer', background: 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent',
             }}
           >
-            ✕
+            <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 14, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
           </button>
         </div>
-        <div style={{ overflowY: 'auto', padding: '4px 16px calc(24px + env(safe-area-inset-bottom))' }}>
+        <div style={{ overflowY: 'auto', padding: '6px 16px calc(24px + env(safe-area-inset-bottom))' }}>
           {children}
         </div>
       </motion.div>
@@ -263,7 +232,7 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
   if (profile.hatchedCreatures.length === 0) {
     return (
       <Sheet title={t('squads_add_creature')} onClose={onClose}>
-        <p style={{ margin: '8px 0', fontSize: 13, color: '#94a3b8' }}>
+        <p style={{ margin: '8px 0', fontSize: 13, color: inkSoft }}>
           {t('squads_no_creatures')}
         </p>
       </Sheet>
@@ -272,7 +241,7 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
 
   return (
     <Sheet title={t('squads_add_creature')} onClose={onClose}>
-      <div className="grid grid-cols-4 gap-1">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, paddingBottom: 3 }}>
         {[...profile.hatchedCreatures].reverse().sort((a, b) => Number(assignedIn.has(a.id)) - Number(assignedIn.has(b.id))).map((c) => {
           const where = assignedIn.get(c.id)
           return (
@@ -308,7 +277,7 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
   return (
     <Sheet title={t('squads_send_title')} onClose={onClose}>
       {visited.length === 0 ? (
-        <p style={{ margin: '8px 0', fontSize: 13, color: '#94a3b8' }}>
+        <p style={{ margin: '8px 0', fontSize: 13, color: inkSoft }}>
           {t('squads_no_visited')}
         </p>
       ) : (
@@ -323,28 +292,24 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
                 key={v.poiId}
                 onClick={() => send({ poiId: v.poiId, poiName: v.poiName, poiCategory: v.poiCategory, lat: v.lat!, lon: v.lon! }, durationMs)}
                 style={{
+                  ...paperCardStyle,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-                  textAlign: 'left', fontSize: 13, color: '#1e293b',
-                  ...card, border: 'none', borderRadius: 14,
-                  padding: '11px 14px', cursor: 'pointer',
+                  minHeight: 56, textAlign: 'left', fontFamily: 'inherit', fontSize: 14, color: ink,
+                  padding: '9px 12px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
                 }}
               >
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <TypeDot category={v.poiCategory} />
-                    <span style={{ fontWeight: 600 }}>{v.poiName}</span>
+                    <span style={{ fontWeight: 500 }}>{v.poiName}</span>
                   </span>
-                  <span style={{ display: 'block', fontSize: 11, color: '#94a3b8' }}>
-                    🧭 {(distM / 1000).toFixed(1)} km · ⏱ {formatCountdown(durationMs)}
-                  </span>
+                  <Mono style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+                    <EmojiSprite id="item_compass" emoji="🧭" size={16} /> {(distM / 1000).toFixed(1)} km · ⏱ {formatCountdown(durationMs)}
+                  </Mono>
                 </span>
-                <span style={{
-                  flexShrink: 0, fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-                  background: bonus > 0 ? accentSoft : 'rgba(241,245,249,0.8)',
-                  color: bonus > 0 ? accent : '#94a3b8',
-                }}>
-                  {bonus > 0 ? `+${bonus}%` : t('squads_no_match')}
-                </span>
+                {bonus > 0
+                  ? <Stamp color={forest} tilt={-3} style={{ flexShrink: 0 }}>+{bonus}%</Stamp>
+                  : <Mono style={{ flexShrink: 0 }}>{t('squads_no_match')}</Mono>}
               </button>
             )
           })}
@@ -371,18 +336,13 @@ export function SquadsPage() {
     : SG_CENTRE
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
-      <div style={{ padding: '24px 16px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 700, color: accent }}>{t('squads_title')}</h1>
-          <CoinCapsule />
-        </div>
-        <p style={{ margin: 0, fontSize: 14, color: '#94a3b8' }}>
-          {t('squads_subtitle')}
-        </p>
-      </div>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', overflowX: 'hidden', ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+      <PageHeader title={t('squads_title')} right={<CoinCapsule />} />
+      <p style={{ margin: 0, padding: '10px 16px 0', fontSize: 13, lineHeight: '18px', color: inkSoft }}>
+        {t('squads_subtitle')}
+      </p>
 
-      <div style={{ padding: '8px 16px 0' }}>
+      <div style={{ padding: '22px 16px 0' }}>
         {profile.squads.map((squad) => (
           <SquadCard key={squad.id} squad={squad} now={now} from={from} />
         ))}
@@ -400,12 +360,12 @@ function Holdings({ now }: { now: number }) {
 
   if (profile.claims.length === 0) {
     return (
-      <div style={{ padding: '8px 16px 32px' }}>
-        <h2 style={{ margin: '4px 0 8px', fontSize: 15, fontWeight: 700, color: accent }}>{t('squads_holdings')}</h2>
-        <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+      <section style={{ padding: '10px 16px 32px' }}>
+        <SectionTitle>{t('squads_holdings')}</SectionTitle>
+        <p style={{ margin: 0, fontSize: 13, color: inkSoft }}>
           {t('squads_holdings_empty')}
         </p>
-      </div>
+      </section>
     )
   }
 
@@ -415,41 +375,35 @@ function Holdings({ now }: { now: number }) {
   }
 
   return (
-    <div style={{ padding: '8px 16px 32px' }}>
-      <h2 style={{ margin: '4px 0 12px', fontSize: 15, fontWeight: 700, color: accent }}>
-        {t('squads_holdings_title', { n: profile.claims.length })}
-      </h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <section style={{ padding: '10px 16px 32px' }}>
+      <SectionTitle>{t('squads_holdings_title', { n: profile.claims.length })}</SectionTitle>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {profile.claims.map((claim) => {
           const pending = claimPendingCoins(claim, now)
           return (
             <div key={claim.poiId} style={{
-              ...card, borderRadius: 16, padding: '12px 14px',
+              ...paperCardStyle, padding: '10px 12px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
             }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, color: '#1e293b' }}><EmojiSprite id="item_claim" emoji="🚩" size={18} />{claim.poiName}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, fontSize: 10, fontWeight: 600, color: '#64748b', textTransform: 'capitalize' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 500, color: ink }}><EmojiSprite id="item_claim" emoji="🚩" size={18} />{claim.poiName}</div>
+                <Mono style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, textTransform: 'capitalize' }}>
                   <TypeDot category={claim.poiCategory} />
                   {claim.poiCategory} · ×{claim.affinity.toFixed(2)} rate
-                </div>
+                </Mono>
               </div>
-              <button
+              <InkButton
+                variant="paper"
                 onClick={() => collect(claim.poiId)}
                 disabled={pending <= 0}
-                style={{
-                  flexShrink: 0, fontSize: 12, fontWeight: 700, padding: '7px 14px', borderRadius: 20,
-                  border: 'none', cursor: pending > 0 ? 'pointer' : 'default',
-                  background: pending > 0 ? '#fef3c7' : 'rgba(241,245,249,0.8)',
-                  color: pending > 0 ? '#b45309' : '#cbd5e1',
-                }}
+                style={{ flexShrink: 0, fontSize: 13, padding: '0 12px' }}
               >
                 {pending > 0 ? t('squads_collect', { coins: pending }) : t('squads_earning')}
-              </button>
+              </InkButton>
             </div>
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }

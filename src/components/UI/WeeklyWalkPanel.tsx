@@ -6,11 +6,12 @@ import {
   WEEKLY_WALK_TARGET_STEPS, TICKET_COST_COINS,
   mockMemberProgressSteps, playerProgressSteps, partyTotalSteps, isWalkComplete, isWalkExpired,
 } from '@/lib/profile'
-import { glassPanel, glassChrome } from '@/lib/glass'
+import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
-import { accent, rewardGradient } from '@/lib/theme'
+import { forest, ink, inkSoft, paperLight, paperShade, stamp } from '@/lib/theme'
+import { InkButton, Mono, NoteCard } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
 
@@ -20,24 +21,26 @@ interface Props {
   isClosing?: boolean
 }
 
-const REWARD_ACCENT = '#6366f1'
-const REWARD_ACCENT_SOFT = 'rgba(99,102,241,0.1)'
-
 const panelStyle = {
   position: 'absolute' as const, bottom: 0, left: 0, right: 0,
-  ...glassPanel, border: 'none',
-  borderRadius: '24px 24px 0 0',
-  padding: '20px 20px',
+  ...paperSheet,
+  boxShadow: '0 -3px 0 rgba(51,40,30,0.12)',
+  borderRadius: '10px 10px 0 0',
+  padding: '10px 20px',
   paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
   zIndex: 10,
 }
 
-function ProgressBar({ value, max, color = REWARD_ACCENT }: { value: number; max: number; color?: string }) {
+const titleStyle = { margin: 0, fontSize: 22, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink } as const
+const kicker = { display: 'block', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: inkSoft } as const
+const typed = { display: 'block', fontSize: 12, lineHeight: '18px', color: inkSoft } as const
+
+function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = Math.min(100, (value / max) * 100)
   return (
-    <div style={{ height: 8, borderRadius: 4, background: '#f1f5f9', overflow: 'hidden' }}>
+    <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, overflow: 'hidden' }}>
       <div style={{
-        height: '100%', borderRadius: 4, background: color,
+        height: '100%', background: forest,
         width: `${pct}%`, transition: 'width 0.6s ease',
       }} />
     </div>
@@ -68,18 +71,23 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
 
   const header = (
     <>
-      <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
+      <div style={{ width: 36, height: 4, borderRadius: 2, background: ink, margin: '0 auto 16px' }} />
       <button
         onClick={onClose}
         data-sfx="close"
         style={{
-          position: 'absolute', top: 20, right: 20,
-          ...glassChrome, cursor: 'pointer',
-          width: 28, height: 28, borderRadius: '50%', border: 'none',
+          position: 'absolute', top: 8, right: 10,
+          width: 44, height: 44, padding: 0, background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, color: '#64748b', WebkitTapHighlightColor: 'transparent',
+          fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
         }}
-      >x</button>
+      >
+        <span style={{
+          ...paperTag, width: 30, height: 30, borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, lineHeight: 1,
+        }}>x</span>
+      </button>
     </>
   )
 
@@ -90,21 +98,17 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         {header}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🗓️</div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_walk_ended')}</h2>
-          <p style={{ margin: '0 0 20px', fontSize: 13, color: '#94a3b8' }}>
+          <h2 style={{ ...titleStyle, margin: '0 0 6px' }}>{t('weekly_walk_ended')}</h2>
+          <p style={{ margin: '0 0 20px', fontSize: 14, lineHeight: 1.5, color: inkSoft }}>
             Last week's party walk has ended. A new one starts every Monday.
           </p>
-          <button
+          <InkButton
             onClick={() => { expireWeeklyWalkIfStale(); onClose() }}
             data-sfx="close"
-            style={{
-              padding: '12px 28px', borderRadius: 14, border: 'none',
-              background: accent, color: 'white', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-            }}
+            style={{ minHeight: 48, padding: '0 28px', fontSize: 16 }}
           >
             Got it
-          </button>
+          </InkButton>
         </div>
       </motion.div>
     )
@@ -137,85 +141,76 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
         {header}
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, paddingRight: 40 }}>
           <EmojiSprite id="item_sneaker" emoji="🚶" size={40} />
-          <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_party_walk_title')}</h2>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>Combined goal: {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps</p>
+          <div style={{ minWidth: 0 }}>
+            <h2 style={titleStyle}>{t('weekly_party_walk_title')}</h2>
+            <Mono style={typed}>Combined goal: {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps</Mono>
           </div>
         </div>
 
         {/* Overall progress */}
-        <div style={{ marginBottom: 20, padding: '14px 16px', borderRadius: 14, background: REWARD_ACCENT_SOFT }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: REWARD_ACCENT }}>{t('weekly_party_progress')}</span>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b' }}>
+        <NoteCard style={{ marginBottom: 16, padding: '10px 12px 12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0 10px', flexWrap: 'wrap', marginBottom: 8 }}>
+            <span style={{ fontSize: 15, fontWeight: 500, color: ink }}>{t('weekly_party_progress')}</span>
+            <Mono style={{ fontSize: 12, lineHeight: '18px', fontWeight: 500, color: ink }}>
               {formatSteps(Math.min(totalSteps, WEEKLY_WALK_TARGET_STEPS))} / {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps
-            </span>
+            </Mono>
           </div>
           <ProgressBar value={totalSteps} max={WEEKLY_WALK_TARGET_STEPS} />
-        </div>
+        </NoteCard>
 
         {/* Per-member list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
           {walk.partyMembers.map((m) => {
             const contributed = m.isPlayer
               ? playerProgressSteps(walk, currentSteps)
               : mockMemberProgressSteps(walk.joinedAt, m.targetSteps, now)
             const done = contributed >= m.targetSteps
             return (
-              <div key={m.id}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: done ? rewardGradient : '#f1f5f9',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 16,
-                  }}>
-                    <PlayerFaceIcon appearance={m.isPlayer ? profile.appearance : deterministicAppearance(m.name)} size={30} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: m.isPlayer ? '#1e293b' : '#475569' }}>
-                        {m.name} {m.isPlayer ? '(you)' : ''}
-                      </span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: done ? '#16a34a' : '#94a3b8' }}>
-                        {formatSteps(Math.min(Math.round(contributed), m.targetSteps))} / {formatSteps(m.targetSteps)}
-                      </span>
-                    </div>
-                  </div>
+              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+                  background: paperShade, border: `1.5px solid ${done ? forest : ink}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 16,
+                }}>
+                  <PlayerFaceIcon appearance={m.isPlayer ? profile.appearance : deterministicAppearance(m.name)} size={30} />
                 </div>
-                <ProgressBar
-                  value={contributed}
-                  max={m.targetSteps}
-                  color={done ? '#16a34a' : m.isPlayer ? REWARD_ACCENT : '#94a3b8'}
-                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: m.isPlayer ? ink : inkSoft, whiteSpace: 'nowrap' }}>
+                      {m.name} {m.isPlayer ? '(you)' : ''}
+                    </span>
+                    <Mono style={{ fontWeight: done ? 500 : 400, color: done ? forest : inkSoft, textAlign: 'right' }}>
+                      {formatSteps(Math.min(Math.round(contributed), m.targetSteps))} / {formatSteps(m.targetSteps)}
+                    </Mono>
+                  </div>
+                  <ProgressBar value={contributed} max={m.targetSteps} />
+                </div>
               </div>
             )
           })}
         </div>
 
         {complete ? (
-          <button
+          <InkButton
             onClick={handleClaim}
             style={{
-              width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-              background: rewardGradient,
-              color: 'white', fontSize: 16, fontWeight: 800,
-              cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-              boxShadow: '0 4px 16px rgba(129,140,248,0.4)',
+              width: '100%', minHeight: 52, fontSize: 17, fontWeight: 600,
+              background: stamp, color: paperLight,
               animation: 'rewardPop 0.4s cubic-bezier(0.16,1,0.3,1)',
             }}
           >
             🎉 Claim reward!
-          </button>
+          </InkButton>
         ) : (
           <div style={{
-            padding: '12px 16px', borderRadius: 14, background: '#f8fafc', textAlign: 'center',
+            padding: '10px 14px', borderRadius: 4, border: '1.5px dashed #8C7A5C', textAlign: 'center',
           }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#64748b' }}>
+            <Mono style={typed}>
               Keep walking! Your steps are being tracked automatically.
-            </p>
+            </Mono>
           </div>
         )}
       </motion.div>
@@ -227,10 +222,10 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
     return (
       <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
-        <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
-          <div style={{ fontSize: 52, marginBottom: 12 }}>🏅</div>
-          <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: accent }}>{t('weekly_reward_claimed')}</h2>
-          <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>{t('weekly_next_starts_monday')}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '8px 0 20px' }}>
+          <div style={{ marginBottom: 10 }}><EmojiSprite id="item_badge" emoji="🏅" size={56} /></div>
+          <h2 style={{ ...titleStyle, margin: '0 0 6px' }}>{t('weekly_reward_claimed')}</h2>
+          <Mono style={typed}>{t('weekly_next_starts_monday')}</Mono>
         </div>
       </motion.div>
     )
@@ -253,26 +248,22 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
       {header}
 
       {/* Title */}
-      <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}>
-          <EmojiSprite id="item_sneaker" emoji="🚶" size={52} />
-        </div>
-        <h2 style={{ margin: '0 0 6px', fontSize: 20, fontWeight: 800, color: accent }}>{t('weekly_party_walk_title')}</h2>
-        <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
-          Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.
-          Your own steps count toward the whole goal, so you can finish it solo if the rest of the party falls behind.
-          Resets every Monday.
-        </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, paddingRight: 40 }}>
+        <EmojiSprite id="item_sneaker" emoji="🚶" size={44} />
+        <h2 style={titleStyle}>{t('weekly_party_walk_title')}</h2>
       </div>
+      <p style={{ margin: '0 0 16px', fontSize: 14, color: inkSoft, lineHeight: 1.5 }}>
+        Walk {WEEKLY_WALK_TARGET_STEPS.toLocaleString()} steps combined with your party this week.
+        Your own steps count toward the whole goal, so you can finish it solo if the rest of the party falls behind.
+        Resets every Monday.
+      </p>
 
       {/* Reward preview */}
-      <div style={{
-        background: '#f8fafc', borderRadius: 16, padding: '12px 16px', marginBottom: 20,
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+      <div style={{ ...paperCardStyle, padding: '10px 12px 12px', marginBottom: 14 }}>
+        <Mono style={{ ...kicker, marginBottom: 8 }}>
           Completion rewards
-        </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        </Mono>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px' }}>
           {[
             { icon: '⭐', sprite: 'item_xp', text: '+75 XP' },
             { icon: '🪙', sprite: 'item_coins', text: '80-120 coins' },
@@ -280,67 +271,48 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
             { icon: '🏅', sprite: 'item_badge', text: t('weekly_walker_badge') },
           ].map((r) => (
             <div key={r.text} style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '5px 10px', borderRadius: 20, background: 'white',
-              fontSize: 12, fontWeight: 600, color: '#475569',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+              display: 'flex', alignItems: 'center', gap: 6, minWidth: 0,
+              fontSize: 14, fontWeight: 500, color: ink,
             }}>
-              <EmojiSprite id={r.sprite} emoji={r.icon} size={18} /> {r.text}
+              <EmojiSprite id={r.sprite} emoji={r.icon} size={22} /> {r.text}
             </div>
           ))}
         </div>
       </div>
 
       {/* Ticket status + join */}
-      <div style={{
-        padding: '14px 16px', borderRadius: 14,
-        background: hasTicket ? REWARD_ACCENT_SOFT : 'rgba(248,250,252,0.9)',
-        marginBottom: 14,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      <NoteCard style={{
+        padding: '8px 8px 8px 12px', marginBottom: 14,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, minHeight: 44 }}>
           <span style={{ fontSize: 22 }}>🎟️</span>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
+            <div style={{ fontSize: 15, fontWeight: 500, color: ink }}>
               {profile.tickets} ticket{profile.tickets !== 1 ? 's' : ''}
             </div>
-            <div style={{ fontSize: 11, color: '#94a3b8' }}>1 ticket per walk entry</div>
+            <Mono style={{ display: 'block' }}>1 ticket per walk entry</Mono>
           </div>
         </div>
         {!hasTicket && (
-          <button
+          <InkButton
+            variant="paper"
             onClick={handleBuyTicket}
             disabled={!canBuyTicket}
-            style={{
-              padding: '8px 14px', borderRadius: 10, border: 'none',
-              background: canBuyTicket ? '#f59e0b' : '#e2e8f0',
-              color: canBuyTicket ? 'white' : '#94a3b8',
-              fontSize: 12, fontWeight: 700, cursor: canBuyTicket ? 'pointer' : 'default',
-              WebkitTapHighlightColor: 'transparent', flexShrink: 0,
-            }}
+            style={{ flexShrink: 0, padding: '0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5 }}
           >
-            Buy - 🪙 {TICKET_COST_COINS}
-          </button>
+            Buy - <EmojiSprite id="item_coins" emoji="🪙" size={18} /> {TICKET_COST_COINS}
+          </InkButton>
         )}
-      </div>
+      </NoteCard>
 
-      <button
+      <InkButton
         onClick={handleJoin}
         disabled={!hasTicket}
-        style={{
-          width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-          background: hasTicket
-            ? `linear-gradient(135deg, ${REWARD_ACCENT}, #a855f7)`
-            : '#e2e8f0',
-          color: hasTicket ? 'white' : '#94a3b8',
-          fontSize: 16, fontWeight: 800,
-          cursor: hasTicket ? 'pointer' : 'default',
-          WebkitTapHighlightColor: 'transparent',
-          boxShadow: hasTicket ? '0 4px 16px rgba(99,102,241,0.35)' : 'none',
-        }}
+        style={{ width: '100%', minHeight: 48, fontSize: 16 }}
       >
         {hasTicket ? 'Join party walk - 🎟️ 1 ticket' : 'Need a ticket to join'}
-      </button>
+      </InkButton>
     </motion.div>
   )
 }

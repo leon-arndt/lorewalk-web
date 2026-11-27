@@ -13,10 +13,10 @@ export function StepRing({ progress, size, stroke, children }: {
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', display: 'block' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#eef2ff" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E2D3AE" strokeWidth={stroke} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke={p >= 1 ? '#22c55e' : '#818cf8'} strokeWidth={stroke} strokeLinecap="round"
+          stroke={p >= 1 ? '#2F6B4F' : '#33281E'} strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={c * (1 - p)}
           style={{ transition: 'stroke-dashoffset 0.4s ease' }}
         />

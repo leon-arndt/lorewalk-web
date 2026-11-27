@@ -1,8 +1,6 @@
 import type { Transition } from 'motion/react'
 
 // Shared motion vocabulary, so every surface moves with the same feel.
-// Animate transform or colour, not opacity, on anything that holds a glass
-// surface: an ancestor with opacity below 1 cuts off its backdrop blur.
 
 export const sheetSpring: Transition = { type: 'spring', stiffness: 420, damping: 36, mass: 0.9 }
 export const popSpring: Transition = { type: 'spring', stiffness: 520, damping: 22 }
@@ -26,7 +24,7 @@ export function panelMotion(closing: boolean) {
   }
 }
 
-// Dimmed backdrop: fades its colour, so the glass sheet inside keeps its blur.
+// Dimmed backdrop: fades its colour in, and the sheet inside stays opaque.
 export function backdropIn(color: string) {
   return {
     initial: { backgroundColor: 'rgba(15,23,42,0)' },

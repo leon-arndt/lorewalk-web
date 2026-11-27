@@ -32,7 +32,7 @@ export function GoogleSignInButton() {
   }, [locale, signIn])
 
   if (unavailable) {
-    return <div style={{ fontSize: 12, color: '#94a3b8' }}>{t('account_unavailable')}</div>
+    return <div style={{ fontSize: 12, color: '#75634C' }}>{t('account_unavailable')}</div>
   }
 
   return (
@@ -41,8 +41,8 @@ export function GoogleSignInButton() {
         <button
           onClick={async () => signIn(await getNativeGoogleToken())}
           style={{
-            padding: '10px 16px', borderRadius: 20, border: '1px solid #dadce0',
-            background: 'white', color: '#1e293b', fontWeight: 600, fontSize: 14, cursor: 'pointer',
+            padding: '10px 16px', borderRadius: 8, border: '1px solid #dadce0',
+            background: '#FFFDF6', color: '#33281E', fontWeight: 500, fontSize: 14, cursor: 'pointer',
           }}
         >
           {t('account_sign_in_google')}
@@ -50,7 +50,7 @@ export function GoogleSignInButton() {
       ) : (
         <div ref={holderRef} style={{ minHeight: 40 }} />
       )}
-      {failed && <div style={{ fontSize: 12, color: '#b91c1c' }}>{t('account_sign_in_failed')}</div>}
+      {failed && <div style={{ fontSize: 12, color: '#A8361F' }}>{t('account_sign_in_failed')}</div>}
     </div>
   )
 }

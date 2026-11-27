@@ -5,8 +5,12 @@ import type { LevelReward } from '@/lib/profile'
 import type { Translations } from '@/i18n/types'
 import { motion } from 'motion/react'
 import { popIn, popSpring } from '@/lib/motion'
+import { Mono, NoteCard } from '@/components/UI/Journal'
+import { SCRIM_DEEP } from '@/lib/paper'
+import { forest, indigo, ink, inkHint, inkSoft, line, ochre, paperCard, stamp, pencil } from '@/lib/theme'
 
-const BURST_COLORS = ['#818cf8','#c084fc','#34d399','#fbbf24','#f472b6','#60a5fa','#fb923c']
+const BURST_COLORS = [stamp, ochre, forest, ochre, indigo]
+
 
 function rewardInfo(
   r: LevelReward,
@@ -68,6 +72,8 @@ function ParticleBurst({ cx, cy }: { cx: number; cy: number }) {
   )
 }
 
+// The new level as a round red stamp. It starts large above the page and slams
+// down after the note has popped in.
 function AnimatedLevel({ level }: { level: number }) {
   const [ready, setReady] = useState(false)
   useEffect(() => {
@@ -77,18 +83,17 @@ function AnimatedLevel({ level }: { level: number }) {
 
   return (
     <div style={{
-      fontSize: 96,
-      fontWeight: 900,
-      lineHeight: 1,
-      background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #166534 100%)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      filter: 'drop-shadow(0 0 28px rgba(34,197,94,0.55))',
-      transform: ready ? 'scale(1)' : 'scale(0.1)',
+      position: 'relative',
+      width: 148, height: 148, margin: '0 auto',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      border: `4px solid ${stamp}`, borderRadius: '50%',
+      color: stamp,
+      transform: ready ? 'scale(1) rotate(-7deg)' : 'scale(2.6) rotate(-18deg)',
       opacity: ready ? 1 : 0,
-      transition: 'transform 0.65s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease',
+      transition: 'transform 0.42s cubic-bezier(0.34,1.56,0.64,1) 0.3s, opacity 0.12s ease-in 0.3s',
     }}>
-      {level}
+      <span aria-hidden style={{ position: 'absolute', inset: 6, border: `1.5px solid ${stamp}`, borderRadius: '50%' }} />
+      <span style={{ fontSize: level >= 100 ? 54 : 78, fontWeight: 600, lineHeight: 1 }}>{level}</span>
     </div>
   )
 }
@@ -112,26 +117,26 @@ function RewardCard({
     <motion.div {...popIn(index + 2)}
       ref={cardRef}
       style={{
-        width: 96,
-        borderRadius: 18,
-        padding: '20px 12px 16px',
+        flex: '1 1 0', minWidth: 84, maxWidth: 112, minHeight: 112,
+        borderRadius: 3,
+        padding: '14px 6px 10px',
         textAlign: 'center',
-        background: revealed ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.06)',
-        border: `2px solid ${revealed ? '#22c55e' : isNext ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
-        boxShadow: isNext && !revealed ? '0 0 12px rgba(255,255,255,0.12)' : 'none',
+        background: revealed ? paperCard : 'rgba(255,253,246,0)',
+        border: revealed ? `1.5px solid ${line}` : `1.5px dashed ${isNext ? ink : pencil}`,
+        boxShadow: revealed ? '1px 2px 0 rgba(51,40,30,0.18)' : '1px 2px 0 rgba(51,40,30,0)',
         transition: 'background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease',
       }}
     >
       {revealed ? (
         <motion.div initial={{ rotateY: 90, scale: 0.6 }} animate={{ rotateY: 0, scale: 1 }} transition={popSpring}>
-          <div style={{ fontSize: 38, marginBottom: 8, lineHeight: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6, lineHeight: 1 }}>
             <EmojiSprite id={`item_${reward.type}`} emoji={info.emoji} size={38} />
           </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{info.title}</div>
-          <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4, lineHeight: 1.3 }}>{info.sub}</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: ink, lineHeight: '16px' }}>{info.title}</div>
+          <Mono style={{ display: 'block', marginTop: 3 }}>{info.sub}</Mono>
         </motion.div>
       ) : (
-        <div style={{ fontSize: 30, opacity: isNext ? 0.6 : 0.3, lineHeight: 1, paddingTop: 4 }}>?</div>
+        <div style={{ fontSize: 30, fontWeight: 500, color: isNext ? ink : inkHint, lineHeight: 1, paddingTop: 24 }}>?</div>
       )}
     </motion.div>
   )
@@ -178,55 +183,61 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
       onClick={handleTap}
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(10,8,30,0.93)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        gap: 20,
+        background: SCRIM_DEEP,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '24px 20px', overflowX: 'hidden', overflowY: 'auto',
         userSelect: 'none',
       }}
     >
       {burst && <ParticleBurst key={burst.key} cx={burst.cx} cy={burst.cy} />}
 
-      <motion.div initial={{ scale: 0.5, y: 30 }} animate={{ scale: 1, y: 0 }} transition={{ ...popSpring, delay: 0.1 }} style={{ textAlign: 'center' }}>
-        <div style={{
-          fontSize: 11, fontWeight: 800, letterSpacing: 5,
-          color: '#86efac', textTransform: 'uppercase', marginBottom: 12,
-        }}>
-          {t('levelup_title')}
-        </div>
-        <AnimatedLevel level={level} />
-        <div style={{ fontSize: 13, color: '#64748b', marginTop: 10, fontWeight: 500 }}>
-          {t('levelup_subtitle', { level })}
-        </div>
+      <motion.div
+        initial={{ scale: 0.5, y: 30 }} animate={{ scale: 1, y: 0 }} transition={{ ...popSpring, delay: 0.1 }}
+        style={{ width: '100%', maxWidth: 340, margin: 'auto 0' }}
+      >
+        <NoteCard taped style={{ padding: '28px 16px 16px', textAlign: 'center', boxShadow: '3px 4px 0 rgba(51,40,30,0.35)' }}>
+          <Mono style={{
+            display: 'block', marginBottom: 14,
+            fontSize: 13, fontWeight: 500, letterSpacing: '0.2em', color: stamp, textTransform: 'uppercase',
+          }}>
+            {t('levelup_title')}
+          </Mono>
+          <AnimatedLevel level={level} />
+          <div style={{ fontSize: 15, lineHeight: '20px', color: ink, marginTop: 14, fontWeight: 500 }}>
+            {t('levelup_subtitle', { level })}
+          </div>
+
+          {rewards.length > 0 && (
+            <>
+              <div style={{ borderTop: `1.5px dashed ${line}`, margin: '16px 0 10px' }} />
+              <Mono style={{ display: 'block', marginBottom: 10, color: inkSoft, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                {t('levelup_rewards')}
+              </Mono>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                {rewards.map((r, i) => (
+                  <RewardCard
+                    key={i}
+                    reward={r}
+                    index={i}
+                    revealed={i < revealed}
+                    isNext={i === revealed}
+                    cardRef={(el) => { cardRefs.current[i] = el }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          <Mono style={{
+            display: 'block', marginTop: 16,
+            color: allRevealed ? forest : inkHint,
+            fontWeight: allRevealed ? 500 : 400,
+            transition: 'color 0.3s ease',
+          }}>
+            {allRevealed ? t('levelup_tap_continue') : t('levelup_tap_reveal')}
+          </Mono>
+        </NoteCard>
       </motion.div>
-
-      {rewards.length > 0 && (
-        <>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', letterSpacing: 1, textTransform: 'uppercase' }}>
-            {t('levelup_rewards')}
-          </div>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', padding: '0 24px' }}>
-            {rewards.map((r, i) => (
-              <RewardCard
-                key={i}
-                reward={r}
-                index={i}
-                revealed={i < revealed}
-                isNext={i === revealed}
-                cardRef={(el) => { cardRefs.current[i] = el }}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      <div style={{
-        fontSize: 11, color: allRevealed ? '#22c55e' : '#475569',
-        fontWeight: allRevealed ? 700 : 400,
-        marginTop: 4,
-        transition: 'color 0.3s ease, font-weight 0.3s ease',
-      }}>
-        {allRevealed ? t('levelup_tap_continue') : t('levelup_tap_reveal')}
-      </div>
     </motion.div>
   )
 }

@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useReward } from '@/contexts/RewardContext'
-import { rewardGradient } from '@/lib/theme'
+import { ink, stamp } from '@/lib/theme'
+import { paperTag } from '@/lib/paper'
 import { AnimatePresence, motion } from 'motion/react'
 import { popSpring } from '@/lib/motion'
 
@@ -38,16 +39,21 @@ export function Toast() {
               dismissToast()
             }}
             style={{
+              ...paperTag,
               pointerEvents: 'auto',
-              background: rewardGradient,
-              color: 'white', fontSize: 13, fontWeight: 600, lineHeight: 1.4,
-              padding: '10px 20px', borderRadius: 24, border: 'none',
-              boxShadow: '0 4px 16px rgba(129,140,248,0.45)',
-              textAlign: 'center', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 10, minHeight: 44,
+              fontFamily: 'inherit', fontSize: 14, fontWeight: 500, lineHeight: 1.4,
+              padding: '8px 16px 8px 12px',
+              boxShadow: '2px 3px 0 rgba(51,40,30,0.3)',
+              textAlign: 'left', cursor: 'pointer',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            {toast.message}
+            <span aria-hidden style={{
+              width: 10, height: 10, boxSizing: 'border-box', flexShrink: 0, borderRadius: '50%',
+              border: `1.5px solid ${ink}`, background: stamp,
+            }} />
+            <span>{toast.message}</span>
           </motion.button>
         )}
       </AnimatePresence>

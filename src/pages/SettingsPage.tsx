@@ -6,8 +6,9 @@ import { useMusic } from '@/contexts/MusicContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import type { NotificationPrefKey } from '@/types'
-import { accent } from '@/lib/theme'
-import { glassPage } from '@/lib/glass'
+import { forest, ink, inkHint, line, paperCard, paperLight, paperShade, stamp } from '@/lib/theme'
+import { paperCardStyle, paperPage } from '@/lib/paper'
+import { Mono, SectionTitle } from '@/components/UI/Journal'
 import { AccountSection } from '@/components/UI/AccountSection'
 import { ConnectionStatus } from '@/components/UI/ConnectionStatus'
 import { LanguageDropdown } from '@/components/UI/LanguageDropdown'
@@ -24,29 +25,43 @@ declare const __APP_VERSION__: string
 declare const __GIT_COMMIT__: string
 declare const __BUILD_DATE__: string
 
-const audioLabel: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#1e293b' }
+const HAIRLINE = `1.5px dashed ${line}`
+const rowTitle: React.CSSProperties = { fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }
+const rowNote: React.CSSProperties = { display: 'block', marginTop: 2, fontSize: 12, lineHeight: '16px' }
+const slider: React.CSSProperties = { width: '100%', minWidth: 0, height: 44, margin: 0, accentColor: ink, cursor: 'pointer' }
 
+// An ink-outlined switch. The button is 44 px tall for the finger, and the track
+// inside it is the part that shows. The knob slides, so it needs no ripple.
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
     <button
       role="switch"
       aria-checked={checked}
       onClick={onChange}
+      data-no-ripple
       style={{
-        width: 46, height: 26, borderRadius: 13, border: 'none', padding: 2,
-        background: checked ? '#22c55e' : '#e2e8f0',
-        cursor: 'pointer', flexShrink: 0,
-        display: 'flex', alignItems: 'center',
-        justifyContent: checked ? 'flex-end' : 'flex-start',
-        transition: 'background 0.15s',
+        width: 50, height: 44, padding: 0, border: 'none', background: 'none',
+        cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <span style={{
-        width: 22, height: 22, borderRadius: '50%', background: 'white',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block',
-      }} />
+        width: 50, height: 28, boxSizing: 'border-box', borderRadius: 6, padding: 2,
+        border: `1.5px solid ${ink}`, background: checked ? forest : paperShade,
+        display: 'flex', alignItems: 'center', transition: 'background 0.15s',
+      }}>
+        <span style={{
+          width: 21, height: 21, boxSizing: 'border-box', borderRadius: 4, display: 'block',
+          background: paperCard, border: `1.5px solid ${ink}`,
+          transform: checked ? 'translateX(22px)' : 'none', transition: 'transform 0.15s',
+        }} />
+      </span>
     </button>
   )
+}
+
+function Divider() {
+  return <div aria-hidden style={{ gridColumn: '1 / -1', borderTop: HAIRLINE }} />
 }
 
 export function SettingsPage() {
@@ -66,45 +81,50 @@ export function SettingsPage() {
   }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...glassPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
+    <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{
-        position: 'sticky', top: 0, zIndex: 2, background: '#f8fafc',
-        padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',
+        position: 'sticky', top: 0, zIndex: 2, background: paperLight,
+        padding: '16px 16px 10px', borderBottom: `1.5px solid ${ink}`,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button
           onClick={() => navigate('/profile')}
           data-sfx="close"
           style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 22, color: '#1e293b', padding: 0, lineHeight: 1,
+            width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
+            display: 'grid', placeItems: 'center',
+            background: paperCard, border: `1.5px solid ${ink}`, borderRadius: 6,
+            fontFamily: 'inherit', fontSize: 22, fontWeight: 500, color: ink, lineHeight: 1,
           }}
         >
           ←
         </button>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: accent }}>{t('settings_title')}</h1>
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <Mono style={{ fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            {t('journal_kicker')}
+          </Mono>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600, lineHeight: '30px', letterSpacing: '-0.01em', color: ink }}>{t('settings_title')}</h1>
+          <svg aria-hidden width="96" height="6" viewBox="0 0 96 6" fill="none" style={{ display: 'block', marginTop: -1 }}>
+            <path d="M2 4c9-4 16 3 24 0s16-3 24 0 16 3 24 0 12-2 20 0" stroke={stamp} strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </div>
       </div>
 
-      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ padding: '22px 16px 20px', display: 'flex', flexDirection: 'column', gap: 26 }}>
         <AccountSection />
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
-            {t('profile_language')}
-          </h2>
+          <SectionTitle>{t('profile_language')}</SectionTitle>
           <LanguageDropdown />
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
-            {t('settings_sound_section')}
-          </h2>
+          <SectionTitle>{t('settings_sound_section')}</SectionTitle>
           <div style={{
-            background: 'white', borderRadius: 16, padding: '16px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', columnGap: 16, rowGap: 18,
+            ...paperCardStyle, padding: '4px 14px',
+            display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', columnGap: 16,
           }}>
-            <label htmlFor="settings-music" style={audioLabel}>{t('settings_music_volume')}</label>
+            <label htmlFor="settings-music" style={rowTitle}>{t('settings_music_volume')}</label>
             <input
               id="settings-music"
               type="range"
@@ -113,9 +133,10 @@ export function SettingsPage() {
               step={0.05}
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              style={{ width: '100%', minWidth: 0, accentColor: accent }}
+              style={slider}
             />
-            <label htmlFor="settings-sfx" style={audioLabel}>{t('settings_sound_effects')}</label>
+            <Divider />
+            <label htmlFor="settings-sfx" style={rowTitle}>{t('settings_sound_effects')}</label>
             <input
               id="settings-sfx"
               type="range"
@@ -124,10 +145,11 @@ export function SettingsPage() {
               step={0.05}
               value={sfxVolume}
               onChange={(e) => setSfxVolume(Number(e.target.value))}
-              style={{ width: '100%', minWidth: 0, accentColor: accent }}
+              style={slider}
             />
-            <span style={audioLabel}>{t('settings_vibration')}</span>
-            <div style={{ justifySelf: 'end' }}>
+            <Divider />
+            <span style={rowTitle}>{t('settings_vibration')}</span>
+            <div style={{ justifySelf: 'end', padding: '4px 0' }}>
               <ToggleSwitch
                 checked={vibration}
                 onChange={() => {
@@ -141,54 +163,38 @@ export function SettingsPage() {
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
-            {t('settings_connection')}
-          </h2>
-          <div style={{
-            background: 'white', borderRadius: 16, padding: '14px 16px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', flexDirection: 'column', gap: 10,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
-                  {t('settings_online_mode')}
-                </div>
-                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-                  {t('settings_online_mode_desc')}
-                </div>
+          <SectionTitle>{t('settings_connection')}</SectionTitle>
+          <div style={{ ...paperCardStyle, padding: '0 14px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 0' }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={rowTitle}>{t('settings_online_mode')}</div>
+                <Mono style={rowNote}>{t('settings_online_mode_desc')}</Mono>
               </div>
               <ToggleSwitch checked={mode === 'online'} onChange={() => setMode(mode === 'online' ? 'offline' : 'online')} />
             </div>
-            {mode === 'online' && <ConnectionStatus />}
+            {mode === 'online' && (
+              <div style={{ borderTop: HAIRLINE, padding: '10px 0' }}>
+                <ConnectionStatus />
+              </div>
+            )}
           </div>
         </section>
 
         <section>
-          <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>
-            {t('settings_notifications')}
-          </h2>
-          <div style={{
-            background: 'white', borderRadius: 16, padding: '4px 16px',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', flexDirection: 'column',
-          }}>
+          <SectionTitle>{t('settings_notifications')}</SectionTitle>
+          <div style={{ ...paperCardStyle, padding: '0 14px', display: 'flex', flexDirection: 'column' }}>
             {NOTIFICATION_PREFS.map(({ key, titleKey, descKey }, i) => (
               <div
                 key={key}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                  padding: '14px 0',
-                  borderTop: i > 0 ? '1px solid #f1f5f9' : 'none',
+                  padding: '10px 0',
+                  borderTop: i > 0 ? HAIRLINE : 'none',
                 }}
               >
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
-                    {t(titleKey)}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-                    {t(descKey)}
-                  </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={rowTitle}>{t(titleKey)}</div>
+                  <Mono style={rowNote}>{t(descKey)}</Mono>
                 </div>
                 <ToggleSwitch checked={profile[key]} onChange={() => handleToggleNotifications(key)} />
               </div>
@@ -196,15 +202,10 @@ export function SettingsPage() {
           </div>
         </section>
 
-        {/* The page is glass over the map, so a white halo keeps the text legible on any tile. */}
-        <p
-          style={{
-            margin: 0, textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#334155',
-            fontVariantNumeric: 'tabular-nums',
-            textShadow: '0 0 2px #fff, 0 0 4px #fff, 0 1px 1px rgba(255,255,255,0.9)',
-          }}
-        >
-          v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
+        <p style={{ margin: 0, textAlign: 'center' }}>
+          <Mono style={{ color: inkHint, fontVariantNumeric: 'tabular-nums' }}>
+            v{__APP_VERSION__} · {__GIT_COMMIT__} · {__BUILD_DATE__}
+          </Mono>
         </p>
       </div>
     </div>

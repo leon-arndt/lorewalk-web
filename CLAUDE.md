@@ -74,8 +74,8 @@ The design keeps its tensions simple on purpose. There is no combat, no PvP, and
 - **3D**: three.js. Custom MapLibre layers draw the animated creature companions, the POI pins, and the MRT lines (`mapCharacters.ts`, `mapPoiPins.ts`, `mapMrt.ts`)
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`), against the same Supabase project as the Unity client
 - **Native**: a Capacitor 7 Android wrapper. `@devmaxime/capacitor-health-connect` reads step data. `qrcode` renders the friend-invite QR. `@revenuecat/purchases-capacitor` handles Play Billing for Premium subscriptions (see `src/lib/billing.ts`). `@capgo/capacitor-social-login` opens the native Google sign-in sheet (see `src/lib/googleAuth.ts`)
-- **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`
-- **Animation**: `motion` (the new name of Framer Motion). Import from `motion/react`. `src/lib/motion.ts` holds the shared springs and presets: `sheetIn`, `panelMotion`, `backdropIn`, `popIn`. Use them for a new sheet or panel. Do not animate the opacity of an element that holds a glass surface, because the blur stops while the opacity is below 1. Animate the transform or the color instead. `src/lib/ripple.ts` gives every button a press squish and a Material-style ripple from one listener in `App.tsx`. Add `data-no-ripple` to a button that must not show them
+- **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`. The app has a field journal look. `src/lib/theme.ts` holds the palette, `src/lib/paper.ts` holds the paper surfaces, and `src/components/UI/Journal.tsx` holds the building blocks (`PageHeader`, `SectionTitle`, `NoteCard`, `Stamp`, `InkButton`, `Mono`). Fredoka is the main font and DM Mono is the typewriter font, both from `@fontsource`. GameDesign.md's "UI and UX Decisions" section holds the rules
+- **Animation**: `motion` (the new name of Framer Motion). Import from `motion/react`. `src/lib/motion.ts` holds the shared springs and presets: `sheetIn`, `panelMotion`, `backdropIn`, `popIn`. Use them for a new sheet or panel. `src/lib/ripple.ts` gives every button a press squish and a Material-style ripple from one listener in `App.tsx`. Add `data-no-ripple` to a button that must not show them
 - **PWA**: `vite-plugin-pwa` and Workbox, with `registerType: autoUpdate`
 - **Routing**: React Router v7 (BrowserRouter)
 - **i18n**: a hand-rolled `LocaleContext` plus one dictionary per language in `src/i18n/` (en, de, ja, ko, zh, ms, id, ta)
@@ -88,7 +88,8 @@ src/
   components/
     Map/
       MapView.tsx          # MapLibre map, player dot, 3D creature/POI/MRT layers
-    UI/                    # panels, HUD, overlays (BottomNav, PoiDetailPanel,
+    UI/                    # Journal.tsx = shared building blocks of the look
+                           # panels, HUD, overlays (BottomNav, PoiDetailPanel,
                            #   ShrinePanel, JournalOverlay, PostcardsSection,
                            #   HatchRewardScreen, LevelUpScreen, WeekStrip, etc)
   contexts/               # React context providers
@@ -112,7 +113,7 @@ src/
     mapPlayerAvatar.ts     # map layer that walks the player avatar at the GPS position
     mapPoiPins.ts, mapMrt.ts, creaturePreview.ts, mapUtils.ts, health.ts, sfx.ts
     vfx.ts, mapVfx.ts      # particle effects: simulation + the MapLibre layer that draws them
-    theme.ts, glass.ts     # theme.ts = brand accent/reward colours, glass.ts = frosted surfaces
+    theme.ts, paper.ts     # theme.ts = the field journal palette, paper.ts = the paper surfaces
   dev/                    # dev-only pages, never built: vfxPreview.html (the Particle Editor preview)
   data/                   # static game data: creatures.ts, foods.ts, cosmetics.ts,
                           #   medals.ts, singapore-pois.ts
@@ -222,6 +223,7 @@ A player who signs in with Google gets a cloud save. `localStorage` stays the wo
 - **Avatar behind buildings**: the avatar shares the depth buffer with the 3D buildings. `mapPlayerAvatar.ts` draws the hidden parts as a green silhouette, so the player can always see where they stand.
 - **Default centre**: Singapore (1.3521, 103.8198), used when the browser has no GPS fix.
 - **Singapore-only labels**: the game is Singapore only, so the map shows no base-map label outside Singapore, such as Johor Bahru or Batam. On load, `MapView.tsx` adds a `within` filter to every Liberty symbol layer. The filter uses the boundary polygon in `src/data/singapore-boundary.ts`. The polygon includes the territorial waters, so it follows the maritime line through the Johor Strait.
+- **Parchment**: `mapAmbience.ts` moves each colour of the Liberty style onto a sepia ramp (`parchment()`), then applies the day, night, and weather tint. Labels are ink on paper by day.
 - **POI colours**: gold `#f59e0b` marks a permanent POI, purple `#a855f7` marks a temporary one. The Unity uGUI markers follow the same convention.
 
 ## Sound
@@ -315,6 +317,7 @@ The web code follows the same conventions as the Unity project:
 - No comments unless the WHY is non-obvious.
 - No `#region` blocks. No barrel `index.ts` re-exports unless one is genuinely needed.
 - Prefer Tailwind utility classes over custom CSS. Reach for custom CSS only when Tailwind cannot express the rule.
+- Take a colour from `theme.ts`, a surface from `paper.ts`, and a button, a stamp, or a heading from `Journal.tsx`. Do not add a blur, a colour gradient, or a soft drop shadow: the look is ink on paper.
 - Never open a native browser dialog (`window.confirm`, `alert`, `prompt`) in the game. Use `ConfirmDialog.tsx`, and set `danger` for an action that deletes something.
 - Never put an em dash in a UI-facing string. Use a period, a colon, or a hyphen instead. The same rule applies to the Markdown docs, per the Documentation style section.
 

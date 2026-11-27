@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
-@import "@fontsource-variable/nunito";
+@import "@fontsource-variable/fredoka";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -12,13 +14,26 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background: #f8fdfa;
-  font-family: 'Nunito Variable', system-ui, -apple-system, sans-serif;
+  background: #F2E8D0;
+  color: #33281E;
+  font-family: 'Fredoka Variable', system-ui, -apple-system, sans-serif;
 }
 
 #root {
   display: flex;
   flex-direction: column;
+}
+
+/* The map credit is a small (i) above the news button, clear of the index tabs. */
+.maplibregl-ctrl-bottom-right {
+  bottom: calc(env(safe-area-inset-bottom) + 136px);
+  right: 8px;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: #FBF6E9;
+  border: 1.5px solid #33281E;
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: 11px;
 }
 
 /* Creatures orbiting a node while away on an expedition. tvOrbit spins the arm;

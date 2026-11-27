@@ -3,8 +3,9 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useNews } from '@/hooks/useNews'
 import { newsText } from '@/data/news'
-import { accent, accentAlpha } from '@/lib/theme'
-import { glassPage } from '@/lib/glass'
+import { forest, indigo, ink, inkHint, inkSoft, ochre, paperCard, paperShade, stamp, line } from '@/lib/theme'
+import { paperCardStyle, paperPage, paperSheet, paperTag, SCRIM } from '@/lib/paper'
+import { InkButton, Mono, PageHeader, Stamp } from '@/components/UI/Journal'
 import type { NewsCategory, NewsPost } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { motion } from 'motion/react'
@@ -17,20 +18,23 @@ const CATEGORY_KEY: Record<NewsCategory, keyof Translations> = {
 }
 
 const CATEGORY_COLOR: Record<NewsCategory, string> = {
-  update: '#166534',
-  event: '#a855f7',
-  community: '#f59e0b',
+  update: forest,
+  event: indigo,
+  community: ochre,
 }
 
+// A typed category line with a swatch of the category colour.
 function CategoryTag({ category }: { category: NewsCategory }) {
   const { t } = useLocale()
-  const color = CATEGORY_COLOR[category]
   return (
-    <span style={{
-      fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.4,
-      color, background: `${color}1a`, padding: '3px 8px', borderRadius: 999,
-    }}>
-      {t(CATEGORY_KEY[category])}
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <span aria-hidden style={{
+        width: 10, height: 10, borderRadius: 2, flexShrink: 0,
+        background: CATEGORY_COLOR[category], border: `1.5px solid ${ink}`,
+      }} />
+      <Mono style={{ fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: ink }}>
+        {t(CATEGORY_KEY[category])}
+      </Mono>
     </span>
   )
 }
@@ -40,7 +44,7 @@ function PostDetail({ post, onClose }: { post: NewsPost; onClose: () => void }) 
   const body = newsText(post.body, locale)
 
   return (
-    <motion.div {...backdropIn('rgba(15,10,30,0.55)')}
+    <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
       data-sfx="close"
       style={{
@@ -52,56 +56,56 @@ function PostDetail({ post, onClose }: { post: NewsPost; onClose: () => void }) 
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 480, maxHeight: '82dvh', overflowY: 'auto',
-          background: 'white', borderRadius: '24px 24px 0 0',
-          padding: '20px 20px calc(env(safe-area-inset-bottom) + 24px)',
+          ...paperSheet, borderRadius: '10px 10px 0 0',
+          padding: '10px 20px calc(env(safe-area-inset-bottom) + 24px)',
         }}
       >
-        <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 16px' }} />
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: ink, margin: '0 auto 16px' }} />
 
         {post.heroUrl && (
           <img
             src={post.heroUrl}
             alt=""
             style={{
-              width: '100%', aspectRatio: '16 / 9', objectFit: 'cover',
-              borderRadius: 14, display: 'block', marginBottom: 14, background: '#f1f5f9',
+              width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', boxSizing: 'border-box',
+              display: 'block', marginBottom: 14, background: paperShade,
+              border: `5px solid ${paperCard}`, outline: `1px solid ${line}`, borderRadius: 2,
+              boxShadow: '1px 2px 0 rgba(51,40,30,0.18)',
             }}
           />
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
           <CategoryTag category={post.category} />
-          <span style={{ fontSize: 12, color: '#94a3b8' }}>
+          <Mono style={{ fontSize: 12 }}>
             {new Date(post.publishedAt).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })}
-          </span>
+          </Mono>
         </div>
 
-        <h2 style={{ margin: '0 0 12px', fontSize: 19, fontWeight: 800, color: accent }}>
+        <h2 style={{ margin: '0 0 12px', fontSize: 24, fontWeight: 600, lineHeight: '30px', letterSpacing: '-0.01em', color: ink }}>
           {newsText(post.title, locale)}
         </h2>
 
         {body.split('\n\n').map((para, i) => (
-          <p key={i} style={{ margin: '0 0 12px', fontSize: 14, lineHeight: 1.6, color: '#334155' }}>
+          <p key={i} style={{ margin: '0 0 12px', fontSize: 15, lineHeight: 1.6, color: ink }}>
             {para}
           </p>
         ))}
 
-        <button
+        <InkButton
+          variant="paper"
           onClick={onClose}
           data-sfx="close"
-          style={{
-            width: '100%', marginTop: 8, padding: '12px 0', borderRadius: 14,
-            border: 'none', background: accentAlpha(0.10), color: accent,
-            fontSize: 14, fontWeight: 700, cursor: 'pointer',
-            WebkitTapHighlightColor: 'transparent',
-          }}
+          style={{ width: '100%', marginTop: 8, minHeight: 48 }}
         >
           {t('common_close')}
-        </button>
+        </InkButton>
       </motion.div>
     </motion.div>
   )
 }
+
+const emptyNote = { margin: 0, padding: '32px 4px', textAlign: 'center', fontSize: 14, color: inkHint } as const
 
 export function NewsOverlay({ onClose }: { onClose: () => void }) {
   const { t, locale } = useLocale()
@@ -128,86 +132,90 @@ export function NewsOverlay({ onClose }: { onClose: () => void }) {
   return (
     <motion.div {...sheetIn} style={{
       position: 'fixed', inset: 0, zIndex: 50, overflowY: 'auto',
-      ...glassPage,
+      ...paperPage,
       paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '24px 20px 12px' }}>
-        <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 800, color: accent }}>{t('news_title')}</h1>
-          <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>{t('news_subtitle')}</p>
-        </div>
-        <button
-          onClick={onClose}
-          style={{
-            width: 34, height: 34, borderRadius: '50%', border: 'none', flexShrink: 0,
-            background: 'white', color: '#64748b', fontSize: 18, cursor: 'pointer',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-          aria-label={t('news_close')}
-          data-sfx="close"
-        >×</button>
-      </div>
+      <PageHeader
+        title={t('news_title')}
+        right={
+          <button
+            onClick={onClose}
+            style={{
+              ...paperTag, width: 44, height: 44, borderRadius: '50%', padding: 0,
+              fontSize: 22, lineHeight: 1, cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+            aria-label={t('news_close')}
+            data-sfx="close"
+          >×</button>
+        }
+      />
+      <p style={{ margin: 0, padding: '8px 16px 4px', fontSize: 14, color: inkSoft }}>{t('news_subtitle')}</p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '16px 18px 8px' }}>
         {loading && sorted.length === 0 && (
-          <p style={{ margin: 0, padding: '32px 4px', textAlign: 'center', fontSize: 13, color: '#94a3b8' }}>
+          <p style={emptyNote}>
             {t('news_loading')}
           </p>
         )}
 
         {error && sorted.length === 0 && (
-          <p style={{ margin: 0, padding: '32px 4px', textAlign: 'center', fontSize: 13, color: '#94a3b8' }}>
+          <p style={emptyNote}>
             {t('news_error')}
           </p>
         )}
 
         {!loading && !error && sorted.length === 0 && (
-          <p style={{ margin: 0, padding: '32px 4px', textAlign: 'center', fontSize: 13, color: '#94a3b8' }}>
+          <p style={emptyNote}>
             {t('news_empty')}
           </p>
         )}
 
-        {sorted.map((post) => (
+        {sorted.map((post, i) => (
           <button
             key={post.id}
             onClick={() => setSelected(post)}
             style={{
-              display: 'block', width: '100%', textAlign: 'left',
-              padding: 0, border: 'none', borderRadius: 16, overflow: 'hidden',
-              background: 'white', cursor: 'pointer',
-              boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+              ...paperCardStyle,
+              position: 'relative', display: 'block', width: '100%', textAlign: 'left',
+              padding: post.heroUrl ? 6 : 0, cursor: 'pointer',
+              color: ink, fontFamily: 'inherit',
+              transform: `rotate(${i % 2 === 0 ? -0.5 : 0.6}deg)`,
               WebkitTapHighlightColor: 'transparent',
             }}
           >
+            {/* The pin that holds the note on the board. */}
+            <span aria-hidden style={{
+              position: 'absolute', top: -7, left: '50%', marginLeft: -7, zIndex: 1,
+              width: 14, height: 14, borderRadius: '50%',
+              background: stamp, border: `1.5px solid ${ink}`,
+              boxShadow: '1px 2px 0 rgba(51,40,30,0.18)',
+            }} />
             {post.heroUrl && (
               <img
                 src={post.heroUrl}
                 alt=""
-                style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', display: 'block', background: '#f1f5f9' }}
+                style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', display: 'block', background: paperShade, borderRadius: 2 }}
               />
             )}
-            <div style={{ padding: '12px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ padding: post.heroUrl ? '10px 8px 6px' : '16px 14px 12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                 <CategoryTag category={post.category} />
                 {unreadIds.has(post.id) && (
-                  <span style={{
-                    fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.4,
-                    color: 'white', background: '#ef4444', padding: '3px 8px', borderRadius: 999,
-                  }}>
+                  <Stamp tilt={-3} style={{ padding: '1px 6px' }}>
                     {t('news_new_badge')}
-                  </span>
+                  </Stamp>
                 )}
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#94a3b8' }}>
+                <Mono style={{ marginLeft: 'auto', flexShrink: 0 }}>
                   {new Date(post.publishedAt).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}
-                </span>
+                </Mono>
               </div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>
+              <div style={{ fontSize: 17, fontWeight: 500, lineHeight: '23px', color: ink, marginBottom: 4 }}>
                 {newsText(post.title, locale)}
               </div>
               <div style={{
-                fontSize: 12.5, lineHeight: 1.5, color: '#64748b',
+                fontSize: 14, lineHeight: 1.5, color: inkSoft,
                 display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
               }}>
                 {newsText(post.body, locale)}

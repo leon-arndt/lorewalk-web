@@ -3,10 +3,11 @@ import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { creaturePower, creatureName, MAX_SHRINE_CREATURES, SHRINE_DURATION_MS } from '@/lib/profile'
-import { glassPanel, glassChrome } from '@/lib/glass'
+import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { HatchedCreature, ShrineNode, PlayerPosition } from '@/types'
-import { accent } from '@/lib/theme'
+import { categoryCss, forest, ink, inkHint, inkSoft, paperLight, stamp } from '@/lib/theme'
+import { InkButton, Mono, Stamp } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
 
@@ -43,15 +44,27 @@ interface Props {
 
 const panelStyle = {
   position: 'absolute' as const, bottom: 0, left: 0, right: 0,
-  ...glassPanel, border: 'none',
-  borderRadius: '24px 24px 0 0',
-  padding: '20px 20px',
+  ...paperSheet,
+  boxShadow: '0 -3px 0 rgba(51,40,30,0.12)',
+  borderRadius: '10px 10px 0 0',
+  padding: '10px 20px',
   paddingBottom: 'calc(env(safe-area-inset-bottom) + 92px)',
   zIndex: 10,
 }
 
-const SHRINE_ACCENT = '#7c3aed'
-const SHRINE_BG = 'rgba(124,58,237,0.08)'
+const titleStyle = { margin: 0, fontSize: 22, fontWeight: 600, lineHeight: '28px', letterSpacing: '-0.01em', color: ink } as const
+const kicker = { display: 'block', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: inkSoft } as const
+const typed = { display: 'block', fontSize: 12, lineHeight: '18px', color: inkSoft } as const
+
+// An ink-outlined bar with a forest fill. `value` runs from 0 to 1.
+function InkBar({ value }: { value: number }) {
+  const pct = Math.max(0, Math.min(1, value)) * 100
+  return (
+    <div style={{ height: 10, border: `1.5px solid ${ink}`, borderRadius: 2, overflow: 'hidden' }}>
+      <div style={{ height: '100%', background: forest, width: `${pct}%`, transition: 'width 0.6s ease' }} />
+    </div>
+  )
+}
 
 export function ShrinePanel({ node, position: _position, onStart, onCollect, onClose, isClosing = false }: Props) {
   const { t } = useLocale()
@@ -101,19 +114,34 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
 
   const header = (
     <>
-      <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
+      <div style={{ width: 36, height: 4, borderRadius: 2, background: ink, margin: '0 auto 16px' }} />
       <button
         onClick={onClose}
         data-sfx="close"
         style={{
-          position: 'absolute', top: 20, right: 20,
-          ...glassChrome, cursor: 'pointer',
-          width: 28, height: 28, borderRadius: '50%', border: 'none',
+          position: 'absolute', top: 8, right: 10,
+          width: 44, height: 44, padding: 0, background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, color: '#64748b', WebkitTapHighlightColor: 'transparent',
+          fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
         }}
-      >x</button>
+      >
+        <span style={{
+          ...paperTag, width: 30, height: 30, borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, lineHeight: 1,
+        }}>x</span>
+      </button>
     </>
+  )
+
+  // The shrine sprite on a wash of the landmark's category colour.
+  const shrineTile = (size: number) => (
+    <div style={{
+      flexShrink: 0, padding: 4, borderRadius: 3,
+      background: `${categoryCss(node.poiCategory)}40`, border: `1.5px solid ${ink}`,
+    }}>
+      <EmojiSprite id="item_shrine" emoji="⛩️" size={size} />
+    </div>
   )
 
   // ── Cleared (held) ───────────────────────────────────────────────────────────
@@ -122,17 +150,16 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
     return (
       <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
-        <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
-          <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><EmojiSprite id="item_shrine" emoji="⛩️" size={64} /></div>
-          <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: accent }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '8px 0 20px' }}>
+          <div style={{ marginBottom: 10 }}>{shrineTile(60)}</div>
+          <Mono style={kicker}>{t('shrine_held')}</Mono>
+          <h2 style={{ ...titleStyle, margin: '0 0 14px' }}>
             {node.poiName}
           </h2>
-          <p style={{ margin: '0 0 16px', fontSize: 12, color: '#94a3b8' }}>{t('shrine_held')}</p>
-          <div style={{
-            display: 'inline-block', padding: '8px 20px', borderRadius: 12,
-            background: SHRINE_BG, color: SHRINE_ACCENT, fontSize: 13, fontWeight: 700,
-          }}>
-            Replenishes in {formatDuration(clearedMs)}
+          <div style={{ ...paperTag, display: 'inline-block', padding: '8px 16px' }}>
+            <Mono style={{ fontSize: 13, lineHeight: '18px', fontWeight: 500, color: ink }}>
+              Replenishes in {formatDuration(clearedMs)}
+            </Mono>
           </div>
         </div>
       </motion.div>
@@ -143,64 +170,51 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
   if (exp) {
     const members = exp.creatureIds.map((id) => byId.get(id)).filter(Boolean) as HatchedCreature[]
     const willWin = exp.power >= node.difficulty
+    const startedMs = new Date(exp.startedAt).getTime()
+    const returnsMs = new Date(exp.returnsAt).getTime()
     return (
       <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-          <div style={{ flexShrink: 0 }}><EmojiSprite id="item_shrine" emoji="⛩️" size={52} /></div>
-          <div>
-            <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingRight: 40 }}>
+          {shrineTile(48)}
+          <div style={{ minWidth: 0 }}>
+            <Mono style={kicker}>{t('shrine_guardian_shrine')}</Mono>
+            <h2 style={titleStyle}>
               {node.poiName}
             </h2>
-            <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>{t('shrine_guardian_shrine')}</p>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {members.map((m) => (
-            <div key={m.id} style={{ textAlign: 'center' }}>
+            <div key={m.id} style={{ ...paperCardStyle, padding: '4px 6px', textAlign: 'center' }}>
               <CreaturePreview species={m.species} emoji={m.emoji} creatureType={m.creatureType} isShiny={m.isShiny} size={48} />
-              <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 2 }}>{t('level_badge', { level: m.level })}</div>
+              <Mono style={{ display: 'block', marginTop: 2 }}>{t('level_badge', { level: m.level })}</Mono>
             </div>
           ))}
         </div>
 
         {expReady ? (
           <>
-            <div style={{
-              padding: '10px 14px', borderRadius: 12, textAlign: 'center', marginBottom: 12,
-              background: willWin ? 'rgba(240,253,244,0.8)' : 'rgba(254,242,242,0.8)',
-            }}>
-              <span style={{
-                fontSize: 13, fontWeight: 700,
-                color: willWin ? '#16a34a' : '#dc2626',
-              }}>
+            <div style={{ textAlign: 'center', marginBottom: 14 }}>
+              <Stamp color={willWin ? forest : stamp} tilt={-3} style={{ fontSize: 13, lineHeight: '18px', padding: '5px 12px' }}>
                 {willWin ? '⚔️ Victory!' : '💀 Defeated - too weak'}
-              </span>
+              </Stamp>
             </div>
-            <button
+            <InkButton
+              variant={willWin ? 'ink' : 'paper'}
               onClick={onCollect}
-              style={{
-                width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
-                background: willWin
-                  ? 'linear-gradient(135deg, #7c3aed, #a855f7)'
-                  : 'linear-gradient(135deg, #64748b, #94a3b8)',
-                color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-                boxShadow: willWin ? '0 2px 10px rgba(124,58,237,0.4)' : 'none',
-                WebkitTapHighlightColor: 'transparent',
-              }}
+              style={{ width: '100%', minHeight: 48, fontSize: 16 }}
             >
               {willWin ? 'Claim Shrine 🏆' : 'Return home'}
-            </button>
+            </InkButton>
           </>
         ) : (
-          <div style={{
-            padding: '14px 16px', borderRadius: 14, textAlign: 'center',
-            background: 'rgba(248,250,252,0.7)',
-          }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#64748b' }}>
-              Battle in progress. Back in {formatDuration(new Date(exp.returnsAt).getTime() - now)}
-            </p>
+          <div>
+            <InkBar value={(now - startedMs) / Math.max(1, returnsMs - startedMs)} />
+            <Mono style={{ ...typed, marginTop: 8, textAlign: 'center' }}>
+              Battle in progress. Back in {formatDuration(returnsMs - now)}
+            </Mono>
           </div>
         )}
       </motion.div>
@@ -209,50 +223,56 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
 
   // ── Creature selection ───────────────────────────────────────────────────────
   if (selecting) {
+    const enough = selectedPower >= node.difficulty
     return (
       <motion.div {...panelMotion(isClosing)} style={panelStyle}>
         {header}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10, paddingRight: 40 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-            <div style={{ flexShrink: 0 }}><EmojiSprite id="item_shrine" emoji="⛩️" size={44} /></div>
+            {shrineTile(40)}
             <div style={{ minWidth: 0 }}>
-              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: accent }}>{t('shrine_battle_squad')}</h2>
-              <p style={{ margin: 0, fontSize: 11, color: '#94a3b8' }}>Up to {MAX_SHRINE_CREATURES} creatures</p>
+              <h2 style={{ ...titleStyle, fontSize: 19, lineHeight: '24px' }}>{t('shrine_battle_squad')}</h2>
+              <Mono style={{ display: 'block' }}>Up to {MAX_SHRINE_CREATURES} creatures</Mono>
             </div>
           </div>
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Power</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: selectedPower >= node.difficulty ? '#7c3aed' : '#f59e0b', lineHeight: 1 }}>
-              {selectedPower} <span style={{ fontSize: 13, color: '#cbd5e1' }}>/ {node.difficulty}</span>
+            <Mono style={kicker}>Power</Mono>
+            <div style={{ fontSize: 22, fontWeight: 600, color: enough ? forest : ink, lineHeight: '24px' }}>
+              {selectedPower} <Mono style={{ fontSize: 13 }}>/ {node.difficulty}</Mono>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
           {SORTS.map((s) => (
             <button
               key={s.key}
               onClick={() => setSortKey(s.key)}
               style={{
-                fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999,
-                border: 'none', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-                background: sortKey === s.key ? SHRINE_ACCENT : '#f1f5f9',
-                color: sortKey === s.key ? 'white' : '#64748b',
+                minHeight: 44, padding: 0, background: 'none', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', fontFamily: 'inherit',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
-              {s.label}
+              <span style={{
+                ...paperTag, padding: '5px 12px', fontSize: 13, lineHeight: '18px', fontWeight: 500,
+                background: sortKey === s.key ? ink : paperTag.background,
+                color: sortKey === s.key ? paperLight : ink,
+              }}>
+                {s.label}
+              </span>
             </button>
           ))}
         </div>
 
         {available.length === 0 ? (
-          <p style={{ margin: '20px 0', fontSize: 13, color: '#94a3b8', textAlign: 'center' }}>
+          <p style={{ margin: '20px 0', fontSize: 14, color: inkHint, textAlign: 'center' }}>
             No creatures available.
           </p>
         ) : (
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8,
-            maxHeight: 200, overflowY: 'auto', marginBottom: 14,
+            maxHeight: 200, overflowY: 'auto', marginBottom: 14, padding: '2px 3px 4px 2px',
           }}>
             {available.map((c) => {
               const isSel = selected.includes(c.id)
@@ -263,50 +283,44 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
                   onClick={() => toggle(c.id)}
                   disabled={atMax}
                   style={{
+                    ...paperCardStyle,
                     position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                    padding: '8px 4px', borderRadius: 12, cursor: atMax ? 'default' : 'pointer',
-                    border: `2px solid ${isSel ? SHRINE_ACCENT : '#f1f5f9'}`,
-                    background: isSel ? SHRINE_BG : 'white',
-                    opacity: atMax ? 0.4 : 1, WebkitTapHighlightColor: 'transparent',
+                    minWidth: 0, padding: '8px 4px 6px', cursor: atMax ? 'default' : 'pointer',
+                    ...(isSel && {
+                      background: `${categoryCss(c.poiCategory)}40`,
+                      outline: `1.5px solid ${ink}`, outlineOffset: -1,
+                    }),
+                    opacity: atMax ? 0.4 : 1, fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
                   }}
                 >
                   {isSel && (
                     <span style={{
-                      position: 'absolute', top: 2, right: 2, width: 16, height: 16, borderRadius: '50%',
-                      background: SHRINE_ACCENT, color: 'white', fontSize: 10, fontWeight: 700,
+                      position: 'absolute', top: 3, right: 3, width: 18, height: 18, borderRadius: '50%',
+                      background: ink, color: paperLight, fontSize: 11, fontWeight: 600,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>✓</span>
                   )}
                   <CreaturePreview species={c.species} emoji={c.emoji} creatureType={c.creatureType} isShiny={c.isShiny} size={40} />
-                  <span style={{ fontSize: 9, fontWeight: 700, color: '#1e293b', lineHeight: 1.1, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{creatureName(c)}</span>
-                  <span style={{ fontSize: 9, fontWeight: 600, color: '#f59e0b' }}>⚡{creaturePower(c)}</span>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: ink, lineHeight: '14px', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{creatureName(c)}</span>
+                  <Mono style={{ color: inkSoft }}>⚡{creaturePower(c)}</Mono>
                 </button>
               )
             })}
           </div>
         )}
 
-        <button
+        <InkButton
+          variant={canSend && !enough ? 'paper' : 'ink'}
           onClick={() => canSend && onStart(selected)}
           disabled={!canSend}
-          style={{
-            width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
-            background: canSend
-              ? selectedPower >= node.difficulty
-                ? `linear-gradient(135deg, ${SHRINE_ACCENT}, #a855f7)`
-                : 'linear-gradient(135deg, #f59e0b, #f97316)'
-              : '#e2e8f0',
-            color: canSend ? 'white' : '#94a3b8', fontSize: 15, fontWeight: 700,
-            cursor: canSend ? 'pointer' : 'default', WebkitTapHighlightColor: 'transparent',
-            boxShadow: canSend ? '0 2px 10px rgba(124,58,237,0.35)' : 'none',
-          }}
+          style={{ width: '100%', minHeight: 48, fontSize: 16 }}
         >
           {selected.length === 0
             ? 'Select creatures'
             : selectedPower < node.difficulty
               ? `Send anyway (may lose) - ${formatDuration(SHRINE_DURATION_MS)}`
               : `Challenge! - ${formatDuration(SHRINE_DURATION_MS)}`}
-        </button>
+        </InkButton>
       </motion.div>
     )
   }
@@ -315,45 +329,36 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
   return (
     <motion.div {...panelMotion(isClosing)} style={panelStyle}>
       {header}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-        <div style={{ flexShrink: 0 }}><EmojiSprite id="item_shrine" emoji="⛩️" size={60} /></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14, paddingRight: 40 }}>
+        {shrineTile(56)}
         <div style={{ minWidth: 0 }}>
-          <h2 style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 700, color: accent }}>
+          <Mono style={kicker}>{t('shrine_guardian_shrine')}</Mono>
+          <h2 style={{ ...titleStyle, margin: '0 0 4px' }}>
             {node.poiName}
           </h2>
-          <p style={{ margin: '0 0 8px', fontSize: 12, color: '#94a3b8' }}>{t('shrine_guardian_shrine')}</p>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-              background: SHRINE_BG, color: SHRINE_ACCENT,
-            }}>
-              {difficultyLabel} - {node.difficulty} power
-            </span>
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: '#fef3c7', color: '#b45309' }}>
-              Win: coins + egg
-            </span>
-          </div>
+          <Mono style={{ ...typed, color: ink }}>
+            {difficultyLabel} - {node.difficulty} power
+          </Mono>
+          <Mono style={typed}>
+            Win: coins + egg
+          </Mono>
         </div>
       </div>
 
       <div style={{
-        padding: '12px 14px', borderRadius: 12, marginBottom: 14,
-        background: 'rgba(248,250,252,0.8)', fontSize: 13, color: '#475569', lineHeight: 1.5,
+        ...paperCardStyle,
+        padding: '10px 12px', marginBottom: 14,
+        fontSize: 14, color: inkSoft, lineHeight: 1.5,
       }}>
         Send creatures to challenge this shrine. If your squad's power reaches {node.difficulty}, you claim it for 24h and earn coins and a rare egg.
       </div>
 
-      <button
+      <InkButton
         onClick={() => setSelecting(true)}
-        style={{
-          width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
-          background: `linear-gradient(135deg, ${SHRINE_ACCENT}, #a855f7)`,
-          color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-          boxShadow: '0 2px 10px rgba(124,58,237,0.4)', WebkitTapHighlightColor: 'transparent',
-        }}
+        style={{ width: '100%', minHeight: 48, fontSize: 16 }}
       >
         ⚔️ Challenge shrine
-      </button>
+      </InkButton>
     </motion.div>
   )
 }

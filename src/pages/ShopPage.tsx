@@ -8,7 +8,10 @@ import {
   CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   STREAK_FREEZE_MAX, STREAK_FREEZE_COST,
 } from '@/lib/profile'
-import { accent, rewardGradient } from '@/lib/theme'
+import { forest, ink, inkSoft, ochre, paperCard, paperLight } from '@/lib/theme'
+import { MONO, paperCardStyle, paperTag } from '@/lib/paper'
+import { InkButton, Mono, SectionTitle, Stamp } from '@/components/UI/Journal'
+import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 import { UUID_RE } from '@/lib/supabase'
 import { isBillingAvailable, fetchCoinPackages, purchaseCoinPack, type CoinPackages } from '@/lib/billing'
@@ -33,6 +36,15 @@ const COIN_PACKS = [
 // yet. Look a few times. If it still is not there, the next app start or
 // return to the foreground picks it up.
 const GRANT_RETRY_MS = [2_000, 4_000, 8_000, 16_000]
+
+// Cards sit a little crooked, like labels glued into a notebook.
+const PACK_TILTS = [-0.8, 0.6, 0.5, -0.6]
+
+// The window of a specimen card: a wash of ochre behind the item.
+const specimenWindow: React.CSSProperties = {
+  background: `${ochre}33`, borderRadius: 2,
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+}
 
 export function ShopPage() {
   const { profile, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, syncCoinGrants } = useProfile()
@@ -64,19 +76,19 @@ export function ShopPage() {
 
   const upgrades = [
     {
-      key: 'creatures', icon: '🧬',
+      key: 'creatures', icon: '🧬', sprite: 'item_creature_slots',
       title: `+${CREATURE_SLOT_CHUNK} creature slots`,
       sub: `Storage cap ${cap} → ${cap + CREATURE_SLOT_CHUNK}`,
       cost: creatureCost, disabled: profile.coins < creatureCost, buy: buyCreatureSlots,
     },
     {
-      key: 'egg', icon: '🥚',
+      key: 'egg', icon: '🥚', sprite: 'item_egg_slot',
       title: '+1 egg slot',
       sub: eggMaxed ? `Maxed (${MAX_EGG_SLOTS_CAP})` : `Incubate ${profile.maxEggSlots + 1} eggs at once`,
       cost: eggCost, disabled: eggMaxed || profile.coins < eggCost, buy: buyEggSlot,
     },
     {
-      key: 'streakFreeze', icon: '🧊',
+      key: 'streakFreeze', icon: '🧊', sprite: null,
       title: t('shop_streak_freeze'),
       sub: streakFreezeMaxed
         ? `Maxed (${STREAK_FREEZE_MAX} held)`
@@ -123,121 +135,120 @@ export function ShopPage() {
   }
 
   return (
-    <div style={{ background: '#f8fafc', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div style={{ background: paperLight, paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div style={{
-        position: 'sticky', top: 0, zIndex: 2, background: '#f8fafc',
-        padding: '20px 16px 14px', borderBottom: '1px solid #eef2f7',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        position: 'sticky', top: 0, zIndex: 2, background: paperLight,
+        padding: '10px 16px 10px', borderBottom: `1.5px solid ${ink}`,
+        display: 'flex', alignItems: 'center', gap: 12,
       }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: accent }}>{t('shop_title')}</h1>
+        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, lineHeight: '34px', letterSpacing: '-0.01em', color: ink }}>{t('shop_title')}</h1>
         <button
           onClick={scrollToCoins}
           title={t('shop_get_more_coins')}
           style={{
-            flexShrink: 0, fontSize: 14, fontWeight: 700, color: '#b45309', cursor: 'pointer',
-            background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 20, padding: '6px 14px',
+            ...paperTag, background: paperCard,
+            flexShrink: 0, minHeight: 44, display: 'flex', alignItems: 'center', gap: 6,
+            fontFamily: MONO, fontSize: 14, fontWeight: 500, cursor: 'pointer', padding: '0 12px',
+            WebkitTapHighlightColor: 'transparent',
           }}
         >
-          🪙 {profile.coins} +
+          <EmojiSprite id="item_coins" emoji="🪙" size={18} /> {profile.coins} +
         </button>
       </div>
 
-      <p style={{ margin: 0, padding: '12px 16px 0', fontSize: 14, color: '#94a3b8' }}>
+      <p style={{ margin: 0, padding: '12px 16px 0', fontSize: 13, lineHeight: '18px', color: inkSoft }}>
         {t('shop_subtitle')}
       </p>
 
       {!profile.isPremium && (
-        <div style={{ padding: '14px 16px 0' }}>
+        <div style={{ padding: '16px 16px 0' }}>
           <button
             onClick={() => setShowPremiumModal(true)}
             style={{
-              width: '100%', textAlign: 'left', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 12,
-              background: 'linear-gradient(160deg, #fffbeb 0%, #fff7ed 100%)',
-              border: '2px solid #fde68a', borderRadius: 16, padding: 14,
+              width: '100%', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 12, minHeight: 64,
+              background: paperCard, border: `1.5px solid ${ink}`, borderLeft: `8px solid ${ochre}`,
+              borderRadius: 6, padding: '10px 12px', color: ink, transform: 'rotate(-0.5deg)',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <span style={{ fontSize: 26 }}>👑</span>
+            <span style={{ fontSize: 26, lineHeight: 1 }}>👑</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: '#78350f' }}>{t('premium_go_premium')}</div>
-              <div style={{ fontSize: 12, color: '#92400e' }}>{t('premium_shop_teaser')}</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: ink }}>{t('premium_go_premium')}</div>
+              <div style={{ fontSize: 12, lineHeight: '16px', color: inkSoft }}>{t('premium_shop_teaser')}</div>
             </div>
-            <span style={{ fontSize: 18, fontWeight: 800, color: '#b45309' }}>›</span>
+            <span aria-hidden style={{ fontSize: 22, fontWeight: 500, color: ink }}>›</span>
           </button>
         </div>
       )}
 
       {/* Upgrades */}
-      <section style={{ padding: '8px 16px 8px' }}>
-        <h2 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: accent }}>{t('shop_upgrades')}</h2>
+      <section style={{ padding: '22px 16px 8px' }}>
+        <SectionTitle>{t('shop_upgrades')}</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {upgrades.map((it) => (
             <div key={it.key} style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              background: 'white', borderRadius: 16, padding: 16,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              ...paperCardStyle, borderRadius: 3,
+              display: 'flex', alignItems: 'center', gap: 12, padding: 8,
             }}>
-              <span style={{ fontSize: 30 }}>{it.icon}</span>
+              <span style={{ ...specimenWindow, flexShrink: 0, width: 52, height: 52 }}>
+                {it.sprite
+                  ? <EmojiSprite id={it.sprite} emoji={it.icon} size={36} />
+                  : <span style={{ fontSize: 28, lineHeight: 1 }}>{it.icon}</span>}
+              </span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{it.title}</div>
-                <div style={{ fontSize: 12, color: '#94a3b8' }}>{it.sub}</div>
+                <div style={{ fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }}>{it.title}</div>
+                <Mono style={{ display: 'block', marginTop: 2 }}>{it.sub}</Mono>
               </div>
-              <button
+              <InkButton
+                variant="paper"
                 onClick={it.buy}
                 disabled={it.disabled}
                 style={{
-                  flexShrink: 0, fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 20,
-                  border: 'none', cursor: it.disabled ? 'default' : 'pointer',
-                  background: it.disabled ? '#f1f5f9' : '#fffbeb',
-                  color: it.disabled ? '#cbd5e1' : '#b45309',
+                  flexShrink: 0, minWidth: 72, padding: '0 10px', fontFamily: MONO, fontSize: 14,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                 }}
               >
-                {it.cost} 🪙
-              </button>
+                {it.cost} <EmojiSprite id="item_coins" emoji="🪙" size={16} />
+              </InkButton>
             </div>
           ))}
         </div>
       </section>
 
       {/* Coins (real-money top-up) */}
-      <section ref={coinsRef} id="coins" style={{ padding: '16px 16px 32px', scrollMarginTop: 8 }}>
-        <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700, color: accent }}>{t('shop_coins_title')}</h2>
-        <p style={{ margin: '0 0 12px', fontSize: 12, color: testMode ? '#16a34a' : '#94a3b8' }}>
+      <section ref={coinsRef} id="coins" style={{ padding: '18px 16px 32px', scrollMarginTop: 72 }}>
+        <SectionTitle style={{ marginBottom: 2 }}>{t('shop_coins_title')}</SectionTitle>
+        <Mono style={{ display: 'block', margin: '0 0 18px', color: testMode ? forest : undefined }}>
           {testMode ? t('shop_coins_offline') : t('shop_coins_online')}
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-          {COIN_PACKS.map((pack) => (
+        </Mono>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '18px 12px' }}>
+          {COIN_PACKS.map((pack, i) => (
             <div key={pack.coins} style={{
-              position: 'relative',
-              background: 'white', borderRadius: 16, padding: '18px 12px 14px',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-              border: `2px solid ${pack.tagKey === 'shop_best_value' ? '#fde68a' : '#f1f5f9'}`,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              ...paperCardStyle, borderRadius: 3,
+              position: 'relative', padding: 6, transform: `rotate(${PACK_TILTS[i % PACK_TILTS.length]}deg)`,
+              display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 6,
             }}>
               {pack.tagKey && (
-                <span style={{
-                  position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
-                  fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase',
-                  background: pack.tagKey === 'shop_best_value' ? '#f59e0b' : '#6366f1', color: 'white',
-                  padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap',
-                }}>
+                <Stamp tilt={5} style={{ position: 'absolute', top: -10, right: -4, background: paperCard, whiteSpace: 'nowrap' }}>
                   {t(pack.tagKey)}
-                </span>
+                </Stamp>
               )}
-              <span style={{ fontSize: 28 }}>🪙</span>
-              <span style={{ fontSize: 18, fontWeight: 800, color: '#1e293b' }}>{pack.coins.toLocaleString()}</span>
-              <button
+              <span style={{ ...specimenWindow, height: 68 }}>
+                <EmojiSprite id="item_coins" emoji="🪙" size={44} />
+              </span>
+              <span style={{ fontSize: 20, fontWeight: 600, lineHeight: '24px', color: ink, textAlign: 'center' }}>{pack.coins.toLocaleString()}</span>
+              <InkButton
                 onClick={() => buyPack(pack)}
                 disabled={buying !== null}
                 style={{
-                  width: '100%', fontSize: 13, fontWeight: 700, padding: '9px', borderRadius: 12,
-                  border: 'none', cursor: buying ? 'default' : 'pointer',
-                  background: rewardGradient, color: 'white',
+                  width: '100%', padding: '0 4px', fontFamily: MONO, fontSize: 14,
+                  cursor: buying ? 'default' : 'pointer',
                   opacity: buying && buying !== pack.productId ? 0.5 : 1,
                 }}
               >
                 {buying === pack.productId ? '…' : (packages?.[pack.productId]?.product.priceString ?? pack.price)}
-              </button>
+              </InkButton>
             </div>
           ))}
         </div>

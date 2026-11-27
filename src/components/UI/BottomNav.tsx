@@ -2,8 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { isEggReady } from '@/lib/profile'
-import { glassNav } from '@/lib/glass'
-import { accent, accentAlpha } from '@/lib/theme'
+import { ink, paperLight, paperShade, stamp } from '@/lib/theme'
 import { motion, AnimatePresence } from 'motion/react'
 import { popSpring, tapScale } from '@/lib/motion'
 
@@ -17,8 +16,10 @@ const MapIcon = () => (
 
 const CreaturesIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" />
-    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+    <circle cx="7" cy="9" r="1.8" />
+    <circle cx="12" cy="6.5" r="1.8" />
+    <circle cx="17" cy="9" r="1.8" />
+    <path d="M8 17c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5c0 1.5-1.2 2.3-2.5 2-1-.3-2-.3-3 0-1.3.3-2.5-.5-2.5-2z" />
   </svg>
 )
 
@@ -35,8 +36,10 @@ const ProfileIcon = () => (
   </svg>
 )
 
-const TAB_W = 64
-const TAB_GAP = 2
+// The tabs of a notebook index. They rise from the bottom edge of the screen, and
+// the open one stands taller, on lighter paper, under a red stripe.
+const TAB_H = 56
+const ACTIVE_H = 66
 
 export function BottomNav() {
   const { t } = useLocale()
@@ -54,87 +57,60 @@ export function BottomNav() {
 
   return (
     <nav style={{
-      position: 'fixed',
-      bottom: 'calc(env(safe-area-inset-bottom) + 12px)',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 40,
-      display: 'flex',
-      gap: TAB_GAP,
-      padding: 6,
-      ...glassNav,
-      whiteSpace: 'nowrap',
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
+      display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6,
+      alignItems: 'end', padding: '0 12px', maxWidth: 480, margin: '0 auto',
+      pointerEvents: 'none',
     }}>
-      <motion.span
-        aria-hidden
-        initial={false}
-        animate={{
-          x: Math.max(0, activeIndex) * (TAB_W + TAB_GAP),
-          scaleX: [1.18, 1],
-          opacity: activeIndex < 0 ? 0 : 1,
-        }}
-        transition={{ type: 'spring', stiffness: 520, damping: 30, mass: 0.8 }}
-        style={{
-          position: 'absolute', top: 6, left: 6, width: TAB_W, height: 52,
-          borderRadius: 999, pointerEvents: 'none',
-          background: accentAlpha(0.12),
-          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.70), inset 0 -0.5px 0 ${accentAlpha(0.10)}`,
-        }}
-      />
-      {tabs.map(({ to, icon, label, dot }) => (
-        <NavLink
-          key={to}
-          to={to}
-          end={to === '/'}
-          style={({ isActive }) => ({
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 3,
-            width: TAB_W,
-            height: 52,
-            borderRadius: 999,
-            textDecoration: 'none',
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase' as const,
-            color: isActive ? accent : 'rgba(100,116,139,0.70)',
-            transition: 'color 0.25s ease',
-            WebkitTapHighlightColor: 'transparent',
-          })}
-        >
-          {({ isActive }) => (
-            <>
-              <AnimatePresence>
-                {dot && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: [1, 1.25, 1] }}
-                    exit={{ scale: 0 }}
-                    transition={{ scale: { duration: 1.6, repeat: Infinity, repeatDelay: 1.2 } }}
-                    style={{
-                      position: 'absolute', top: 6, right: 14, width: 9, height: 9,
-                      borderRadius: '50%', background: '#ef4444', border: '1.5px solid white',
-                    }}
-                  />
-                )}
-              </AnimatePresence>
-              <motion.span
-                whileTap={tapScale}
-                animate={isActive ? { y: [0, -5, 0], rotate: [0, -8, 0] } : { y: 0, rotate: 0 }}
-                transition={isActive ? { duration: 0.45, ease: 'easeOut' } : popSpring}
-                style={{ display: 'flex' }}
-              >
-                {icon}
-              </motion.span>
-              <span>{label}</span>
-            </>
-          )}
-        </NavLink>
-      ))}
+      {tabs.map(({ to, icon, label, dot }, i) => {
+        const active = i === activeIndex
+        return (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            style={{
+              position: 'relative',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+              height: `calc(${active ? ACTIVE_H : TAB_H}px + env(safe-area-inset-bottom))`,
+              paddingBottom: 'env(safe-area-inset-bottom)',
+              background: active ? paperLight : paperShade,
+              border: `1.5px solid ${ink}`, borderBottom: 'none',
+              borderTop: active ? `5px solid ${stamp}` : `1.5px solid ${ink}`,
+              borderRadius: '10px 10px 0 0',
+              textDecoration: 'none', color: ink,
+              fontSize: 12, fontWeight: active ? 600 : 500, lineHeight: '14px',
+              transition: 'height 0.22s cubic-bezier(0.34,1.4,0.64,1), background 0.2s ease',
+              WebkitTapHighlightColor: 'transparent',
+              pointerEvents: 'auto',
+            }}
+          >
+            <AnimatePresence>
+              {dot && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [1, 1.25, 1] }}
+                  exit={{ scale: 0 }}
+                  transition={{ scale: { duration: 1.6, repeat: Infinity, repeatDelay: 1.2 } }}
+                  style={{
+                    position: 'absolute', top: 7, right: 12, width: 10, height: 10,
+                    borderRadius: '50%', background: stamp, border: `1.5px solid ${paperLight}`,
+                  }}
+                />
+              )}
+            </AnimatePresence>
+            <motion.span
+              whileTap={tapScale}
+              animate={active ? { y: [0, -5, 0], rotate: [0, -8, 0] } : { y: 0, rotate: 0 }}
+              transition={active ? { duration: 0.45, ease: 'easeOut' } : popSpring}
+              style={{ display: 'flex' }}
+            >
+              {icon}
+            </motion.span>
+            <span style={{ maxWidth: '100%', padding: '0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+          </NavLink>
+        )
+      })}
     </nav>
   )
 }

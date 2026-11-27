@@ -23,10 +23,10 @@ import { SettingsPage } from '@/pages/SettingsPage'
 import { CharacterCustomizationPage } from '@/pages/CharacterCustomizationPage'
 
 function MapUnavailable() {
-  // The map sits under every tab, so its fallback would ghost through their glass.
+  // The map sits under every tab, so its fallback shows only on the map tab.
   if (useLocation().pathname !== '/') return null
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, color: '#94a3b8', fontSize: 14 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: 12, color: '#75634C', fontSize: 14 }}>
       <span style={{ fontSize: 40 }}>🗺</span>
       Map unavailable
     </div>
@@ -77,7 +77,8 @@ function AnimatedRoutes() {
           animate="center"
           exit="exit"
           transition={pageSpring}
-          style={{ position: 'absolute', inset: 0 }}
+          // Above the map's own controls (the credit button), which sit at z-index 2.
+          style={{ position: 'absolute', inset: 0, zIndex: 10 }}
         >
           <Routes location={location}>
             <Route path="/creatures" element={<CreaturesPage />} />
@@ -164,7 +165,7 @@ export default function App() {
           <BrowserRouter>
             <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
               <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-                {/* Mounted on every route: the other tabs are frosted glass over it. */}
+                {/* Mounted on every route: the other tabs are paper pages that cover it. */}
                 <MapErrorBoundary><MapPage /></MapErrorBoundary>
                 <AnimatedRoutes />
               </div>

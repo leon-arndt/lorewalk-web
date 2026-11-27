@@ -1,16 +1,16 @@
 import { memo, useEffect, useState } from 'react'
 import { getCreaturePreviewURL } from '@/lib/creaturePreview'
 import { LoadingDot } from '@/components/UI/LoadingDot'
+import { categoryCss, line, ochre, paperCard } from '@/lib/theme'
 
-const TYPE_STYLE: Record<string, { bg: string; border: string }> = {
-  stray:     { bg: '#f0f4ff', border: '#c7d2fe' },
-  community: { bg: '#fff7ed', border: '#fed7aa' },
-  wild:      { bg: '#f0fdf4', border: '#bbf7d0' },
-  critter:   { bg: '#fefce8', border: '#fde68a' },
-  mythic:    { bg: '#fdf4ff', border: '#e9d5ff' },
+// A wash per creature type, in the same muted colours as the map pins.
+const TYPE_WASH: Record<string, string> = {
+  stray: categoryCss('landmark'),
+  community: categoryCss('heritage'),
+  wild: categoryCss('nature'),
+  critter: categoryCss('religious'),
+  mythic: categoryCss('arts'),
 }
-
-const SHINY_STYLE = { bg: '#fffbeb', border: '#f59e0b' }
 
 export const CreaturePreview = memo(function CreaturePreview({
   species,
@@ -18,16 +18,19 @@ export const CreaturePreview = memo(function CreaturePreview({
   creatureType,
   isShiny,
   size = 72,
+  wash,
 }: {
   species: string
   emoji: string
   creatureType?: string
   isShiny?: boolean
   size?: number
+  // A colour for the wash, in place of the one for the creature type.
+  wash?: string
 }) {
   const [result, setResult] = useState<{ key: string; url: string | null } | null>(null)
   const key = `${species}|${!!isShiny}`
-  const style = isShiny ? SHINY_STYLE : (TYPE_STYLE[creatureType ?? ''] ?? { bg: '#f1f5f9', border: '#e2e8f0' })
+  const tint = wash ?? TYPE_WASH[creatureType ?? ''] ?? categoryCss('')
 
   useEffect(() => {
     let cancelled = false
@@ -40,10 +43,11 @@ export const CreaturePreview = memo(function CreaturePreview({
 
   return (
     <div style={{
-      width: size, height: size, borderRadius: Math.round(size * 0.22),
-      background: style.bg,
-      border: `2px solid ${style.border}`,
-      boxShadow: isShiny ? '0 0 10px rgba(245,158,11,0.45)' : undefined,
+      width: size, height: size, borderRadius: 3,
+      // Two flat layers, so the tile stays opaque over a scrim.
+      backgroundColor: paperCard,
+      backgroundImage: `linear-gradient(${tint}38, ${tint}38)`,
+      border: isShiny ? `1.5px solid ${ochre}` : `1px solid ${line}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>

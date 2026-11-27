@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useState, type CSSProperties } from 'react'
+import { forest, indigo, line, ochre, paperLight, stamp } from '@/lib/theme'
 
 interface ConfettiProps {
   onDone: () => void
@@ -16,7 +17,8 @@ interface Piece {
   drift: number
 }
 
-const COLORS = ['#f59e0b', '#6366f1', '#22c55e', '#ec4899', '#38bdf8']
+// Cut paper in the journal's inks. The edge keeps a paper piece visible on a paper page.
+const COLORS = [stamp, ochre, forest, indigo, paperLight]
 const DURATION_MS = 1100
 
 function randomPieces(count: number): Piece[] {
@@ -52,7 +54,8 @@ export function Confetti({ onDone, count = 24 }: ConfettiProps) {
             width: 7,
             height: 10,
             background: p.color,
-            borderRadius: 2,
+            border: `1px solid ${p.color === paperLight ? line : p.color}`,
+            borderRadius: 1,
             animation: `confettiFall ${p.duration}ms ${p.delay}ms ease-in forwards`,
             '--drift': `${p.drift}px`,
             '--rotate': `${p.rotate}deg`,

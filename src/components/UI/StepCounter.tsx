@@ -1,7 +1,7 @@
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { useEffect, useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
-import { glassChrome } from '@/lib/glass'
+import { paperTag } from '@/lib/paper'
 import { Confetti } from '@/components/UI/Confetti'
 import { StepRing } from '@/components/UI/StepRing'
 import { DAILY_STEP_GOAL, localDateKey } from '@/lib/profile'
@@ -68,8 +68,8 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
     <div
       style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '4px 12px 4px 4px', borderRadius: 999,
-        ...glassChrome,
+        ...paperTag,
+        padding: '3px 12px 3px 4px',
         pointerEvents: 'none', userSelect: 'none',
         animation: ringCelebrate ? 'stepRingPulse 0.6s ease' : undefined,
       }}
@@ -86,10 +86,10 @@ export function StepCounter({ steps, distanceM }: StepCounterProps) {
         </div>
       </StepRing>
       <div style={{ lineHeight: 1.1, textAlign: 'center' }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: '#33281E' }}>
           {(animatedSteps ?? steps).toLocaleString()} {t('steps_unit')}
         </div>
-        <div style={{ fontSize: 10, color: '#64748b' }}>{t('steps_today', { distance })}</div>
+        <div style={{ fontSize: 10, color: '#6A5843' }}>{t('steps_today', { distance })}</div>
       </div>
       {celebrate && <Confetti onDone={() => setCelebrate(false)} />}
       {ringCelebrate && <Confetti onDone={() => setRingCelebrate(false)} />}

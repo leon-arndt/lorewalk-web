@@ -7,7 +7,9 @@ import { MedalSvg } from '@/components/UI/MedalSvg'
 import { getMedalConfig } from '@/data/medals'
 import type { RewardItem, RewardItemType } from '@/types'
 import type { Translations } from '@/i18n/types'
-import { rewardGradient } from '@/lib/theme'
+import { InkButton, Mono, NoteCard } from '@/components/UI/Journal'
+import { SCRIM_DEEP, monoLabel } from '@/lib/paper'
+import { forest, indigo, ink, inkSoft, line, ochre, paper, paperCard, paperLight, stamp } from '@/lib/theme'
 
 // Header emojis that have a 3D icon, for callers that pass no spriteId.
 const HEADER_SPRITES: Record<string, string> = {
@@ -15,13 +17,8 @@ const HEADER_SPRITES: Record<string, string> = {
   '🏅': 'item_badge', '⛩️': 'item_shrine', '🪙': 'item_coins', '⭐': 'item_xp', '🥚': 'item_egg',
 }
 
-const ITEM_META: Record<RewardItemType, { icon: string; color: string }> = {
-  xp:       { icon: '⭐', color: '#f59e0b' },
-  coins:    { icon: '🪙', color: '#b45309' },
-  egg:      { icon: '🥚', color: '#16a34a' },
-  level_up: { icon: '✨', color: '#16a34a' },
-  badge:    { icon: '🏅', color: '#ca8a04' },
-  food:     { icon: '🍽️', color: '#f59e0b' },
+const ITEM_ICON: Record<RewardItemType, string> = {
+  xp: '⭐', coins: '🪙', egg: '🥚', level_up: '✨', badge: '🏅', food: '🍽️',
 }
 
 function itemLabel(item: RewardItem, t: (key: keyof Translations, vars?: Record<string, string | number>) => string): string {
@@ -35,7 +32,8 @@ function itemLabel(item: RewardItem, t: (key: keyof Translations, vars?: Record<
   }
 }
 
-const FW_COLORS = ['#818cf8', '#c084fc', '#34d399', '#fbbf24', '#f472b6', '#60a5fa', '#fb923c']
+// Ink bursts in the journal palette. The light inks lead, because the scrim is dark.
+const FW_COLORS = [paperLight, ochre, stamp, paperLight, ochre, forest, indigo]
 
 // A screen full of celebratory bursts that fire on mount. Each burst is a ring of
 // particles flung outward via a shared CSS keyframe (per-particle target set with
@@ -77,7 +75,6 @@ function Fireworks() {
                 width: p.size, height: p.size, borderRadius: '50%',
                 marginLeft: -p.size / 2, marginTop: -p.size / 2,
                 background: p.color,
-                boxShadow: `0 0 7px ${p.color}`,
                 '--dx': `${p.dx}px`,
                 '--dy': `${p.dy}px`,
                 animation: `fwFly ${p.dur}ms ease-out ${burst.delay}ms both`,
@@ -90,17 +87,20 @@ function Fireworks() {
   )
 }
 
-const MOTE_COLORS = ['#fde68a', '#fef3c7', '#ffffff', '#c4b5fd', '#f0abfc']
+const DUST_COLORS = [paperLight, paperCard, paper]
 
-// Soft glowing motes that drift up the screen for as long as it is open. Negative
-// delays start each mote part-way through its rise, so the screen opens already full.
+// Paper dust and gold flecks that drift up the screen for as long as it is open.
+// Negative delays start each mote part-way through its rise, so the screen opens
+// already full.
 function RisingMotes() {
   const [motes] = useState(() => Array.from({ length: 36 }, () => {
     const dur = 6 + Math.random() * 7
+    const fleck = Math.random() < 0.35
     return {
+      fleck,
       left: Math.random() * 100,
-      size: 2 + Math.random() * 4.5,
-      color: MOTE_COLORS[Math.floor(Math.random() * MOTE_COLORS.length)],
+      size: 3 + Math.random() * 5,
+      color: fleck ? ochre : DUST_COLORS[Math.floor(Math.random() * DUST_COLORS.length)],
       dur,
       delay: -Math.random() * dur,
       sway: 14 + Math.random() * 26,
@@ -121,9 +121,9 @@ function RisingMotes() {
           } as CSSProperties}
         >
           <span style={{
-            display: 'block', width: m.size, height: m.size, borderRadius: '50%',
+            display: 'block', width: m.size, height: m.size, borderRadius: m.fleck ? 1 : '50%',
             background: m.color,
-            boxShadow: `0 0 ${m.size * 2.5}px ${m.size * 0.6}px ${m.color}`,
+            rotate: m.fleck ? '45deg' : undefined,
             '--sway': `${m.sway}px`,
             animation: `moteSway ${m.swayDur}s ease-in-out ${m.delay}s infinite alternate`,
           } as CSSProperties} />
@@ -159,7 +159,7 @@ export function RewardScreen() {
       onClick={handleTap}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(167,139,250,0.38), transparent 70%), rgba(15,10,30,0.8)',
+        background: SCRIM_DEEP,
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         padding: '24px 20px',
         animation: 'fadeIn 0.2s ease',
@@ -168,20 +168,22 @@ export function RewardScreen() {
       <RisingMotes />
       <Fireworks />
 
-      <div
+      {/* A note taped over the page. rewardPop ends on the same tilt as the note. */}
+      <NoteCard
+        taped
+        tilt={-0.6}
         style={{
-          position: 'relative', zIndex: 10,
+          zIndex: 10,
           width: '100%', maxWidth: 360,
-          background: 'white', borderRadius: 28,
-          padding: '36px 28px 28px',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.4)',
+          padding: '34px 22px 22px',
+          boxShadow: '3px 4px 0 rgba(51,40,30,0.35)',
           animation: 'rewardPop 0.38s cubic-bezier(0.16,1,0.3,1)',
           textAlign: 'center',
         }}
       >
-        {/* Big icon — medal SVG if available, otherwise emoji */}
+        {/* Big icon: the medal SVG if there is one, otherwise the sprite */}
         <div style={{
-          lineHeight: 1, marginBottom: 16,
+          lineHeight: 1, marginBottom: 14,
           animation: 'rewardBounce 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s both',
           display: 'inline-block',
         }}>
@@ -192,65 +194,49 @@ export function RewardScreen() {
         </div>
 
         {/* Title */}
-        <h2 className="reward-title" style={{ margin: '0 0 6px', fontSize: 28, fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.01em' }}>
+        <h2 className="reward-title" style={{ margin: '0 0 6px', fontSize: 28, fontWeight: 600, lineHeight: 1.15, letterSpacing: '-0.01em' }}>
           {title}
         </h2>
         {subtitle && (
-          <p style={{ margin: '0 0 24px', fontSize: 14, color: '#94a3b8' }}>
+          <p style={{ margin: '0 0 20px', fontSize: 14, lineHeight: '20px', color: inkSoft }}>
             {subtitle}
           </p>
         )}
-        {!subtitle && <div style={{ height: 16 }} />}
+        {!subtitle && <div style={{ height: 14 }} />}
 
-        {/* Reward rows - each slides in on a stagger so items feel added one by one */}
+        {/* Reward rows: ledger lines. Each slides in on a stagger, so items feel added one by one */}
         {items.length > 0 && (
           <div style={{
-            background: '#f8fafc', borderRadius: 16, padding: '4px 0', marginBottom: 24,
+            borderTop: `1.5px dashed ${line}`, borderBottom: `1.5px dashed ${line}`, marginBottom: 20,
           }}>
-            {items.map((item, i) => {
-              const meta = ITEM_META[item.type]
-              return (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 16px',
-                  borderBottom: i < items.length - 1 ? '1px solid #f1f5f9' : 'none',
-                  animation: `rewardRowIn 0.42s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.14}s both`,
-                }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                    background: `${meta.color}18`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 20,
-                  }}>
-                    <EmojiSprite id={item.spriteId ?? `item_${item.type}`} emoji={item.emoji ?? meta.icon} size={22} />
-                  </div>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', textAlign: 'left' }}>
-                    {itemLabel(item, t)}
-                  </span>
+            {items.map((item, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 4px',
+                borderTop: i > 0 ? `1.5px dashed ${line}` : 'none',
+                animation: `rewardRowIn 0.42s cubic-bezier(0.16,1,0.3,1) ${0.35 + i * 0.14}s both`,
+              }}>
+                <div style={{ width: 26, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <EmojiSprite id={item.spriteId ?? `item_${item.type}`} emoji={item.emoji ?? ITEM_ICON[item.type]} size={24} />
                 </div>
-              )
-            })}
+                <Mono style={{ fontSize: 14, lineHeight: '20px', fontWeight: 500, color: ink, textAlign: 'left' }}>
+                  {itemLabel(item, t)}
+                </Mono>
+              </div>
+            ))}
           </div>
         )}
 
-        <button
-          type="button"
-          style={{
-            width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-            background: rewardGradient,
-            color: 'white', fontSize: 17, fontWeight: 800,
-            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-            boxShadow: '0 4px 16px rgba(129,140,248,0.4)',
-            letterSpacing: '0.01em',
-          }}
-        >
+        <InkButton style={{ width: '100%', minHeight: 48, fontSize: 17 }}>
           {t('reward_collect')}
-        </button>
-      </div>
+        </InkButton>
+      </NoteCard>
 
       <div className="reward-tap-hint" style={{
-        position: 'relative', zIndex: 10, marginTop: 18,
-        color: 'rgba(255,255,255,0.72)', fontSize: 13, fontWeight: 600, letterSpacing: '0.04em',
+        ...monoLabel,
+        position: 'relative', zIndex: 10, marginTop: 18, padding: '5px 10px',
+        background: ink, borderRadius: 6,
+        color: paperLight, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em',
         pointerEvents: 'none',
       }}>
         {t('levelup_tap_continue')}
@@ -259,8 +245,8 @@ export function RewardScreen() {
       <style>{`
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes rewardPop {
-          from { opacity: 0; transform: scale(0.85) translateY(20px) }
-          to   { opacity: 1; transform: scale(1) translateY(0) }
+          from { opacity: 0; transform: scale(0.85) translateY(20px) rotate(-0.6deg) }
+          to   { opacity: 1; transform: scale(1) translateY(0) rotate(-0.6deg) }
         }
         @keyframes rewardBounce {
           0%   { transform: scale(0.5) rotate(-8deg) }
@@ -273,7 +259,7 @@ export function RewardScreen() {
           to   { opacity: 1; transform: translateY(0) scale(1) }
         }
         .reward-title {
-          background: linear-gradient(100deg, #6366f1 0%, #a855f7 38%, #f59e0b 50%, #a855f7 62%, #6366f1 100%);
+          background: linear-gradient(100deg, ${stamp} 0%, ${stamp} 38%, ${ochre} 50%, ${stamp} 62%, ${stamp} 100%);
           background-size: 250% 100%;
           -webkit-background-clip: text;
           background-clip: text;
@@ -292,8 +278,8 @@ export function RewardScreen() {
           65%, 100% { background-position: 0% 0 }
         }
         @keyframes rewardTitleGlow {
-          0%, 100% { filter: drop-shadow(0 0 6px rgba(168,85,247,0.45)) drop-shadow(0 0 1px rgba(245,158,11,0.4)) }
-          50%      { filter: drop-shadow(0 0 16px rgba(168,85,247,0.75)) drop-shadow(0 0 4px rgba(245,158,11,0.55)) }
+          0%, 100% { filter: drop-shadow(0 0 4px rgba(201,138,30,0.3)) }
+          50%      { filter: drop-shadow(0 0 12px rgba(201,138,30,0.7)) }
         }
         .reward-tap-hint {
           animation: rewardHintIn 0.5s ease 1.1s both, rewardHintPulse 2.4s ease-in-out 1.6s infinite;

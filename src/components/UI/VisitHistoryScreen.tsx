@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { VisitHistoryItem } from '@/components/UI/VisitHistoryItem'
 import type { VisitRecord } from '@/types'
-import { glassSheet } from '@/lib/glass'
+import { paperSheet, SCRIM } from '@/lib/paper'
+import { ink, line } from '@/lib/theme'
+import { InkButton, Mono } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { sheetIn, backdropIn } from '@/lib/motion'
 
@@ -19,7 +21,7 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   return createPortal(
-    <motion.div {...backdropIn('rgba(15,23,42,0.45)')}
+    <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
       data-sfx="close"
       style={{
@@ -31,24 +33,27 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxHeight: '90vh',
-          ...glassSheet,
-          borderRadius: '24px 24px 0 0',
+          ...paperSheet,
+          borderRadius: '10px 10px 0 0',
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 0', flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: '#cbd5e1' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: line }} />
         </div>
 
-        <div style={{ flexShrink: 0, padding: '14px 20px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: '#1e293b' }}>{t('profile_visit_history')}</div>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+        <div style={{
+          flexShrink: 0, margin: '0 20px', padding: '12px 0 10px', borderBottom: `1.5px dashed ${line}`,
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12,
+        }}>
+          <div style={{ fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>{t('profile_visit_history')}</div>
+          <Mono>
             {t('profile_visit_history_count', { count: visits.length })}
-          </div>
+          </Mono>
         </div>
 
-        <div style={{ overflowY: 'auto', padding: '4px 20px calc(28px + env(safe-area-inset-bottom))' }}>
+        <div style={{ overflowY: 'auto', padding: '12px 20px calc(28px + env(safe-area-inset-bottom))' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {visits.slice(0, visibleCount).map((visit, i) => (
               <VisitHistoryItem key={`${visit.poiId}-${visit.visitedAt}-${i}`} visit={visit} />
@@ -56,16 +61,13 @@ export function VisitHistoryScreen({ visits, onClose }: Props) {
           </div>
 
           {visibleCount < visits.length && (
-            <button
+            <InkButton
+              variant="paper"
               onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-              style={{
-                display: 'block', width: '100%', marginTop: 12, padding: '12px',
-                background: 'white', border: '1px solid #e2e8f0', borderRadius: 14,
-                fontSize: 13, fontWeight: 700, color: '#1e293b', cursor: 'pointer',
-              }}
+              style={{ display: 'block', width: '100%', marginTop: 12 }}
             >
               {t('profile_visit_history_load_more')}
-            </button>
+            </InkButton>
           )}
         </div>
       </motion.div>
