@@ -71,7 +71,7 @@ test('the step counter counts a walk that arrives as one fix after another', asy
 test('the character designer shows every tab without a sideways scroll', async ({ page }) => {
   await open(page, '/customize')
   const tabs = page.getByRole('tablist')
-  await expect(page.getByRole('tab')).toHaveCount(7)
+  await expect(page.getByRole('tab')).toHaveCount(8)
   expect(await tabs.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
 
   await page.getByRole('tab', { name: 'Bottom' }).click()
@@ -101,6 +101,26 @@ test('each item of the character designer keeps its own colour', async ({ page }
   // Without a head item, there is nothing to colour.
   await page.getByRole('tab', { name: 'Head Item' }).click()
   await expect(colors).toBeHidden()
+})
+
+test('the character designer sets a hairstyle and glasses', async ({ page }) => {
+  await open(page, '/customize')
+  const panel = page.getByRole('tabpanel')
+  await page.getByRole('tab', { name: 'Hair' }).click()
+  // Each of the six hairstyles is a picture of the avatar.
+  await expect(panel.locator('img')).toHaveCount(6, { timeout: 15_000 })
+  expect(await panel.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
+  await panel.getByRole('button', { name: 'Ponytail' }).click()
+  await expect.poll(async () => (await profile(page)).appearance.bodyId).toBe('ponytail')
+
+  await page.getByRole('tab', { name: 'Glasses' }).click()
+  const colors = panel.getByRole('group', { name: 'Color' })
+  await expect(colors).toBeHidden()
+  await panel.getByRole('button', { name: 'Round' }).click()
+  await colors.getByRole('button', { name: 'Blue' }).click()
+  const look = (await profile(page)).appearance
+  expect(look.glassesId).toBe('roundGlasses')
+  expect(look.itemColors).toEqual({ roundGlasses: 'blue' })
 })
 
 test('the back button of a page goes to the profile', async ({ page }) => {

@@ -352,6 +352,11 @@ export interface Translations {
   customize_hair: string
   customize_color: string
   customize_color_original: string
+  customize_glasses: string
+  customize_style_bob: string
+  customize_style_ponytail: string
+  customize_style_pigtails: string
+  customize_style_spiky: string
   settings_steps_section: string
   settings_health_steps: string
   settings_health_steps_desc: string

@@ -136,6 +136,39 @@ async function createRigged(THREE: THREE, appearance: PlayerAppearance): Promise
 
 // --- Item shapes -------------------------------------------------------------
 
+// Cuts the hair at a height: each hair vertex below it moves up to it, and in to
+// the width that the hair has there. Returns the box of the hair at the cut.
+// The model must be in its rest pose, like in measure().
+function cutHair(THREE: THREE, model: T3.Object3D, cutY: number, band: number, owned: { dispose: () => void }[]): T3.Box3 {
+  const rim = new THREE.Box3()
+  model.traverse((o) => {
+    const mesh = o as T3.SkinnedMesh
+    if (!mesh.isSkinnedMesh || !mesh.geometry.index || (mesh.material as T3.Material).name !== 'Hair') return
+    // The model's materials share one vertex buffer, so the hair gets its own copy.
+    const geo = mesh.geometry.clone()
+    owned.push(geo)
+    const pos = geo.attributes.position
+    mesh.geometry = geo
+    const low = new Map<number, T3.Vector3>()
+    for (const i of new Set(geo.index!.array)) {
+      const v = mesh.getVertexPosition(i, new THREE.Vector3()).applyMatrix4(mesh.matrixWorld)
+      if (v.y < cutY) low.set(i, v)
+      else if (v.y < cutY + band) rim.expandByPoint(v)
+    }
+    // The skin moves a vertex from the buffer to its place, also in the rest pose.
+    // The way back for a vertex is the inverse of what its bones do to the axes.
+    const at = (i: number, x: number, y: number, z: number) => mesh.applyBoneTransform(i, new THREE.Vector3(x, y, z))
+    const toBuffer = new THREE.Matrix4()
+    for (const [i, v] of low) {
+      const o = at(i, 0, 0, 0)
+      toBuffer.makeBasis(at(i, 1, 0, 0).sub(o), at(i, 0, 1, 0).sub(o), at(i, 0, 0, 1).sub(o)).setPosition(o).premultiply(mesh.matrixWorld).invert()
+      v.set(THREE.MathUtils.clamp(v.x, rim.min.x, rim.max.x), cutY, THREE.MathUtils.clamp(v.z, rim.min.z, rim.max.z)).applyMatrix4(toBuffer)
+      pos.setXYZ(i, v.x, v.y, v.z)
+    }
+  })
+  return rim
+}
+
 // Rest-pose boxes of the model's own geometry, in model space. Everything below
 // is sized from these, so no number is tied to one body.
 function measure(THREE: THREE, model: T3.Object3D) {
@@ -174,8 +207,12 @@ function measure(THREE: THREE, model: T3.Object3D) {
   const foot = (name: string) => boxOf((p) => p.mat === 'Skin' && p.v.y < footTop && Math.sign(p.v.x) === side(name))
   const shin = (name: string) => boxOf((p) => p.mat === 'Skin' && p.v.y >= footTop && p.v.y < bottom.min.y && Math.sign(p.v.x) === side(name))
 
+  const eye = (sx: number) => boxOf((p) => p.mat === 'Eyes' && Math.sign(p.v.x) === sx)
+
   return {
     H,
+    eyes: [eye(-1), eye(1)],
+    face: boxOf((p) => p.mat === 'Skin' && p.v.y >= headY),
     head: boxOf((p) => (p.mat === 'Skin' || p.mat === 'Hair') && p.v.y >= headY),
     neckY: boneY('Neck'),
     top: boxOf((p) => p.mat === 'Top' && Math.abs(p.v.x) < H * 0.2),
@@ -224,6 +261,59 @@ function addItemShapes(THREE: THREE, model: T3.Object3D, appearance: PlayerAppea
     block('Head', hs.x * 1.04, u * 0.1, hs.z * 1.04, hc.x, hb.max.y - u * 0.02, hc.z, headColor)
     block('Head', hs.x * 1.4, u * 0.018, hs.z * 1.45, hc.x, hb.max.y - u * 0.07, hc.z, headColor)
     block('Head', hs.x * 1.06, u * 0.025, hs.z * 1.06, hc.x, hb.max.y - u * 0.055, hc.z, shade(headColor, 0.7))
+  }
+
+  // Hairstyles change the hair of the model. A hat hides what stands on top of the head.
+  const hairColor = hairColorById(appearance.hairColorId)?.color ?? 0x0a0a0a
+  const tieColor = new THREE.Color(hairColor).lerp(new THREE.Color(0xffffff), 0.3).getHex()
+  const fs = size(m.face)
+  const style = avatarBodyById(appearance.bodyId).hair
+  // A strand of hair: a square frustum that hangs from its top end, at an angle.
+  function strand(x: number, y: number, z: number, len: number, wTop: number, wEnd: number, tiltX: number, tiltZ: number) {
+    const geo = new THREE.CylinderGeometry(wTop / Math.SQRT2, wEnd / Math.SQRT2, len, 4)
+    geo.rotateY(Math.PI / 4).translate(0, -len / 2, 0).rotateX(tiltX).rotateZ(tiltZ)
+    shape('Head', geo, x, y, z, hairColor)
+  }
+  if (style === 'bob') {
+    cutHair(THREE, model, m.face.min.y - u * 0.012, u * 0.05, owned)
+  } else if (style === 'ponytail') {
+    const rim = cutHair(THREE, model, m.face.min.y + fs.y * 0.08, u * 0.05, owned)
+    const y = hb.max.y - hs.y * 0.42
+    block('Head', u * 0.11, u * 0.09, u * 0.07, hc.x, y, rim.min.z - u * 0.02, tieColor)
+    strand(hc.x, y + u * 0.03, rim.min.z - u * 0.04, u * 0.34, u * 0.15, u * 0.06, 0.45, 0)
+  } else if (style === 'pigtails') {
+    const rim = cutHair(THREE, model, m.face.min.y + fs.y * 0.08, u * 0.05, owned)
+    const y = hb.max.y - hs.y * 0.5
+    for (const sx of [-1, 1]) {
+      const x = sx > 0 ? rim.max.x : rim.min.x
+      block('Head', u * 0.06, u * 0.09, u * 0.1, x + sx * u * 0.015, y, hc.z, tieColor)
+      strand(x + sx * u * 0.03, y + u * 0.03, hc.z, u * 0.32, u * 0.14, u * 0.06, 0, sx * 0.35)
+    }
+  } else if (style === 'spiky' && appearance.headItemId === 'none') {
+    // x and z across the top of the head, then the lean forward, the lean to the side, and the height.
+    const spikes = [
+      [0, 0.55, 0.5, 0, 0.2], [-0.5, 0.3, 0.3, 0.4, 0.19], [0.5, 0.3, 0.3, -0.4, 0.19],
+      [0, -0.05, 0, 0, 0.24], [-0.5, -0.4, -0.35, 0.4, 0.19], [0.5, -0.4, -0.35, -0.4, 0.19], [0, -0.7, -0.6, 0, 0.2],
+    ]
+    for (const [x, z, tiltX, tiltZ, h] of spikes) {
+      const geo = new THREE.ConeGeometry(u * 0.085, u * h, 4)
+      geo.translate(0, (u * h) / 2, 0).rotateX(tiltX).rotateZ(tiltZ)
+      shape('Head', geo, hc.x + x * fs.x / 2, m.face.max.y, hc.z + z * hs.z / 2, hairColor)
+    }
+  }
+
+  // Glasses: a ring around each eye, and a bridge between the two.
+  const round = appearance.glassesId === 'roundGlasses'
+  if ((round || appearance.glassesId === 'squareGlasses') && !m.eyes[1].isEmpty()) {
+    const e = mid(m.eyes[1]), r = e.x * 0.56, tube = e.x * 0.07
+    const frame = itemColor(appearance, 'glasses')
+    const z = m.eyes[1].max.z + tube
+    for (const sx of [-1, 1]) {
+      // A torus with four segments around is a square after a turn of 45 degrees.
+      const ring = round ? new THREE.TorusGeometry(r, tube, 6, 20) : new THREE.TorusGeometry(r * 1.3, tube, 4, 4).rotateZ(Math.PI / 4)
+      shape('Head', ring, sx * e.x, e.y, z, frame)
+    }
+    block('Head', (e.x - r) * 2, tube * 1.6, tube * 1.6, 0, e.y + r * 0.3, z, frame)
   }
 
   // Tops: the model's Top material already carries the colour. Shapes add detail.

@@ -5,7 +5,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { createPlayerAvatar, type PlayerAvatar } from '@/lib/playerAvatar'
 import { appearanceKey, getAvatarCropURL, type AvatarCrop } from '@/lib/creaturePreview'
 import {
-  AVATAR_BODIES, SKIN_TONES, HAIR_COLORS, EYE_COLORS, ITEM_COLORS, SLOT_FIELD,
+  AVATAR_BODIES, COSMETIC_SLOTS, SKIN_TONES, HAIR_COLORS, EYE_COLORS, ITEM_COLORS, SLOT_FIELD,
   cosmeticItemById, cosmeticItemsBySlot, chosenItemColor, toCssColor,
   type ColorSwatch, type CosmeticSlot,
 } from '@/data/cosmetics'
@@ -17,9 +17,9 @@ import { LoadingDot } from '@/components/UI/LoadingDot'
 import { ink, inkSoft, line, paperCard, paperLight, paperShade, edge } from '@/lib/theme'
 import { paperPage, RADIUS } from '@/lib/paper'
 
-// Every tab shows its choices in one grid, so nothing scrolls sideways. The hair
-// tab has four columns, and a colour takes half a column. An item tab has five.
-const grid = { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, width: '100%' } as const
+// Every tab shows its choices in one grid, so nothing scrolls sideways. An item
+// tab has five columns. The hair tab has one column for each hairstyle.
+const gridOf = (n: number) => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, gap: 8, width: '100%' }) as const
 const ITEM_COLUMNS = 5
 const DOT_ROW = 36
 // The height of an item tab: a row of square cards with a name, then the colour dots.
@@ -55,12 +55,14 @@ function ColorSwatches({ swatches, selectedId, onSelect, columns }: {
 }
 
 // One choice as a card: a close-up of the avatar with that choice on, and its name.
-function ChoiceCard({ look, crop, label, selected, onSelect }: {
+// A compact card is too narrow for the name, so it shows the picture only.
+function ChoiceCard({ look, crop, label, selected, onSelect, compact }: {
   look: PlayerAppearance
   crop: AvatarCrop
   label: string
   selected: boolean
   onSelect: () => void
+  compact?: boolean
 }) {
   const [src, setSrc] = useState<string | null>(null)
   // The caller builds `look` on each render, so the effect follows its key.
@@ -75,6 +77,7 @@ function ChoiceCard({ look, crop, label, selected, onSelect }: {
     <button
       type="button"
       onClick={onSelect}
+      aria-label={compact ? label : undefined}
       aria-pressed={selected}
       data-sfx="click"
       style={{
@@ -94,17 +97,19 @@ function ChoiceCard({ look, crop, label, selected, onSelect }: {
           ? <img src={src} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
           : <LoadingDot size={32} />}
       </span>
-      <span style={{
-        fontSize: 12, fontWeight: 500, lineHeight: '16px', color: selected ? ink : inkSoft, textAlign: 'center',
-        padding: '0 1px 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-      }}>
-        {label}
-      </span>
+      {!compact && (
+        <span style={{
+          fontSize: 12, fontWeight: 500, lineHeight: '16px', color: selected ? ink : inkSoft, textAlign: 'center',
+          padding: '0 1px 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {label}
+        </span>
+      )}
     </button>
   )
 }
 
-const SLOT_CROP: Record<CosmeticSlot, AvatarCrop> = { top: 'top', bottom: 'bottom', shoes: 'shoes', headItem: 'head' }
+const SLOT_CROP: Record<CosmeticSlot, AvatarCrop> = { top: 'top', bottom: 'bottom', shoes: 'shoes', headItem: 'head', glasses: 'head' }
 
 // The items of a slot, then the colours for the item that the avatar has on.
 // Each item keeps its own colour, so a card shows the item as the player left it.
@@ -117,7 +122,7 @@ function ItemGrid({ slot, appearance, onChange }: {
   const field = SLOT_FIELD[slot]
   const worn = cosmeticItemById(appearance[field])
   const chosenId = chosenItemColor(appearance, slot)?.id ?? ''
-  const tintable = !!worn && worn.id !== 'none'
+  const tintable = !!worn && !worn.empty
   const dots: ColorSwatch[] = [{ id: '', label: t('customize_color_original'), color: worn?.color ?? 0 }, ...ITEM_COLORS]
   const setColor = (id: string) => {
     if (!worn) return
@@ -128,7 +133,7 @@ function ItemGrid({ slot, appearance, onChange }: {
   }
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ ...grid, gridTemplateColumns: `repeat(${ITEM_COLUMNS}, minmax(0, 1fr))` }}>
+      <div style={gridOf(ITEM_COLUMNS)}>
         {cosmeticItemsBySlot(slot).map((item) => (
           <ChoiceCard
             key={item.id}
@@ -173,12 +178,16 @@ function ItemGrid({ slot, appearance, onChange }: {
   )
 }
 
-const BODY_LABEL_KEYS: Record<string, 'customize_style_short_hair' | 'customize_style_long_hair'> = {
+const BODY_LABEL_KEYS: Record<string, keyof Translations> = {
   shortHair: 'customize_style_short_hair',
   longHair: 'customize_style_long_hair',
+  spiky: 'customize_style_spiky',
+  bob: 'customize_style_bob',
+  ponytail: 'customize_style_ponytail',
+  pigtails: 'customize_style_pigtails',
 }
 
-// The two haircuts on the left, the hair colours on the right.
+// The hairstyles in one row, the hair colours below them.
 function HairPanel({ appearance, onBody, onColor }: {
   appearance: PlayerAppearance
   onBody: (id: string) => void
@@ -186,20 +195,21 @@ function HairPanel({ appearance, onBody, onColor }: {
 }) {
   const { t } = useLocale()
   return (
-    <div style={{ ...grid, alignItems: 'center' }}>
-      {AVATAR_BODIES.map((body) => (
-        <ChoiceCard
-          key={body.id}
-          look={{ ...appearance, bodyId: body.id, headItemId: 'none' }}
-          crop="head"
-          label={t(BODY_LABEL_KEYS[body.id])}
-          selected={appearance.bodyId === body.id}
-          onSelect={() => onBody(body.id)}
-        />
-      ))}
-      <div style={{ gridColumn: 'span 2' }}>
-        <ColorSwatches swatches={HAIR_COLORS} selectedId={appearance.hairColorId} onSelect={onColor} columns={3} />
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={gridOf(AVATAR_BODIES.length)}>
+        {AVATAR_BODIES.map((body) => (
+          <ChoiceCard
+            key={body.id}
+            compact
+            look={{ ...appearance, bodyId: body.id, headItemId: 'none' }}
+            crop="head"
+            label={t(BODY_LABEL_KEYS[body.id])}
+            selected={appearance.bodyId === body.id}
+            onSelect={() => onBody(body.id)}
+          />
+        ))}
       </div>
+      <ColorSwatches swatches={HAIR_COLORS} selectedId={appearance.hairColorId} onSelect={onColor} columns={6} />
     </div>
   )
 }
@@ -348,12 +358,14 @@ function AvatarPreview({ appearance, focus }: { appearance: PlayerAppearance; fo
   )
 }
 
-type Tab = 'skin' | 'hair' | 'eyes' | 'top' | 'bottom' | 'shoes' | 'headItem'
+type Tab = 'skin' | 'hair' | 'eyes' | CosmeticSlot
+const isSlot = (tab: Tab): tab is CosmeticSlot => (COSMETIC_SLOTS as Tab[]).includes(tab)
 
 const TABS: { id: Tab; label: keyof Translations; icon: IconName; focus: Focus }[] = [
   { id: 'skin', label: 'customize_skin_tone', icon: 'face', focus: 'body' },
   { id: 'hair', label: 'customize_hair', icon: 'hair', focus: 'head' },
   { id: 'eyes', label: 'customize_eye_color', icon: 'eye', focus: 'head' },
+  { id: 'glasses', label: 'customize_glasses', icon: 'glasses', focus: 'head' },
   { id: 'top', label: 'customize_top', icon: 'top', focus: 'body' },
   { id: 'bottom', label: 'customize_bottom', icon: 'bottom', focus: 'legs' },
   { id: 'shoes', label: 'customize_shoes', icon: 'shoes', focus: 'feet' },
@@ -366,6 +378,7 @@ function chosenLabel(tab: Tab, a: PlayerAppearance, t: (key: keyof Translations)
   if (tab === 'skin') return swatch(SKIN_TONES, a.skinToneId)
   if (tab === 'eyes') return swatch(EYE_COLORS, a.eyeColorId)
   if (tab === 'hair') return `${BODY_LABEL_KEYS[a.bodyId] ? t(BODY_LABEL_KEYS[a.bodyId]) : ''} · ${swatch(HAIR_COLORS, a.hairColorId)}`
+  if (!isSlot(tab)) return ''
   const item = cosmeticItemById(a[SLOT_FIELD[tab]])?.label ?? ''
   const color = chosenItemColor(a, tab)?.label
   return color ? `${item} · ${color}` : item
@@ -406,7 +419,7 @@ export function CharacterCustomizationPage() {
         flexShrink: 0, margin: '0 12px 8px', borderRadius: RADIUS,
         background: paperLight, border: `1px solid ${edge}`,
       }}>
-        {/* Seven tabs of one width: they fit a narrow phone without a scroll. */}
+        {/* Eight tabs of one width: they fit a narrow phone without a scroll. */}
         <div role="tablist" style={{
           display: 'grid', gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))`, gap: 3, padding: 5,
           borderBottom: `1px solid ${line}`,
@@ -447,10 +460,7 @@ export function CharacterCustomizationPage() {
             {tab === 'skin' && <div style={{ width: '100%' }}><ColorSwatches swatches={SKIN_TONES} selectedId={appearance.skinToneId} onSelect={(id) => updateAppearance({ skinToneId: id })} columns={6} /></div>}
             {tab === 'hair' && <HairPanel appearance={appearance} onBody={(id) => updateAppearance({ bodyId: id })} onColor={(id) => updateAppearance({ hairColorId: id })} />}
             {tab === 'eyes' && <div style={{ width: '100%' }}><ColorSwatches swatches={EYE_COLORS} selectedId={appearance.eyeColorId} onSelect={(id) => updateAppearance({ eyeColorId: id })} columns={6} /></div>}
-            {tab === 'top' && <ItemGrid slot="top" appearance={appearance} onChange={updateAppearance} />}
-            {tab === 'bottom' && <ItemGrid slot="bottom" appearance={appearance} onChange={updateAppearance} />}
-            {tab === 'shoes' && <ItemGrid slot="shoes" appearance={appearance} onChange={updateAppearance} />}
-            {tab === 'headItem' && <ItemGrid slot="headItem" appearance={appearance} onChange={updateAppearance} />}
+            {isSlot(tab) && <ItemGrid slot={tab} appearance={appearance} onChange={updateAppearance} />}
           </div>
         </div>
       </div>

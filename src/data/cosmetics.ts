@@ -34,24 +34,36 @@ export const EYE_COLORS: ColorSwatch[] = [
 ]
 
 // The rigged CC0 Quaternius Cube Guy and Cube Woman. The player picks one by
-// hairstyle, so the choice reads as a style, not a gender.
+// hairstyle, so the choice reads as a style, not a gender. A style with `hair`
+// changes the hair of its model in code, see addHairStyle() in lib/playerAvatar.ts.
+export type HairStyle = 'bob' | 'ponytail' | 'pigtails' | 'spiky'
+
 export interface AvatarBodyDef {
   id: string
   modelUrl: string
+  hair?: HairStyle
 }
 
+const SHORT_HAIR_MODEL = '/models/avatar-short-hair.glb'
+const LONG_HAIR_MODEL = '/models/avatar-long-hair.glb'
+
 export const AVATAR_BODIES: AvatarBodyDef[] = [
-  { id: 'shortHair', modelUrl: '/models/avatar-short-hair.glb' },
-  { id: 'longHair',  modelUrl: '/models/avatar-long-hair.glb' },
+  { id: 'shortHair', modelUrl: SHORT_HAIR_MODEL },
+  { id: 'longHair',  modelUrl: LONG_HAIR_MODEL },
+  { id: 'spiky',     modelUrl: SHORT_HAIR_MODEL, hair: 'spiky' },
+  { id: 'bob',       modelUrl: LONG_HAIR_MODEL,  hair: 'bob' },
+  { id: 'ponytail',  modelUrl: LONG_HAIR_MODEL,  hair: 'ponytail' },
+  { id: 'pigtails',  modelUrl: LONG_HAIR_MODEL,  hair: 'pigtails' },
 ]
 
-export type CosmeticSlot = 'top' | 'bottom' | 'shoes' | 'headItem'
+export type CosmeticSlot = 'top' | 'bottom' | 'shoes' | 'headItem' | 'glasses'
 
 export interface CosmeticItemDef {
   id: string
   slot: CosmeticSlot
   label: string
   color: number
+  empty?: true   // the choice to have nothing on in the slot
 }
 
 export const COSMETIC_ITEMS: CosmeticItemDef[] = [
@@ -76,10 +88,15 @@ export const COSMETIC_ITEMS: CosmeticItemDef[] = [
   { id: 'flipflops',slot: 'shoes',    label: 'Flip-flops', color: 0x22c55e },
 
   // Head items
-  { id: 'none',     slot: 'headItem', label: 'None',       color: 0x000000 },
+  { id: 'none',     slot: 'headItem', label: 'None',       color: 0x000000, empty: true },
   { id: 'cap',      slot: 'headItem', label: 'Cap',        color: 0xef4444 },
   { id: 'sunhat',   slot: 'headItem', label: 'Sun Hat',    color: 0xfde68a },
   { id: 'beanie',   slot: 'headItem', label: 'Beanie',     color: 0x1d4ed8 },
+
+  // Glasses
+  { id: 'noGlasses',     slot: 'glasses', label: 'None',   color: 0x000000, empty: true },
+  { id: 'roundGlasses',  slot: 'glasses', label: 'Round',  color: 0x6b4423 },
+  { id: 'squareGlasses', slot: 'glasses', label: 'Square', color: 0x1c1917 },
 ]
 
 // The colours a player can give to an item. An item without a choice keeps its own colour.
@@ -94,8 +111,9 @@ export const ITEM_COLORS: ColorSwatch[] = [
   { id: 'pink',   label: 'Pink',   color: 0xf472b6 },
 ]
 
-export const SLOT_FIELD = { top: 'topId', bottom: 'bottomId', shoes: 'shoesId', headItem: 'headItemId' } as const
-const SLOT_FALLBACK: Record<CosmeticSlot, number> = { top: 0x6366f1, bottom: 0x334155, shoes: 0xf8fafc, headItem: 0xef4444 }
+export const COSMETIC_SLOTS: CosmeticSlot[] = ['top', 'bottom', 'shoes', 'headItem', 'glasses']
+export const SLOT_FIELD = { top: 'topId', bottom: 'bottomId', shoes: 'shoesId', headItem: 'headItemId', glasses: 'glassesId' } as const
+const SLOT_FALLBACK: Record<CosmeticSlot, number> = { top: 0x6366f1, bottom: 0x334155, shoes: 0xf8fafc, headItem: 0xef4444, glasses: 0x1c1917 }
 
 const ITEM_BY_ID = new Map(COSMETIC_ITEMS.map((i) => [i.id, i]))
 const ITEM_COLOR_BY_ID = new Map(ITEM_COLORS.map((c) => [c.id, c]))
@@ -150,6 +168,7 @@ export const DEFAULT_APPEARANCE: PlayerAppearance = {
   bottomId: 'shorts',
   shoesId: 'sneakers',
   headItemId: 'none',
+  glassesId: 'noGlasses',
   itemColors: {},
 }
 
@@ -168,6 +187,7 @@ function hashSeed(input: string): number {
 export function deterministicAppearance(seed: string): PlayerAppearance {
   const pick = <T extends { id: string }>(arr: T[], salt: string): T =>
     arr[hashSeed(seed + salt) % arr.length]
+  const glasses = cosmeticItemsBySlot('glasses')
   return {
     bodyId: pick(AVATAR_BODIES, ':body').id,
     skinToneId: pick(SKIN_TONES, ':skin').id,
@@ -177,5 +197,7 @@ export function deterministicAppearance(seed: string): PlayerAppearance {
     bottomId: pick(cosmeticItemsBySlot('bottom'), ':bottom').id,
     shoesId: pick(cosmeticItemsBySlot('shoes'), ':shoes').id,
     headItemId: pick(cosmeticItemsBySlot('headItem'), ':head').id,
+    // One player in three has glasses on.
+    glassesId: (hashSeed(seed + ':glasses') % 3 ? glasses[0] : pick(glasses.slice(1), ':frame')).id,
   }
 }

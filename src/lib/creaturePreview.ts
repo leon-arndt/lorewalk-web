@@ -2,7 +2,7 @@
 import { creatureDefBySpecies, type CreatureDef } from '@/data/creatures'
 import { addCatHat, CAT_MODEL_URL, tintCat } from '@/lib/catModel'
 import { createPlayerAvatar } from '@/lib/playerAvatar'
-import { itemColor } from '@/data/cosmetics'
+import { COSMETIC_SLOTS, SLOT_FIELD, itemColor } from '@/data/cosmetics'
 import type { PlayerAppearance } from '@/types'
 
 const IMAGE_SIZE = 120  // logical px (rendered 2× for retina)
@@ -216,8 +216,8 @@ export function getCreatureSpinFrames(species: string, isShiny = false): Promise
 
 // Cache key for a look: every field that changes the render, in a fixed order.
 export function appearanceKey(a: PlayerAppearance): string {
-  const colors = (['top', 'bottom', 'shoes', 'headItem'] as const).map((slot) => itemColor(a, slot))
-  return [a.bodyId, a.skinToneId, a.hairColorId, a.eyeColorId, a.topId, a.bottomId, a.shoesId, a.headItemId, ...colors].join('|')
+  const items = COSMETIC_SLOTS.flatMap((slot) => [a[SLOT_FIELD[slot]], itemColor(a, slot)])
+  return [a.bodyId, a.skinToneId, a.hairColorId, a.eyeColorId, ...items].join('|')
 }
 
 const portraitCache = new Map<string, Promise<string | null>>()
