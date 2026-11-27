@@ -15,6 +15,8 @@ export interface PoiPinSpec {
   kind: string
   category: string
   visited: boolean
+  // 1 for a landmark. A marker and a spot draw smaller.
+  scale?: number
 }
 
 export interface PoiPinsHandle {
@@ -29,6 +31,8 @@ const SG_CENTER = { lng: 103.8198, lat: 1.3521 }
 const R_EARTH = 6371000
 
 const VISITED_COLOR = 0x4ade80
+// An event, such as a stop on the trail of the week.
+const TEMPORARY_COLOR = 0xa855f7
 
 // Constant apparent size across zoom levels (same trick as companion characters).
 const PIN_SCALE = 2.8
@@ -51,6 +55,7 @@ interface PinObjects {
   head: T3.Group   // cap + orb together, bobbed as a unit
   orb: T3.Sprite
   phase: number
+  scale: number
 }
 
 const PIN_HEIGHT = 1.1
@@ -228,7 +233,9 @@ function buildModelBody(THREE: typeof T3, model: T3.Object3D, color: number, vis
 }
 
 function buildPin(THREE: typeof T3, spec: PoiPinSpec, models: Map<string, T3.Object3D>): PinObjects {
-  const color = spec.visited ? VISITED_COLOR : (categoryColors[spec.category] ?? 0x94a3b8)
+  const color = spec.visited
+    ? VISITED_COLOR
+    : spec.kind === 'temporary' ? TEMPORARY_COLOR : (categoryColors[spec.category] ?? 0x94a3b8)
 
   const group = new THREE.Group()
   const { x, z } = toLocalXZ(spec.lat, spec.lon)
@@ -267,7 +274,7 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec, models: Map<string, T3.Obj
   // orb is null but kept in the interface for type compat - nothing added to head.
   const orb = null as unknown as T3.Sprite
 
-  return { group, ring, head, orb, phase: Math.random() * Math.PI * 2 }
+  return { group, ring, head, orb, phase: Math.random() * Math.PI * 2, scale: spec.scale ?? 1 }
 }
 
 export async function addPoiPinsLayer(
@@ -333,7 +340,7 @@ export async function addPoiPinsLayer(
 
       // Constant screen size (same formula as companion characters)
       const pinScale = PIN_SCALE * Math.min(SIZE_COMP_MAX, Math.pow(2, SIZE_REF_ZOOM - map.getZoom()))
-      for (const { group } of pinsMap.values()) group.scale.setScalar(pinScale)
+      for (const { group, scale } of pinsMap.values()) group.scale.setScalar(pinScale * scale)
 
       const origin = maplibregl.MercatorCoordinate.fromLngLat([SG_CENTER.lng, SG_CENTER.lat], 0)
       const s = origin.meterInMercatorCoordinateUnits()

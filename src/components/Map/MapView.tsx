@@ -58,6 +58,31 @@ export interface FoodNodeMarker {
   travelers?: MarkerCreature[]   // creatures currently dispatched here
 }
 
+export interface FindMarker {
+  id: string
+  emoji: string
+  name: string
+  lat: number
+  lon: number
+}
+
+// The middle of the screen, for the caller to choose what to show there.
+export interface MapViewState {
+  lat: number
+  lon: number
+  zoom: number
+}
+
+const PIN_SCALE: Record<string, number> = { landmark: 1, marker: 0.62, spot: 0.5 }
+
+function toPinSpec(p: Poi, visited: Set<string>) {
+  return {
+    id: p.id, lat: p.lat, lon: p.lon,
+    kind: p.kind, category: p.category ?? '', visited: visited.has(p.id),
+    scale: p.kind === 'temporary' ? 0.8 : PIN_SCALE[p.tier ?? 'landmark'],
+  }
+}
+
 export interface ShrineNodeMarker {
   id: string
   name: string
@@ -282,6 +307,28 @@ export interface ClaimMarker {
   color: string
 }
 
+// A daily find: a small round paper tag, smaller than a food node.
+function buildFindElement(find: FindMarker, onClick: () => void) {
+  const el = document.createElement('div')
+  el.setAttribute('role', 'button')
+  el.setAttribute('aria-label', find.name)
+  el.title = find.name
+  el.dataset.find = find.id
+  el.textContent = find.emoji
+  el.style.cssText = `
+    width:30px;height:30px;border-radius:50%;box-sizing:border-box;
+    background:#FBF6E9;border:1.5px dashed #33281E;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;line-height:1;cursor:pointer;
+    touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  `
+  // Stop propagation so the map's click handler does not also run its POI hit-test.
+  el.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
+  el.addEventListener('mousedown', (e) => e.stopPropagation())
+  el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
+  return el
+}
+
 function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
   const outer = document.createElement('div')
   outer.style.cssText = 'cursor:pointer;'
@@ -330,6 +377,10 @@ interface MapViewProps {
   onFoodNodeClick?: (id: string) => void
   shrineNodeMarkers?: ShrineNodeMarker[]
   onShrineNodeClick?: (id: string) => void
+  findMarkers?: FindMarker[]
+  onFindClick?: (id: string) => void
+  // Fires after each camera move, and one time after the map loads.
+  onViewChange?: (view: MapViewState) => void
   onBearingChange?: (bearing: number) => void
   compassResetRef?: MutableRefObject<(() => void) | null>
   // True while the camera is far from the player. MapPage shows a recenter
@@ -343,7 +394,7 @@ interface MapViewProps {
   paused?: boolean
 }
 
-export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, onBearingChange, compassResetRef, onAwayChange, recenterRef, focusRef, goal = null, paused = false }: MapViewProps) {
+export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, findMarkers = [], onFindClick, onViewChange, onBearingChange, compassResetRef, onAwayChange, recenterRef, focusRef, goal = null, paused = false }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -352,6 +403,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   const claimMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const foodNodeMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const shrineMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const findMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
   const charLayerRef = useRef<CharacterLayerHandle | null>(null)
   const poiPinsRef = useRef<PoiPinsHandle | null>(null)
   const hasZoomedToPlayerRef = useRef(false)
@@ -369,6 +421,8 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   visitedPoisRef.current = visitedPois
   const onPoiClickRef = useRef(onPoiClick)
   onPoiClickRef.current = onPoiClick
+  const onViewChangeRef = useRef(onViewChange)
+  onViewChangeRef.current = onViewChange
   const onBearingChangeRef = useRef(onBearingChange)
   onBearingChangeRef.current = onBearingChange
   const onAwayChangeRef = useRef(onAwayChange)
@@ -429,6 +483,13 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     })
 
     map.on('rotate', () => onBearingChangeRef.current?.(map.getBearing()))
+
+    const reportView = () => {
+      const c = map.getCenter()
+      onViewChangeRef.current?.({ lat: c.lat, lon: c.lng, zoom: map.getZoom() })
+    }
+    map.on('moveend', reportView)
+    map.once('load', reportView)
 
     const playerLngLat = (): [number, number] => {
       const p = positionRef.current
@@ -510,10 +571,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (!map) return
     let cancelled = false
 
-    const specs = () => poisRef.current.map((p) => ({
-      id: p.id, lat: p.lat, lon: p.lon,
-      kind: p.kind, category: p.category ?? '', visited: visitedPoisRef.current.has(p.id),
-    }))
+    const specs = () => poisRef.current.map((p) => toPinSpec(p, visitedPoisRef.current))
 
     const add = async () => {
       const initial = poisRef.current
@@ -536,12 +594,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
 
   // Push POI + visited state updates into the pins layer.
   useEffect(() => {
-    poiPinsRef.current?.updatePins(
-      pois.map((p) => ({
-        id: p.id, lat: p.lat, lon: p.lon,
-        kind: p.kind, category: p.category ?? '', visited: visitedPois.has(p.id),
-      })),
-    )
+    poiPinsRef.current?.updatePins(pois.map((p) => toPinSpec(p, visitedPois)))
   }, [pois, visitedPois])
 
   // Launch companion characters once the style is ready.
@@ -735,8 +788,9 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
         foodNodeMarkersRef.current.set(node.id, marker)
       })
     }
-    if (map.loaded()) sync()
-    else map.once('load', sync)
+    // No wait for 'load': a DOM marker needs no style. The nodes change while
+    // the player walks, and map.loaded() is false then, because tiles load.
+    sync()
   }, [foodNodeMarkers, onFoodNodeClick])
 
   useEffect(() => {
@@ -756,6 +810,23 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (map.loaded()) sync()
     else map.once('load', sync)
   }, [shrineNodeMarkers, onShrineNodeClick])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const sync = () => {
+      findMarkersRef.current.forEach((m) => m.remove())
+      findMarkersRef.current.clear()
+      findMarkers.forEach((find) => {
+        const el = buildFindElement(find, () => onFindClick?.(find.id))
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([find.lon, find.lat])
+          .addTo(map)
+        findMarkersRef.current.set(find.id, marker)
+      })
+    }
+    sync()
+  }, [findMarkers, onFindClick])
 
   // A dashed red line from the player to the next stop, as on a treasure map.
   // It runs straight, not along the streets: it shows the direction, not a route.

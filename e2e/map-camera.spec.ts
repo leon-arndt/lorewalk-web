@@ -12,6 +12,9 @@ const center = (page: import('@playwright/test').Page) =>
 
 test('a pan stops the camera follow, and the recenter button brings it back', async ({ page, context }) => {
   await page.route('https://tiles.openfreemap.org/**', (r) => r.fulfill({ json: style }))
+  // Without the imported places, no marker stands within 50 m of the player.
+  // Online mode checks in there by itself, and the reward screen stops the pan.
+  await page.route('**/pois/sg-places.json', (r) => r.abort())
   await seedProfile(page, {})
   await page.addInitScript(() => localStorage.setItem('lorewalk.connectionMode', 'online'))
   await page.goto('/')

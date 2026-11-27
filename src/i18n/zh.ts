@@ -343,4 +343,18 @@ export const zh: Translations = {
   account_delete_cancel: '保留我的账号',
   account_delete_busy: '删除中…',
   account_delete_failed: '账号未删除。请检查网络连接后重试。',
+
+  poi_tier_marker: '标记',
+  poi_tier_spot: '街坊地点',
+  poi_trail_stop: '路线站点',
+  poi_trail_of_week: '本周路线：{area}',
+  poi_source: '来源：{source}',
+  trail_chip: '本周路线：{area} · {done}/{total}',
+  trail_complete: '本周路线已完成：{area}',
+  find_label_day: '发现',
+  find_label_night: '夜间发现',
+  find_label_rain: '雨天发现',
+  find_toast_coins: '你找到了 {coins} 枚金币',
+  find_toast_food: '你找到了{food}和 {coins} 枚金币',
+  find_walk_closer: '走到 {radius} 米以内即可拾取（现在相距 {dist} 米）',
 }

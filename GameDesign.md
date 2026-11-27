@@ -7,12 +7,38 @@ This document records every game design decision for the Lorewalk PWA. Keep it c
 ## POI System
 
 ### Two modes
-- **Offline mode**: the map shows all 100 seeded Singapore POIs at once, with no GPS. This mode serves local development and testing.
-- **Online mode**: the `get_pois_near` RPC fetches POIs from Supabase around the real GPS position of the player, within a 1 km radius.
+- **Offline mode**: the map shows the 117 curated landmarks at once, and needs no GPS. A tap on a pin checks in. This mode serves local development and testing.
+- **Online mode**: the `get_pois_near` RPC fetches the landmarks from Supabase for the full island. The bundled list shows until the fetch returns rows. The player checks in by GPS.
+- Both modes add the imported places from `public/pois/sg-places.json`. See "POI tiers".
+
+### POI tiers
+The goal: a player in any part of Singapore finds something to do within a 5-minute walk. A 5-minute walk is about 400 m on foot, or about 300 m in a straight line. The 117 landmarks put only 6% of the bus stops in Singapore within 300 m of a POI. Three tiers fill the map.
+
+| Tier | What it is | Count | XP | Egg chance | Pin |
+|---|---|---|---|---|---|
+| Landmark | A curated place with a written description | 117 | 5 to 10 | Always | Full size, always on the map |
+| Marker | A small heritage site: an NHB historic site, a national monument, a heritage tree, a memorial, a public artwork, or a place with a Wikipedia article | About 1,530 | 3 | 35% | 62% of full size |
+| Spot | A local place: a park, a garden, a place of worship, a library, or a community club | About 1,350 | 2 | 10% | 50% of full size |
+
+- **Coverage**: with all three tiers, 70% of the bus stops have a POI within 300 m, and 81% within 400 m. The daily finds cover the rest. See "Daily Activities".
+- **Pins**: a marker or a spot shows only within 1.3 km of the middle of the screen, and only from zoom 14. The map draws the nearest 160 of them. `poisInView()` in `src/lib/places.ts` holds the rule.
+- **Squads**: a squad goes on an expedition to a landmark only. A player cannot claim a marker or a spot. Shrines stand at landmarks only.
+- **Progress**: a check-in at any tier counts for the streak, the achievements, and the visit history.
+- **Credit**: the panel names the publisher of an imported place, such as "Source: National Heritage Board". A place with a Wikipedia article shows the first lines of the article.
+- **Why the egg chance is low**: a street can hold ten markers. With an egg for each check-in, the egg slots fill in one street.
+
+### Where the imported places come from
+`tools/poi-import/build_places.py` builds `public/pois/sg-places.json` from open data. Run it again to refresh the data. `tools/poi-import/README.md` holds the steps and the licenses.
+
+- **data.gov.sg**: NHB historic sites and national monuments, NParks heritage trees and parks, STB tourist attractions, URA conserved buildings, NLB libraries, PA community clubs, and NEA hawker centres.
+- **Wikidata**: each place in Singapore that has coordinates and an English Wikipedia article.
+- **OpenStreetMap**: historic sites, memorials, history and nature boards, public artworks, museums, places of worship, parks, bus stops, playgrounds, and food courts.
+
+The script drops an imported place that lies within 40 m of a place it already has. It also drops a place with the same name within 500 m. The curated landmarks go first, so no imported place sits on a landmark. The filters are heuristics. Read the file before a public launch, and remove what does not fit.
 
 ### POI types
-- **Permanent POIs**: fixed historical and cultural landmarks. Gold and orange marker ring (🏛).
-- **Temporary POIs**: event POIs with an expiry time. Purple marker ring (✨).
+- **Permanent POIs**: fixed places. The pin takes the colour of its category.
+- **Temporary POIs**: event POIs with an expiry time. The pin is purple. The stops of the trail of the week are temporary POIs.
 
 ### Marker visual states
 | State | Appearance |
@@ -43,6 +69,42 @@ Geocaching inspires this mechanic. A player checks in at a POI to mark it as vis
 - The detail panel switches to the confirmation state: "😊 You visited this place!".
 - The reward screen shows the XP and, when an egg slot is free, the new egg.
 - The player receives points. These points will feed the creature planter slots later.
+
+---
+
+## Daily Activities
+
+Each of these changes with the day, so a street that the player knows still holds something new. All of them use Singapore time, and all of them are the same for every player.
+
+### Food at hawker centres
+- A food node shows at a hawker centre, a food court, or a kopitiam. The places file holds about 640 of these food spots.
+- Up to 5 idle food nodes show near the player. The game takes the 10 nearest food spots within 1.5 km, and the date selects which of them hold food. The date also selects the dish.
+- A food spot gives one node in a day. After the player collects it, the spot stays empty until the next day.
+- A node with creatures on the way stays on the map, wherever the player goes.
+- Without a GPS fix, the middle of the map takes the place of the player.
+- 85% of the bus stops in Singapore have a POI or a food spot within 400 m.
+- `spawnFoodNodes()` in `src/lib/profile.ts` holds the rules. Before this change, 15 food nodes stood at landmarks across the island, so a player far from a landmark saw none.
+
+### Daily finds
+- A find is a small pickup: coins, and sometimes a dish. The player walks within 50 m, and the game picks it up and shows a toast. In offline mode a tap picks it up.
+- Finds lie at public spots: bus stops, playgrounds, and fitness corners. The places file holds about 6,400 of these, at most one in each 120 m square. Each bus stop in Singapore has one within 300 m.
+- The map splits into cells of about 440 m. On each day, 65% of the cells hold a find. The date selects the cells and the spot in each cell.
+- **Night finds** show only at night, in 30% of the cells. They give more coins.
+- **Rain finds** show only while it rains near the player, in 40% of the cells. They always give a dish.
+- A find shows within 900 m of the player. `dailyFinds()` in `src/lib/places.ts` holds the rules.
+
+| Find | Shows | Coins | Dish |
+|---|---|---|---|
+| Find (✨) | All day | 4 to 10 | 20% |
+| Night find (🌙) | At night | 12 to 20 | 35% |
+| Rain find (☔) | In the rain | 8 to 14 | Always |
+
+### Trail of the week
+- Each week, from Monday to Sunday, one planning area holds a trail of 5 stops. The week selects the area and the stops. An area needs at least 10 markers.
+- A stop is a temporary POI with its own id. A player can therefore check in at a stop that stands on a marker they visited before. The stop takes the place of that marker for the week.
+- A stop gives 8 XP and always an egg, if a slot is free. The fifth stop also gives 60 coins.
+- A purple chip on the map names the area and the count of visited stops. A tap shows the nearest open stop.
+- `trailOfTheWeek()` in `src/lib/places.ts` holds the rules. The trail needs no server. A hand-made event still goes in the `temporary_pois` table.
 
 ---
 

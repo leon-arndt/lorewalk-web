@@ -56,7 +56,7 @@ All figures use **SGD**. Singapore is the first market. Lorewalk sources medals 
 One sentence: **walk to real places, collect and hatch creatures, build typed squads, deploy them to boost or claim places, and grow your collection and holdings.**
 
 1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. A stretch faster than 15 km/h is a bike or a vehicle and counts no steps (`MAX_WALK_SPEED_MS` in `useStepCounter.ts`). Steps hatch eggs and count toward the monthly Premium medal.
-2. **Check in** at the landmark, within 50 m. The player earns XP and an egg.
+2. **Check in** at the landmark, within 50 m. The player earns XP and an egg. Smaller places fill the map between the landmarks: heritage markers and local spots give less XP, and an egg only now and then. Food at hawker centres, daily finds, and a trail of the week give a reason to walk the same streets again.
 3. **Visit more landmarks.** Eggs hatch into **typed** creatures, where the type matches the POI category: Heritage, Nature, Arts, and so on. The player gains XP and levels up.
 4. **Build a squad** from the collection. There are 3 squads of 4 slots each. Type matters.
 5. **Keep the active squad with you.** Its creatures walk the map as 3D companions and boost check-ins through **type affinity**. As the alternative, send the squad on an **expedition** to a landmark the player has visited.
@@ -99,13 +99,15 @@ src/
     ConnectionModeContext, LocaleContext, MusicContext
   hooks/
     useGeolocation.ts      # watchPosition wrapper → PlayerPosition state
-    usePois.ts             # Supabase RPC → nearby Poi[] (re-fetches on ~50m movement)
+    usePois.ts             # landmarks (Supabase RPC or the bundled list) + the imported places
+    usePlaces.ts           # loads public/pois/sg-places.json through lib/places.ts
     useAccount.ts          # the signed-in Supabase account: anonymous or Google
     useVisitedPois, useStepCounter, useFriends, useBackgroundMusic
   lib/
     supabase.ts            # Supabase client (env vars VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY)
     profile.ts             # profile persistence + game rules (achievements, XP, eggs)
     nextGoal.ts            # picks the "next stop" bar on the map: a ready reward, or the nearest landmark
+    places.ts              # imported places: POI tiers, pins near the camera, daily finds, trail of the week
     cloudSave.ts           # cloud save: sync rules + the engine that uploads and downloads
     googleAuth.ts          # Google sign-in: web button, native sheet, Supabase link
     journalDb.ts           # IndexedDB store for journal photos / postcards
@@ -130,6 +132,8 @@ src/
   index.css                # Tailwind import + MapLibre CSS + mobile reset
 public/
   models/                 # CC0 .glb creature models per POI category (procedural fallback)
+  pois/
+    sg-places.json        # markers, spots, food spots, and find anchors, built by tools/poi-import
   vfx/
     vfxbank.json          # particle effects by id, read at runtime by lib/vfx.ts
   sounds/
@@ -139,6 +143,7 @@ e2e/                      # Playwright specs + profile-seed helper
 tools/
   vscode-soundbank/       # VSCode extension: the sound event editor
   vscode-particles/       # VSCode extension: the particle effect editor
+  poi-import/             # Python script that builds public/pois/sg-places.json from open data
 ```
 
 ## Environment
@@ -215,6 +220,19 @@ A player who signs in with Google gets a cloud save. `localStorage` stays the wo
 - **New profile field**: add its default to `normalizeProfile()` in `profile.ts`. A cloud save from an older build goes through the same function as a local save.
 - **Steps**: the step counter counts one device. `profile.dailySteps` holds the sum across devices, and the `lorewalk.stepsApplied` key holds how many steps of this device are already in that sum.
 - **Not synced**: the journal photos in IndexedDB, and the settings outside the profile, such as the volume and the language.
+
+## Places
+
+The 117 curated landmarks live in `src/data/singapore-pois.ts`. Every other place comes from `public/pois/sg-places.json`: about 1,530 heritage markers, 1,350 local spots, 640 food spots, and 6,400 anchors for the daily finds. GameDesign.md's "POI tiers" and "Daily Activities" sections hold the game rules.
+
+- **Build**: run `python3 tools/poi-import/build_places.py` from the repo root. It needs only the Python standard library. It downloads from data.gov.sg, Wikidata, and the Overpass API of OpenStreetMap, and keeps the downloads in `tools/poi-import/cache/`. Add `--refresh` to download again. Do not hand-edit the JSON file: change a filter in the script instead.
+- **Load**: `loadPlaces()` in `src/lib/places.ts` fetches the file one time. `usePlaces` gives it to React. If the file does not load, the game runs with the landmarks only and tries again 30 seconds later. The file is in the PWA precache.
+- **Ids**: a place id comes from its source, such as `nhb-hs-<slug>`, `wd-Q<number>`, or `osm-n<number>`. The visit history keys on the id, so do not change how the script makes it.
+- **Tier**: `Poi.tier` is `landmark`, `marker`, or `spot`. A POI without a tier is a landmark. `poiTier()` reads it.
+- **Pins**: `MapPage.tsx` gives `MapView` only the pins from `poisInView()`. The check-in rule and the next stop bar still use the full list.
+- **Same for every player**: the daily finds, the food of the day, and the trail of the week come from `hash()` of the date, not from `Math.random()`. Keep it that way, so two players at one place see the same things.
+- **One save for each GPS fix**: `MapPage.tsx` checks in or picks up a find, never both in one fix, and the food sync waits one task. Each of them saves the full profile from its own snapshot, so two saves in one fix lose the first one.
+- **Licenses**: the file carries data under the Singapore Open Data Licence, CC0 (Wikidata), and the ODbL (OpenStreetMap). The ODbL applies to the file as a whole. The panel shows the publisher of each place.
 
 ## Map
 
@@ -308,6 +326,7 @@ Playwright end-to-end is the only test runner. There is no unit runner. The spec
 
 - `e2e/profile-seed.ts` seeds a known profile into localStorage, so every test starts from a fixed state. Its `ACHIEVEMENT_IDS` list mirrors `profile.ts` by hand. Update it whenever you add an achievement.
 - The suite covers the map render and nav routing, egg hatching, the pantry and feeding, dev cheats, squad management, expedition dispatch, and the shrine system.
+- `e2e/places.spec.ts` covers the imported places: food nodes at food spots, a daily find, rain finds, a check-in at a marker, and the trail of the week. It sets the sky with `_ambience()`, so it does not depend on the real weather.
 - `e2e/cloud-save.spec.ts` covers the cloud save. It seeds a signed-in session and answers every Supabase request itself, so it needs no project and no Google account. It does not cover the Google sign-in itself.
 - Run `npm run test:e2e` before you commit a gameplay change.
 

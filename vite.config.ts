@@ -41,7 +41,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      // The places file is in the precache, so the markers and the daily finds
+      // also show without a connection.
+      includeAssets: ['favicon.svg', 'pois/sg-places.json'],
       workbox: {
         // The main bundle is over the 2 MiB default, and a file over the limit
         // fails the build. It must stay in the precache for offline play.

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
+import type { Claim, DailyFind, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, FoodSpot, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { supabase, ensureSession } from '@/lib/supabase'
 import { useAccount, type Account } from '@/hooks/useAccount'
@@ -9,12 +9,14 @@ import { fetchCoinGrants, applyCoinGrants } from '@/lib/coinGrants'
 import { loadDeviceSteps } from '@/hooks/useStepCounter'
 import { clearJournal } from '@/lib/journalDb'
 import { getFoodDef } from '@/data/foods'
+import { poiTier } from '@/lib/places'
 import {
   loadProfile, saveProfile, isPoiLocked, loadAppliedSteps, saveAppliedSteps, localDateKey, clearLocalPlayerData,
   currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
   applyXp, updateStreak, checkAchievements, todayStr,
   streakChestMilestoneFor, rollStreakChestRewards, type StreakChestRewards,
-  createEgg, createEggFor, advanceEggs, hatchEgg, isEggReady,
+  createEgg, createEggFor, eggChance, advanceEggs, hatchEgg, isEggReady,
+  dailyFor, TRAIL_BONUS_COINS,
   affinityMultiplier, isAway, hasReturned, rollExpeditionPayout, claimPendingCoins,
   creatureCap, creatureSlotsCost, eggSlotCost, CREATURE_SLOT_CHUNK, MAX_EGG_SLOTS_CAP,
   STREAK_FREEZE_MAX, STREAK_FREEZE_COST,
@@ -43,7 +45,8 @@ interface ProfileContextValue {
   clearSlot: (squadId: string, slotIndex: number) => void
   setActiveSquad: (squadId: string) => void
   renameSquad: (squadId: string, name: string) => void
-  syncFoodNodes: (pois: Poi[]) => void
+  syncFoodNodes: (spots: FoodSpot[], focus: { lat: number; lon: number } | null) => void
+  collectFind: (find: DailyFind) => boolean
   startExpedition: (squadId: string, target: ExpeditionTarget, durationMs: number) => void
   startFoodExpedition: (nodeId: string, creatureIds: string[], durationMs: number) => void
   collectFoodNode: (nodeId: string) => FoodCollectResult | null
@@ -93,6 +96,7 @@ interface ProfileContextValue {
 export interface CheckInResult {
   xp: number
   egg: boolean
+  trailCoins: number   // the bonus for the last stop of the trail of the week, or 0
 }
 
 const ProfileContext = createContext<ProfileContextValue | null>(null)
@@ -316,6 +320,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (isPoiLocked(poi, profile)) return null
 
     const category = poi.category ?? 'landmark'
+    // A trail stop goes away after its week, so it is not a station for a squad.
+    const tier = poi.trail ? 'marker' : poiTier(poi)
     const creaturesById = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
     const activeSquad = profile.squads.find((s) => s.id === profile.activeSquadId)
     // A squad that's away on an expedition can't also boost live check-ins.
@@ -336,6 +342,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         xpEarned: xpGained,
         lat: poi.lat,
         lon: poi.lon,
+        ...(tier !== 'landmark' && { tier }),
       },
       ...profile.visitHistory,
     ]
@@ -348,8 +355,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     )
 
     // Award a new egg from this POI if a slot is available
-    const gotEgg = profile.eggs.length < profile.maxEggSlots
+    const gotEgg = profile.eggs.length < profile.maxEggSlots && Math.random() < eggChance(poi)
     const updatedEggs = gotEgg ? [...profile.eggs, createEgg(poi)] : profile.eggs
+
+    const trail = poi.trail
+    const finishedTrail = !!trail && profile.trailBonusWeek !== trail.week &&
+      trail.stopIds.every((id) => id === poi.id || visitedPois.has(id))
+    const trailCoins = finishedTrail ? TRAIL_BONUS_COINS : 0
 
     const updated: PlayerProfile = {
       ...profile,
@@ -364,12 +376,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingStreakChest: profile.pendingStreakChest || gotStreakChest,
       streakChestMilestone: gotStreakChest ? newMilestone : profile.streakChestMilestone,
       eggs: updatedEggs,
+      coins: profile.coins + trailCoins,
+      trailBonusWeek: finishedTrail ? trail.week : profile.trailBonusWeek,
     }
 
     const final = withLevelUpRewards(profile, updated)
     setProfile(final)
     saveProfile(final)
-    return { xp: xpGained, egg: gotEgg }
+    return { xp: xpGained, egg: gotEgg, trailCoins }
   }
 
   function setDisplayName(name: string) {
@@ -534,15 +548,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     persist({ ...profile, squads })
   }
 
-  function syncFoodNodes(pois: Poi[]) {
-    const updated = spawnFoodNodes(pois, profile.foodNodes)
-    const changed =
-      updated.length !== profile.foodNodes.length ||
-      updated.some((n, i) => {
-        const old = profile.foodNodes[i]
-        return !old || n.id !== old.id || n.lat !== old.lat || n.lon !== old.lon
-      })
-    if (changed) persistHousekeeping({ ...profile, foodNodes: updated })
+  // Builds on the newest profile, not on the snapshot of this render. The sync
+  // runs while the player walks, so it can meet a coin grant or a check-in, and
+  // a save from an old snapshot loses what they added.
+  function syncFoodNodes(spots: FoodSpot[], focus: { lat: number; lon: number } | null) {
+    const today = todayStr()
+    setProfile((prev) => {
+      const updated = spawnFoodNodes(spots, prev.foodNodes, focus, today, dailyFor(prev, today).foodSpots)
+      const changed =
+        updated.length !== prev.foodNodes.length ||
+        updated.some((n, i) => n.id !== prev.foodNodes[i].id)
+      if (!changed) return prev
+      const next = { ...prev, foodNodes: updated }
+      housekeeping.add(next)
+      saveProfile(next)
+      return next
+    })
   }
 
   // Dispatch a set of creatures (not a squad) to a food node, Pikmin-style.
@@ -586,8 +607,24 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     const foodInventory = [...profile.foodInventory, makeFoodItem(node.foodId)]
     const foodNodes = profile.foodNodes.filter((n) => n.id !== nodeId)
-    persist({ ...profile, hatchedCreatures, foodInventory, foodNodes })
+    // The spot gives no second node today.
+    const today = dailyFor(profile, todayStr())
+    const daily = { ...today, foodSpots: [...today.foodSpots, node.poiId] }
+    persist({ ...profile, hatchedCreatures, foodInventory, foodNodes, daily })
     return { food: { id: def.id, name: def.name, emoji: def.emoji }, levelUps }
+  }
+
+  // Pick up a daily find. Returns false when the player already has it.
+  function collectFind(find: DailyFind): boolean {
+    const today = dailyFor(profile, todayStr())
+    if (today.finds.includes(find.id)) return false
+    persist({
+      ...profile,
+      coins: profile.coins + find.coins,
+      foodInventory: find.foodId ? [...profile.foodInventory, makeFoodItem(find.foodId)] : profile.foodInventory,
+      daily: { ...today, finds: [...today.finds, find.id] },
+    })
+    return true
   }
 
   function startExpedition(squadId: string, target: ExpeditionTarget, durationMs: number) {
@@ -985,7 +1022,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       profile, visitedPois, addVisit, applyTodaySteps, setDisplayName, updateAppearance, hatchReadyEgg, renameCreature, justReady, clearJustReady,
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
-      syncFoodNodes, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
+      syncFoodNodes, collectFind, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
       releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, markNewsRead, subscribePremium, cancelPremium, claimMedal,
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,

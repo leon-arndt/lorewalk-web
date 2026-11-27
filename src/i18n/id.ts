@@ -343,4 +343,18 @@ export const id: Translations = {
   account_delete_cancel: 'Pertahankan akunku',
   account_delete_busy: 'Menghapus…',
   account_delete_failed: 'Akun tidak terhapus. Periksa koneksimu dan coba lagi.',
+
+  poi_tier_marker: 'Penanda',
+  poi_tier_spot: 'Tempat sekitar',
+  poi_trail_stop: 'Perhentian jalur',
+  poi_trail_of_week: 'Jalur minggu ini: {area}',
+  poi_source: 'Sumber: {source}',
+  trail_chip: 'Jalur minggu ini: {area} · {done}/{total}',
+  trail_complete: 'Jalur minggu ini selesai: {area}',
+  find_label_day: 'Temuan',
+  find_label_night: 'Temuan malam',
+  find_label_rain: 'Temuan hujan',
+  find_toast_coins: 'Kamu menemukan {coins} koin',
+  find_toast_food: 'Kamu menemukan {food} dan {coins} koin',
+  find_walk_closer: 'Jalan sampai dalam {radius}m untuk mengambilnya ({dist}m lagi)',
 }

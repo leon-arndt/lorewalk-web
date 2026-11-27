@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
-import { MapView, type MarkerCreature } from '@/components/Map/MapView'
+import { MapView, type MapViewState, type MarkerCreature } from '@/components/Map/MapView'
 import { creatureSpriteKey } from '@/lib/creaturePreview'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
@@ -23,15 +23,34 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { hudTag } from '@/lib/paper'
 import { haversineDistance } from '@/lib/mapUtils'
-import { isPoiLocked, isWeeklyWalkLocked, WEEKLY_WALK_UNLOCK_LEVEL } from '@/lib/profile'
+import { dailyFor, isPoiLocked, isWeeklyWalkLocked, todayStr, WEEKLY_WALK_UNLOCK_LEVEL } from '@/lib/profile'
+import { dailyFinds, FIND_PICKUP_RADIUS_M, poiTier, poisInView } from '@/lib/places'
+import { getAmbience, onAmbienceChange } from '@/lib/ambience'
 import { getFoodDef } from '@/data/foods'
 import { creatureDefBySpecies } from '@/data/creatures'
-import type { HatchedCreature, Poi, RewardItem } from '@/types'
-import { accent, categoryColors, paperLight, stamp, inkHint } from '@/lib/theme'
+import type { DailyFind, FindKind, HatchedCreature, Poi, RewardItem } from '@/types'
+import { accent, categoryColors, indigo, paperLight, stamp, inkHint } from '@/lib/theme'
 import { motion } from 'motion/react'
 import { popSpring } from '@/lib/motion'
 
 const CHECKIN_RADIUS_M = 50
+
+// The camera reports its middle in steps of about 330 m, and the player in steps
+// of about 110 m, so the nearby pins, finds, and food do not change on each frame.
+const VIEW_STEP_DEG = 0.003
+const FOCUS_STEP_DEG = 0.001
+function snap(value: number, step: number): number {
+  return Math.round(value / step) * step
+}
+
+const FIND_EMOJI: Record<FindKind, string> = { day: '✨', night: '🌙', rain: '☔' }
+const FIND_LABEL = { day: 'find_label_day', night: 'find_label_night', rain: 'find_label_rain' } as const
+
+// The parts of the sky that change what the map offers, plus the Singapore day.
+function readSky() {
+  const a = getAmbience()
+  return { night: a.night > 0.5, rain: a.rain > 0.15, day: todayStr() }
+}
 
 function categoryColor(category?: string): number {
   return (category && categoryColors[category]) || 0x94a3b8
@@ -46,9 +65,9 @@ function markerCreature(c?: HatchedCreature): MarkerCreature {
 export function MapPage() {
   const { t } = useLocale()
   const { position, gpsError, gpsLoading, steps, distanceM } = usePlayerLocation()
-  const { pois } = usePois()
+  const { pois, places } = usePois()
   const { posts: newsPosts } = useNews()
-  const { profile, visitedPois, addVisit, syncFoodNodes, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
+  const { profile, visitedPois, addVisit, syncFoodNodes, collectFind, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
   const { showReward, showToast } = useReward()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
@@ -74,6 +93,32 @@ export function MapPage() {
   const recenterRef = useRef<(() => void) | null>(null)
   const focusRef = useRef<((lat: number, lon: number) => void) | null>(null)
   const [cameraAway, setCameraAway] = useState(false)
+  const [view, setView] = useState<MapViewState | null>(null)
+  const [sky, setSky] = useState(readSky)
+
+  const handleViewChange = useCallback((v: MapViewState) => {
+    const next = { lat: snap(v.lat, VIEW_STEP_DEG), lon: snap(v.lon, VIEW_STEP_DEG), zoom: Math.floor(v.zoom) }
+    setView((prev) => (prev && prev.lat === next.lat && prev.lon === next.lon && prev.zoom === next.zoom ? prev : next))
+  }, [])
+
+  useEffect(() => {
+    const update = () => {
+      const next = readSky()
+      setSky((prev) => (prev.night === next.night && prev.rain === next.rain && prev.day === next.day ? prev : next))
+    }
+    const off = onAmbienceChange(update)
+    const tick = setInterval(update, 60_000)
+    return () => { off(); clearInterval(tick) }
+  }, [])
+
+  // Where the nearby things gather: the player, or the middle of the map
+  // without a GPS fix.
+  const focusLat = position ? snap(position.latitude, FOCUS_STEP_DEG) : view?.lat ?? null
+  const focusLon = position ? snap(position.longitude, FOCUS_STEP_DEG) : view?.lon ?? null
+  const focus = useMemo(
+    () => (focusLat !== null && focusLon !== null ? { lat: focusLat, lon: focusLon } : null),
+    [focusLat, focusLon],
+  )
 
   // The active squad's creatures become the 3D companions that walk with you -
   // unless that squad is away on an expedition, in which case nobody follows.
@@ -152,13 +197,41 @@ export function MapPage() {
     [profile.shrineNodes, selectedShrineNodeId],
   )
 
-  // Spawn food nodes near visible POIs; runs whenever the nearby POI list changes.
+  // Shrines stand at landmarks only, not at a marker or a spot.
+  const landmarks = useMemo(() => pois.filter((p) => poiTier(p) === 'landmark' && p.kind === 'permanent'), [pois])
   useEffect(() => {
-    if (pois.length > 0) {
-      syncFoodNodes(pois)
-      syncShrineNodes(pois)
-    }
-  }, [pois]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (landmarks.length > 0) syncShrineNodes(landmarks)
+  }, [landmarks]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Food shows at the hawker centres and kopitiams near the focus, and the set
+  // changes each day. The sync waits one task: a check-in in the same GPS fix
+  // saves the profile first, and the sync must build on that save, not replace it.
+  const syncFoodRef = useRef(syncFoodNodes)
+  useEffect(() => { syncFoodRef.current = syncFoodNodes })
+  const foodSpots = places?.foodSpots
+  const foodDone = dailyFor(profile, sky.day).foodSpots.length
+  useEffect(() => {
+    if (!foodSpots || !focus) return
+    const timer = setTimeout(() => syncFoodRef.current(foodSpots, focus), 0)
+    return () => clearTimeout(timer)
+  }, [foodSpots, focus, sky.day, foodDone])
+
+  const finds = useMemo(
+    () => (places && focus ? dailyFinds(places, focus, sky.day, sky, dailyFor(profile, sky.day).finds) : []),
+    [places, focus, sky, profile.daily], // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  const findMarkers = useMemo(
+    () => finds.map((f) => ({ id: f.id, emoji: FIND_EMOJI[f.kind], name: t(FIND_LABEL[f.kind]), lat: f.lat, lon: f.lon })),
+    [finds, t],
+  )
+
+  const takeFind = useCallback((find: DailyFind) => {
+    if (!collectFind(find)) return
+    const food = find.foodId ? getFoodDef(find.foodId)?.name : undefined
+    showToast(food
+      ? t('find_toast_food', { food, coins: find.coins })
+      : t('find_toast_coins', { coins: find.coins }))
+  }, [collectFind, showToast, t])
 
   const claimMarkers = useMemo(
     () => profile.claims.map((c) => ({
@@ -195,7 +268,9 @@ export function MapPage() {
     if (!result) return
     const items: RewardItem[] = [{ type: 'xp', amount: result.xp }]
     if (result.egg) items.push({ type: 'egg' })
-    showReward({ emoji: '📍', title: t('checkin_reward_title'), subtitle: poi.name, items })
+    if (result.trailCoins) items.push({ type: 'coins', amount: result.trailCoins })
+    const subtitle = result.trailCoins && poi.trail ? t('trail_complete', { area: poi.trail.area }) : poi.name
+    showReward({ emoji: '📍', title: t('checkin_reward_title'), subtitle, items })
   }, [addVisit, showReward, t])
 
   // Online: auto check-in whenever position enters 50 m of an unvisited POI.
@@ -213,10 +288,25 @@ export function MapPage() {
         // One per fix: a second addVisit from the same profile snapshot would
         // overwrite the first. The next fix picks up any other POI in range.
         checkIn(poi)
-        break
+        return
       }
     }
-  }, [position, pois]) // eslint-disable-line react-hooks/exhaustive-deps
+    // A find comes after the check-ins for the same reason: one save per fix.
+    const find = finds.find((f) =>
+      haversineDistance(position.latitude, position.longitude, f.lat, f.lon) <= FIND_PICKUP_RADIUS_M)
+    if (find) takeFind(find)
+  }, [position, pois, finds]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Offline has no GPS rule, so a tap picks the find up. Online, the player walks to it.
+  const handleFindClick = useCallback((id: string) => {
+    const find = finds.find((f) => f.id === id)
+    if (!find) return
+    const dist = position
+      ? Math.round(haversineDistance(position.latitude, position.longitude, find.lat, find.lon))
+      : null
+    if (mode === 'offline' || (dist !== null && dist <= FIND_PICKUP_RADIUS_M)) takeFind(find)
+    else if (dist !== null) showToast(t('find_walk_closer', { radius: FIND_PICKUP_RADIUS_M, dist }))
+  }, [finds, position, mode, takeFind, showToast, t])
 
   const handleSquadClick = useCallback(() => navigate('/squads'), [navigate])
   const handlePoiClick = useCallback((poi: Poi) => {
@@ -243,6 +333,34 @@ export function MapPage() {
 
   const goalPoi = nextGoal?.kind === 'poi' && !panelOpen ? nextGoal.poi : null
   const goalPoint = useMemo(() => (goalPoi ? { lat: goalPoi.lat, lon: goalPoi.lon } : null), [goalPoi])
+
+  // The pins on the map: every landmark, plus the small places near the middle
+  // of the screen. The next stop and the open place always keep their pin.
+  const pinnedPoi = selectedPoi ?? goalPoi
+  const visiblePois = useMemo(() => poisInView(pois, view, pinnedPoi), [pois, view, pinnedPoi])
+
+  // The trail of the week: its area, and how many of its stops the player has.
+  const trail = useMemo(() => {
+    const stops = pois.filter((p) => p.trail)
+    if (stops.length === 0) return null
+    return { area: stops[0].trail!.area, stops, done: stops.filter((s) => visitedPois.has(s.id)).length }
+  }, [pois, visitedPois])
+
+  // Shows the nearest open stop and its panel. As with the next stop bar, it
+  // does not check in.
+  const handleTrail = useCallback(() => {
+    if (!trail) return
+    const open = trail.stops.filter((s) => !visitedPois.has(s.id))
+    if (open.length === 0) return
+    const m = (s: Poi) => (position ? haversineDistance(position.latitude, position.longitude, s.lat, s.lon) : 0)
+    const stop = open.reduce((best, s) => (m(s) < m(best) ? s : best))
+    focusRef.current?.(stop.lat, stop.lon)
+    if (panelCloseTimer.current) { clearTimeout(panelCloseTimer.current); panelCloseTimer.current = null }
+    setIsPanelClosing(false)
+    setSelectedPoi(stop)
+    setSelectedFoodNodeId(null)
+    setSelectedShrineNodeId(null)
+  }, [trail, visitedPois, position])
 
   const handleGoal = useCallback(() => {
     if (!nextGoal) return
@@ -373,7 +491,7 @@ export function MapPage() {
       <MapView
         position={position}
         appearance={profile.appearance}
-        pois={pois}
+        pois={visiblePois}
         visitedPois={visitedPois}
         onPoiClick={handlePoiClick}
         squadMarkers={squadMarkers}
@@ -385,6 +503,9 @@ export function MapPage() {
         onFoodNodeClick={handleFoodNodeClick}
         shrineNodeMarkers={shrineNodeMarkers}
         onShrineNodeClick={handleShrineNodeClick}
+        findMarkers={findMarkers}
+        onFindClick={handleFindClick}
+        onViewChange={handleViewChange}
         onBearingChange={setBearing}
         compassResetRef={compassResetRef}
         onAwayChange={setCameraAway}
@@ -433,6 +554,21 @@ export function MapPage() {
               }}>
                 {t('hud_gps_unavailable')}
               </div>
+            )}
+            {trail && trail.done < trail.stops.length && (
+              <button
+                type="button"
+                data-testid="trail-chip"
+                onClick={handleTrail}
+                style={{
+                  ...hudTag, pointerEvents: 'auto', cursor: 'pointer',
+                  minHeight: 32, padding: '4px 10px', fontSize: 12, fontFamily: 'inherit',
+                  borderColor: indigo, color: indigo,
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {t('trail_chip', { area: trail.area, done: trail.done, total: trail.stops.length })}
+              </button>
             )}
           </div>
           <div style={{ pointerEvents: 'auto', justifySelf: 'end' }}>

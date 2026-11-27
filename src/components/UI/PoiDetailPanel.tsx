@@ -5,12 +5,13 @@ import { useWikipediaExtract } from '@/hooks/useWikipediaExtract'
 import { useProfile } from '@/contexts/ProfileContext'
 import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
 import { haversineDistance } from '@/lib/mapUtils'
+import { poiTier } from '@/lib/places'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
 import type { Translations } from '@/i18n/types'
-import { categoryCss, forest, ink, inkSoft, line, ochre, paperShade, ochreInk, edge } from '@/lib/theme'
+import { categoryCss, forest, indigo, ink, inkSoft, line, ochre, paperShade, ochreInk, edge } from '@/lib/theme'
 import { InkButton, Mono, Stamp } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
@@ -67,7 +68,12 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
     setSent(friendName)
     setPickingFriend(false)
   }
-  const isPermanent = poi.kind === 'permanent'
+  const tier = poiTier(poi)
+  const tierLabel = poi.trail
+    ? t('poi_trail_stop')
+    : poi.kind !== 'permanent'
+      ? t('poi_event')
+      : tier === 'marker' ? t('poi_tier_marker') : tier === 'spot' ? t('poi_tier_spot') : t('poi_landmark')
 
   const distanceM = position
     ? Math.round(haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon))
@@ -99,7 +105,7 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
             </span>
           )}
           <Mono style={{ ...typed, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {isPermanent ? t('poi_landmark') : t('poi_event')}
+            {tierLabel}
           </Mono>
           {poi.points !== undefined && (
             <Mono style={{ ...typed, fontWeight: 500, color: forest }}>
@@ -141,15 +147,26 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
           <Stamp color={ochreInk} tilt={-2}>{t('poi_premium_locked')}</Stamp>
         </div>
       )}
-      <p style={{
-        margin: 0, padding: '0 0 0 10px', fontSize: 13, color: inkSoft, lineHeight: 1.55,
-        borderLeft: `3px solid ${wash}`,
-      }}>
-        {wikiExtract ?? poi.description}
-      </p>
-      {wikiExtract && (
+      {poi.trail && (
+        <div style={{ margin: '0 0 10px' }}>
+          <Stamp color={indigo} tilt={-2}>{t('poi_trail_of_week', { area: poi.trail.area })}</Stamp>
+        </div>
+      )}
+      {(wikiExtract || poi.description) && (
+        <p style={{
+          margin: 0, padding: '0 0 0 10px', fontSize: 13, color: inkSoft, lineHeight: 1.55,
+          borderLeft: `3px solid ${wash}`,
+        }}>
+          {wikiExtract ?? poi.description}
+        </p>
+      )}
+      {wikiExtract ? (
         <Mono style={{ display: 'block', margin: '6px 0 0 13px' }}>
           {t('poi_from_wikipedia')}
+        </Mono>
+      ) : poi.source && (
+        <Mono style={{ display: 'block', margin: '6px 0 0 13px' }}>
+          {t('poi_source', { source: poi.source })}
         </Mono>
       )}
 

@@ -343,4 +343,18 @@ export const ko: Translations = {
   account_delete_cancel: '계정 유지',
   account_delete_busy: '삭제 중…',
   account_delete_failed: '계정을 삭제하지 못했습니다. 연결을 확인하고 다시 시도해 주세요.',
+
+  poi_tier_marker: '표식',
+  poi_tier_spot: '동네 장소',
+  poi_trail_stop: '트레일 지점',
+  poi_trail_of_week: '이번 주 트레일: {area}',
+  poi_source: '출처: {source}',
+  trail_chip: '이번 주 트레일: {area} · {done}/{total}',
+  trail_complete: '이번 주 트레일을 완주했습니다: {area}',
+  find_label_day: '발견물',
+  find_label_night: '밤의 발견물',
+  find_label_rain: '비 오는 날의 발견물',
+  find_toast_coins: '코인 {coins}개를 찾았습니다',
+  find_toast_food: '{food}와(과) 코인 {coins}개를 찾았습니다',
+  find_walk_closer: '{radius}m 안으로 가까이 가면 주울 수 있습니다 (현재 {dist}m)',
 }

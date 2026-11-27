@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { SINGAPORE_POIS } from '@/data/singapore-pois'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
+import { usePlaces } from '@/hooks/usePlaces'
+import { trailBaseId, trailOfTheWeek, trailWeek } from '@/lib/places'
 import type { Poi } from '@/types'
 
 // The whole Singapore POI set is a few dozen KB, so one island-wide fetch is
@@ -20,6 +22,7 @@ interface PoiRow extends Partial<Poi> {
 
 export function usePois() {
   const { mode } = useConnectionMode()
+  const places = usePlaces()
   const [livePois, setLivePois] = useState<Poi[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -74,5 +77,17 @@ export function usePois() {
   // The bundled list shows until a live fetch returns POIs, so the map is never
   // empty while the request is slow or Supabase is unreachable.
   const online = mode === 'online'
-  return { pois: online && livePois ? livePois : SINGAPORE_POIS, error: online ? error : null }
+  const landmarks = online && livePois ? livePois : SINGAPORE_POIS
+
+  // The landmarks, then the stops of the trail of the week, then every other
+  // imported place. A stop takes the place of its marker for the week.
+  const week = trailWeek().key
+  const pois = useMemo(() => {
+    if (!places) return landmarks
+    const stops = trailOfTheWeek(places.places)
+    const replaced = new Set(stops.map(trailBaseId))
+    return [...landmarks, ...stops, ...places.places.filter((p) => !replaced.has(p.id))]
+  }, [landmarks, places, week]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { pois, places, error: online ? error : null }
 }

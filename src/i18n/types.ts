@@ -341,4 +341,17 @@ export interface Translations {
   account_delete_cancel: string
   account_delete_busy: string
   account_delete_failed: string
+  poi_tier_marker: string
+  poi_tier_spot: string
+  poi_trail_stop: string
+  poi_trail_of_week: string
+  poi_source: string
+  trail_chip: string
+  trail_complete: string
+  find_label_day: string
+  find_label_night: string
+  find_label_rain: string
+  find_toast_coins: string
+  find_toast_food: string
+  find_walk_closer: string
 }

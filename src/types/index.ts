@@ -1,5 +1,17 @@
 export type PoiCategory = 'permanent' | 'temporary'
 
+// How much a place gives. A landmark is a curated place with the full reward.
+// A marker is a small heritage site, such as a plaque or a heritage tree. A
+// spot is a local place, such as a park. A POI without a tier is a landmark.
+export type PoiTier = 'landmark' | 'marker' | 'spot'
+
+// A stop on the trail of the week. See lib/places.ts.
+export interface PoiTrail {
+  week: string
+  area: string
+  stopIds: string[]
+}
+
 export interface Poi {
   id: string
   name: string
@@ -13,6 +25,38 @@ export interface Poi {
   premiumOnly?: boolean
   activeUntil?: string
   creatureRewardId?: string | null
+  tier?: PoiTier
+  source?: string   // who published the place, for the credit in the panel
+  area?: string     // planning area, such as "Tiong Bahru"
+  trail?: PoiTrail
+}
+
+// A hawker centre or a kopitiam. Food nodes show at these.
+export interface FoodSpot {
+  id: string
+  name: string
+  lat: number
+  lon: number
+}
+
+export type FindKind = 'day' | 'night' | 'rain'
+
+// A small pickup at a public spot. The set changes each day, and it is the
+// same for every player. See dailyFinds() in lib/places.ts.
+export interface DailyFind {
+  id: string
+  kind: FindKind
+  lat: number
+  lon: number
+  coins: number
+  foodId: string | null
+}
+
+// What the player already took today. `date` is the Singapore day.
+export interface DailyState {
+  date: string
+  finds: string[]       // DailyFind ids
+  foodSpots: string[]   // FoodSpot ids whose food node the player collected
 }
 
 
@@ -78,6 +122,7 @@ export interface VisitRecord {
   xpEarned: number
   lat?: number            // snapshot so visited POIs can be used as squad stations
   lon?: number
+  tier?: PoiTier          // absent on a landmark and on a save from before tiers
 }
 
 export interface SquadExpedition {
@@ -171,6 +216,8 @@ export interface PlayerProfile {
   latestNewsNotifications: boolean        // preference only; no push delivery wired up yet
   lastReadNewsAt: string | null   // publishedAt of the newest post already seen; null = nothing read
   appearance: PlayerAppearance
+  daily: DailyState
+  trailBonusWeek: string | null   // the week whose trail bonus the player already got
 }
 
 export interface PlayerAppearance {

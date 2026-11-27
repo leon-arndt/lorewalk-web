@@ -267,7 +267,8 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
 }) {
   const { profile, startExpedition } = useProfile()
   const { t } = useLocale()
-  const visited = profile.visitHistory.filter((v) => v.lat != null && v.lon != null)
+  // A squad goes to a landmark only. A marker or a spot is a quick stop, not a place to hold.
+  const visited = profile.visitHistory.filter((v) => v.lat != null && v.lon != null && (v.tier ?? 'landmark') === 'landmark')
 
   function send(target: ExpeditionTarget, durationMs: number) {
     startExpedition(squad.id, target, durationMs)

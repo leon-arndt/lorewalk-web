@@ -343,4 +343,18 @@ export const de: Translations = {
   account_delete_cancel: 'Konto behalten',
   account_delete_busy: 'Wird gelöscht…',
   account_delete_failed: 'Das Konto wurde nicht gelöscht. Prüfe deine Verbindung und versuch es noch einmal.',
+
+  poi_tier_marker: 'Wegmarke',
+  poi_tier_spot: 'Ort in der Nähe',
+  poi_trail_stop: 'Etappe',
+  poi_trail_of_week: 'Route der Woche: {area}',
+  poi_source: 'Quelle: {source}',
+  trail_chip: 'Route der Woche: {area} · {done}/{total}',
+  trail_complete: 'Route der Woche geschafft: {area}',
+  find_label_day: 'Fund',
+  find_label_night: 'Nachtfund',
+  find_label_rain: 'Regenfund',
+  find_toast_coins: 'Du hast {coins} Münzen gefunden',
+  find_toast_food: 'Du hast {food} und {coins} Münzen gefunden',
+  find_walk_closer: 'Geh auf {radius}m heran, um das aufzuheben ({dist}m entfernt)',
 }

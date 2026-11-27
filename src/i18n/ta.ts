@@ -343,4 +343,18 @@ export const ta: Translations = {
   account_delete_cancel: 'என் கணக்கை வைத்திரு',
   account_delete_busy: 'நீக்குகிறது…',
   account_delete_failed: 'கணக்கு நீக்கப்படவில்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.',
+
+  poi_tier_marker: 'குறியீடு',
+  poi_tier_spot: 'அருகிலுள்ள இடம்',
+  poi_trail_stop: 'பாதை நிறுத்தம்',
+  poi_trail_of_week: 'இந்த வாரப் பாதை: {area}',
+  poi_source: 'மூலம்: {source}',
+  trail_chip: 'இந்த வாரப் பாதை: {area} · {done}/{total}',
+  trail_complete: 'இந்த வாரப் பாதை முடிந்தது: {area}',
+  find_label_day: 'கண்டெடுப்பு',
+  find_label_night: 'இரவுக் கண்டெடுப்பு',
+  find_label_rain: 'மழைக் கண்டெடுப்பு',
+  find_toast_coins: 'நீங்கள் {coins} நாணயங்களைக் கண்டெடுத்தீர்கள்',
+  find_toast_food: 'நீங்கள் {food} மற்றும் {coins} நாணயங்களைக் கண்டெடுத்தீர்கள்',
+  find_walk_closer: 'இதை எடுக்க {radius}மீ தூரத்திற்குள் நடந்து வாருங்கள் (இப்போது {dist}மீ தொலைவில்)',
 }

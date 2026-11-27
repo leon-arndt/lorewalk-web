@@ -1,6 +1,8 @@
-import type { Achievement, Claim, Egg, EggTier, FoodItem, FoodNode, HatchedCreature, PartyMember, PlayerProfile, Poi, Squad, SquadExpedition, ShrineNode, VisitRecord, WeeklyPartyWalk } from '@/types'
+import type { Achievement, Claim, DailyState, Egg, EggTier, FoodItem, FoodNode, FoodSpot, HatchedCreature, PartyMember, PlayerProfile, Poi, PoiTier, Squad, SquadExpedition, ShrineNode, VisitRecord, WeeklyPartyWalk } from '@/types'
 import type { FoodDef } from '@/data/foods'
-import { randomFood } from '@/data/foods'
+import { FOODS, randomFood } from '@/data/foods'
+import { haversineDistance } from '@/lib/mapUtils'
+import { hash, poiTier } from '@/lib/places'
 import { creatureDefBySpecies, drawCreature, rollEggTier } from '@/data/creatures'
 import { DEFAULT_APPEARANCE } from '@/data/cosmetics'
 export { rollEggTier }
@@ -48,7 +50,7 @@ export function applyCreatureXp(creature: HatchedCreature, gained: number): Hatc
 // Calendar days are anchored to Singapore time (UTC+8) - the game's home zone -
 // so a check-in just before local midnight isn't bucketed into the wrong UTC day.
 const SGT_OFFSET_MS = 8 * 3_600_000
-function sgtDayStr(epochMs: number) {
+export function sgtDayStr(epochMs: number) {
   return new Date(epochMs + SGT_OFFSET_MS).toISOString().slice(0, 10)
 }
 export function todayStr() {
@@ -214,6 +216,21 @@ export function createEggFor(poiId: string, poiName: string, category: string): 
 
 export function createEgg(poi: Poi): Egg {
   return createEggFor(poi.id, poi.name, poi.category ?? '')
+}
+
+// The chance that a check-in gives an egg. A landmark and an event always do.
+// A small place gives one now and then, so the egg slots do not fill in one street.
+const EGG_CHANCE: Record<PoiTier, number> = { landmark: 1, marker: 0.35, spot: 0.1 }
+export function eggChance(poi: Poi): number {
+  return poi.kind === 'temporary' ? 1 : EGG_CHANCE[poiTier(poi)]
+}
+
+// Coins for the last stop of the trail of the week.
+export const TRAIL_BONUS_COINS = 60
+
+// What the player already took on `dateKey`. A new day starts with nothing taken.
+export function dailyFor(profile: PlayerProfile, dateKey: string): DailyState {
+  return profile.daily.date === dateKey ? profile.daily : { date: dateKey, finds: [], foodSpots: [] }
 }
 
 export function hatchEgg(egg: Egg): HatchedCreature {
@@ -390,42 +407,56 @@ function pickSpread(pois: Poi[], count: number): Poi[] {
   return picked
 }
 
-export function spawnFoodNodes(pois: Poi[], existing: FoodNode[]): FoodNode[] {
-  const poiById = new Map(pois.map((p) => [p.id, p]))
-  // Evict nodes for POIs no longer visible; recompute lat/lon from current POI data
-  // so stale coordinates from a previous session can't persist. Nodes with an active
-  // expedition are kept regardless so the dispatched creatures can still return.
-  const kept: FoodNode[] = []
-  for (const node of existing) {
-    const poi = poiById.get(node.poiId)
-    if (!poi) {
-      if (node.expedition) kept.push(node)
-      continue
-    }
-    const { dlat, dlon } = deterministicOffset(poi.id)
-    kept.push({ ...node, lat: poi.lat + dlat, lon: poi.lon + dlon, poiName: poi.name })
-  }
-  if (kept.length >= MAX_FOOD_NODES) return kept
-  const occupiedPoiIds = new Set(kept.map((n) => n.poiId))
-  const available = pois.filter((p) => !occupiedPoiIds.has(p.id))
-  const chosen = pickSpread(available, MAX_FOOD_NODES - kept.length)
-  const newNodes: FoodNode[] = []
-  for (let i = 0; i < chosen.length; i++) {
-    const poi = chosen[i]
-    const food = randomFood()
-    const { dlat, dlon } = deterministicOffset(poi.id)
-    newNodes.push({
-      id: `fn_${poi.id}_${Date.now() + i}`,
-      foodId: food.id,
-      lat: poi.lat + dlat,
-      lon: poi.lon + dlon,
-      poiId: poi.id,
-      poiName: poi.name,
-      poiCategory: poi.category ?? 'landmark',
-      spawnedAt: new Date().toISOString(),
-    })
-  }
-  return [...kept, ...newNodes]
+// How many idle food nodes show near the player.
+export const LOCAL_FOOD_NODES = 5
+const FOOD_RADIUS_M = 1500
+// The nodes of a day come from this many nearest spots, so they change each day.
+const FOOD_POOL = 10
+// Far from every food spot, the nearest few still get a node.
+const FOOD_POOL_MIN = 3
+
+// Food shows at hawker centres and kopitiams near `focus`: the player, or the
+// middle of the map without a GPS fix. The spots and the dish change each day.
+// `doneSpotIds` holds the spots whose node the player already collected today.
+// A node with creatures on the way stays, wherever it is.
+export function spawnFoodNodes(
+  spots: FoodSpot[],
+  existing: FoodNode[],
+  focus: { lat: number; lon: number } | null,
+  dateKey: string,
+  doneSpotIds: string[],
+): FoodNode[] {
+  if (!focus) return existing
+  const away = (p: { lat: number; lon: number }) => haversineDistance(focus.lat, focus.lon, p.lat, p.lon)
+  const kept = existing.filter((n) =>
+    n.expedition ||
+    (sgtDayStr(new Date(n.spawnedAt).getTime()) === dateKey && away(n) <= FOOD_RADIUS_M * 2),
+  )
+  const idle = kept.filter((n) => !n.expedition).length
+  const room = Math.min(LOCAL_FOOD_NODES - idle, MAX_FOOD_NODES - kept.length)
+  if (room <= 0) return kept
+
+  const byDistance = spots.map((spot) => ({ spot, m: away(spot) })).sort((a, b) => a.m - b.m)
+  let pool = byDistance.filter((s) => s.m <= FOOD_RADIUS_M).slice(0, FOOD_POOL)
+  if (pool.length < FOOD_POOL_MIN) pool = byDistance.slice(0, FOOD_POOL_MIN)
+
+  const blocked = new Set([...kept.map((n) => n.poiId), ...doneSpotIds])
+  const chosen = pool
+    .map((s) => s.spot)
+    .filter((spot) => !blocked.has(spot.id))
+    .sort((a, b) => hash(`${dateKey}|${a.id}`) - hash(`${dateKey}|${b.id}`))
+    .slice(0, room)
+  const fresh: FoodNode[] = chosen.map((spot) => ({
+    id: `fn_${spot.id}_${dateKey}`,
+    foodId: FOODS[hash(`${dateKey}|${spot.id}|food`) % FOODS.length].id,
+    lat: spot.lat,
+    lon: spot.lon,
+    poiId: spot.id,
+    poiName: spot.name,
+    poiCategory: 'landmark',
+    spawnedAt: new Date().toISOString(),
+  }))
+  return [...kept, ...fresh]
 }
 
 // ─── Guardian Shrines (boss fights) ──────────────────────────────────────────
@@ -620,6 +651,12 @@ export function normalizeProfile(parsed: any): PlayerProfile {
     friendsAndGiftsNotifications: parsed.friendsAndGiftsNotifications ?? false,
     latestNewsNotifications: parsed.latestNewsNotifications ?? false,
     lastReadNewsAt: parsed.lastReadNewsAt ?? null,
+    daily: {
+      date: parsed.daily?.date ?? '',
+      finds: parsed.daily?.finds ?? [],
+      foodSpots: parsed.daily?.foodSpots ?? [],
+    },
+    trailBonusWeek: parsed.trailBonusWeek ?? null,
     pendingStreakChest: parsed.pendingStreakChest ?? false,
     // Saves from before this feature existed start at their current milestone
     // rather than retroactively granting a chest for streak days already banked.
@@ -677,6 +714,8 @@ export function loadProfile(): PlayerProfile {
     latestNewsNotifications: false,
     lastReadNewsAt: null,
     appearance: DEFAULT_APPEARANCE,
+    daily: { date: '', finds: [], foodSpots: [] },
+    trailBonusWeek: null,
   }
 }
 

@@ -343,4 +343,18 @@ export const ja: Translations = {
   account_delete_cancel: 'アカウントを残す',
   account_delete_busy: '削除中…',
   account_delete_failed: 'アカウントを削除できませんでした。接続を確認して、もう一度お試しください。',
+
+  poi_tier_marker: 'マーカー',
+  poi_tier_spot: '近所のスポット',
+  poi_trail_stop: 'トレイルの立ち寄り先',
+  poi_trail_of_week: '今週のトレイル：{area}',
+  poi_source: '出典：{source}',
+  trail_chip: '今週のトレイル：{area} · {done}/{total}',
+  trail_complete: '今週のトレイルを達成しました：{area}',
+  find_label_day: '落とし物',
+  find_label_night: '夜の落とし物',
+  find_label_rain: '雨の日の落とし物',
+  find_toast_coins: 'コインを{coins}枚見つけました',
+  find_toast_food: '{food}とコインを{coins}枚見つけました',
+  find_walk_closer: '{radius}m以内に近づくと拾えます（現在{dist}m）',
 }
