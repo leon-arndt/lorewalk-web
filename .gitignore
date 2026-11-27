@@ -56,3 +56,4 @@ supabase/.temp/
 
 # POI import downloads
 tools/poi-import/cache/
+__pycache__/
