@@ -47,7 +47,7 @@
 
 ## Backlog
 
-- **landmark follow-ups**: the 117 landmarks have new positions since 2026-11-27. The position of Pulau Ubin comes from memory, not from a dataset. Check it and the Istana gate on a map. 10 landmarks link to a Wikipedia page that does not exist: sg-018, sg-028, sg-030, sg-039, sg-043, sg-050, sg-085, sg-094, sg-099, and sg-117. No landmark sets `premiumOnly`, so the free tier holds every POI.
+- **landmark follow-ups**: the 117 landmarks have new positions since 2026-11-27. The position of Pulau Ubin comes from memory, not from a dataset. Check it and the Istana gate on a map. Chinatown Heritage Centre and Dempsey Hill have no Wikipedia article, so they carry no link and show the written description. No landmark sets `premiumOnly`, so the free tier holds every POI.
 - **cat hats**: test the Party Cat and its party hat in the app, then give the hat to more cats. Add `hat: 'party'` to a `CreatureDef` in `src/data/creatures.ts`. `addCatHat()` in `src/lib/catModel.ts` builds the hat.
 - **haptics**: Settings has a Vibration toggle, but nothing vibrates yet. Call `vibrate()` from `src/lib/haptics.ts` on game events, such as check-in, hatch, and level-up. The function does nothing when the player turns the toggle off. iOS Safari does not vibrate.
 - **vfx**: play particle effects on game events, such as check-in, hatch, and level-up. Call `playMapVfx(id, [lng, lat])` from `src/lib/mapVfx.ts`. The Particle Editor in `tools/vscode-particles/` makes the effects.
