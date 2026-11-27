@@ -259,6 +259,10 @@ def norm_name(s):
     return re.sub(r"^the | singapore$", "", s)
 
 
+def exact_name(s):
+    return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
+
+
 def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
@@ -548,8 +552,10 @@ def main():
     ]
 
     taken = Grid(SAME_NAME_M)
+    landmark_names = set()
     for name, lat, lon in curated_landmarks():
         taken.add(lat, lon, norm_name(name))
+        landmark_names.add(exact_name(name))
 
     places, seen_ids = [], set()
     print(f"{'source':38} {'raw':>6} {'kept':>6}")
@@ -562,6 +568,10 @@ def main():
             if not area:
                 continue
             key = norm_name(p["name"])
+            # A landmark has its name to itself, at any distance. A source can
+            # hold the same place at a wrong position, or at its centroid.
+            if exact_name(p["name"]) in landmark_names:
+                continue
             if any(True for _ in taken.near(p["lat"], p["lon"], MERGE_M)):
                 continue
             if key and any(other == key for other in taken.near(p["lat"], p["lon"], SAME_NAME_M)):

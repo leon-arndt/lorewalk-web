@@ -28,7 +28,7 @@ The output mixes OpenStreetMap data with the other sources, so the ODbL applies 
 1. It reads the coordinates and the names of the curated landmarks. They take their ground first, so no imported place sits on a landmark.
 2. It reads each source in the order of trust: NHB, Wikidata, STB, NParks heritage trees, OpenStreetMap, URA, NParks parks, NLB, PA.
 3. It drops a place outside the subzone boundaries, because that place is not on land.
-4. It drops a place within 40 m of a place it already has, and a place with the same name within 500 m.
+4. It drops a place within 40 m of a place it already has, and a place with the same name within 500 m. It also drops a place with the exact name of a landmark, at any distance.
 5. It gives each place a tier (`marker` or `spot`), one of the 6 game categories, and its planning area.
 6. It writes the food spots: the NEA hawker centres, and the OpenStreetMap food courts and markets that have a name.
 7. It writes the anchors for the daily finds: bus stops, playgrounds, and fitness corners, at most one in each 120 m square.

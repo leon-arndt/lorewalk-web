@@ -73,10 +73,14 @@ test('rain brings rain finds, and they leave with the rain', async ({ page }) =>
 
 test('a tap on a marker checks in, and the visit records its tier', async ({ page }) => {
   await open(page)
-  const marker = await page.evaluate(async () => {
+  // The marker nearest to the player, so the test does not depend on one place.
+  const marker = await page.evaluate(async (here) => {
     const file = await (await fetch('/pois/sg-places.json')).json()
-    return file.places.find((p: { id: string }) => p.id.startsWith('nhb-hs-fort-canning-command-centre'))
-  })
+    const away = (p: { lat: number; lon: number }) => Math.hypot(p.lat - here.latitude, p.lon - here.longitude)
+    return file.places
+      .filter((p: { tier: string }) => p.tier === 'marker')
+      .reduce((best: { lat: number; lon: number }, p: { lat: number; lon: number }) => (away(p) < away(best) ? p : best))
+  }, HERE)
   expect(marker).toBeTruthy()
   // Look straight down at the marker, so its pin is in the middle of the screen.
   await page.evaluate((m) => (window as unknown as TestWindow)._map.jumpTo({ center: [m.lon, m.lat], pitch: 0, zoom: 18 }), marker)

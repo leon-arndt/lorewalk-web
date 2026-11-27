@@ -17,10 +17,10 @@ The goal: a player in any part of Singapore finds something to do within a 5-min
 | Tier | What it is | Count | XP | Egg chance | Pin |
 |---|---|---|---|---|---|
 | Landmark | A curated place with a written description | 117 | 5 to 10 | Always | Full size, always on the map |
-| Marker | A small heritage site: an NHB historic site, a national monument, a heritage tree, a memorial, a public artwork, or a place with a Wikipedia article | About 1,530 | 3 | 35% | 62% of full size |
-| Spot | A local place: a park, a garden, a place of worship, a library, or a community club | About 1,350 | 2 | 10% | 50% of full size |
+| Marker | A small heritage site: an NHB historic site, a national monument, a heritage tree, a memorial, a public artwork, or a place with a Wikipedia article | About 1,480 | 3 | 35% | 62% of full size |
+| Spot | A local place: a park, a garden, a place of worship, a library, or a community club | About 1,340 | 2 | 10% | 50% of full size |
 
-- **Coverage**: with all three tiers, 70% of the bus stops have a POI within 300 m, and 81% within 400 m. The daily finds cover the rest. See "Daily Activities".
+- **Coverage**: with all three tiers, 70% of the bus stops have a POI within 300 m, and 80% within 400 m. The daily finds cover the rest. See "Daily Activities".
 - **Pins**: a marker or a spot shows only within 1.3 km of the middle of the screen, and only from zoom 14. The map draws the nearest 160 of them. `poisInView()` in `src/lib/places.ts` holds the rule.
 - **Squads**: a squad goes on an expedition to a landmark only. A player cannot claim a marker or a spot. Shrines stand at landmarks only.
 - **Progress**: a check-in at any tier counts for the streak, the achievements, and the visit history.

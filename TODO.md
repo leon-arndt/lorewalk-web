@@ -47,7 +47,7 @@
 
 ## Backlog
 
-- **landmark coordinates**: many curated landmarks in `src/data/singapore-pois.ts` stand at the wrong place. A comparison by name with Wikidata matched 84 of the 117 landmarks, and 58 of those are more than 100 m off. Examples: Haw Par Villa (1.9 km), Fort Siloso (1.4 km), and Changi Chapel and Museum (2.9 km). A check-in needs 50 m, so a player cannot check in at these in online mode. Fix the coordinates, then run `tools/poi-import/build_places.py` again, because the import merges by position.
+- **landmark follow-ups**: the 117 landmarks have new positions since 2026-11-27. The position of Pulau Ubin comes from memory, not from a dataset. Check it and the Istana gate on a map. 10 landmarks link to a Wikipedia page that does not exist: sg-018, sg-028, sg-030, sg-039, sg-043, sg-050, sg-085, sg-094, sg-099, and sg-117. No landmark sets `premiumOnly`, so the free tier holds every POI.
 - **cat hats**: test the Party Cat and its party hat in the app, then give the hat to more cats. Add `hat: 'party'` to a `CreatureDef` in `src/data/creatures.ts`. `addCatHat()` in `src/lib/catModel.ts` builds the hat.
 - **haptics**: Settings has a Vibration toggle, but nothing vibrates yet. Call `vibrate()` from `src/lib/haptics.ts` on game events, such as check-in, hatch, and level-up. The function does nothing when the player turns the toggle off. iOS Safari does not vibrate.
 - **vfx**: play particle effects on game events, such as check-in, hatch, and level-up. Call `playMapVfx(id, [lng, lat])` from `src/lib/mapVfx.ts`. The Particle Editor in `tools/vscode-particles/` makes the effects.

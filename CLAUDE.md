@@ -223,8 +223,9 @@ A player who signs in with Google gets a cloud save. `localStorage` stays the wo
 
 ## Places
 
-The 117 curated landmarks live in `src/data/singapore-pois.ts`. Every other place comes from `public/pois/sg-places.json`: about 1,530 heritage markers, 1,350 local spots, 640 food spots, and 6,400 anchors for the daily finds. GameDesign.md's "POI tiers" and "Daily Activities" sections hold the game rules.
+The 117 curated landmarks live in `src/data/singapore-pois.ts`. Every other place comes from `public/pois/sg-places.json`: about 1,480 heritage markers, 1,340 local spots, 640 food spots, and 6,400 anchors for the daily finds. GameDesign.md's "POI tiers" and "Daily Activities" sections hold the game rules.
 
+- **Landmark positions**: a landmark stands at a point that a player can reach, because a check-in needs 50 m. For a park or a reservoir, that is an entrance or a path, not the centroid. For the Istana, it is the main gate. `supabase/seed.sql` holds the same 117 rows, so change both files. Then build the places file again, because the import merges by position.
 - **Build**: run `python3 tools/poi-import/build_places.py` from the repo root. It needs only the Python standard library. It downloads from data.gov.sg, Wikidata, and the Overpass API of OpenStreetMap, and keeps the downloads in `tools/poi-import/cache/`. Add `--refresh` to download again. Do not hand-edit the JSON file: change a filter in the script instead.
 - **Load**: `loadPlaces()` in `src/lib/places.ts` fetches the file one time. `usePlaces` gives it to React. If the file does not load, the game runs with the landmarks only and tries again 30 seconds later. The file is in the PWA precache.
 - **Ids**: a place id comes from its source, such as `nhb-hs-<slug>`, `wd-Q<number>`, or `osm-n<number>`. The visit history keys on the id, so do not change how the script makes it.
