@@ -27,6 +27,14 @@ export function useBackgroundMusic(eventId: string) {
     let cancelled = false
     let tryPlay = () => {}
 
+    // No music while the app or the tab is in the background.
+    const onVisibility = () => {
+      if (!audio) return
+      if (document.hidden) audio.pause()
+      else if (startedRef.current) audio.play().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
     // The track and its level come from the soundbank, so the soundbank editor
     // can swap the music the same way it swaps a UI sound.
     resolveEvent(eventId).then((resolved) => {
@@ -56,6 +64,7 @@ export function useBackgroundMusic(eventId: string) {
     return () => {
       cancelled = true
       document.removeEventListener('pointerdown', tryPlay)
+      document.removeEventListener('visibilitychange', onVisibility)
       if (audio) {
         audio.pause()
         audio.src = ''

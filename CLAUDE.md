@@ -258,7 +258,9 @@ two original UI sounds alive.
 The background music is an event too. `music/town-theme` carries `bus: "music"`
 and `loop: true`. `useBackgroundMusic` reads the track and the gain from the same
 bank, then streams the file through an audio element. The music volume slider in
-Settings still controls it, because the bus selects the slider.
+Settings still controls it, because the bus selects the slider. The music stops
+while the app or the tab is in the background: the hook follows the
+`visibilitychange` event.
 
 One delegated click handler in `App.tsx` covers the whole app. An element with
 `data-sfx="close"` gets `ui/close`. A `data-sfx` value with a slash names a full
@@ -339,6 +341,7 @@ Playwright end-to-end is the only test runner. There is no unit runner. The spec
 - `e2e/profile-seed.ts` seeds a known profile into localStorage, so every test starts from a fixed state. Its `ACHIEVEMENT_IDS` list mirrors `profile.ts` by hand. Update it whenever you add an achievement.
 - The suite covers the map render and nav routing, egg hatching, the pantry and feeding, dev cheats, squad management, expedition dispatch, and the shrine system.
 - `e2e/places.spec.ts` covers the imported places: food nodes at food spots, a daily find, rain finds, a check-in at a marker, and the trail of the week. It sets the sky with `_ambience()`, so it does not depend on the real weather.
+- `e2e/music.spec.ts` covers the music stop in the background.
 - `e2e/cloud-save.spec.ts` covers the cloud save. It seeds a signed-in session and answers every Supabase request itself, so it needs no project and no Google account. It does not cover the Google sign-in itself.
 - Run `npm run test:e2e` before you commit a gameplay change.
 
