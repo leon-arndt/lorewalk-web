@@ -16,7 +16,7 @@ export function Mono({ children, style }: { children: ReactNode; style?: CSSProp
 export function PageHeader({ title, right, kicker }: { title: ReactNode; right?: ReactNode; kicker?: ReactNode }) {
   const { t } = useLocale()
   return (
-    <header style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, padding: '20px 16px 0' }}>
+    <header style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, padding: 'calc(env(safe-area-inset-top) + 20px) 16px 0' }}>
       <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Mono style={{ fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: inkSoft }}>
           {kicker ?? t('journal_kicker')}

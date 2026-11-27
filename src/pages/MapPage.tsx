@@ -517,7 +517,7 @@ export function MapPage() {
 
       <div hidden={!onMapTab}>
       <div style={{
-        position: 'absolute', top: 12, left: 12, right: 12,
+        position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', left: 12, right: 12,
         display: 'flex', flexDirection: 'column', gap: 8,
         pointerEvents: 'none',
       }}>

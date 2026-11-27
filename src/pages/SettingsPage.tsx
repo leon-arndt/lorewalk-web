@@ -84,7 +84,7 @@ export function SettingsPage() {
     <div style={{ position: 'absolute', inset: 0, overflowY: 'auto', ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))' }}>
       <div style={{
         position: 'sticky', top: 0, zIndex: 2, background: paperLight,
-        padding: '16px 16px 10px', borderBottom: `1px solid ${edge}`,
+        padding: 'calc(env(safe-area-inset-top) + 16px) 16px 10px', borderBottom: `1px solid ${edge}`,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         <button

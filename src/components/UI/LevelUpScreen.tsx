@@ -195,7 +195,7 @@ export function LevelUpScreen({ level, rewards, onDismiss }: {
         position: 'fixed', inset: 0, zIndex: 200,
         background: SCRIM_DEEP,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '24px 20px', overflow: 'hidden',
+        padding: 'calc(env(safe-area-inset-top) + 24px) 20px 24px', overflow: 'hidden',
         userSelect: 'none',
       }}
     >
