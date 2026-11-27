@@ -30,8 +30,24 @@ const LIT_SHARE = 0.55
 const UNLIT_SHADE = 0.86
 const ROOF_SLAB_M = 0.4
 
+// The map is drawn on parchment, like the rest of the field journal. Each base
+// colour moves onto a sepia ramp by its brightness and keeps a share of its own
+// hue, so water still reads as blue-grey and a park as sage.
+const SEPIA_DARK: Rgb = [92, 74, 52]
+const SEPIA_LIGHT: Rgb = [247, 239, 216]
+const HUE_KEPT = 0.3
+const LABEL_INK: Rgb = [51, 40, 30]
+const LABEL_PAPER: Rgb = [251, 246, 233]
+
+function parchment(c: Rgba): Rgba {
+  const light = Math.pow((0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255, 0.9)
+  const ramp = mixRgb(SEPIA_DARK, SEPIA_LIGHT, light)
+  const [r, g, b] = mixRgb(ramp, [c[0], c[1], c[2]], HUE_KEPT)
+  return [r, g, b, c[3]]
+}
+
 const SKY = {
-  day: { sky: [128, 190, 255], horizon: [222, 238, 255], fog: [240, 238, 232] },
+  day: { sky: [222, 208, 176], horizon: [240, 230, 204], fog: [240, 232, 212] },
   night: { sky: [8, 14, 40], horizon: [34, 48, 104], fog: [22, 32, 70] },
   dull: { sky: [150, 160, 172], horizon: [196, 202, 208], fog: [206, 208, 210] },
 } satisfies Record<string, Record<string, Rgb>>
@@ -161,10 +177,13 @@ export function addMapAmbience(map: maplibregl.Map): { remove: () => void } {
       if (!map.getLayer(s.layer)) continue
       let next: unknown
       if (s.type === 'symbol') {
-        const to = s.prop.includes('halo') ? NIGHT_HALO : NIGHT_TEXT
-        next = mapColors(s.value, (c) => css(mixRgb([c[0], c[1], c[2]], to, flip), c[3]))
+        // Labels are written in ink on the paper, and flip to light text at night.
+        const halo = s.prop.includes('halo')
+        const day = halo ? LABEL_PAPER : LABEL_INK
+        const to = halo ? NIGHT_HALO : NIGHT_TEXT
+        next = mapColors(s.value, (c) => css(mixRgb(mixRgb([c[0], c[1], c[2]], day, 0.65), to, flip), c[3]))
       } else {
-        next = mapColors(s.value, (c) => css(ground(c), c[3]))
+        next = mapColors(s.value, (c) => css(ground(parchment(c)), c[3]))
       }
       map.setPaintProperty(s.layer, s.prop as 'fill-color', next as string)
     }
@@ -172,7 +191,7 @@ export function addMapAmbience(map: maplibregl.Map): { remove: () => void } {
     for (const t of towers) {
       if (!map.getLayer(t.layer)) continue
       const walls = GROUP_SHADE.map((shade): Rgb => {
-        const c = ground(t.color)
+        const c = ground(parchment(t.color))
         return [c[0] * shade[0], c[1] * shade[1], c[2] * shade[2]]
       })
       const byGroup = (values: string[]) => ['match', GROUP_OF, ...values.slice(0, -1).flatMap((v, i) => [i, v]), values[values.length - 1]]

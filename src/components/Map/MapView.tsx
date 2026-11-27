@@ -81,7 +81,7 @@ function appendOrbitingCreatures(outer: HTMLElement, creatures: MarkerCreature[]
     const offset = document.createElement('div')
     offset.style.cssText = `position:absolute;transform:translateX(${R}px);`
     const body = document.createElement('div')
-    body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:white;border:1.5px solid #cbd5e1;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
+    body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:white;border:1.5px solid #CDBF9F;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
     body.appendChild(spriteEl(c.emoji, 18, c.key))
     offset.appendChild(body)
     arm.appendChild(offset)
@@ -95,8 +95,8 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
   outer.setAttribute('role', 'button')
   const inner = document.createElement('div')
-  const borderColor = state === 'ready' ? '#16a34a' : state === 'busy' ? '#cbd5e1' : '#f59e0b'
-  const glow = state === 'ready' ? 'rgba(34,197,94,0.5)' : state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(245,158,11,0.45)'
+  const borderColor = state === 'ready' ? '#2F6B4F' : state === 'busy' ? '#CDBF9F' : '#C98A1E'
+  const glow = state === 'ready' ? 'rgba(47,107,79,0.5)' : state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(201,138,30,0.45)'
   inner.style.cssText = `
     width:38px;height:38px;border-radius:50%;
     background:white;border:2.5px solid ${borderColor};
@@ -131,7 +131,7 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   tooltip.textContent = node.name
   tooltip.style.cssText = `
     position:absolute;bottom:46px;left:50%;transform:translateX(-50%);
-    background:white;color:#1e293b;font-size:11px;font-weight:600;
+    background:white;color:#33281E;font-size:11px;font-weight:600;
     padding:3px 9px;border-radius:7px;white-space:nowrap;
     box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;
     opacity:0;transition:opacity 0.12s ease;
@@ -153,12 +153,12 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   const outer = document.createElement('div')
   outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
   outer.setAttribute('role', 'button')
-  const borderColor = node.state === 'ready' ? '#16a34a' : node.state === 'cleared' ? '#7c3aed' : node.state === 'busy' ? '#cbd5e1' : '#9333ea'
-  const glow = node.state === 'ready' ? 'rgba(34,197,94,0.5)' : node.state === 'cleared' ? 'rgba(124,58,237,0.4)' : node.state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(147,51,234,0.45)'
+  const borderColor = node.state === 'ready' ? '#2F6B4F' : node.state === 'cleared' ? '#2E4A7D' : node.state === 'busy' ? '#CDBF9F' : '#2E4A7D'
+  const glow = node.state === 'ready' ? 'rgba(47,107,79,0.5)' : node.state === 'cleared' ? 'rgba(46,74,125,0.4)' : node.state === 'busy' ? 'rgba(0,0,0,0.18)' : 'rgba(147,51,234,0.45)'
   const inner = document.createElement('div')
   inner.style.cssText = `
     width:42px;height:42px;border-radius:10px;
-    background:${node.state === 'cleared' ? 'linear-gradient(135deg,#7c3aed,#a855f7)' : 'white'};
+    background:${node.state === 'cleared' ? 'linear-gradient(135deg,#2E4A7D,#2E4A7D)' : 'white'};
     border:2.5px solid ${borderColor};
     display:flex;align-items:center;justify-content:center;
     font-size:24px;line-height:1;
@@ -184,7 +184,7 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   }
   const tooltip = document.createElement('div')
   tooltip.textContent = node.name
-  tooltip.style.cssText = 'position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:white;color:#1e293b;font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;opacity:0;transition:opacity 0.12s ease;'
+  tooltip.style.cssText = 'position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:white;color:#33281E;font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.12);pointer-events:none;opacity:0;transition:opacity 0.12s ease;'
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
   outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
@@ -222,7 +222,7 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
     display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
     width:42px;height:42px;padding:3px;border-radius:12px;
     background:white;box-sizing:border-box;
-    border:2.5px solid ${squad.isActive ? accent : '#cbd5e1'};
+    border:2.5px solid ${squad.isActive ? accent : '#CDBF9F'};
     box-shadow:0 2px 8px rgba(0,0,0,0.18)${squad.isActive ? `,0 0 0 4px ${accentAlpha(0.2)}` : ''};
     align-items:center;justify-items:center;
   `
@@ -250,7 +250,7 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   tooltip.textContent = squad.name + (squad.ready ? ' · ready!' : squad.isActive ? ' ★' : '')
   tooltip.style.cssText = `
     position:absolute;bottom:50px;left:50%;transform:translateX(-50%);
-    background:white;color:#1e293b;font-size:12px;font-weight:600;
+    background:white;color:#33281E;font-size:12px;font-weight:600;
     padding:4px 10px;border-radius:8px;white-space:nowrap;
     box-shadow:0 2px 10px rgba(0,0,0,0.12);pointer-events:none;
     opacity:0;transition:opacity 0.12s ease;
@@ -302,7 +302,7 @@ function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
   tooltip.textContent = claim.name + ' · yours'
   tooltip.style.cssText = `
     position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
-    background:white;color:#1e293b;font-size:12px;font-weight:600;
+    background:white;color:#33281E;font-size:12px;font-weight:600;
     padding:4px 10px;border-radius:8px;white-space:nowrap;
     box-shadow:0 2px 10px rgba(0,0,0,0.12);pointer-events:none;
     opacity:0;transition:opacity 0.12s ease;
@@ -389,9 +389,17 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       zoom: PLAYER_ZOOM,
       pitch: 70,
       maxPitch: 80,
+      attributionControl: { compact: true },
     })
 
     mapRef.current = map
+    // The credit starts as a small (i). MapLibre opens it until the first touch,
+    // and the open note covers a wide strip of the map on a phone.
+    map.once('load', () => {
+      const credit = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
+      credit?.classList.remove('maplibregl-compact-show')
+      credit?.removeAttribute('open')
+    })
     if (import.meta.env.DEV) {
       Object.assign(window, { _map: map, _ambience: setAmbienceOverride })
     }
