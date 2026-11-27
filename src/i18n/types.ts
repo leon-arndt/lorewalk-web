@@ -80,7 +80,6 @@ export interface Translations {
   friends_added_date: string
 
   creatures_title: string
-  creatures_subtitle: string
   creatures_hatching: string
   creatures_visit_landmark: string
   creatures_steps_left: string
@@ -94,7 +93,6 @@ export interface Translations {
   creatures_release_body: string
   creatures_release_yes: string
   creatures_release_keep: string
-  journal_kicker: string
   creatures_recorded: string
   creatures_recorded_word: string
   creatures_not_seen: string
@@ -129,7 +127,6 @@ export interface Translations {
   squads_earning: string
 
   shop_title: string
-  shop_subtitle: string
   shop_upgrades: string
   shop_coins_title: string
   shop_coins_offline: string
@@ -187,7 +184,6 @@ export interface Translations {
   common_close: string
 
   journal_delete_photo: string
-  journal_subtitle: string
   journal_close: string
   goal_go: string
   goal_egg_title: string
@@ -200,7 +196,6 @@ export interface Translations {
   journal_open: string
 
   news_title: string
-  news_subtitle: string
   news_open: string
   news_close: string
   news_empty: string
@@ -256,7 +251,6 @@ export interface Translations {
   shrine_claimed_subtitle: string
 
   medal_history_title: string
-  medal_history_subtitle: string
   medal_earned_title: string
   medal_claim_failed: string
   medal_challenge_info_aria: string
@@ -354,4 +348,11 @@ export interface Translations {
   find_toast_coins: string
   find_toast_food: string
   find_walk_closer: string
+  common_back: string
+  customize_hair: string
+  settings_steps_section: string
+  settings_health_steps: string
+  settings_health_steps_desc: string
+  settings_health_steps_denied: string
+  profile_rename: string
 }

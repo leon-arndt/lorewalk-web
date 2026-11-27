@@ -52,7 +52,6 @@ export function MedalHistoryScreen({ medals, createdAt, onSelectMonth, onClose }
 
         <div style={{ flexShrink: 0, margin: '0 20px', padding: '12px 0 10px', borderBottom: `1px solid ${line}` }}>
           <div style={{ fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>{t('medal_history_title')}</div>
-          <Mono style={{ display: 'block', marginTop: 2 }}>{t('medal_history_subtitle')}</Mono>
         </div>
 
         <div style={{ overflowY: 'auto', padding: '14px 20px calc(28px + env(safe-area-inset-bottom))' }}>

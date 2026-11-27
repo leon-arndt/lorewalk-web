@@ -15,8 +15,9 @@ import { ConfirmDialog } from '@/components/UI/ConfirmDialog'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { Egg, HatchedCreature } from '@/types'
 import type { Translations } from '@/i18n/types'
-import { categoryCss, forest, ink, inkHint, inkSoft, line, ochreInk, paperCard, pencil, stamp, paperLight, edge } from '@/lib/theme'
+import { categoryCss, forest, ink, inkHint, inkSoft, line, ochreInk, paperCard, pencil, stamp, paperLight } from '@/lib/theme'
 import { paperPage, tape, TAPES } from '@/lib/paper'
+import { CategoryBadge } from '@/components/UI/Icons'
 
 const TIER_KEY = { common: 'egg_tier_common', rare: 'egg_tier_rare', epic: 'egg_tier_epic' } as const
 const TIER_INK = { common: inkHint, rare: ochreInk, epic: stamp } as const
@@ -275,7 +276,7 @@ export function CreaturesPage() {
         )}
 
         {ownedTypes.length > 1 && (
-          <div className="mb-3 flex items-center gap-2.5">
+          <div className="mb-3 flex flex-wrap items-center gap-1" style={{ marginLeft: -3 }}>
             {ownedTypes.map((type) => {
               const on = activeType === type
               return (
@@ -285,17 +286,21 @@ export function CreaturesPage() {
                   aria-label={t(TYPE_LABEL[type])}
                   aria-pressed={on}
                   onClick={() => setTypeFilter(on ? null : type)}
-                  className="size-7 shrink-0 rounded-full transition-all"
+                  className="grid shrink-0 place-items-center rounded-full transition-opacity"
                   style={{
-                    background: categoryCss(type),
-                    border: `1px solid ${edge}`,
-                    boxShadow: on ? `0 0 0 2px ${paperCard}, 0 0 0 4px ${ink}` : undefined,
-                    opacity: activeType && !on ? 0.4 : 1,
+                    width: 44, height: 44, padding: 0, border: 'none', background: 'none', cursor: 'pointer',
+                    opacity: activeType && !on ? 0.45 : 1, WebkitTapHighlightColor: 'transparent',
                   }}
-                />
+                >
+                  <CategoryBadge
+                    category={type}
+                    size={36}
+                    style={on ? { boxShadow: `0 0 0 2px ${paperCard}, 0 0 0 4px ${ink}` } : undefined}
+                  />
+                </button>
               )
             })}
-            {activeType && <Mono style={{ marginLeft: 4 }}>{t(TYPE_LABEL[activeType])}</Mono>}
+            {activeType && <Mono style={{ marginLeft: 6, fontWeight: 500, color: ink }}>{t(TYPE_LABEL[activeType])}</Mono>}
           </div>
         )}
 

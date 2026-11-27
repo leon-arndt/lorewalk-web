@@ -16,6 +16,7 @@ import { getSpritePreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
 import type { Poi, PlayerAppearance, PlayerPosition } from '@/types'
 import { accent, accentAlpha } from '@/lib/theme'
+import { RADIUS } from '@/lib/paper'
 import { SINGAPORE_BOUNDARY } from '@/data/singapore-boundary'
 
 // Map markers are built with raw DOM (MapLibre, not React) - this mirrors EmojiSprite's
@@ -39,6 +40,25 @@ function spriteEl(emoji: string, sizePx: number, key = emoji): HTMLElement {
     wrap.appendChild(img)
   })
   return wrap
+}
+
+// MapLibre places a marker with a transform on the marker element. The press
+// squish in ripple.ts scales the pressed button, and a scale on that element
+// scales its position too: the marker jumps toward the top left corner, out
+// from under the finger, and the tap lands on the map behind it. So the marker
+// element is only a shell, and the button that squishes is a child of it.
+function markerShell(onClick: () => void, radius = `${RADIUS}px`) {
+  const shell = document.createElement('div')
+  const button = document.createElement('div')
+  button.setAttribute('role', 'button')
+  button.style.cssText = `position:relative;border-radius:${radius};cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;`
+  // Stop the click from bubbling to the map container, where MapLibre's own click
+  // handler would run the POI proximity hit-test and override this marker's action.
+  shell.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
+  shell.addEventListener('mousedown', (e) => e.stopPropagation())
+  shell.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
+  shell.appendChild(button)
+  return { shell, button }
 }
 
 // A creature shown on a marker: its 3D render by sprite key, the emoji until then.
@@ -116,9 +136,9 @@ function appendOrbitingCreatures(outer: HTMLElement, creatures: MarkerCreature[]
 
 function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   const state = node.state ?? 'idle'
-  const outer = document.createElement('div')
-  outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
-  outer.setAttribute('role', 'button')
+  const { shell, button: outer } = markerShell(onClick)
+  outer.setAttribute('aria-label', node.name)
+  outer.dataset.foodNode = node.id
   const inner = document.createElement('div')
   // A paper tag with the same corner as every other button. Green ink means ready.
   const borderColor = state === 'ready' ? '#2F6B4F' : '#33281E'
@@ -161,21 +181,15 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  // Stop the click from bubbling to the map container, where MapLibre's own click
-  // handler would run the POI proximity hit-test and override this marker's action.
-  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
-  outer.addEventListener('mousedown', (e) => e.stopPropagation())
-  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
   if (node.travelers && node.travelers.length > 0) appendOrbitingCreatures(outer, node.travelers)
-  return outer
+  return shell
 }
 
 function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
-  const outer = document.createElement('div')
-  outer.style.cssText = 'cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;'
-  outer.setAttribute('role', 'button')
+  const { shell, button: outer } = markerShell(onClick)
+  outer.setAttribute('aria-label', node.name)
   const borderColor = node.state === 'ready' ? '#2F6B4F' : node.state === 'cleared' ? '#2E4A7D' : '#33281E'
   const inner = document.createElement('div')
   inner.style.cssText = `
@@ -209,13 +223,10 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   tooltip.style.cssText = 'position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:#FBF6E9;color:#33281E;border:1px solid rgba(51,40,30,0.45);font-size:11px;font-weight:500;padding:3px 9px;border-radius:10px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.12s ease;'
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
-  outer.addEventListener('mousedown', (e) => e.stopPropagation())
-  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
   if (node.travelers && node.travelers.length > 0) appendOrbitingCreatures(outer, node.travelers)
-  return outer
+  return shell
 }
 
 // OpenFreeMap "Liberty" - free vector tiles, no API key. Gives 3D building
@@ -235,9 +246,8 @@ const PLAYER_ZOOM = 16.5
 const TAP_RADIUS_PX = 48
 
 function buildSquadElement(squad: SquadMarker, onClick: () => void) {
-  const outer = document.createElement('div')
-  outer.style.cssText = 'cursor:pointer;'
-  outer.setAttribute('role', 'button')
+  const { shell, button: outer } = markerShell(onClick)
+  outer.setAttribute('aria-label', squad.name)
 
   const inner = document.createElement('div')
   inner.style.cssText = `
@@ -278,15 +288,10 @@ function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  // Stop the click from bubbling to the map container, where MapLibre's own click
-  // handler would run the POI proximity hit-test and override this marker's action.
-  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
-  outer.addEventListener('mousedown', (e) => e.stopPropagation())
-  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
 
   outer.appendChild(inner)
   outer.appendChild(tooltip)
-  return outer
+  return shell
 }
 
 export interface SquadMarker {
@@ -309,30 +314,23 @@ export interface ClaimMarker {
 
 // A daily find: a small round paper tag, smaller than a food node.
 function buildFindElement(find: FindMarker, onClick: () => void) {
-  const el = document.createElement('div')
-  el.setAttribute('role', 'button')
+  const { shell, button: el } = markerShell(onClick, '50%')
   el.setAttribute('aria-label', find.name)
   el.title = find.name
   el.dataset.find = find.id
   el.textContent = find.emoji
-  el.style.cssText = `
-    width:30px;height:30px;border-radius:50%;box-sizing:border-box;
+  el.style.cssText += `
+    width:30px;height:30px;box-sizing:border-box;
     background:#FBF6E9;border:1.5px dashed #33281E;
     display:flex;align-items:center;justify-content:center;
-    font-size:16px;line-height:1;cursor:pointer;
-    touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    font-size:16px;line-height:1;
   `
-  // Stop propagation so the map's click handler does not also run its POI hit-test.
-  el.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
-  el.addEventListener('mousedown', (e) => e.stopPropagation())
-  el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
-  return el
+  return shell
 }
 
 function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
-  const outer = document.createElement('div')
-  outer.style.cssText = 'cursor:pointer;'
-  outer.setAttribute('role', 'button')
+  const { shell, button: outer } = markerShell(onClick)
+  outer.setAttribute('aria-label', claim.name)
   const inner = document.createElement('div')
   inner.style.cssText = `
     width:28px;height:28px;border-radius:10px;box-sizing:border-box;
@@ -352,14 +350,33 @@ function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
   `
   outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  // Stop the click from bubbling to the map container, where MapLibre's own click
-  // handler would run the POI proximity hit-test and override this marker's action.
-  outer.addEventListener('click', (e) => { e.stopPropagation(); onClick() })
-  outer.addEventListener('mousedown', (e) => e.stopPropagation())
-  outer.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
-  return outer
+  return shell
+}
+
+type MarkerStore = Map<string, { marker: maplibregl.Marker; sig: string }>
+
+// Brings the DOM markers of one kind in line with the list. A marker that did
+// not change keeps its element: the page sends a new list on every profile
+// change, and a marker that is built again under the finger loses the tap.
+function syncMarkers<T extends { id: string; lat: number; lon: number }>(
+  map: maplibregl.Map, store: MarkerStore, items: T[], build: (item: T) => HTMLElement,
+) {
+  const keep = new Set(items.map((item) => item.id))
+  store.forEach((entry, id) => {
+    if (keep.has(id)) return
+    entry.marker.remove()
+    store.delete(id)
+  })
+  for (const item of items) {
+    const sig = JSON.stringify(item)
+    const old = store.get(item.id)
+    if (old?.sig === sig) continue
+    old?.marker.remove()
+    const marker = new maplibregl.Marker({ element: build(item) }).setLngLat([item.lon, item.lat]).addTo(map)
+    store.set(item.id, { marker, sig })
+  }
 }
 
 interface MapViewProps {
@@ -399,11 +416,11 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const playerAvatarRef = useRef<PlayerAvatarLayerHandle | null>(null)
-  const squadMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
-  const claimMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
-  const foodNodeMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
-  const shrineMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
-  const findMarkersRef = useRef<Map<string, maplibregl.Marker>>(new Map())
+  const squadMarkersRef = useRef<MarkerStore>(new Map())
+  const claimMarkersRef = useRef<MarkerStore>(new Map())
+  const foodNodeMarkersRef = useRef<MarkerStore>(new Map())
+  const shrineMarkersRef = useRef<MarkerStore>(new Map())
+  const findMarkersRef = useRef<MarkerStore>(new Map())
   const charLayerRef = useRef<CharacterLayerHandle | null>(null)
   const poiPinsRef = useRef<PoiPinsHandle | null>(null)
   const hasZoomedToPlayerRef = useRef(false)
@@ -557,6 +574,8 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       ambience.forEach((a) => a.remove())
       map.remove()
       mapRef.current = null
+      // The DOM markers went with the map, so the next map builds them again.
+      for (const store of [squadMarkersRef, claimMarkersRef, foodNodeMarkersRef, shrineMarkersRef, findMarkersRef]) store.current.clear()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -734,99 +753,34 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     }
   }, [position, mode])
 
+  // The click handlers live in a ref, so a new callback from the page does not
+  // build every marker again.
+  const clicksRef = useRef({ onSquadClick, onClaimClick, onFoodNodeClick, onShrineNodeClick, onFindClick })
   useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
+    clicksRef.current = { onSquadClick, onClaimClick, onFoodNodeClick, onShrineNodeClick, onFindClick }
+  })
 
-    const sync = () => {
-      squadMarkersRef.current.forEach((m) => m.remove())
-      squadMarkersRef.current.clear()
-      squadMarkers.forEach((squad) => {
-        const el = buildSquadElement(squad, () => onSquadClick?.(squad.id))
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([squad.lon, squad.lat])
-          .addTo(map)
-        squadMarkersRef.current.set(squad.id, marker)
-      })
-    }
-
-    if (map.loaded()) sync()
-    else map.once('load', sync)
-  }, [squadMarkers, onSquadClick])
+  // None of these wait for 'load': a DOM marker needs no style. The markers
+  // change while the player walks, and map.loaded() is false then, because tiles load.
+  useEffect(() => {
+    if (mapRef.current) syncMarkers(mapRef.current, squadMarkersRef.current, squadMarkers, (s) => buildSquadElement(s, () => clicksRef.current.onSquadClick?.(s.id)))
+  }, [squadMarkers])
 
   useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
-
-    const sync = () => {
-      claimMarkersRef.current.forEach((m) => m.remove())
-      claimMarkersRef.current.clear()
-      claimMarkers.forEach((claim) => {
-        const el = buildClaimElement(claim, () => onClaimClick?.(claim.id))
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([claim.lon, claim.lat])
-          .addTo(map)
-        claimMarkersRef.current.set(claim.id, marker)
-      })
-    }
-
-    if (map.loaded()) sync()
-    else map.once('load', sync)
-  }, [claimMarkers, onClaimClick])
+    if (mapRef.current) syncMarkers(mapRef.current, claimMarkersRef.current, claimMarkers, (c) => buildClaimElement(c, () => clicksRef.current.onClaimClick?.(c.id)))
+  }, [claimMarkers])
 
   useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
-    const sync = () => {
-      foodNodeMarkersRef.current.forEach((m) => m.remove())
-      foodNodeMarkersRef.current.clear()
-      foodNodeMarkers.forEach((node) => {
-        const el = buildFoodNodeElement(node, () => onFoodNodeClick?.(node.id))
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([node.lon, node.lat])
-          .addTo(map)
-        foodNodeMarkersRef.current.set(node.id, marker)
-      })
-    }
-    // No wait for 'load': a DOM marker needs no style. The nodes change while
-    // the player walks, and map.loaded() is false then, because tiles load.
-    sync()
-  }, [foodNodeMarkers, onFoodNodeClick])
+    if (mapRef.current) syncMarkers(mapRef.current, foodNodeMarkersRef.current, foodNodeMarkers, (n) => buildFoodNodeElement(n, () => clicksRef.current.onFoodNodeClick?.(n.id)))
+  }, [foodNodeMarkers])
 
   useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
-    const sync = () => {
-      shrineMarkersRef.current.forEach((m) => m.remove())
-      shrineMarkersRef.current.clear()
-      shrineNodeMarkers.forEach((node) => {
-        const el = buildShrineElement(node, () => onShrineNodeClick?.(node.id))
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([node.lon, node.lat])
-          .addTo(map)
-        shrineMarkersRef.current.set(node.id, marker)
-      })
-    }
-    if (map.loaded()) sync()
-    else map.once('load', sync)
-  }, [shrineNodeMarkers, onShrineNodeClick])
+    if (mapRef.current) syncMarkers(mapRef.current, shrineMarkersRef.current, shrineNodeMarkers, (n) => buildShrineElement(n, () => clicksRef.current.onShrineNodeClick?.(n.id)))
+  }, [shrineNodeMarkers])
 
   useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
-    const sync = () => {
-      findMarkersRef.current.forEach((m) => m.remove())
-      findMarkersRef.current.clear()
-      findMarkers.forEach((find) => {
-        const el = buildFindElement(find, () => onFindClick?.(find.id))
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([find.lon, find.lat])
-          .addTo(map)
-        findMarkersRef.current.set(find.id, marker)
-      })
-    }
-    sync()
-  }, [findMarkers, onFindClick])
+    if (mapRef.current) syncMarkers(mapRef.current, findMarkersRef.current, findMarkers, (f) => buildFindElement(f, () => clicksRef.current.onFindClick?.(f.id)))
+  }, [findMarkers])
 
   // A dashed red line from the player to the next stop, as on a treasure map.
   // It runs straight, not along the streets: it shows the direction, not a route.

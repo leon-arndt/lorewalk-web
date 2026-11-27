@@ -6,12 +6,12 @@ import {
   WEEKLY_WALK_TARGET_STEPS, TICKET_COST_COINS,
   mockMemberProgressSteps, playerProgressSteps, partyTotalSteps, isWalkComplete, isWalkExpired,
 } from '@/lib/profile'
-import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
+import { paperCardStyle, paperSheet } from '@/lib/paper'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { deterministicAppearance } from '@/data/cosmetics'
 import { forest, ink, inkSoft, paperLight, paperShade, stamp } from '@/lib/theme'
-import { InkButton, Mono, NoteCard } from '@/components/UI/Journal'
+import { CloseButton, InkButton, Mono, NoteCard } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
 
@@ -72,22 +72,7 @@ export function WeeklyWalkPanel({ currentSteps, onClose, isClosing = false }: Pr
   const header = (
     <>
       <div style={{ width: 36, height: 4, borderRadius: 2, background: ink, margin: '0 auto 16px' }} />
-      <button
-        onClick={onClose}
-        data-sfx="close"
-        style={{
-          position: 'absolute', top: 8, right: 10,
-          width: 44, height: 44, padding: 0, background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
-        }}
-      >
-        <span style={{
-          ...paperTag, width: 30, height: 30,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 15, lineHeight: 1,
-        }}>x</span>
-      </button>
+      <CloseButton onClick={onClose} style={{ position: 'absolute', top: 8, right: 10 }} />
     </>
   )
 

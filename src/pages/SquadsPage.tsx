@@ -10,7 +10,7 @@ import { haversineDistance } from '@/lib/mapUtils'
 import { CreatureTile, EmptyPad } from '@/components/UI/CreatureTile'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import type { ExpeditionTarget, HatchedCreature, RewardItem, Squad } from '@/types'
-import { InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
+import { CloseButton, InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
 import { categoryCss, forest, ink, inkHint, inkSoft, line, paperCard, stamp, pencil } from '@/lib/theme'
 import { MONO, paperCardStyle, paperPage, paperSheet, paperTag, SCRIM } from '@/lib/paper'
 import { motion } from 'motion/react'
@@ -178,7 +178,6 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
 }
 
 function Sheet({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
-  const { t } = useLocale()
   return createPortal(
     <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
@@ -199,17 +198,7 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '2px 8px 4px 16px', flexShrink: 0 }}>
           <h3 style={{ margin: 0, fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>{title}</h3>
-          <button
-            onClick={onClose}
-            data-sfx="close"
-            aria-label={t('common_close')}
-            style={{
-              flexShrink: 0, width: 44, height: 44, padding: 0, border: 'none', cursor: 'pointer', background: 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 13, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
-          </button>
+          <CloseButton onClick={onClose} />
         </div>
         <div style={{ overflowY: 'auto', padding: '6px 16px calc(24px + env(safe-area-inset-bottom))' }}>
           {children}

@@ -7,7 +7,7 @@ import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
 import { CreaturePreview } from '@/components/UI/CreaturePreview'
 import type { HatchedCreature, ShrineNode, PlayerPosition } from '@/types'
 import { categoryCss, forest, ink, inkHint, inkSoft, paperLight, stamp, edge } from '@/lib/theme'
-import { InkButton, Mono, Stamp } from '@/components/UI/Journal'
+import { CloseButton, InkButton, Mono, Stamp } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
 
@@ -115,22 +115,7 @@ export function ShrinePanel({ node, position: _position, onStart, onCollect, onC
   const header = (
     <>
       <div style={{ width: 36, height: 4, borderRadius: 2, background: ink, margin: '0 auto 16px' }} />
-      <button
-        onClick={onClose}
-        data-sfx="close"
-        style={{
-          position: 'absolute', top: 8, right: 10,
-          width: 44, height: 44, padding: 0, background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
-        }}
-      >
-        <span style={{
-          ...paperTag, width: 30, height: 30,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 15, lineHeight: 1,
-        }}>x</span>
-      </button>
+      <CloseButton onClick={onClose} style={{ position: 'absolute', top: 8, right: 10 }} />
     </>
   )
 

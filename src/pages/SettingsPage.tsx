@@ -5,10 +5,11 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useMusic } from '@/contexts/MusicContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useProfile } from '@/contexts/ProfileContext'
+import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
 import type { NotificationPrefKey } from '@/types'
 import { forest, ink, inkHint, line, paperCard, paperLight, paperShade, stamp, edge } from '@/lib/theme'
 import { paperCardStyle, paperPage } from '@/lib/paper'
-import { Mono, SectionTitle } from '@/components/UI/Journal'
+import { BackButton, Mono, SectionTitle } from '@/components/UI/Journal'
 import { AccountSection } from '@/components/UI/AccountSection'
 import { ConnectionStatus } from '@/components/UI/ConnectionStatus'
 import { LanguageDropdown } from '@/components/UI/LanguageDropdown'
@@ -71,6 +72,13 @@ export function SettingsPage() {
   const { mode, setMode } = useConnectionMode()
   const navigate = useNavigate()
   const [vibration, setVibration] = useState(isVibrationEnabled)
+  const { healthSteps } = usePlayerLocation()
+  const [healthDenied, setHealthDenied] = useState(false)
+
+  async function handleToggleHealthSteps() {
+    const ok = await healthSteps.setEnabled(!healthSteps.enabled)
+    setHealthDenied(!ok)
+  }
 
   async function handleToggleNotifications(key: NotificationPrefKey) {
     const turningOn = !profile[key]
@@ -87,22 +95,8 @@ export function SettingsPage() {
         padding: 'calc(env(safe-area-inset-top) + 16px) 16px 10px', borderBottom: `1px solid ${edge}`,
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
-        <button
-          onClick={() => navigate('/profile')}
-          data-sfx="close"
-          style={{
-            width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
-            display: 'grid', placeItems: 'center',
-            background: paperCard, border: `1px solid ${edge}`, borderRadius: 10,
-            fontFamily: 'inherit', fontSize: 24, fontWeight: 500, color: ink, lineHeight: 1,
-          }}
-        >
-          ←
-        </button>
+        <BackButton onClick={() => navigate('/profile')} style={{ marginLeft: -4 }} />
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <Mono style={{ fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            {t('journal_kicker')}
-          </Mono>
           <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600, lineHeight: '30px', letterSpacing: '-0.01em', color: ink }}>{t('settings_title')}</h1>
           <span aria-hidden style={{ display: 'block', width: 36, height: 3, borderRadius: 2, background: stamp, marginTop: 1 }} />
         </div>
@@ -159,6 +153,26 @@ export function SettingsPage() {
             </div>
           </div>
         </section>
+
+        {healthSteps.available && (
+          <section>
+            <SectionTitle>{t('settings_steps_section')}</SectionTitle>
+            <div style={{ ...paperCardStyle, padding: '0 14px', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 0' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={rowTitle}>{t('settings_health_steps')}</div>
+                  <Mono style={rowNote}>{t('settings_health_steps_desc')}</Mono>
+                </div>
+                <ToggleSwitch checked={healthSteps.enabled} onChange={handleToggleHealthSteps} />
+              </div>
+              {healthDenied && (
+                <Mono style={{ ...rowNote, margin: 0, padding: '10px 0', borderTop: HAIRLINE, color: stamp }}>
+                  {t('settings_health_steps_denied')}
+                </Mono>
+              )}
+            </div>
+          </section>
+        )}
 
         <section>
           <SectionTitle>{t('settings_connection')}</SectionTitle>

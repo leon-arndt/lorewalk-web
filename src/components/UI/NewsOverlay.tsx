@@ -4,8 +4,8 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { useNews } from '@/hooks/useNews'
 import { newsText } from '@/data/news'
 import { forest, indigo, ink, inkHint, inkSoft, ochre, paperCard, paperShade, stamp, line, edge } from '@/lib/theme'
-import { paperCardStyle, paperPage, paperSheet, paperTag, SCRIM } from '@/lib/paper'
-import { InkButton, Mono, PageHeader, Stamp } from '@/components/UI/Journal'
+import { paperCardStyle, paperPage, paperSheet, SCRIM } from '@/lib/paper'
+import { CloseButton, InkButton, Mono, PageHeader, Stamp } from '@/components/UI/Journal'
 import type { NewsCategory, NewsPost } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { motion } from 'motion/react'
@@ -138,20 +138,9 @@ export function NewsOverlay({ onClose }: { onClose: () => void }) {
       <PageHeader
         title={t('news_title')}
         right={
-          <button
-            onClick={onClose}
-            style={{
-              ...paperTag, width: 44, height: 44, padding: 0,
-              fontSize: 24, lineHeight: 1, cursor: 'pointer', fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-            aria-label={t('news_close')}
-            data-sfx="close"
-          >×</button>
+          <CloseButton onClick={onClose} label={t('news_close')} />
         }
       />
-      <p style={{ margin: 0, padding: '8px 16px 4px', fontSize: 13, color: inkSoft }}>{t('news_subtitle')}</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '16px 18px 8px' }}>
         {loading && sorted.length === 0 && (

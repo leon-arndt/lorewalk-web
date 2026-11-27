@@ -11,7 +11,7 @@ import {
 import { indigo, ink, inkSoft, line, paperCard, paperLight, paperShade } from '@/lib/theme'
 import { paperPage, paperSheet, paperTag, SCRIM } from '@/lib/paper'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
-import { Mono, NoteCard, PageHeader, SectionTitle } from '@/components/UI/Journal'
+import { CloseButton, Mono, NoteCard, PageHeader, SectionTitle } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { sheetIn, backdropIn } from '@/lib/motion'
 
@@ -197,15 +197,9 @@ export function JournalOverlay({ onClose }: { onClose: () => void }) {
       <PageHeader
         title="Journal"
         right={
-          <button
-            onClick={onClose}
-            style={{ ...roundBtn, fontSize: 24 }}
-            aria-label={t('journal_close')}
-            data-sfx="close"
-          >×</button>
+          <CloseButton onClick={onClose} label={t('journal_close')} />
         }
       />
-      <p style={{ margin: 0, padding: '8px 16px 4px', fontSize: 13, color: inkSoft }}>{t('journal_subtitle')}</p>
 
       <NoteCard taped tilt={-0.4} style={{ margin: '22px 14px 0', padding: '14px 8px 10px' }}>
         {/* Month header */}

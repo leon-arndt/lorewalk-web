@@ -82,7 +82,6 @@ export const ta: Translations = {
   friends_added_date: '{date} அன்று சேர்த்தது',
 
   creatures_title: 'உயிரினங்கள்',
-  creatures_subtitle: 'முட்டைகள் சேகரிக்க சின்னங்களில் பதிவு செய்யவும். நடந்து பொரிக்கவும்.',
   creatures_hatching: 'பொரிக்கும் · {n}/{max}',
   creatures_visit_landmark: 'சின்னத்தில் பதிவு செய்யவும்',
   creatures_steps_left: '{n} அடிகள் மீதம்',
@@ -96,7 +95,6 @@ export const ta: Translations = {
   creatures_release_body: 'இது ஒரு இடத்தை காலி செய்யும், ஆனால் {name} என்றும் போய்விடும்.',
   creatures_release_yes: 'விடுவி',
   creatures_release_keep: '{name}ஐ வைத்திரு',
-  journal_kicker: 'களப் பதிவேடு · சிங்கப்பூர்',
   creatures_recorded: '{total} இல் {n} பதிவு',
   creatures_recorded_word: 'பதிவு',
   creatures_not_seen: 'இன்னும் காணவில்லை',
@@ -131,7 +129,6 @@ export const ta: Translations = {
   squads_earning: 'வருமானம்…',
 
   shop_title: 'கடை',
-  shop_subtitle: 'மேம்படுத்தல்களுக்கு நாணயங்களை செலவிடவும் அல்லது இருப்பை நிரப்பவும்.',
   shop_upgrades: 'மேம்படுத்தல்கள்',
   shop_coins_title: 'நாணயங்கள்',
   shop_coins_offline: 'இணையமின்றி (சோதனை) முறை  -  கொள்முதல்கள் உருவகப்படுத்தப்பட்டு நாணயங்கள் உடனடியாக கிடைக்கும்.',
@@ -189,7 +186,6 @@ export const ta: Translations = {
   common_close: 'மூடு',
 
   journal_delete_photo: 'புகைப்படத்தை நீக்கு',
-  journal_subtitle: 'உங்கள் தினசரி அடிகள் மற்றும் புகைப்பட ஆல்பம்.',
   journal_close: 'பத்திரிகையை மூடு',
   goal_go: 'செல்',
   goal_egg_title: 'ஒரு முட்டை பொரிக்கத் தயார்',
@@ -202,7 +198,6 @@ export const ta: Translations = {
   journal_open: 'பதிவேட்டைத் திற',
 
   news_title: 'செய்திகள்',
-  news_subtitle: 'புதுப்பிப்புகள், நிகழ்வுகள், சமூகப் பதிவுகள்.',
   news_open: 'செய்திகளைத் திற',
   news_close: 'செய்திகளை மூடு',
   news_empty: 'இதுவரை செய்திகள் இல்லை. பிறகு பாருங்கள்.',
@@ -258,7 +253,6 @@ export const ta: Translations = {
   shrine_claimed_subtitle: 'உங்கள் உயிரினங்கள் பாதுகாவலரை தோற்கடித்தன.',
 
   medal_history_title: 'மாத பதக்கங்கள்',
-  medal_history_subtitle: 'ஆண்டு வாரியாக அனைத்து மாதங்களும்',
   medal_earned_title: 'பதக்கம் பெறப்பட்டது!',
   medal_claim_failed: 'பதக்கத்தைப் பெற முடியவில்லை. அமைப்புகளில் இணைய முறைக்கு மாறி மீண்டும் முயற்சிக்கவும்.',
   medal_challenge_info_aria: 'மாத சவால் எவ்வாறு செயல்படுகிறது',
@@ -357,4 +351,11 @@ export const ta: Translations = {
   find_toast_coins: 'நீங்கள் {coins} நாணயங்களைக் கண்டெடுத்தீர்கள்',
   find_toast_food: 'நீங்கள் {food} மற்றும் {coins} நாணயங்களைக் கண்டெடுத்தீர்கள்',
   find_walk_closer: 'இதை எடுக்க {radius}மீ தூரத்திற்குள் நடந்து வாருங்கள் (இப்போது {dist}மீ தொலைவில்)',
+  common_back: 'பின்செல்',
+  customize_hair: 'முடி',
+  settings_steps_section: 'படிகள்',
+  settings_health_steps: 'Health Connect மூலம் படிகளை எண்ணுங்கள்',
+  settings_health_steps_desc: 'உங்கள் தொலைபேசி எண்ணும் படிகளைப் பயன்படுத்துகிறது, Lorewalk மூடியிருக்கும்போதும். இது அணைந்திருந்தால், செயலி திறந்திருக்கும்போது GPS மூலம் படிகளை Lorewalk மதிப்பிடும்.',
+  settings_health_steps_denied: 'உங்கள் படிகளைப் படிக்க Lorewalk-க்கு அனுமதி இல்லை. Health Connect-இல் அனுமதித்து, மீண்டும் முயலவும்.',
+  profile_rename: 'பெயரை மாற்று',
 }

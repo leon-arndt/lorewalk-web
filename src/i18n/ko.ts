@@ -82,7 +82,6 @@ export const ko: Translations = {
   friends_added_date: '{date} 추가',
 
   creatures_title: '생물',
-  creatures_subtitle: '랜드마크에 체크인하여 알을 모으세요. 걸어서 부화시키세요.',
   creatures_hatching: '부화 중 · {n}/{max}',
   creatures_visit_landmark: '랜드마크 체크인',
   creatures_steps_left: '{n}걸음 남음',
@@ -96,7 +95,6 @@ export const ko: Translations = {
   creatures_release_body: '슬롯이 비워지지만 {name}은(는) 영구적으로 사라집니다.',
   creatures_release_yes: '해제',
   creatures_release_keep: '{name} 유지',
-  journal_kicker: '탐험 일지 · 싱가포르',
   creatures_recorded: '{total}종 중 {n}종 기록',
   creatures_recorded_word: '기록',
   creatures_not_seen: '아직 못 봄',
@@ -131,7 +129,6 @@ export const ko: Translations = {
   squads_earning: '수익 중…',
 
   shop_title: '상점',
-  shop_subtitle: '코인으로 업그레이드하거나 잔액을 충전하세요.',
   shop_upgrades: '업그레이드',
   shop_coins_title: '코인',
   shop_coins_offline: '오프라인 (테스트) 모드  -  구매가 시뮬레이션되며 코인이 즉시 지급됩니다.',
@@ -189,7 +186,6 @@ export const ko: Translations = {
   common_close: '닫기',
 
   journal_delete_photo: '사진 삭제',
-  journal_subtitle: '매일의 걸음 수와 사진 앨범.',
   journal_close: '저널 닫기',
   goal_go: '가기',
   goal_egg_title: '알이 부화할 준비가 됐어요',
@@ -202,7 +198,6 @@ export const ko: Translations = {
   journal_open: '일지 열기',
 
   news_title: '소식',
-  news_subtitle: '업데이트, 이벤트, 커뮤니티 소식입니다.',
   news_open: '소식 열기',
   news_close: '소식 닫기',
   news_empty: '아직 소식이 없습니다. 나중에 다시 확인해 주세요.',
@@ -258,7 +253,6 @@ export const ko: Translations = {
   shrine_claimed_subtitle: '당신의 생물이 수호자를 물리쳤습니다.',
 
   medal_history_title: '월간 메달',
-  medal_history_subtitle: '연도별 모든 월',
   medal_earned_title: '메달 획득!',
   medal_claim_failed: '메달을 획득하지 못했습니다. 설정에서 온라인 모드로 전환한 후 다시 시도해 주세요.',
   medal_challenge_info_aria: '월간 챌린지 작동 방식',
@@ -357,4 +351,11 @@ export const ko: Translations = {
   find_toast_coins: '코인 {coins}개를 찾았습니다',
   find_toast_food: '{food}와(과) 코인 {coins}개를 찾았습니다',
   find_walk_closer: '{radius}m 안으로 가까이 가면 주울 수 있습니다 (현재 {dist}m)',
+  common_back: '뒤로',
+  customize_hair: '머리',
+  settings_steps_section: '걸음 수',
+  settings_health_steps: '헬스 커넥트로 걸음 수 세기',
+  settings_health_steps_desc: '휴대폰이 센 걸음 수를 사용합니다. Lorewalk를 닫은 동안의 걸음도 포함됩니다. 꺼져 있으면 앱이 열려 있는 동안에만 GPS로 걸음 수를 추정합니다.',
+  settings_health_steps_denied: 'Lorewalk에 걸음 수를 읽을 권한이 없습니다. 헬스 커넥트에서 허용한 뒤 다시 시도해 주세요.',
+  profile_rename: '이름 변경',
 }

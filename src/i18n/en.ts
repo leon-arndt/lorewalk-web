@@ -82,7 +82,6 @@ export const en: Translations = {
   friends_added_date: 'Added {date}',
 
   creatures_title: 'Creatures',
-  creatures_subtitle: 'Check in at landmarks to collect eggs. Walk to hatch them.',
   creatures_hatching: 'Hatching · {n}/{max}',
   creatures_visit_landmark: 'Check in at a landmark',
   creatures_steps_left: '{n} steps left',
@@ -96,7 +95,6 @@ export const en: Translations = {
   creatures_release_body: 'This frees a slot, but {name} is gone for good.',
   creatures_release_yes: 'Release',
   creatures_release_keep: 'Keep {name}',
-  journal_kicker: 'Field journal · Singapore',
   creatures_recorded: '{n} of {total} recorded',
   creatures_recorded_word: 'Recorded',
   creatures_not_seen: 'Not yet seen',
@@ -131,7 +129,6 @@ export const en: Translations = {
   squads_earning: 'Earning…',
 
   shop_title: 'Shop',
-  shop_subtitle: 'Spend coins on upgrades, or top up your balance.',
   shop_upgrades: 'Upgrades',
   shop_coins_title: 'Coins',
   shop_coins_offline: 'Offline (test) mode: purchases are simulated and grant coins instantly.',
@@ -189,7 +186,6 @@ export const en: Translations = {
   common_close: 'Close',
 
   journal_delete_photo: 'Delete photo',
-  journal_subtitle: 'Your daily steps and photo album.',
   journal_close: 'Close journal',
   goal_go: 'Go',
   goal_egg_title: 'An egg is ready to hatch',
@@ -202,7 +198,6 @@ export const en: Translations = {
   journal_open: 'Open journal',
 
   news_title: 'News',
-  news_subtitle: 'Updates, events, and community posts.',
   news_open: 'Open news',
   news_close: 'Close news',
   news_empty: 'No news yet. Check back soon.',
@@ -258,7 +253,6 @@ export const en: Translations = {
   shrine_claimed_subtitle: 'Your creatures defeated the guardian.',
 
   medal_history_title: 'Monthly medals',
-  medal_history_subtitle: 'All months, sorted by year',
   medal_earned_title: 'Medal earned!',
   medal_claim_failed: 'Could not claim the medal. Switch to Online mode in Settings and try again.',
   medal_challenge_info_aria: 'How the monthly challenge works',
@@ -357,4 +351,11 @@ export const en: Translations = {
   find_toast_coins: 'You found {coins} coins',
   find_toast_food: 'You found {food} and {coins} coins',
   find_walk_closer: 'Walk within {radius}m to pick this up ({dist}m away)',
+  common_back: 'Back',
+  customize_hair: 'Hair',
+  settings_steps_section: 'Steps',
+  settings_health_steps: 'Count steps with Health Connect',
+  settings_health_steps_desc: 'Uses the steps that your phone counts, also while Lorewalk is closed. When this is off, Lorewalk estimates steps from GPS while the app is open.',
+  settings_health_steps_denied: 'Lorewalk has no permission to read your steps. Allow it in Health Connect, then try again.',
+  profile_rename: 'Change name',
 }

@@ -242,6 +242,46 @@ export function getAvatarPortraitURL(appearance: PlayerAppearance): Promise<stri
   return portraitCache.get(key)!
 }
 
+// The part of the avatar that a close-up shows, in avatar units (1.4 tall):
+// the height to look at, the height that fits in the picture, and how far the
+// camera stands above that height.
+export type AvatarCrop = 'head' | 'top' | 'bottom' | 'shoes'
+const CROPS: Record<AvatarCrop, { y: number; h: number; lift: number }> = {
+  head: { y: 1.08, h: 1.3, lift: 0.1 },
+  top: { y: 0.56, h: 1.0, lift: 0.12 },
+  bottom: { y: 0.2, h: 0.86, lift: 0.25 },
+  shoes: { y: 0.09, h: 0.62, lift: 0.45 },
+}
+const CROP_CACHE_MAX = 96
+const cropCache = new Map<string, Promise<string | null>>()
+
+// A close-up of one part of the player avatar, for a choice in the character
+// designer. The avatar turns a little, so a detail on its side shows too.
+export function getAvatarCropURL(appearance: PlayerAppearance, crop: AvatarCrop): Promise<string | null> {
+  const key = `${crop}|${appearanceKey(appearance)}`
+  if (!cropCache.has(key)) {
+    // Every change of the look makes new pictures, so the oldest ones go.
+    if (cropCache.size >= CROP_CACHE_MAX) cropCache.delete(cropCache.keys().next().value!)
+    cropCache.set(key, (async () => {
+      await initRenderer()
+      const THREE = await import('three')
+      const avatar = await createPlayerAvatar(appearance)
+      avatar.update(0.3)
+      avatar.root.rotation.y = 0.55
+      const { y, h, lift } = CROPS[crop]
+      const dist = h / 2 / Math.tan(THREE.MathUtils.degToRad(camera!.fov / 2))
+      camera!.position.set(0, y + dist * lift, dist)
+      camera!.lookAt(0, y, 0)
+      scene!.add(avatar.root)
+      renderer!.render(scene!, camera!)
+      const dataURL = renderer!.domElement.toDataURL('image/png')
+      avatar.dispose()
+      return dataURL
+    })().catch(() => null))
+  }
+  return cropCache.get(key)!
+}
+
 const modelCache = new Map<string, Promise<string>>()
 
 // Renders a model built by foodModels.ts or itemModels.ts, framed to fit.
@@ -283,7 +323,8 @@ export function creatureSpriteKey(species: string, isShiny = false): string {
 }
 
 // Sprite keys: food_<id> for a dish, item_<type> for an icon (coins, xp, egg,
-// badge, level_up, egg_slot, creature_slots, shrine, claim), and
+// badge, level_up, egg_slot, creature_slots, shrine, claim, and the coin packs
+// coins_few, coins_stack, coins_bag, coins_chest), and
 // creatureSpriteKey() for a creature. Any other key has no model, and the
 // caller keeps its emoji.
 export async function getSpritePreviewURL(key: string): Promise<string | null> {
@@ -294,5 +335,6 @@ export async function getSpritePreviewURL(key: string): Promise<string | null> {
   if (EGG_ITEMS.has(type)) return getEggPreviewURL('common')
   const { buildItemModel, hasItemModel } = await import('@/lib/itemModels')
   if (!hasItemModel(type)) return null
-  return getModelPreviewURL(key, async (THREE) => buildItemModel(THREE, type), 0.95)
+  // A coin pack is a loose group of small parts, so it takes a closer camera.
+  return getModelPreviewURL(key, async (THREE) => buildItemModel(THREE, type), type.startsWith('coins_') ? 0.74 : 0.95)
 }

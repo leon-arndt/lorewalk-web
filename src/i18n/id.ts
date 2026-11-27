@@ -82,7 +82,6 @@ export const id: Translations = {
   friends_added_date: 'Ditambah {date}',
 
   creatures_title: 'Makhluk',
-  creatures_subtitle: 'Check in di tengara untuk mengumpulkan telur. Berjalan untuk menetaskannya.',
   creatures_hatching: 'Menetaskan · {n}/{max}',
   creatures_visit_landmark: 'Check in di tengara',
   creatures_steps_left: '{n} langkah lagi',
@@ -96,7 +95,6 @@ export const id: Translations = {
   creatures_release_body: 'Ini membebaskan slot, tetapi {name} akan hilang selamanya.',
   creatures_release_yes: 'Lepaskan',
   creatures_release_keep: 'Simpan {name}',
-  journal_kicker: 'Jurnal lapangan · Singapura',
   creatures_recorded: '{n} dari {total} tercatat',
   creatures_recorded_word: 'Tercatat',
   creatures_not_seen: 'Belum terlihat',
@@ -131,7 +129,6 @@ export const id: Translations = {
   squads_earning: 'Sedang mendapat…',
 
   shop_title: 'Toko',
-  shop_subtitle: 'Belanjakan koin untuk upgrade atau isi saldo kamu.',
   shop_upgrades: 'Upgrade',
   shop_coins_title: 'Koin',
   shop_coins_offline: 'Mode offline (uji)  -  pembelian disimulasi dan koin langsung diberikan.',
@@ -189,7 +186,6 @@ export const id: Translations = {
   common_close: 'Tutup',
 
   journal_delete_photo: 'Hapus foto',
-  journal_subtitle: 'Langkah harian dan album foto kamu.',
   journal_close: 'Tutup jurnal',
   goal_go: 'Pergi',
   goal_egg_title: 'Sebuah telur siap menetas',
@@ -202,7 +198,6 @@ export const id: Translations = {
   journal_open: 'Buka jurnal',
 
   news_title: 'Berita',
-  news_subtitle: 'Pembaruan, acara, dan pos komunitas.',
   news_open: 'Buka berita',
   news_close: 'Tutup berita',
   news_empty: 'Belum ada berita. Cek lagi nanti.',
@@ -258,7 +253,6 @@ export const id: Translations = {
   shrine_claimed_subtitle: 'Makhlukmu berhasil mengalahkan penjaga.',
 
   medal_history_title: 'Medali bulanan',
-  medal_history_subtitle: 'Semua bulan, diurutkan berdasarkan tahun',
   medal_earned_title: 'Medali diraih!',
   medal_claim_failed: 'Medali tidak bisa diklaim. Beralih ke mode online di Pengaturan dan coba lagi.',
   medal_challenge_info_aria: 'Cara kerja tantangan bulanan',
@@ -357,4 +351,11 @@ export const id: Translations = {
   find_toast_coins: 'Kamu menemukan {coins} koin',
   find_toast_food: 'Kamu menemukan {food} dan {coins} koin',
   find_walk_closer: 'Jalan sampai dalam {radius}m untuk mengambilnya ({dist}m lagi)',
+  common_back: 'Kembali',
+  customize_hair: 'Rambut',
+  settings_steps_section: 'Langkah',
+  settings_health_steps: 'Hitung langkah dengan Health Connect',
+  settings_health_steps_desc: 'Memakai langkah yang dihitung ponselmu, juga saat Lorewalk ditutup. Jika dimatikan, Lorewalk memperkirakan langkah dari GPS selama aplikasi terbuka.',
+  settings_health_steps_denied: 'Lorewalk tidak punya izin untuk membaca langkahmu. Izinkan di Health Connect, lalu coba lagi.',
+  profile_rename: 'Ubah nama',
 }

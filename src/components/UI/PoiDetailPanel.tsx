@@ -3,7 +3,7 @@ import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useWikipediaExtract } from '@/hooks/useWikipediaExtract'
 import { useProfile } from '@/contexts/ProfileContext'
-import { paperCardStyle, paperSheet, paperTag } from '@/lib/paper'
+import { paperCardStyle, paperSheet } from '@/lib/paper'
 import { haversineDistance } from '@/lib/mapUtils'
 import { poiTier } from '@/lib/places'
 import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
@@ -12,9 +12,10 @@ import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { categoryCss, forest, indigo, ink, inkSoft, line, ochre, paperShade, ochreInk, edge } from '@/lib/theme'
-import { InkButton, Mono, Stamp } from '@/components/UI/Journal'
+import { Chip, CloseButton, InkButton, Mono, Stamp } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
 import { panelMotion } from '@/lib/motion'
+import { CategoryBadge, Icon, type IconName } from '@/components/UI/Icons'
 
 const MOCK_FRIENDS = [
   { id: 'mock-1', name: 'Aisha' },
@@ -25,19 +26,14 @@ const MOCK_FRIENDS = [
 const CHECKIN_RADIUS_M = 50
 
 // Same category set as the map pins (mapPoiPins.ts) and creature companions (mapCharacters.ts).
-function categoryMeta(t: (key: keyof Translations, vars?: Record<string, string | number>) => string): Record<string, { icon: string; label: string }> {
-  return {
-    heritage:  { icon: '🏛', label: t('category_heritage') },
-    landmark:  { icon: '📍', label: t('poi_landmark') },
-    arts:      { icon: '🎭', label: t('category_arts') },
-    religious: { icon: '🕌', label: t('category_religious') },
-    museum:    { icon: '🎨', label: t('category_museum') },
-    nature:    { icon: '🌿', label: t('category_nature') },
-  }
+const CATEGORY_LABEL: Record<string, keyof Translations> = {
+  heritage: 'category_heritage',
+  landmark: 'poi_landmark',
+  arts: 'category_arts',
+  religious: 'category_religious',
+  museum: 'category_museum',
+  nature: 'category_nature',
 }
-
-
-const typed = { fontSize: 12, lineHeight: '16px', color: inkSoft } as const
 
 interface PoiDetailPanelProps {
   poi: Poi
@@ -52,7 +48,6 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
   const { mode } = useConnectionMode()
   const { t } = useLocale()
   const wikiExtract = useWikipediaExtract(poi.learnMoreUrl)
-  const CATEGORY_META = categoryMeta(t)
   const { sendPostcard } = useProfile()
   const [pickingFriend, setPickingFriend] = useState(false)
   const [sent, setSent] = useState<string | null>(null)
@@ -74,6 +69,10 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
     : poi.kind !== 'permanent'
       ? t('poi_event')
       : tier === 'marker' ? t('poi_tier_marker') : tier === 'spot' ? t('poi_tier_spot') : t('poi_landmark')
+  const tierIcon: IconName = poi.trail ? 'trail' : poi.kind !== 'permanent' ? 'clock' : tier === 'marker' ? 'plaque' : tier === 'spot' ? 'spot' : 'flag'
+  const category = poi.category && CATEGORY_LABEL[poi.category]
+    ? { id: poi.category, label: t(CATEGORY_LABEL[poi.category]) }
+    : null
 
   const distanceM = position
     ? Math.round(haversineDistance(position.latitude, position.longitude, poi.lat, poi.lon))
@@ -95,48 +94,25 @@ export function PoiDetailPanel({ poi, isVisited, isLocked = false, position, onC
       <div style={{ width: 36, height: 4, borderRadius: 2, background: ink, margin: '0 auto 6px' }} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px 10px', flexWrap: 'wrap', minHeight: 44, minWidth: 0 }}>
-          {poi.category && CATEGORY_META[poi.category] && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <span aria-hidden style={{ width: 12, height: 12, borderRadius: '50%', background: wash, border: `1px solid ${edge}`, flexShrink: 0 }} />
-              <Mono style={{ ...typed, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: ink }}>
-                {CATEGORY_META[poi.category].icon} {CATEGORY_META[poi.category].label}
-              </Mono>
-            </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', minHeight: 44, minWidth: 0, padding: '4px 0' }}>
+          {category && (
+            <Chip icon={<CategoryBadge category={category.id} size={20} />} style={{ paddingLeft: 3 }}>
+              {category.label}
+            </Chip>
           )}
-          <Mono style={{ ...typed, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {tierLabel}
-          </Mono>
+          {tierLabel !== category?.label && (
+            <Chip icon={<Icon name={tierIcon} size={14} />} tone={inkSoft}>{tierLabel}</Chip>
+          )}
           {poi.points !== undefined && (
-            <Mono style={{ ...typed, fontWeight: 500, color: forest }}>
-              {t('poi_pts', { pts: poi.points })}
-            </Mono>
+            <Chip icon={<Icon name="star" size={14} />} tone={forest}>{t('poi_pts', { pts: poi.points })}</Chip>
           )}
           {distanceM !== null && mode === 'online' && (
-            <Mono style={typed}>
-              {distanceM < 1000 ? `${distanceM}m away` : `${(distanceM / 1000).toFixed(1)}km away`}
-            </Mono>
+            <Chip icon={<Icon name="walk" size={14} />} tone={inkSoft} style={{ textTransform: 'none' }}>
+              {distanceM < 1000 ? `${distanceM} m` : `${(distanceM / 1000).toFixed(1)} km`}
+            </Chip>
           )}
         </div>
-        <button
-          onClick={onClose}
-          data-sfx="close"
-          style={{
-            flexShrink: 0, width: 44, height: 44, marginRight: -8, padding: 0,
-            background: 'none', border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
-          }}
-          aria-label={t('common_close')}
-        >
-          <span style={{
-            ...paperTag, width: 30, height: 30,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 19, lineHeight: 1,
-          }}>
-            ×
-          </span>
-        </button>
+        <CloseButton onClick={onClose} style={{ marginRight: -8 }} />
       </div>
 
       <h2 style={{ margin: '2px 0 8px', fontSize: 24, fontWeight: 600, color: ink, lineHeight: '30px', letterSpacing: '-0.01em' }}>

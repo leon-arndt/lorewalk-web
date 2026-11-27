@@ -27,12 +27,13 @@ import {
   spawnShrineNodes, solveShrineResult, SHRINE_DURATION_MS,
   TICKET_COST_COINS, buildWeeklyWalk, isWalkExpired,
 } from '@/lib/profile'
+import type { DaySteps } from '@/lib/health'
 
 interface ProfileContextValue {
   profile: PlayerProfile
   visitedPois: Set<string>
   addVisit: (poi: Poi) => CheckInResult | null
-  applyTodaySteps: (dateKey: string, stepsToday: number) => void
+  applyTodaySteps: (dateKey: string, stepsToday: number, pastDays?: DaySteps[]) => void
   setDisplayName: (name: string) => void
   updateAppearance: (patch: Partial<PlayerAppearance>) => void
   hatchReadyEgg: (eggId: string) => HatchedCreature | null
@@ -441,19 +442,30 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // advances the eggs, and the same write logs the day in dailySteps for the
   // journal and the monthly medal. One write on purpose: two writes from the same snapshot would drop the first.
   // A ready egg waits for the player to tap it in the Creatures tab.
-  function applyTodaySteps(dateKey: string, stepsToday: number) {
+  function applyTodaySteps(dateKey: string, stepsToday: number, pastDays: DaySteps[] = []) {
     // stepsToday counts this device only, but dailySteps can hold steps that
     // another device walked today. So the delta comes from what this device
     // already applied, and the day's total grows by it.
     const dayTotal = profile.dailySteps[dateKey] ?? 0
     const applied = loadAppliedSteps(dateKey) ?? Math.min(dayTotal, stepsToday)
-    const delta = stepsToday - applied
-    if (delta <= 0) return
+    const delta = Math.max(0, stepsToday - applied)
 
-    const eggs = advanceEggs(profile.eggs, delta)
+    // A past day comes from Health Connect, which counted while the app was
+    // closed. The day takes the higher number, and the eggs get the difference.
+    const dailySteps = { ...profile.dailySteps, [dateKey]: dayTotal + delta }
+    let gained = delta
+    for (const day of pastDays) {
+      const have = dailySteps[day.date] ?? 0
+      if (day.date === dateKey || day.steps <= have) continue
+      gained += day.steps - have
+      dailySteps[day.date] = day.steps
+    }
+    if (gained <= 0) return
+
+    const eggs = advanceEggs(profile.eggs, gained)
     const newlyReady = eggs.filter((egg, i) => isEggReady(egg) && !isEggReady(profile.eggs[i]))
-    persist({ ...profile, eggs, dailySteps: { ...profile.dailySteps, [dateKey]: dayTotal + delta } })
-    saveAppliedSteps(dateKey, stepsToday)
+    persist({ ...profile, eggs, dailySteps })
+    if (delta > 0) saveAppliedSteps(dateKey, stepsToday)
     if (newlyReady.length > 0) setJustReady(newlyReady)
   }
 

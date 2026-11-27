@@ -82,7 +82,6 @@ export const de: Translations = {
   friends_added_date: 'Hinzugefügt am {date}',
 
   creatures_title: 'Wesen',
-  creatures_subtitle: 'Checke an Sehenswürdigkeiten ein, um Eier zu sammeln. Laufe, um sie auszubrüten.',
   creatures_hatching: 'Schlüpfen · {n}/{max}',
   creatures_visit_landmark: 'Sehenswürdigkeit einchecken',
   creatures_steps_left: 'Noch {n} Schritte',
@@ -96,7 +95,6 @@ export const de: Translations = {
   creatures_release_body: 'Das gibt einen Slot frei, aber {name} ist für immer weg.',
   creatures_release_yes: 'Freilassen',
   creatures_release_keep: '{name} behalten',
-  journal_kicker: 'Feldtagebuch · Singapur',
   creatures_recorded: '{n} von {total} erfasst',
   creatures_recorded_word: 'Erfasst',
   creatures_not_seen: 'Noch nicht gesehen',
@@ -131,7 +129,6 @@ export const de: Translations = {
   squads_earning: 'Verdient…',
 
   shop_title: 'Shop',
-  shop_subtitle: 'Gib Münzen für Upgrades aus oder stocke dein Guthaben auf.',
   shop_upgrades: 'Upgrades',
   shop_coins_title: 'Münzen',
   shop_coins_offline: 'Offline (Test) – Käufe werden simuliert und Münzen sofort gutgeschrieben.',
@@ -189,7 +186,6 @@ export const de: Translations = {
   common_close: 'Schließen',
 
   journal_delete_photo: 'Foto löschen',
-  journal_subtitle: 'Deine täglichen Schritte und dein Fotoalbum.',
   journal_close: 'Journal schließen',
   goal_go: 'Los',
   goal_egg_title: 'Ein Ei ist schlüpfbereit',
@@ -202,7 +198,6 @@ export const de: Translations = {
   journal_open: 'Tagebuch öffnen',
 
   news_title: 'Neuigkeiten',
-  news_subtitle: 'Updates, Events und Beiträge aus der Community.',
   news_open: 'Neuigkeiten öffnen',
   news_close: 'Neuigkeiten schließen',
   news_empty: 'Noch keine Neuigkeiten. Schau bald wieder vorbei.',
@@ -258,7 +253,6 @@ export const de: Translations = {
   shrine_claimed_subtitle: 'Deine Wesen haben den Wächter besiegt.',
 
   medal_history_title: 'Monatsmedaillen',
-  medal_history_subtitle: 'Alle Monate, nach Jahr sortiert',
   medal_earned_title: 'Medaille erhalten!',
   medal_claim_failed: 'Die Medaille konnte nicht gesichert werden. Wechsle in den Einstellungen in den Online-Modus und versuche es erneut.',
   medal_challenge_info_aria: 'So funktioniert die monatliche Herausforderung',
@@ -357,4 +351,11 @@ export const de: Translations = {
   find_toast_coins: 'Du hast {coins} Münzen gefunden',
   find_toast_food: 'Du hast {food} und {coins} Münzen gefunden',
   find_walk_closer: 'Geh auf {radius}m heran, um das aufzuheben ({dist}m entfernt)',
+  common_back: 'Zurück',
+  customize_hair: 'Haare',
+  settings_steps_section: 'Schritte',
+  settings_health_steps: 'Schritte mit Health Connect zählen',
+  settings_health_steps_desc: 'Nutzt die Schritte, die dein Handy zählt, auch wenn Lorewalk geschlossen ist. Ist das aus, schätzt Lorewalk die Schritte per GPS, solange die App offen ist.',
+  settings_health_steps_denied: 'Lorewalk darf deine Schritte nicht lesen. Erlaube es in Health Connect und versuche es dann noch einmal.',
+  profile_rename: 'Namen ändern',
 }

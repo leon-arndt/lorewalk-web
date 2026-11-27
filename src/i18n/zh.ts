@@ -82,7 +82,6 @@ export const zh: Translations = {
   friends_added_date: '{date} 添加',
 
   creatures_title: '生物',
-  creatures_subtitle: '在地标打卡收集蛋，走路孵化它们。',
   creatures_hatching: '孵化中 · {n}/{max}',
   creatures_visit_landmark: '在地标打卡',
   creatures_steps_left: '还需 {n} 步',
@@ -96,7 +95,6 @@ export const zh: Translations = {
   creatures_release_body: '这将释放一个槽位，但 {name} 将永久消失。',
   creatures_release_yes: '释放',
   creatures_release_keep: '保留 {name}',
-  journal_kicker: '野外手记 · 新加坡',
   creatures_recorded: '已记录 {n}/{total}',
   creatures_recorded_word: '已记录',
   creatures_not_seen: '尚未发现',
@@ -131,7 +129,6 @@ export const zh: Translations = {
   squads_earning: '收益中…',
 
   shop_title: '商店',
-  shop_subtitle: '用金币购买升级，或为余额充值。',
   shop_upgrades: '升级',
   shop_coins_title: '金币',
   shop_coins_offline: '离线（测试）模式  -  购买将被模拟，金币即时到账。',
@@ -189,7 +186,6 @@ export const zh: Translations = {
   common_close: '关闭',
 
   journal_delete_photo: '删除照片',
-  journal_subtitle: '你的每日步数和照片相册。',
   journal_close: '关闭日志',
   goal_go: '前往',
   goal_egg_title: '有一枚蛋可以孵化了',
@@ -202,7 +198,6 @@ export const zh: Translations = {
   journal_open: '打开手记',
 
   news_title: '最新消息',
-  news_subtitle: '更新、活动与社区动态。',
   news_open: '打开最新消息',
   news_close: '关闭最新消息',
   news_empty: '暂无消息，请稍后再来。',
@@ -258,7 +253,6 @@ export const zh: Translations = {
   shrine_claimed_subtitle: '你的生物击败了守护者。',
 
   medal_history_title: '每月奖章',
-  medal_history_subtitle: '按年份排列的所有月份',
   medal_earned_title: '获得奖章！',
   medal_claim_failed: '无法领取奖章。请在设置中切换到在线模式后重试。',
   medal_challenge_info_aria: '每月挑战的运作方式',
@@ -357,4 +351,11 @@ export const zh: Translations = {
   find_toast_coins: '你找到了 {coins} 枚金币',
   find_toast_food: '你找到了{food}和 {coins} 枚金币',
   find_walk_closer: '走到 {radius} 米以内即可拾取（现在相距 {dist} 米）',
+  common_back: '返回',
+  customize_hair: '头发',
+  settings_steps_section: '步数',
+  settings_health_steps: '通过 Health Connect 计步',
+  settings_health_steps_desc: '使用手机记录的步数，Lorewalk 关闭时的步数也会计入。关闭后，仅在应用打开时通过 GPS 估算步数。',
+  settings_health_steps_denied: 'Lorewalk 没有读取步数的权限。请在 Health Connect 中允许，然后重试。',
+  profile_rename: '更改名字',
 }

@@ -23,6 +23,7 @@ import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
 import type { Achievement, EarnedMedal } from '@/types'
 import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, paperLight, paperShade, stamp, ochreInk, edge } from '@/lib/theme'
+import { Icon } from '@/components/UI/Icons'
 import { MONO, paperPage, paperTag, SCRIM } from '@/lib/paper'
 
 
@@ -32,8 +33,6 @@ const iconButton = {
   background: 'none', border: 'none', color: inkSoft,
 } as const
 
-// An icon button that flows after the last word of the name.
-const inlineIcon = { verticalAlign: 'middle', marginTop: -4, marginBottom: -2 } as const
 
 const cheatButton = {
   flex: 1, minHeight: 44, padding: '0 4px', borderRadius: 10, cursor: 'pointer',
@@ -161,25 +160,21 @@ export function ProfilePage() {
             </InkButton>
           </span>
         ) : (
-          <span style={{ overflowWrap: 'anywhere' }}>
+          // The name is the rename button. Its small pencil says so, and the
+          // look of the avatar has its own pencil on the photo below.
+          <button
+            type="button"
+            onClick={() => { setNameInput(profile.displayName); setEditingName(true) }}
+            aria-label={t('profile_rename')}
+            style={{
+              display: 'block', maxWidth: '100%', margin: 0, padding: 0, border: 'none', background: 'none',
+              font: 'inherit', letterSpacing: 'inherit', color: 'inherit', textAlign: 'left', cursor: 'pointer',
+              overflowWrap: 'anywhere', WebkitTapHighlightColor: 'transparent',
+            }}
+          >
             {profile.displayName}
-            <button
-              onClick={() => { setNameInput(profile.displayName); setEditingName(true) }}
-              style={{ ...iconButton, ...inlineIcon, fontSize: 15, marginLeft: 2 }}
-            >
-              ✏️
-            </button>
-            <button
-              onClick={() => navigate('/customize')}
-              aria-label={t('profile_customize')}
-              style={{ ...iconButton, ...inlineIcon, marginLeft: -8 }}
-            >
-              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2a4 4 0 0 0-4 4v2a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z" />
-                <path d="M4 21c0-4 3-7 8-7s8 3 8 7" />
-              </svg>
-            </button>
-          </span>
+            <Icon name="edit" size={16} style={{ display: 'inline-block', marginLeft: 8, color: inkHint, verticalAlign: 'baseline' }} />
+          </button>
         )}
         right={
           <button
@@ -208,11 +203,19 @@ export function ProfilePage() {
               aria-label={t('profile_customize')}
               data-sfx="click"
               style={{
-                flexShrink: 0, padding: '5px 5px 14px', cursor: 'pointer',
+                position: 'relative', flexShrink: 0, padding: '5px 5px 14px', cursor: 'pointer',
                 background: paperCard, border: `1px solid ${line}`, borderRadius: 6,
                 boxShadow: '1px 2px 0 rgba(51,40,30,0.22)', transform: 'rotate(-4deg)',
               }}
             >
+              {/* A pencil sticker on the corner of the photo: the photo is what it edits. */}
+              <span aria-hidden style={{
+                position: 'absolute', right: -9, bottom: -7, zIndex: 1, width: 28, height: 28, boxSizing: 'border-box',
+                borderRadius: '50%', background: ink, color: paperLight, border: '2px solid #fff',
+                display: 'grid', placeItems: 'center', transform: 'rotate(4deg)',
+              }}>
+                <Icon name="edit" size={14} strokeWidth={2} />
+              </span>
               <div style={{
                 width: 76, height: 76, borderRadius: 2,
                 background: profile.isPremium ? `${ochre}4d` : paperShade,

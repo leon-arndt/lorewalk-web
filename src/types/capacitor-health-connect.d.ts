@@ -10,6 +10,7 @@ declare module '@devmaxime/capacitor-health-connect' {
   export const HealthConnect: {
     checkAvailability(): Promise<{ availability: string }>
     requestPermissions(opts: { read: string[]; write: string[] }): Promise<{ read: string[] }>
+    getGrantedPermissions(): Promise<{ read: string[] }>
     aggregateRecords(opts: {
       start: string
       end: string

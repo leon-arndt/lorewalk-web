@@ -55,7 +55,7 @@ All figures use **SGD**. Singapore is the first market. Lorewalk sources medals 
 
 One sentence: **walk to real places, collect and hatch creatures, build typed squads, deploy them to boost or claim places, and grow your collection and holdings.**
 
-1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. A stretch faster than 15 km/h is a bike or a vehicle and counts no steps (`MAX_WALK_SPEED_MS` in `useStepCounter.ts`). Steps hatch eggs and count toward the monthly Premium medal.
+1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. A stretch faster than 15 km/h is a bike or a vehicle and counts no steps (`MAX_WALK_SPEED_MS` in `useStepCounter.ts`). On Android, the app can read the phone's own step count instead. See the Steps section. Steps hatch eggs and count toward the monthly Premium medal.
 2. **Check in** at the landmark, within 50 m. The player earns XP and an egg. Smaller places fill the map between the landmarks: heritage markers and local spots give less XP, and an egg only now and then. Food at hawker centres, daily finds, and a trail of the week give a reason to walk the same streets again.
 3. **Visit more landmarks.** Eggs hatch into **typed** creatures, where the type matches the POI category: Heritage, Nature, Arts, and so on. The player gains XP and levels up.
 4. **Build a squad** from the collection. There are 3 squads of 4 slots each. Type matters.
@@ -74,7 +74,7 @@ The design keeps its tensions simple on purpose. There is no combat, no PvP, and
 - **3D**: three.js. Custom MapLibre layers draw the animated creature companions, the POI pins, and the MRT lines (`mapCharacters.ts`, `mapPoiPins.ts`, `mapMrt.ts`)
 - **Backend**: Supabase JS SDK (`@supabase/supabase-js`), against the same Supabase project as the Unity client
 - **Native**: a Capacitor 7 Android wrapper. `@devmaxime/capacitor-health-connect` reads step data. `qrcode` renders the friend-invite QR. `@revenuecat/purchases-capacitor` handles Play Billing for Premium subscriptions (see `src/lib/billing.ts`). `@capgo/capacitor-social-login` opens the native Google sign-in sheet (see `src/lib/googleAuth.ts`)
-- **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`. The app has a field journal look. `src/lib/theme.ts` holds the palette, `src/lib/paper.ts` holds the paper surfaces, the tape, and the corner size, and `src/components/UI/Journal.tsx` holds the building blocks (`PageHeader`, `SectionTitle`, `NoteCard`, `Stamp`, `Postmark`, `InkButton`, `Mono`). Fredoka is the main font and DM Mono is the typewriter font, both from `@fontsource`. GameDesign.md's "UI and UX Decisions" section holds the rules
+- **Styling**: Tailwind CSS v4, through `@tailwindcss/vite`. The app has a field journal look. `src/lib/theme.ts` holds the palette, `src/lib/paper.ts` holds the paper surfaces, the tape, and the corner size, and `src/components/UI/Journal.tsx` holds the building blocks (`PageHeader`, `SectionTitle`, `NoteCard`, `Stamp`, `Postmark`, `InkButton`, `Mono`, `Chip`, `BackButton`, `CloseButton`). `src/components/UI/Icons.tsx` holds the line icons (`Icon`) and the type sticker (`CategoryBadge`). Fredoka is the main font and DM Mono is the typewriter font, both from `@fontsource`. GameDesign.md's "UI and UX Decisions" section holds the rules
 - **Animation**: `motion` (the new name of Framer Motion). Import from `motion/react`. `src/lib/motion.ts` holds the shared springs and presets: `sheetIn`, `panelMotion`, `backdropIn`, `popIn`. Use them for a new sheet or panel. `src/lib/ripple.ts` gives every button a press squish and a Material-style ripple from one listener in `App.tsx`. Add `data-no-ripple` to a button that must not show them
 - **PWA**: `vite-plugin-pwa` and Workbox, with `registerType: autoUpdate`
 - **Routing**: React Router v7 (BrowserRouter)
@@ -221,6 +221,18 @@ A player who signs in with Google gets a cloud save. `localStorage` stays the wo
 - **Steps**: the step counter counts one device. `profile.dailySteps` holds the sum across devices, and the `lorewalk.stepsApplied` key holds how many steps of this device are already in that sum.
 - **Not synced**: the journal photos in IndexedDB, and the settings outside the profile, such as the volume and the language.
 
+## Steps
+
+The step count has two sources. `PlayerLocationContext.tsx` takes the higher one, so no step counts two times.
+
+- **GPS**: `useStepCounter.ts` estimates steps from GPS distance while the app is open. A leg runs from an anchor fix to the first fix that clears the accuracy of both fixes. A phone reports about one fix each second, and a walker moves 1.4 m in that time. A leg between two neighbor fixes therefore never clears the floor, so do not measure from the previous fix.
+- **Vehicle**: a fix above 15 km/h starts the leg again and counts nothing. The speed comes from the phone. If the phone gives none, the hook uses the fixes of the last 20 seconds.
+- **Health Connect**: on Android, `src/lib/health.ts` reads the steps that the phone records, also while the app is closed. The app reads them when it opens, when it comes back to the foreground, and one time each minute. No code runs in the background.
+- **Plugin load**: do not return a Capacitor plugin from an `async` function. The plugin answers every property, `then` included, so the promise never settles. `health.ts` takes the plugin out of the module at each call.
+- **Opt-in**: the "Count steps with Health Connect" switch in Settings turns the source on and shows the permission prompt. The switch shows only in the Android app, and only when Health Connect is available. The `lorewalk.healthSteps` key in `localStorage` holds the choice.
+- **Past days**: Health Connect also gives the last 7 days. `applyTodaySteps()` in `ProfileContext.tsx` raises a past day to the phone's count and gives the difference to the eggs.
+- **Manifest**: `android/app/src/main/AndroidManifest.xml` holds the `READ_STEPS` permission and the two permission rationale entries. Without them, Health Connect does not show the prompt. The Health Connect library needs Android 8 or higher, so `minSdkVersion` in `android/variables.gradle` is 26.
+
 ## Places
 
 The 117 curated landmarks live in `src/data/singapore-pois.ts`. Every other place comes from `public/pois/sg-places.json`: about 1,480 heritage markers, 1,340 local spots, 640 food spots, and 6,400 anchors for the daily finds. GameDesign.md's "POI tiers" and "Daily Activities" sections hold the game rules.
@@ -245,6 +257,7 @@ The 117 curated landmarks live in `src/data/singapore-pois.ts`. Every other plac
 - **Singapore-only labels**: the game is Singapore only, so the map shows no base-map label outside Singapore, such as Johor Bahru or Batam. On load, `MapView.tsx` adds a `within` filter to every Liberty symbol layer. The filter uses the boundary polygon in `src/data/singapore-boundary.ts`. The polygon includes the territorial waters, so it follows the maritime line through the Johor Strait.
 - **Parchment**: `mapAmbience.ts` moves each colour of the Liberty style onto a sepia ramp (`parchment()`), then applies the day, night, and weather tint. Labels are ink on paper by day.
 - **POI colours**: gold `#f59e0b` marks a permanent POI, purple `#a855f7` marks a temporary one. The Unity uGUI markers follow the same convention.
+- **DOM markers**: the squad, claim, food, shrine, and find markers are DOM elements. MapLibre places a marker with a transform on its element, and the press squish of `ripple.ts` scales the pressed button. A scale on the marker element moves the marker away from the finger, and the tap then lands on the map. Build each marker with `markerShell()` in `MapView.tsx`: the marker element is a shell, and the button is its child. `syncMarkers()` keeps a marker that did not change, so a profile change does not replace a marker under the finger.
 
 ## Sound
 
@@ -341,6 +354,7 @@ Playwright end-to-end is the only test runner. There is no unit runner. The spec
 - `e2e/profile-seed.ts` seeds a known profile into localStorage, so every test starts from a fixed state. Its `ACHIEVEMENT_IDS` list mirrors `profile.ts` by hand. Update it whenever you add an achievement.
 - The suite covers the map render and nav routing, egg hatching, the pantry and feeding, dev cheats, squad management, expedition dispatch, and the shrine system.
 - `e2e/places.spec.ts` covers the imported places: food nodes at food spots, a daily find, rain finds, a check-in at a marker, and the trail of the week. It sets the sky with `_ambience()`, so it does not depend on the real weather.
+- `e2e/ux.spec.ts` covers a press on a food marker, the step count of a walk that arrives as one fix each half second, the tabs of the character designer, and the back button. `e2e/steps-speed.spec.ts` covers the vehicle limit.
 - `e2e/music.spec.ts` covers the music stop in the background.
 - `e2e/cloud-save.spec.ts` covers the cloud save. It seeds a signed-in session and answers every Supabase request itself, so it needs no project and no Google account. It does not cover the Google sign-in itself.
 - Run `npm run test:e2e` before you commit a gameplay change.
@@ -353,6 +367,8 @@ The web code follows the same conventions as the Unity project:
 - No `#region` blocks. No barrel `index.ts` re-exports unless one is genuinely needed.
 - Prefer Tailwind utility classes over custom CSS. Reach for custom CSS only when Tailwind cannot express the rule.
 - Take a colour from `theme.ts`, a surface from `paper.ts`, and a button, a stamp, or a heading from `Journal.tsx`. Do not add a colour gradient or a soft drop shadow. A blur is only for the controls over the map, through `hudTag` and `vellum()`.
+- The app has one close button and one back button: `CloseButton` and `BackButton` from `Journal.tsx`. Do not draw another one. A sheet, a panel, or an overlay gets `CloseButton`. A page that goes to its parent page gets `BackButton`.
+- Show a short fact about a thing, such as its type or its distance, as a `Chip` with an `Icon`. Do not use an emoji as an icon in new UI.
 - Never open a native browser dialog (`window.confirm`, `alert`, `prompt`) in the game. Use `ConfirmDialog.tsx`, and set `danger` for an action that deletes something.
 - Never put an em dash in a UI-facing string. Use a period, a colon, or a hyphen instead. The same rule applies to the Markdown docs, per the Documentation style section.
 

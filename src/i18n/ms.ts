@@ -82,7 +82,6 @@ export const ms: Translations = {
   friends_added_date: 'Ditambah {date}',
 
   creatures_title: 'Makhluk',
-  creatures_subtitle: 'Daftar masuk di mercu tanda untuk kumpul telur. Berjalan untuk menetaskannya.',
   creatures_hatching: 'Menetaskan · {n}/{max}',
   creatures_visit_landmark: 'Daftar masuk di mercu tanda',
   creatures_steps_left: '{n} langkah lagi',
@@ -96,7 +95,6 @@ export const ms: Translations = {
   creatures_release_body: 'Ini membebaskan slot, tetapi {name} akan hilang selama-lamanya.',
   creatures_release_yes: 'Lepaskan',
   creatures_release_keep: 'Simpan {name}',
-  journal_kicker: 'Jurnal lapangan · Singapura',
   creatures_recorded: '{n} daripada {total} direkodkan',
   creatures_recorded_word: 'Direkod',
   creatures_not_seen: 'Belum dilihat',
@@ -131,7 +129,6 @@ export const ms: Translations = {
   squads_earning: 'Sedang mendapat…',
 
   shop_title: 'Kedai',
-  shop_subtitle: 'Belanjakan syiling pada naik taraf, atau tambah baki anda.',
   shop_upgrades: 'Naik Taraf',
   shop_coins_title: 'Syiling',
   shop_coins_offline: 'Mod luar talian (ujian)  -  pembelian disimulasi dan syiling diberikan serta-merta.',
@@ -189,7 +186,6 @@ export const ms: Translations = {
   common_close: 'Tutup',
 
   journal_delete_photo: 'Padam foto',
-  journal_subtitle: 'Langkah harian dan album foto anda.',
   journal_close: 'Tutup jurnal',
   goal_go: 'Pergi',
   goal_egg_title: 'Sebiji telur sedia menetas',
@@ -202,7 +198,6 @@ export const ms: Translations = {
   journal_open: 'Buka jurnal',
 
   news_title: 'Berita',
-  news_subtitle: 'Kemas kini, acara dan pos komuniti.',
   news_open: 'Buka berita',
   news_close: 'Tutup berita',
   news_empty: 'Belum ada berita. Datang semula nanti.',
@@ -258,7 +253,6 @@ export const ms: Translations = {
   shrine_claimed_subtitle: 'Makhluk anda telah mengalahkan penjaga.',
 
   medal_history_title: 'Pingat bulanan',
-  medal_history_subtitle: 'Semua bulan, disusun mengikut tahun',
   medal_earned_title: 'Pingat diperoleh!',
   medal_claim_failed: 'Pingat tidak dapat dituntut. Tukar ke mod dalam talian dalam Tetapan dan cuba lagi.',
   medal_challenge_info_aria: 'Cara cabaran bulanan berfungsi',
@@ -357,4 +351,11 @@ export const ms: Translations = {
   find_toast_coins: 'Kamu jumpa {coins} syiling',
   find_toast_food: 'Kamu jumpa {food} dan {coins} syiling',
   find_walk_closer: 'Jalan hingga dalam {radius}m untuk mengutipnya ({dist}m lagi)',
+  common_back: 'Kembali',
+  customize_hair: 'Rambut',
+  settings_steps_section: 'Langkah',
+  settings_health_steps: 'Kira langkah dengan Health Connect',
+  settings_health_steps_desc: 'Menggunakan langkah yang dikira oleh telefon anda, juga semasa Lorewalk ditutup. Jika dimatikan, Lorewalk menganggar langkah daripada GPS semasa aplikasi dibuka.',
+  settings_health_steps_denied: 'Lorewalk tiada kebenaran untuk membaca langkah anda. Benarkan dalam Health Connect, kemudian cuba lagi.',
+  profile_rename: 'Tukar nama',
 }

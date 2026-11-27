@@ -2,7 +2,8 @@ import { createPortal } from 'react-dom'
 import { useState } from 'react'
 import { useProfile } from '@/contexts/ProfileContext'
 import { ShopPage } from '@/pages/ShopPage'
-import { hudTag, paperPanel, paperTag, SCRIM } from '@/lib/paper'
+import { hudTag, paperPanel, SCRIM } from '@/lib/paper'
+import { CloseButton } from '@/components/UI/Journal'
 import { ink } from '@/lib/theme'
 import { AnimatePresence, motion } from 'motion/react'
 import { CountBump } from '@/components/UI/CountBump'
@@ -60,20 +61,11 @@ export function CoinCapsule() {
           >
             <div style={{
               flexShrink: 0, display: 'flex', justifyContent: 'center',
-              padding: '10px 0 4px', position: 'relative', zIndex: 2,
+              // Above the shop's own sticky header, or the header covers the close button.
+              padding: '10px 0 4px', position: 'relative', zIndex: 3,
             }}>
               <div style={{ width: 40, height: 4, borderRadius: 2, background: ink }} />
-              <button
-                onClick={() => setOpen(false)}
-                data-sfx="close"
-                style={{
-                  position: 'absolute', right: 8, top: 4, width: 44, height: 44,
-                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-              >
-                <span style={{ ...paperTag, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, lineHeight: 1 }}>×</span>
-              </button>
+              <CloseButton onClick={() => setOpen(false)} style={{ position: 'absolute', right: 8, top: 28 }} />
             </div>
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
               <ShopPage />

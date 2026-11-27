@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { createPlayerAvatar, type PlayerAvatar } from '@/lib/playerAvatar'
+import { appearanceKey, getAvatarCropURL, type AvatarCrop } from '@/lib/creaturePreview'
 import {
   AVATAR_BODIES, SKIN_TONES, HAIR_COLORS, EYE_COLORS, cosmeticItemsBySlot, toCssColor,
   type ColorSwatch, type CosmeticSlot,
@@ -10,29 +11,30 @@ import {
 import type { PlayerAppearance } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { Mono, PageHeader } from '@/components/UI/Journal'
-import { ink, line, paperCard, paperLight, paperShade, edge } from '@/lib/theme'
-import { paperCardStyle, paperPage, paperTag } from '@/lib/paper'
+import { Icon, type IconName } from '@/components/UI/Icons'
+import { LoadingDot } from '@/components/UI/LoadingDot'
+import { ink, inkSoft, line, paperCard, paperLight, paperShade, edge } from '@/lib/theme'
+import { paperPage, RADIUS } from '@/lib/paper'
 
-// A choice in the options panel: a paper tag, filled with ink when selected.
-function choiceStyle(selected: boolean) {
-  return {
-    ...paperTag, minHeight: 44, flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
-    background: selected ? ink : paperCard, color: selected ? paperLight : ink,
-  } as const
-}
+// Every tab shows its choices in one grid of four columns, so nothing scrolls
+// sideways. A colour takes half a column.
+const grid = { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, width: '100%' } as const
 
-function ColorSwatchRow({ swatches, selectedId, onSelect }: {
+function ColorSwatches({ swatches, selectedId, onSelect, columns }: {
   swatches: ColorSwatch[]
   selectedId: string
   onSelect: (id: string) => void
+  columns: number
 }) {
   return (
-    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', padding: 4 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: 8, justifyItems: 'center', alignItems: 'center' }}>
       {swatches.map((s) => (
         <button
           key={s.id}
+          type="button"
           onClick={() => onSelect(s.id)}
           aria-label={s.label}
+          aria-pressed={selectedId === s.id}
           data-sfx="click"
           style={{
             width: 44, height: 44, padding: 0, borderRadius: '50%', cursor: 'pointer',
@@ -46,36 +48,76 @@ function ColorSwatchRow({ swatches, selectedId, onSelect }: {
   )
 }
 
-function ItemRow({ slot, selectedId, onSelect }: {
+// One choice as a card: a close-up of the avatar with that choice on, and its name.
+function ChoiceCard({ look, crop, label, selected, onSelect }: {
+  look: PlayerAppearance
+  crop: AvatarCrop
+  label: string
+  selected: boolean
+  onSelect: () => void
+}) {
+  const [src, setSrc] = useState<string | null>(null)
+  // The caller builds `look` on each render, so the effect follows its key.
+  const lookKey = appearanceKey(look)
+  useEffect(() => {
+    let cancelled = false
+    getAvatarCropURL(look, crop).then((url) => { if (!cancelled) setSrc(url) })
+    return () => { cancelled = true }
+  }, [lookKey, crop]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      data-sfx="click"
+      style={{
+        minWidth: 0, padding: 3, cursor: 'pointer', fontFamily: 'inherit', color: ink,
+        display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 3,
+        background: paperCard, borderRadius: RADIUS,
+        border: `1px solid ${selected ? ink : line}`,
+        boxShadow: selected ? `0 0 0 1px ${ink}` : '1px 2px 0 rgba(51,40,30,0.14)',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      <span style={{
+        aspectRatio: '1', borderRadius: RADIUS - 3, overflow: 'hidden', background: `${paperShade}80`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {src
+          ? <img src={src} alt="" style={{ width: '100%', height: '100%', display: 'block' }} />
+          : <LoadingDot size={32} />}
+      </span>
+      <span style={{
+        fontSize: 12, fontWeight: 500, lineHeight: '16px', color: selected ? ink : inkSoft, textAlign: 'center',
+        padding: '0 1px 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>
+        {label}
+      </span>
+    </button>
+  )
+}
+
+const SLOT_FIELD = { top: 'topId', bottom: 'bottomId', shoes: 'shoesId', headItem: 'headItemId' } as const
+const SLOT_CROP: Record<CosmeticSlot, AvatarCrop> = { top: 'top', bottom: 'bottom', shoes: 'shoes', headItem: 'head' }
+
+function ItemGrid({ slot, appearance, onSelect }: {
   slot: CosmeticSlot
-  selectedId: string
+  appearance: PlayerAppearance
   onSelect: (id: string) => void
 }) {
-  const items = cosmeticItemsBySlot(slot)
+  const field = SLOT_FIELD[slot]
   return (
-    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '2px 2px 6px', scrollbarWidth: 'none' }}>
-      {items.map((item) => (
-        <button
+    <div style={grid}>
+      {cosmeticItemsBySlot(slot).map((item) => (
+        <ChoiceCard
           key={item.id}
-          onClick={() => onSelect(item.id)}
-          data-sfx="click"
-          style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-            padding: '7px 9px', cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit',
-            ...paperCardStyle,
-            ...(selectedId === item.id ? { border: `1.5px solid ${ink}`, background: paperShade } : { margin: 0.5 }),
-          }}
-        >
-          <span style={{
-            width: 26, height: 26, borderRadius: 6, boxSizing: 'border-box',
-            ...(item.id === 'none'
-              ? { border: '1.5px dashed #8C7A5C' }
-              : { background: toCssColor(item.color), border: `1px solid ${edge}` }),
-          }} />
-          <Mono style={{ fontWeight: 500, color: ink, whiteSpace: 'nowrap' }}>
-            {item.label}
-          </Mono>
-        </button>
+          look={{ ...appearance, [field]: item.id }}
+          crop={SLOT_CROP[slot]}
+          label={item.label}
+          selected={appearance[field] === item.id}
+          onSelect={() => onSelect(item.id)}
+        />
       ))}
     </div>
   )
@@ -86,25 +128,33 @@ const BODY_LABEL_KEYS: Record<string, 'customize_style_short_hair' | 'customize_
   longHair: 'customize_style_long_hair',
 }
 
-function BodyRow({ selectedId, onSelect }: { selectedId: string; onSelect: (id: string) => void }) {
+// The two haircuts on the left, the hair colours on the right.
+function HairPanel({ appearance, onBody, onColor }: {
+  appearance: PlayerAppearance
+  onBody: (id: string) => void
+  onColor: (id: string) => void
+}) {
   const { t } = useLocale()
   return (
-    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+    <div style={{ ...grid, alignItems: 'center' }}>
       {AVATAR_BODIES.map((body) => (
-        <button
+        <ChoiceCard
           key={body.id}
-          onClick={() => onSelect(body.id)}
-          data-sfx="click"
-          style={{ ...choiceStyle(selectedId === body.id), padding: '0 16px', fontSize: 15, fontWeight: 500 }}
-        >
-          {t(BODY_LABEL_KEYS[body.id])}
-        </button>
+          look={{ ...appearance, bodyId: body.id, headItemId: 'none' }}
+          crop="head"
+          label={t(BODY_LABEL_KEYS[body.id])}
+          selected={appearance.bodyId === body.id}
+          onSelect={() => onBody(body.id)}
+        />
       ))}
+      <div style={{ gridColumn: 'span 2' }}>
+        <ColorSwatches swatches={HAIR_COLORS} selectedId={appearance.hairColorId} onSelect={onColor} columns={3} />
+      </div>
     </div>
   )
 }
 
-type Focus = 'body' | 'head' | 'feet'
+type Focus = 'body' | 'head' | 'legs' | 'feet'
 
 // What the camera frames per focus, in avatar units: the height to look at, and
 // the height and width that must fit in view. The avatar is 1.4 tall, its idle
@@ -112,6 +162,7 @@ type Focus = 'body' | 'head' | 'feet'
 const FRAMES: Record<Focus, { y: number; h: number; w: number }> = {
   body: { y: 0.72, h: 2.0, w: 1.9 },
   head: { y: 1.12, h: 0.95, w: 1.15 },
+  legs: { y: 0.36, h: 1.05, w: 1.2 },
   feet: { y: 0.28, h: 0.8, w: 0.9 },
 }
 const FOV = 35
@@ -247,25 +298,33 @@ function AvatarPreview({ appearance, focus }: { appearance: PlayerAppearance; fo
   )
 }
 
-type Tab = 'style' | 'skin' | 'hair' | 'eyes' | 'top' | 'bottom' | 'shoes' | 'headItem'
+type Tab = 'skin' | 'hair' | 'eyes' | 'top' | 'bottom' | 'shoes' | 'headItem'
 
-const TABS: { id: Tab; label: keyof Translations; focus: Focus }[] = [
-  { id: 'style', label: 'customize_style', focus: 'body' },
-  { id: 'skin', label: 'customize_skin_tone', focus: 'body' },
-  { id: 'hair', label: 'customize_hair_color', focus: 'head' },
-  { id: 'eyes', label: 'customize_eye_color', focus: 'head' },
-  { id: 'top', label: 'customize_top', focus: 'body' },
-  { id: 'bottom', label: 'customize_bottom', focus: 'body' },
-  { id: 'shoes', label: 'customize_shoes', focus: 'feet' },
-  { id: 'headItem', label: 'customize_head_item', focus: 'head' },
+const TABS: { id: Tab; label: keyof Translations; icon: IconName; focus: Focus }[] = [
+  { id: 'skin', label: 'customize_skin_tone', icon: 'face', focus: 'body' },
+  { id: 'hair', label: 'customize_hair', icon: 'hair', focus: 'head' },
+  { id: 'eyes', label: 'customize_eye_color', icon: 'eye', focus: 'head' },
+  { id: 'top', label: 'customize_top', icon: 'top', focus: 'body' },
+  { id: 'bottom', label: 'customize_bottom', icon: 'bottom', focus: 'legs' },
+  { id: 'shoes', label: 'customize_shoes', icon: 'shoes', focus: 'feet' },
+  { id: 'headItem', label: 'customize_head_item', icon: 'hat', focus: 'head' },
 ]
+
+// The name of what the avatar has on in a tab, for the caption above the choices.
+function chosenLabel(tab: Tab, a: PlayerAppearance, t: (key: keyof Translations) => string): string {
+  const swatch = (list: ColorSwatch[], id: string) => list.find((x) => x.id === id)?.label ?? ''
+  if (tab === 'skin') return swatch(SKIN_TONES, a.skinToneId)
+  if (tab === 'eyes') return swatch(EYE_COLORS, a.eyeColorId)
+  if (tab === 'hair') return `${BODY_LABEL_KEYS[a.bodyId] ? t(BODY_LABEL_KEYS[a.bodyId]) : ''} · ${swatch(HAIR_COLORS, a.hairColorId)}`
+  return cosmeticItemsBySlot(tab).find((x) => x.id === a[SLOT_FIELD[tab]])?.label ?? ''
+}
 
 export function CharacterCustomizationPage() {
   const { t } = useLocale()
   const { profile, updateAppearance } = useProfile()
   const navigate = useNavigate()
   const { appearance } = profile
-  const [tab, setTab] = useState<Tab>('style')
+  const [tab, setTab] = useState<Tab>('skin')
   const active = TABS.find((x) => x.id === tab) ?? TABS[0]
 
   // Only the options change per tab. The page never scrolls, so the character
@@ -276,29 +335,12 @@ export function CharacterCustomizationPage() {
       ...paperPage, paddingBottom: 'calc(88px + env(safe-area-inset-bottom))',
     }}>
       <div style={{ flexShrink: 0 }}>
-        <PageHeader
-          kicker={
-            <span style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-              <button
-                onClick={() => navigate('/profile')}
-                data-sfx="close"
-                style={{
-                  ...paperTag, width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 24, lineHeight: 1,
-                }}
-              >
-                ←
-              </button>
-              {t('journal_kicker')}
-            </span>
-          }
-          title={t('customize_title')}
-        />
+        <PageHeader back={() => navigate('/profile')} title={t('customize_title')} />
       </div>
 
       {/* The avatar is a large photo glued on the page */}
       <div style={{
-        flex: 1, minHeight: 160, margin: '16px 20px 14px', padding: 8, boxSizing: 'border-box',
+        flex: 1, minHeight: 140, margin: '14px 20px 12px', padding: 8, boxSizing: 'border-box',
         background: paperCard, border: `1px solid ${line}`, borderRadius: 6,
         boxShadow: '1px 2px 0 rgba(51,40,30,0.22)', transform: 'rotate(-0.6deg)',
         display: 'flex',
@@ -309,34 +351,55 @@ export function CharacterCustomizationPage() {
       </div>
 
       <div style={{
-        flexShrink: 0, margin: '0 16px 10px', padding: '12px 0', borderRadius: 10,
+        flexShrink: 0, margin: '0 12px 8px', borderRadius: RADIUS,
         background: paperLight, border: `1px solid ${edge}`,
-        display: 'flex', flexDirection: 'column', gap: 10,
       }}>
-        <div role="tablist" style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '0 12px', scrollbarWidth: 'none' }}>
-          {TABS.map((x) => (
-            <button
-              key={x.id}
-              role="tab"
-              aria-selected={x.id === tab}
-              onClick={() => setTab(x.id)}
-              data-sfx="click"
-              style={{ ...choiceStyle(x.id === tab), padding: '0 12px', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}
-            >
-              {t(x.label)}
-            </button>
-          ))}
+        {/* Seven tabs of one width: they fit a narrow phone without a scroll. */}
+        <div role="tablist" style={{
+          display: 'grid', gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))`, gap: 3, padding: 5,
+          borderBottom: `1px solid ${line}`,
+        }}>
+          {TABS.map((x) => {
+            const on = x.id === tab
+            return (
+              <button
+                key={x.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                aria-label={t(x.label)}
+                onClick={() => setTab(x.id)}
+                data-sfx="click"
+                style={{
+                  height: 44, padding: 0, cursor: 'pointer', borderRadius: RADIUS - 2,
+                  display: 'grid', placeItems: 'center',
+                  background: on ? ink : 'transparent', color: on ? paperLight : inkSoft,
+                  border: 'none', WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <Icon name={x.icon} size={24} />
+              </button>
+            )
+          })}
         </div>
 
-        <div role="tabpanel" style={{ padding: '10px 12px 0', minHeight: 70, display: 'flex', alignItems: 'center', borderTop: `1px solid ${line}` }}>
-          {tab === 'style' && <BodyRow selectedId={appearance.bodyId} onSelect={(id) => updateAppearance({ bodyId: id })} />}
-          {tab === 'skin' && <ColorSwatchRow swatches={SKIN_TONES} selectedId={appearance.skinToneId} onSelect={(id) => updateAppearance({ skinToneId: id })} />}
-          {tab === 'hair' && <ColorSwatchRow swatches={HAIR_COLORS} selectedId={appearance.hairColorId} onSelect={(id) => updateAppearance({ hairColorId: id })} />}
-          {tab === 'eyes' && <ColorSwatchRow swatches={EYE_COLORS} selectedId={appearance.eyeColorId} onSelect={(id) => updateAppearance({ eyeColorId: id })} />}
-          {tab === 'top' && <ItemRow slot="top" selectedId={appearance.topId} onSelect={(id) => updateAppearance({ topId: id })} />}
-          {tab === 'bottom' && <ItemRow slot="bottom" selectedId={appearance.bottomId} onSelect={(id) => updateAppearance({ bottomId: id })} />}
-          {tab === 'shoes' && <ItemRow slot="shoes" selectedId={appearance.shoesId} onSelect={(id) => updateAppearance({ shoesId: id })} />}
-          {tab === 'headItem' && <ItemRow slot="headItem" selectedId={appearance.headItemId} onSelect={(id) => updateAppearance({ headItemId: id })} />}
+        <div role="tabpanel" style={{ padding: '8px 10px 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+            <span style={{ fontSize: 15, fontWeight: 600, lineHeight: '20px', color: ink }}>{t(active.label)}</span>
+            <Mono style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {chosenLabel(tab, appearance, t)}
+            </Mono>
+          </div>
+          {/* One height for every tab, so the photo above does not jump. */}
+          <div style={{ minHeight: 104, display: 'flex', alignItems: 'center' }}>
+            {tab === 'skin' && <div style={{ width: '100%' }}><ColorSwatches swatches={SKIN_TONES} selectedId={appearance.skinToneId} onSelect={(id) => updateAppearance({ skinToneId: id })} columns={6} /></div>}
+            {tab === 'hair' && <HairPanel appearance={appearance} onBody={(id) => updateAppearance({ bodyId: id })} onColor={(id) => updateAppearance({ hairColorId: id })} />}
+            {tab === 'eyes' && <div style={{ width: '100%' }}><ColorSwatches swatches={EYE_COLORS} selectedId={appearance.eyeColorId} onSelect={(id) => updateAppearance({ eyeColorId: id })} columns={6} /></div>}
+            {tab === 'top' && <ItemGrid slot="top" appearance={appearance} onSelect={(id) => updateAppearance({ topId: id })} />}
+            {tab === 'bottom' && <ItemGrid slot="bottom" appearance={appearance} onSelect={(id) => updateAppearance({ bottomId: id })} />}
+            {tab === 'shoes' && <ItemGrid slot="shoes" appearance={appearance} onSelect={(id) => updateAppearance({ shoesId: id })} />}
+            {tab === 'headItem' && <ItemGrid slot="headItem" appearance={appearance} onSelect={(id) => updateAppearance({ headItemId: id })} />}
+          </div>
         </div>
       </div>
     </div>

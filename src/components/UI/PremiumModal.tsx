@@ -6,9 +6,9 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useReward } from '@/contexts/RewardContext'
-import { MONO, paperSheet, paperTag, SCRIM } from '@/lib/paper'
+import { MONO, paperSheet, SCRIM } from '@/lib/paper'
 import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, stamp, edge } from '@/lib/theme'
-import { InkButton, Mono, NoteCard, Stamp } from '@/components/UI/Journal'
+import { CloseButton, InkButton, Mono, NoteCard, Stamp } from '@/components/UI/Journal'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import {
   fetchPremiumOfferings, isBillingAvailable, playSubscriptionManagementUrl, purchasePremiumPackage,
@@ -151,18 +151,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
           <div style={{ width: 36, height: 4, borderRadius: 2, background: line }} />
         </div>
 
-        <button
-          onClick={onClose}
-          data-sfx="close"
-          aria-label={t('common_close')}
-          style={{
-            position: 'absolute', top: 4, right: 6, zIndex: 1, width: 44, height: 44, padding: 0,
-            border: 'none', background: 'transparent', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          <span style={{ ...paperTag, background: paperCard, width: 30, height: 30, fontSize: 13, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</span>
-        </button>
+        <CloseButton onClick={onClose} style={{ position: 'absolute', top: 4, right: 6, zIndex: 1 }} />
 
         <div style={{ overflowY: 'auto', overflowX: 'hidden', padding: '40px 16px calc(24px + env(safe-area-inset-bottom))' }}>
           <NoteCard taped tilt={-0.5} style={{ padding: '18px 12px 12px', background: paperCard }}>

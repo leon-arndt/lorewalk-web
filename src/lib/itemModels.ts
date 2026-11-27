@@ -100,8 +100,115 @@ const BUILDERS: Record<string, (THREE: Three, g: Group) => void> = {
   },
 }
 
+// A coin that lies flat, for a stack or a heap. The rim is darker than the face.
+function flatCoin(THREE: Three, r: number): Group {
+  const c = new THREE.Group()
+  const rim = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.09, 28), mat(THREE, 0xf59e0b))
+  const face = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.78, r * 0.78, 0.1, 28), mat(THREE, 0xfcd34d))
+  c.add(rim, face)
+  return c
+}
+
+// A stack of coins at (x, z). Each coin sits a little off the one below it.
+function coinStack(THREE: Three, g: Group, x: number, z: number, count: number, r = 0.3) {
+  for (let i = 0; i < count; i++) {
+    const c = flatCoin(THREE, r)
+    c.position.set(x + Math.sin(i * 2.4 + x * 9) * 0.025, 0.045 + i * 0.095, z + Math.cos(i * 1.7 + z * 7) * 0.025)
+    g.add(c)
+  }
+}
+
 // These stand upright and face +z already, so buildItemModel does not tilt them.
 const UPRIGHT: Record<string, (THREE: Three, g: Group) => void> = {
+  // The four coin packs of the shop, from a few coins to a full chest.
+  coins_few(THREE, g) {
+    coinStack(THREE, g, -0.12, 0, 3, 0.36)
+    const lean = flatCoin(THREE, 0.36)
+    lean.position.set(0.42, 0.3, 0.12)
+    lean.rotation.set(0.25, 0, Math.PI / 2 - 0.42)
+    g.add(lean)
+  },
+
+  coins_stack(THREE, g) {
+    coinStack(THREE, g, -0.38, -0.12, 8)
+    coinStack(THREE, g, 0.34, -0.2, 5)
+    coinStack(THREE, g, 0.02, 0.42, 3)
+  },
+
+  coins_bag(THREE, g) {
+    const cloth = mat(THREE, 0xa9793f, 0.9, 0)
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.58, 28, 20), cloth)
+    body.scale.set(1, 0.86, 0.92)
+    body.position.y = 0.5
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.34, 0.3, 20), cloth)
+    neck.position.y = 1.02
+    const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.19, 0.2, 20), cloth)
+    mouth.position.y = 1.24
+    const cord = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.045, 8, 24), mat(THREE, 0xa8361f, 0.7, 0))
+    cord.rotation.x = Math.PI / 2
+    cord.position.y = 1.13
+    const mark = flatCoin(THREE, 0.24)
+    mark.rotation.set(Math.PI / 2 - 0.12, 0, 0)
+    mark.position.set(0.16, 0.52, 0.5)
+    g.add(body, neck, mouth, cord, mark)
+    coinStack(THREE, g, 0.74, 0.3, 3, 0.26)
+    coinStack(THREE, g, -0.72, 0.36, 1, 0.26)
+    coinStack(THREE, g, -0.3, 0.74, 2, 0.26)
+  },
+
+  coins_chest(THREE, g) {
+    const wood = mat(THREE, 0x8a4b1c, 0.7, 0)
+    const dark = mat(THREE, 0x6b3410, 0.7, 0)
+    const gold = mat(THREE, 0xfbbf24)
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.62, 0.95), wood)
+    base.position.y = 0.31
+    g.add(base)
+    for (const x of [-0.56, 0.56]) {
+      const band = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.66, 0.99), gold)
+      band.position.set(x, 0.31, 0)
+      g.add(band)
+    }
+    const lock = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.26, 0.08), gold)
+    lock.position.set(0, 0.44, 0.49)
+    g.add(lock)
+
+    // The open lid: half a barrel on a hinge at the back edge.
+    const lid = new THREE.Group()
+    // The inside shows while the lid is open, so both sides of the wood draw.
+    dark.side = THREE.DoubleSide
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.475, 0.475, 1.5, 24, 1, false, 0, Math.PI), dark)
+    barrel.rotation.z = Math.PI / 2
+    barrel.position.set(0, 0, 0.475)
+    lid.add(barrel)
+    for (const x of [-0.56, 0.56]) {
+      const band = new THREE.Mesh(new THREE.CylinderGeometry(0.495, 0.495, 0.14, 24, 1, false, 0, Math.PI), gold)
+      band.rotation.z = Math.PI / 2
+      band.position.set(x, 0, 0.475)
+      lid.add(band)
+    }
+    lid.position.set(0, 0.62, -0.475)
+    lid.rotation.x = -1.25
+    g.add(lid)
+
+    // The heap of coins that fills it.
+    const heap = new THREE.Mesh(new THREE.SphereGeometry(0.5, 24, 16), mat(THREE, 0xf59e0b))
+    heap.scale.set(1.36, 0.5, 0.82)
+    heap.position.y = 0.6
+    g.add(heap)
+    const spots: [number, number, number, number, number][] = [
+      [-0.4, 0.8, 0.1, 0.5, 0.2], [0.05, 0.86, -0.05, -0.3, -0.4], [0.42, 0.78, 0.12, 0.2, 0.6],
+      [-0.15, 0.8, 0.3, 0.7, -0.2], [0.25, 0.8, 0.3, -0.6, 0.3], [-0.5, 0.72, -0.2, 0.3, -0.5], [0.5, 0.72, -0.2, -0.2, 0.4],
+    ]
+    for (const [x, y, z, rx, rz] of spots) {
+      const c = flatCoin(THREE, 0.2)
+      c.position.set(x, y, z)
+      c.rotation.set(rx, 0, rz)
+      g.add(c)
+    }
+    coinStack(THREE, g, 0.98, 0.42, 2, 0.22)
+    coinStack(THREE, g, -1.0, 0.36, 1, 0.22)
+  },
+
   // A gift box: the reward chest and the "ready to collect" badge.
   chest(THREE, g) {
     const box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.62, 0.9), mat(THREE, 0x16a34a, 0.5, 0))

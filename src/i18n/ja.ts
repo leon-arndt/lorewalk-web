@@ -82,7 +82,6 @@ export const ja: Translations = {
   friends_added_date: '{date}に追加',
 
   creatures_title: 'クリーチャー',
-  creatures_subtitle: 'ランドマークにチェックインして卵を集めよう。歩いて孵化させよう。',
   creatures_hatching: '孵化中 · {n}/{max}',
   creatures_visit_landmark: 'ランドマークにチェックイン',
   creatures_steps_left: 'あと{n}歩',
@@ -96,7 +95,6 @@ export const ja: Translations = {
   creatures_release_body: 'スロットが空きますが、{name}は永久に消えます。',
   creatures_release_yes: '解放する',
   creatures_release_keep: '{name}を残す',
-  journal_kicker: 'フィールドノート · シンガポール',
   creatures_recorded: '{total}種中{n}種を記録',
   creatures_recorded_word: '記録済み',
   creatures_not_seen: '未発見',
@@ -131,7 +129,6 @@ export const ja: Translations = {
   squads_earning: '収益中…',
 
   shop_title: 'ショップ',
-  shop_subtitle: 'コインでアップグレードするか、残高をチャージしましょう。',
   shop_upgrades: 'アップグレード',
   shop_coins_title: 'コイン',
   shop_coins_offline: 'オフライン（テスト）モード  -  購入はシミュレートされ、コインが即時付与されます。',
@@ -189,7 +186,6 @@ export const ja: Translations = {
   common_close: '閉じる',
 
   journal_delete_photo: '写真を削除',
-  journal_subtitle: '毎日の歩数とフォトアルバム。',
   journal_close: 'ジャーナルを閉じる',
   goal_go: '行く',
   goal_egg_title: 'タマゴが孵化できます',
@@ -202,7 +198,6 @@ export const ja: Translations = {
   journal_open: 'ジャーナルを開く',
 
   news_title: 'お知らせ',
-  news_subtitle: 'アップデート、イベント、コミュニティの投稿。',
   news_open: 'お知らせを開く',
   news_close: 'お知らせを閉じる',
   news_empty: 'まだお知らせはありません。またご確認ください。',
@@ -258,7 +253,6 @@ export const ja: Translations = {
   shrine_claimed_subtitle: 'あなたのクリーチャーがガーディアンを倒しました。',
 
   medal_history_title: '月間メダル',
-  medal_history_subtitle: '年別のすべての月',
   medal_earned_title: 'メダル獲得！',
   medal_claim_failed: 'メダルを獲得できませんでした。設定でオンラインモードに切り替えて、もう一度お試しください。',
   medal_challenge_info_aria: '月間チャレンジの仕組み',
@@ -357,4 +351,11 @@ export const ja: Translations = {
   find_toast_coins: 'コインを{coins}枚見つけました',
   find_toast_food: '{food}とコインを{coins}枚見つけました',
   find_walk_closer: '{radius}m以内に近づくと拾えます（現在{dist}m）',
+  common_back: '戻る',
+  customize_hair: '髪',
+  settings_steps_section: '歩数',
+  settings_health_steps: 'ヘルスコネクトで歩数を数える',
+  settings_health_steps_desc: 'スマートフォンが数えた歩数を使います。Lorewalkを閉じている間の歩数も含まれます。オフの場合は、アプリを開いている間だけGPSから歩数を推定します。',
+  settings_health_steps_denied: 'Lorewalkには歩数を読み取る権限がありません。ヘルスコネクトで許可してから、もう一度お試しください。',
+  profile_rename: '名前を変更',
 }

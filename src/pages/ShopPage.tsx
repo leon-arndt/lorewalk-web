@@ -26,10 +26,10 @@ import { isBillingAvailable, fetchCoinPackages, purchaseCoinPack, type CoinPacka
 // lists in step. `price` shows until the store returns its own price string.
 // Priced in SGD - Singapore is the first launch market (see CLAUDE.md).
 const COIN_PACKS = [
-  { productId: 'lorewalk_coins_100', coins: 100, price: 'S$0.79', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
-  { productId: 'lorewalk_coins_600', coins: 600, price: 'S$3.49', tagKey: 'shop_popular' as const },
-  { productId: 'lorewalk_coins_1000', coins: 1000, price: 'S$5.00', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
-  { productId: 'lorewalk_coins_2500', coins: 2500, price: 'S$6.99', tagKey: 'shop_best_value' as const },
+  { productId: 'lorewalk_coins_100', coins: 100, price: 'S$0.79', sprite: 'item_coins_few', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { productId: 'lorewalk_coins_600', coins: 600, price: 'S$3.49', sprite: 'item_coins_stack', tagKey: 'shop_popular' as const },
+  { productId: 'lorewalk_coins_1000', coins: 1000, price: 'S$5.00', sprite: 'item_coins_bag', tagKey: null as null | 'shop_popular' | 'shop_best_value' },
+  { productId: 'lorewalk_coins_2500', coins: 2500, price: 'S$6.99', sprite: 'item_coins_chest', tagKey: 'shop_best_value' as const },
 ]
 
 // The webhook runs after the purchase returns, so the grant row is not there
@@ -156,10 +156,6 @@ export function ShopPage() {
         </button>
       </div>
 
-      <p style={{ margin: 0, padding: '12px 16px 0', fontSize: 13, lineHeight: '18px', color: inkSoft }}>
-        {t('shop_subtitle')}
-      </p>
-
       {!profile.isPremium && (
         <div style={{ padding: '16px 16px 0' }}>
           <button
@@ -234,8 +230,9 @@ export function ShopPage() {
                   {t(pack.tagKey)}
                 </Stamp>
               )}
-              <span style={{ ...specimenWindow, height: 68 }}>
-                <EmojiSprite id="item_coins" emoji="🪙" size={44} />
+              {/* A bigger pack shows more coins: a few, stacks, a pouch, a chest. */}
+              <span style={{ ...specimenWindow, height: 76 }}>
+                <EmojiSprite id={pack.sprite} emoji="🪙" size={64} />
               </span>
               <span style={{ fontSize: 19, fontWeight: 600, lineHeight: '24px', color: ink, textAlign: 'center' }}>{pack.coins.toLocaleString()}</span>
               <InkButton
