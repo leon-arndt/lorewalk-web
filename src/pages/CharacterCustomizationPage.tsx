@@ -5,7 +5,8 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { createPlayerAvatar, type PlayerAvatar } from '@/lib/playerAvatar'
 import { appearanceKey, getAvatarCropURL, type AvatarCrop } from '@/lib/creaturePreview'
 import {
-  AVATAR_BODIES, SKIN_TONES, HAIR_COLORS, EYE_COLORS, cosmeticItemsBySlot, toCssColor,
+  AVATAR_BODIES, SKIN_TONES, HAIR_COLORS, EYE_COLORS, ITEM_COLORS, SLOT_FIELD,
+  cosmeticItemById, cosmeticItemsBySlot, chosenItemColor, toCssColor,
   type ColorSwatch, type CosmeticSlot,
 } from '@/data/cosmetics'
 import type { PlayerAppearance } from '@/types'
@@ -16,9 +17,14 @@ import { LoadingDot } from '@/components/UI/LoadingDot'
 import { ink, inkSoft, line, paperCard, paperLight, paperShade, edge } from '@/lib/theme'
 import { paperPage, RADIUS } from '@/lib/paper'
 
-// Every tab shows its choices in one grid of four columns, so nothing scrolls
-// sideways. A colour takes half a column.
+// Every tab shows its choices in one grid, so nothing scrolls sideways. The hair
+// tab has four columns, and a colour takes half a column. An item tab has five.
 const grid = { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, width: '100%' } as const
+const ITEM_COLUMNS = 5
+const DOT_ROW = 36
+// The height of an item tab: a row of square cards with a name, then the colour dots.
+// Every tab gets it, so the photo above does not jump. 100cqw is the width of the tab panel.
+const PANEL_HEIGHT = `calc((100cqw - ${(ITEM_COLUMNS - 1) * 8}px) / ${ITEM_COLUMNS} + ${21 + 8 + DOT_ROW}px)`
 
 function ColorSwatches({ swatches, selectedId, onSelect, columns }: {
   swatches: ColorSwatch[]
@@ -98,27 +104,71 @@ function ChoiceCard({ look, crop, label, selected, onSelect }: {
   )
 }
 
-const SLOT_FIELD = { top: 'topId', bottom: 'bottomId', shoes: 'shoesId', headItem: 'headItemId' } as const
 const SLOT_CROP: Record<CosmeticSlot, AvatarCrop> = { top: 'top', bottom: 'bottom', shoes: 'shoes', headItem: 'head' }
 
-function ItemGrid({ slot, appearance, onSelect }: {
+// The items of a slot, then the colours for the item that the avatar has on.
+// Each item keeps its own colour, so a card shows the item as the player left it.
+function ItemGrid({ slot, appearance, onChange }: {
   slot: CosmeticSlot
   appearance: PlayerAppearance
-  onSelect: (id: string) => void
+  onChange: (patch: Partial<PlayerAppearance>) => void
 }) {
+  const { t } = useLocale()
   const field = SLOT_FIELD[slot]
+  const worn = cosmeticItemById(appearance[field])
+  const chosenId = chosenItemColor(appearance, slot)?.id ?? ''
+  const tintable = !!worn && worn.id !== 'none'
+  const dots: ColorSwatch[] = [{ id: '', label: t('customize_color_original'), color: worn?.color ?? 0 }, ...ITEM_COLORS]
+  const setColor = (id: string) => {
+    if (!worn) return
+    const itemColors = { ...appearance.itemColors }
+    if (id) itemColors[worn.id] = id
+    else delete itemColors[worn.id]
+    onChange({ itemColors })
+  }
   return (
-    <div style={grid}>
-      {cosmeticItemsBySlot(slot).map((item) => (
-        <ChoiceCard
-          key={item.id}
-          look={{ ...appearance, [field]: item.id }}
-          crop={SLOT_CROP[slot]}
-          label={item.label}
-          selected={appearance[field] === item.id}
-          onSelect={() => onSelect(item.id)}
-        />
-      ))}
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ ...grid, gridTemplateColumns: `repeat(${ITEM_COLUMNS}, minmax(0, 1fr))` }}>
+        {cosmeticItemsBySlot(slot).map((item) => (
+          <ChoiceCard
+            key={item.id}
+            look={{ ...appearance, [field]: item.id }}
+            crop={SLOT_CROP[slot]}
+            label={item.label}
+            selected={appearance[field] === item.id}
+            onSelect={() => onChange({ [field]: item.id })}
+          />
+        ))}
+      </div>
+      <div
+        role="group"
+        aria-label={t('customize_color')}
+        style={{
+          display: 'grid', gridTemplateColumns: `repeat(${dots.length}, minmax(0, 1fr))`,
+          visibility: tintable ? 'visible' : 'hidden',
+        }}
+      >
+        {dots.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => setColor(c.id)}
+            aria-label={c.label}
+            aria-pressed={chosenId === c.id}
+            data-sfx="click"
+            style={{
+              height: DOT_ROW, padding: 0, cursor: 'pointer', background: 'transparent', border: 'none',
+              display: 'grid', placeItems: 'center', WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span style={{
+              width: 26, height: 26, borderRadius: '50%', boxSizing: 'border-box',
+              background: toCssColor(c.color), border: `1px solid ${edge}`,
+              boxShadow: chosenId === c.id ? `0 0 0 2px ${paperLight}, 0 0 0 4px ${ink}` : undefined,
+            }} />
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -316,7 +366,9 @@ function chosenLabel(tab: Tab, a: PlayerAppearance, t: (key: keyof Translations)
   if (tab === 'skin') return swatch(SKIN_TONES, a.skinToneId)
   if (tab === 'eyes') return swatch(EYE_COLORS, a.eyeColorId)
   if (tab === 'hair') return `${BODY_LABEL_KEYS[a.bodyId] ? t(BODY_LABEL_KEYS[a.bodyId]) : ''} · ${swatch(HAIR_COLORS, a.hairColorId)}`
-  return cosmeticItemsBySlot(tab).find((x) => x.id === a[SLOT_FIELD[tab]])?.label ?? ''
+  const item = cosmeticItemById(a[SLOT_FIELD[tab]])?.label ?? ''
+  const color = chosenItemColor(a, tab)?.label
+  return color ? `${item} · ${color}` : item
 }
 
 export function CharacterCustomizationPage() {
@@ -383,7 +435,7 @@ export function CharacterCustomizationPage() {
           })}
         </div>
 
-        <div role="tabpanel" style={{ padding: '8px 10px 10px' }}>
+        <div role="tabpanel" style={{ padding: '8px 10px 10px', containerType: 'inline-size' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
             <span style={{ fontSize: 15, fontWeight: 600, lineHeight: '20px', color: ink }}>{t(active.label)}</span>
             <Mono style={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -391,14 +443,14 @@ export function CharacterCustomizationPage() {
             </Mono>
           </div>
           {/* One height for every tab, so the photo above does not jump. */}
-          <div style={{ minHeight: 104, display: 'flex', alignItems: 'center' }}>
+          <div style={{ minHeight: PANEL_HEIGHT, display: 'flex', alignItems: 'center' }}>
             {tab === 'skin' && <div style={{ width: '100%' }}><ColorSwatches swatches={SKIN_TONES} selectedId={appearance.skinToneId} onSelect={(id) => updateAppearance({ skinToneId: id })} columns={6} /></div>}
             {tab === 'hair' && <HairPanel appearance={appearance} onBody={(id) => updateAppearance({ bodyId: id })} onColor={(id) => updateAppearance({ hairColorId: id })} />}
             {tab === 'eyes' && <div style={{ width: '100%' }}><ColorSwatches swatches={EYE_COLORS} selectedId={appearance.eyeColorId} onSelect={(id) => updateAppearance({ eyeColorId: id })} columns={6} /></div>}
-            {tab === 'top' && <ItemGrid slot="top" appearance={appearance} onSelect={(id) => updateAppearance({ topId: id })} />}
-            {tab === 'bottom' && <ItemGrid slot="bottom" appearance={appearance} onSelect={(id) => updateAppearance({ bottomId: id })} />}
-            {tab === 'shoes' && <ItemGrid slot="shoes" appearance={appearance} onSelect={(id) => updateAppearance({ shoesId: id })} />}
-            {tab === 'headItem' && <ItemGrid slot="headItem" appearance={appearance} onSelect={(id) => updateAppearance({ headItemId: id })} />}
+            {tab === 'top' && <ItemGrid slot="top" appearance={appearance} onChange={updateAppearance} />}
+            {tab === 'bottom' && <ItemGrid slot="bottom" appearance={appearance} onChange={updateAppearance} />}
+            {tab === 'shoes' && <ItemGrid slot="shoes" appearance={appearance} onChange={updateAppearance} />}
+            {tab === 'headItem' && <ItemGrid slot="headItem" appearance={appearance} onChange={updateAppearance} />}
           </div>
         </div>
       </div>

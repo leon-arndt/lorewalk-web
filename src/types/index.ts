@@ -229,6 +229,7 @@ export interface PlayerAppearance {
   bottomId: string
   shoesId: string
   headItemId: string   // 'none' is a valid id, always present in the catalog
+  itemColors?: Record<string, string>   // item id -> an ITEM_COLORS id; an item without an entry keeps its own colour
 }
 
 export type NotificationPrefKey =

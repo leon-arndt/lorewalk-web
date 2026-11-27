@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { skinToneById, hairColorById, eyeColorById, cosmeticItemById, toCssColor } from '@/data/cosmetics'
+import { skinToneById, hairColorById, eyeColorById, cosmeticItemById, itemColor as headItemColor, toCssColor } from '@/data/cosmetics'
 import { appearanceKey, getAvatarPortraitURL } from '@/lib/creaturePreview'
 import type { PlayerAppearance } from '@/types'
 
@@ -38,7 +38,7 @@ function BlockyFace({ appearance, size }: PlayerFaceIconProps) {
   const hair = toCssColor(hairColorById(appearance.hairColorId)?.color ?? 0x0a0a0a)
   const eye = toCssColor(eyeColorById(appearance.eyeColorId)?.color ?? 0x4b3621)
   const headItem = appearance.headItemId !== 'none' ? cosmeticItemById(appearance.headItemId) : undefined
-  const itemColor = headItem ? toCssColor(headItem.color) : undefined
+  const itemColor = headItem ? toCssColor(headItemColor(appearance, 'headItem')) : undefined
   const longHair = appearance.bodyId === 'longHair'
 
   return (

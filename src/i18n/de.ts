@@ -353,6 +353,8 @@ export const de: Translations = {
   find_walk_closer: 'Geh auf {radius}m heran, um das aufzuheben ({dist}m entfernt)',
   common_back: 'Zurück',
   customize_hair: 'Haare',
+  customize_color: 'Farbe',
+  customize_color_original: 'Originalfarbe',
   settings_steps_section: 'Schritte',
   settings_health_steps: 'Schritte mit Health Connect zählen',
   settings_health_steps_desc: 'Nutzt die Schritte, die dein Handy zählt, auch wenn Lorewalk geschlossen ist. Ist das aus, schätzt Lorewalk die Schritte per GPS, solange die App offen ist.',

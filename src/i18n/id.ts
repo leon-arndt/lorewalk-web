@@ -353,6 +353,8 @@ export const id: Translations = {
   find_walk_closer: 'Jalan sampai dalam {radius}m untuk mengambilnya ({dist}m lagi)',
   common_back: 'Kembali',
   customize_hair: 'Rambut',
+  customize_color: 'Warna',
+  customize_color_original: 'Warna asli',
   settings_steps_section: 'Langkah',
   settings_health_steps: 'Hitung langkah dengan Health Connect',
   settings_health_steps_desc: 'Memakai langkah yang dihitung ponselmu, juga saat Lorewalk ditutup. Jika dimatikan, Lorewalk memperkirakan langkah dari GPS selama aplikasi terbuka.',

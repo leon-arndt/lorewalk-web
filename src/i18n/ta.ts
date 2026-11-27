@@ -353,6 +353,8 @@ export const ta: Translations = {
   find_walk_closer: 'இதை எடுக்க {radius}மீ தூரத்திற்குள் நடந்து வாருங்கள் (இப்போது {dist}மீ தொலைவில்)',
   common_back: 'பின்செல்',
   customize_hair: 'முடி',
+  customize_color: 'நிறம்',
+  customize_color_original: 'அசல் நிறம்',
   settings_steps_section: 'படிகள்',
   settings_health_steps: 'Health Connect மூலம் படிகளை எண்ணுங்கள்',
   settings_health_steps_desc: 'உங்கள் தொலைபேசி எண்ணும் படிகளைப் பயன்படுத்துகிறது, Lorewalk மூடியிருக்கும்போதும். இது அணைந்திருந்தால், செயலி திறந்திருக்கும்போது GPS மூலம் படிகளை Lorewalk மதிப்பிடும்.',

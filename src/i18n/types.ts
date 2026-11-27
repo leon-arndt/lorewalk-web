@@ -350,6 +350,8 @@ export interface Translations {
   find_walk_closer: string
   common_back: string
   customize_hair: string
+  customize_color: string
+  customize_color_original: string
   settings_steps_section: string
   settings_health_steps: string
   settings_health_steps_desc: string

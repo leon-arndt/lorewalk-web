@@ -1,7 +1,7 @@
 import type * as T3 from 'three'
 import type { PlayerAppearance } from '@/types'
 import { addBlink } from '@/lib/blink'
-import { avatarBodyById, skinToneById, hairColorById, eyeColorById, cosmeticItemById } from '@/data/cosmetics'
+import { avatarBodyById, skinToneById, hairColorById, eyeColorById, itemColor } from '@/data/cosmetics'
 
 // The player's 3D avatar, shared by the map layer and the customization preview.
 // Loads the rigged CC0 Quaternius cube body for `appearance.bodyId` (see
@@ -53,10 +53,6 @@ export async function createPlayerAvatar(appearance: PlayerAppearance): Promise<
   }
 }
 
-function itemColor(id: string, fallback: number): number {
-  return cosmeticItemById(id)?.color ?? fallback
-}
-
 async function createRigged(THREE: THREE, appearance: PlayerAppearance): Promise<PlayerAvatar> {
   const { clone: skeletonClone } = await import('three/examples/jsm/utils/SkeletonUtils.js')
   const template = await loadTemplate(avatarBodyById(appearance.bodyId).modelUrl)
@@ -68,8 +64,8 @@ async function createRigged(THREE: THREE, appearance: PlayerAppearance): Promise
     Skin: skinToneById(appearance.skinToneId)?.color ?? 0xe0ac69,
     Hair: hairColorById(appearance.hairColorId)?.color ?? 0x0a0a0a,
     Eyes: eyeColorById(appearance.eyeColorId)?.color ?? 0x4b3621,
-    Top: itemColor(appearance.topId, 0x6366f1),
-    Bottom: itemColor(appearance.bottomId, 0x334155),
+    Top: itemColor(appearance, 'top'),
+    Bottom: itemColor(appearance, 'bottom'),
   }
   model.traverse((o) => {
     const mesh = o as T3.Mesh
@@ -217,7 +213,7 @@ function addItemShapes(THREE: THREE, model: T3.Object3D, appearance: PlayerAppea
 
   // Head items sit on the head box: its top is the top of the hair.
   const hb = m.head, hs = size(hb), hc = mid(hb)
-  const headColor = itemColor(appearance.headItemId, 0xef4444)
+  const headColor = itemColor(appearance, 'headItem')
   if (appearance.headItemId === 'cap') {
     block('Head', hs.x * 1.06, u * 0.1, hs.z * 1.06, hc.x, hb.max.y - u * 0.03, hc.z, headColor)
     block('Head', hs.x * 0.8, u * 0.02, hs.z * 0.45, hc.x, hb.max.y - u * 0.075, hb.max.z + hs.z * 0.18, headColor)
@@ -232,27 +228,53 @@ function addItemShapes(THREE: THREE, model: T3.Object3D, appearance: PlayerAppea
 
   // Tops: the model's Top material already carries the colour. Shapes add detail.
   const tb = m.top, ts = size(tb)
-  const topColor = itemColor(appearance.topId, 0x6366f1)
+  const topColor = itemColor(appearance, 'top')
   if (appearance.topId === 'hoodie') {
     // Against the back of the torso, not the head box: long hair makes that reach far back.
     block('Torso', ts.x * 0.7, u * 0.09, u * 0.07, 0, m.neckY - u * 0.01, tb.min.z - u * 0.02, topColor)
     block('Torso', ts.x * 0.55, u * 0.05, u * 0.012, 0, tb.min.y + ts.y * 0.3, tb.max.z + u * 0.004, shade(topColor, 0.8))
   } else if (appearance.topId === 'jacket') {
     block('Torso', u * 0.07, ts.y * 0.85, u * 0.012, 0, tb.min.y + ts.y * 0.5, tb.max.z + u * 0.004, 0xf8fafc)
+  } else if (appearance.topId === 'shirt') {
+    // A button-up shirt: a placket down the front, four buttons, and two collar points.
+    // The head sits on the torso without a neck, so the collar lies flat on the chest.
+    const front = tb.max.z + u * 0.004
+    const light = new THREE.Color(topColor).lerp(new THREE.Color(0xffffff), 0.45).getHex()
+    block('Torso', u * 0.045, ts.y * 0.9, u * 0.01, 0, tb.min.y + ts.y * 0.47, front, light)
+    for (let i = 0; i < 4; i++) {
+      block('Torso', u * 0.018, u * 0.018, u * 0.01, 0, tb.min.y + ts.y * (0.12 + i * 0.19), front + u * 0.006, shade(topColor, 0.45))
+    }
+    for (const sx of [-1, 1]) {
+      block('Torso', ts.x * 0.22, ts.y * 0.14, u * 0.016, sx * (u * 0.0225 + ts.x * 0.11), tb.max.y - ts.y * 0.1, front + u * 0.002, light)
+    }
   }
 
   // Bottoms: the model wears shorts, so trousers add covers over the bare shins.
   const bb = m.bottom, bs = size(bb), bc = mid(bb)
-  const bottomColor = itemColor(appearance.bottomId, 0x334155)
-  if (appearance.bottomId === 'jeans' || appearance.bottomId === 'cargo') {
-    for (const [bone, b] of Object.entries(m.shin)) {
-      if (b.isEmpty()) continue
-      const s = size(b), c = mid(b)
-      block(bone, s.x * 1.14, s.y + u * 0.02, s.z * 1.14, c.x, c.y + u * 0.01, c.z, bottomColor)
+  const bottomColor = itemColor(appearance, 'bottom')
+  if (appearance.bottomId === 'jeans' || appearance.bottomId === 'cargo' || appearance.bottomId === 'slacks') {
+    // A leg runs from the shorts to the top of the foot, where the shoe starts.
+    const legs = Object.entries(m.shin).filter(([, b]) => !b.isEmpty()).map(([bone, b]) => {
+      const fb = m.foot[bone === 'LowerLegL' ? 'FootL' : 'FootR']
+      const y0 = fb.isEmpty() ? b.min.y : fb.max.y - u * 0.01
+      return { bone, s: size(b), c: mid(b), y0, h: b.max.y + u * 0.02 - y0 }
+    })
+    for (const { bone, s, c, y0, h } of legs) {
+      block(bone, s.x * 1.14, h, s.z * 1.14, c.x, y0 + h / 2, c.z, bottomColor)
     }
     if (appearance.bottomId === 'cargo') {
       for (const sx of [-1, 1]) {
         block(sx > 0 ? 'UpperLegL' : 'UpperLegR', u * 0.02, bs.y * 0.4, bs.z * 0.45, sx * (bs.x / 2 + u * 0.005), bc.y - bs.y * 0.1, bc.z, shade(bottomColor, 0.8))
+      }
+    }
+    if (appearance.bottomId === 'slacks') {
+      // Business trousers: a leather belt with a buckle, and a pressed crease down each leg.
+      block('Hips', bs.x * 1.05, bs.y * 0.16, bs.z * 1.08, bc.x, bb.max.y - bs.y * 0.08, bc.z, 0x1f1b18)
+      block('Hips', u * 0.04, bs.y * 0.2, u * 0.012, bc.x, bb.max.y - bs.y * 0.08, Math.max(bb.max.z + bs.z * 0.04, tb.max.z + u * 0.012), 0xc9b26b)
+      const crease = shade(bottomColor, 0.7)
+      for (const { bone, s, c, y0, h } of legs) {
+        block(bone, u * 0.012, h, u * 0.012, c.x, y0 + h / 2, c.z + s.z * 0.57, crease)
+        block(bone === 'LowerLegL' ? 'UpperLegL' : 'UpperLegR', u * 0.012, bs.y * 0.84, u * 0.012, c.x, bb.min.y + bs.y * 0.42, bb.max.z, crease)
       }
     }
   } else if (appearance.bottomId === 'skirt') {
@@ -267,7 +289,7 @@ function addItemShapes(THREE: THREE, model: T3.Object3D, appearance: PlayerAppea
   }
 
   // Shoes: the model is barefoot, so every pair is a shape.
-  const shoeColor = itemColor(appearance.shoesId, 0xf8fafc)
+  const shoeColor = itemColor(appearance, 'shoes')
   for (const [bone, b] of Object.entries(m.foot)) {
     if (b.isEmpty()) continue
     const s = size(b), c = mid(b)
@@ -303,9 +325,9 @@ function createProcedural(THREE: THREE, appearance: PlayerAppearance): PlayerAva
   const skin = skinToneById(appearance.skinToneId)?.color ?? 0xe0ac69
   const hair = hairColorById(appearance.hairColorId)?.color ?? 0x0a0a0a
   const eye = eyeColorById(appearance.eyeColorId)?.color ?? 0x4b3621
-  const top = itemColor(appearance.topId, 0x6366f1)
-  const bottom = itemColor(appearance.bottomId, 0x334155)
-  const shoes = itemColor(appearance.shoesId, 0xf8fafc)
+  const top = itemColor(appearance, 'top')
+  const bottom = itemColor(appearance, 'bottom')
+  const shoes = itemColor(appearance, 'shoes')
 
   const legs = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.5, 0.2), pm(THREE, bottom))
   legs.position.y = 0.25

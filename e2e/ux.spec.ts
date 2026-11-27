@@ -76,12 +76,31 @@ test('the character designer shows every tab without a sideways scroll', async (
 
   await page.getByRole('tab', { name: 'Bottom' }).click()
   const panel = page.getByRole('tabpanel')
-  await expect(panel.getByRole('button')).toHaveCount(4)
   expect(await panel.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true)
   // Each choice is a picture of the avatar with the item on.
-  await expect(panel.locator('img')).toHaveCount(4, { timeout: 15_000 })
-  await panel.getByRole('button', { name: 'Cargo Pants' }).click()
+  await expect(panel.locator('img')).toHaveCount(5, { timeout: 15_000 })
+  await panel.getByRole('button', { name: 'Cargos' }).click()
   await expect.poll(async () => (await profile(page)).appearance.bottomId).toBe('cargo')
+})
+
+test('each item of the character designer keeps its own colour', async ({ page }) => {
+  await open(page, '/customize')
+  await page.getByRole('tab', { name: 'Top' }).click()
+  const panel = page.getByRole('tabpanel')
+  const colors = panel.getByRole('group', { name: 'Color' })
+  await panel.getByRole('button', { name: 'Shirt' }).click()
+  await colors.getByRole('button', { name: 'Red' }).click()
+  await panel.getByRole('button', { name: 'Hoodie' }).click()
+  await colors.getByRole('button', { name: 'Green' }).click()
+  await expect.poll(async () => (await profile(page)).appearance.itemColors).toEqual({ shirt: 'red', hoodie: 'green' })
+
+  // The first dot gives the item its own colour back.
+  await colors.getByRole('button', { name: 'Original color' }).click()
+  await expect.poll(async () => (await profile(page)).appearance.itemColors).toEqual({ shirt: 'red' })
+
+  // Without a head item, there is nothing to colour.
+  await page.getByRole('tab', { name: 'Head Item' }).click()
+  await expect(colors).toBeHidden()
 })
 
 test('the back button of a page goes to the profile', async ({ page }) => {

@@ -57,15 +57,17 @@ export interface CosmeticItemDef {
 export const COSMETIC_ITEMS: CosmeticItemDef[] = [
   // Tops
   { id: 'tee',      slot: 'top',      label: 'Tee',        color: 0x6366f1 },
-  { id: 'tank',     slot: 'top',      label: 'Tank Top',   color: 0xf59e0b },
+  { id: 'tank',     slot: 'top',      label: 'Tank',       color: 0xf59e0b },
   { id: 'hoodie',   slot: 'top',      label: 'Hoodie',     color: 0x475569 },
   { id: 'jacket',   slot: 'top',      label: 'Jacket',     color: 0xa855f7 },
+  { id: 'shirt',    slot: 'top',      label: 'Shirt',      color: 0xbfdbfe },
 
   // Bottoms
   { id: 'shorts',   slot: 'bottom',   label: 'Shorts',     color: 0x334155 },
   { id: 'jeans',    slot: 'bottom',   label: 'Jeans',      color: 0x3b5b8c },
-  { id: 'cargo',    slot: 'bottom',   label: 'Cargo Pants',color: 0x5b6650 },
+  { id: 'cargo',    slot: 'bottom',   label: 'Cargos',     color: 0x5b6650 },
   { id: 'skirt',    slot: 'bottom',   label: 'Skirt',      color: 0xdb2777 },
+  { id: 'slacks',   slot: 'bottom',   label: 'Slacks',     color: 0x3a3d45 },
 
   // Shoes
   { id: 'sneakers', slot: 'shoes',    label: 'Sneakers',   color: 0xf8fafc },
@@ -80,7 +82,23 @@ export const COSMETIC_ITEMS: CosmeticItemDef[] = [
   { id: 'beanie',   slot: 'headItem', label: 'Beanie',     color: 0x1d4ed8 },
 ]
 
+// The colours a player can give to an item. An item without a choice keeps its own colour.
+export const ITEM_COLORS: ColorSwatch[] = [
+  { id: 'white',  label: 'White',  color: 0xf8fafc },
+  { id: 'black',  label: 'Black',  color: 0x27272a },
+  { id: 'red',    label: 'Red',    color: 0xdc2626 },
+  { id: 'orange', label: 'Orange', color: 0xf59e0b },
+  { id: 'green',  label: 'Green',  color: 0x4d9a5b },
+  { id: 'blue',   label: 'Blue',   color: 0x2f6fd0 },
+  { id: 'purple', label: 'Purple', color: 0x8b5cf6 },
+  { id: 'pink',   label: 'Pink',   color: 0xf472b6 },
+]
+
+export const SLOT_FIELD = { top: 'topId', bottom: 'bottomId', shoes: 'shoesId', headItem: 'headItemId' } as const
+const SLOT_FALLBACK: Record<CosmeticSlot, number> = { top: 0x6366f1, bottom: 0x334155, shoes: 0xf8fafc, headItem: 0xef4444 }
+
 const ITEM_BY_ID = new Map(COSMETIC_ITEMS.map((i) => [i.id, i]))
+const ITEM_COLOR_BY_ID = new Map(ITEM_COLORS.map((c) => [c.id, c]))
 const SKIN_BY_ID = new Map(SKIN_TONES.map((s) => [s.id, s]))
 const HAIR_BY_ID = new Map(HAIR_COLORS.map((h) => [h.id, h]))
 const EYE_BY_ID = new Map(EYE_COLORS.map((e) => [e.id, e]))
@@ -91,6 +109,16 @@ export function cosmeticItemById(id: string): CosmeticItemDef | undefined {
 
 export function cosmeticItemsBySlot(slot: CosmeticSlot): CosmeticItemDef[] {
   return COSMETIC_ITEMS.filter((i) => i.slot === slot)
+}
+
+// The colour that the player gave to the item in a slot, if any.
+export function chosenItemColor(a: PlayerAppearance, slot: CosmeticSlot): ColorSwatch | undefined {
+  return ITEM_COLOR_BY_ID.get(a.itemColors?.[a[SLOT_FIELD[slot]]] ?? '')
+}
+
+// The colour that the item in a slot shows on the avatar.
+export function itemColor(a: PlayerAppearance, slot: CosmeticSlot): number {
+  return chosenItemColor(a, slot)?.color ?? ITEM_BY_ID.get(a[SLOT_FIELD[slot]])?.color ?? SLOT_FALLBACK[slot]
 }
 
 export function avatarBodyById(id: string): AvatarBodyDef {
@@ -122,6 +150,7 @@ export const DEFAULT_APPEARANCE: PlayerAppearance = {
   bottomId: 'shorts',
   shoesId: 'sneakers',
   headItemId: 'none',
+  itemColors: {},
 }
 
 function hashSeed(input: string): number {

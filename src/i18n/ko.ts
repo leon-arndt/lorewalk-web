@@ -353,6 +353,8 @@ export const ko: Translations = {
   find_walk_closer: '{radius}m 안으로 가까이 가면 주울 수 있습니다 (현재 {dist}m)',
   common_back: '뒤로',
   customize_hair: '머리',
+  customize_color: '색상',
+  customize_color_original: '기본 색상',
   settings_steps_section: '걸음 수',
   settings_health_steps: '헬스 커넥트로 걸음 수 세기',
   settings_health_steps_desc: '휴대폰이 센 걸음 수를 사용합니다. Lorewalk를 닫은 동안의 걸음도 포함됩니다. 꺼져 있으면 앱이 열려 있는 동안에만 GPS로 걸음 수를 추정합니다.',

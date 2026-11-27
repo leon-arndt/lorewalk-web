@@ -353,6 +353,8 @@ export const ja: Translations = {
   find_walk_closer: '{radius}m以内に近づくと拾えます（現在{dist}m）',
   common_back: '戻る',
   customize_hair: '髪',
+  customize_color: 'カラー',
+  customize_color_original: '元の色',
   settings_steps_section: '歩数',
   settings_health_steps: 'ヘルスコネクトで歩数を数える',
   settings_health_steps_desc: 'スマートフォンが数えた歩数を使います。Lorewalkを閉じている間の歩数も含まれます。オフの場合は、アプリを開いている間だけGPSから歩数を推定します。',

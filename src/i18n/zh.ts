@@ -353,6 +353,8 @@ export const zh: Translations = {
   find_walk_closer: '走到 {radius} 米以内即可拾取（现在相距 {dist} 米）',
   common_back: '返回',
   customize_hair: '头发',
+  customize_color: '颜色',
+  customize_color_original: '原色',
   settings_steps_section: '步数',
   settings_health_steps: '通过 Health Connect 计步',
   settings_health_steps_desc: '使用手机记录的步数，Lorewalk 关闭时的步数也会计入。关闭后，仅在应用打开时通过 GPS 估算步数。',
