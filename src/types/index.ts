@@ -133,6 +133,9 @@ export interface SquadExpedition {
   lon: number
   startedAt: string   // ISO
   returnsAt: string   // ISO
+  // Where the squad set out. The map walks the creatures from here to the place.
+  fromLat?: number
+  fromLon?: number
 }
 
 export interface Squad {
@@ -284,6 +287,8 @@ export interface FoodExpedition {
   creatureIds: string[]
   startedAt: string   // ISO
   returnsAt: string   // ISO
+  fromLat?: number    // where the creatures set out, see SquadExpedition
+  fromLon?: number
 }
 
 // A food item that has appeared on the map near a POI. Send creatures to retrieve
@@ -310,6 +315,8 @@ export interface ShrineExpedition {
   power: number       // total power sent, determines win/loss on collect
   startedAt: string
   returnsAt: string
+  fromLat?: number    // where the creatures set out, see SquadExpedition
+  fromLon?: number
 }
 
 export interface ShrineNode {

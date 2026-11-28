@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useLocale } from '@/contexts/LocaleContext'
 import { MapView, type MapViewState, type MarkerCreature } from '@/components/Map/MapView'
+import type { CharacterSpec, TripSpec } from '@/lib/mapCharacters'
 import { creatureSpriteKey } from '@/lib/creaturePreview'
 import { PoiDetailPanel } from '@/components/UI/PoiDetailPanel'
 import { FoodNodePanel } from '@/components/UI/FoodNodePanel'
@@ -58,6 +59,22 @@ function categoryColor(category?: string): number {
 
 const AMBIENT_SPECIES = ['Kampung Chicken', 'Asian Koel ♀', 'Cicada']
 
+// How a creature looks as a 3D character on the map.
+function characterSpec(id: string, c?: HatchedCreature): CharacterSpec {
+  const def = c && creatureDefBySpecies(c.species)
+  return {
+    id,
+    color: def?.color ?? categoryColor(c?.poiCategory),
+    category: c?.poiCategory,
+    shiny: c?.isShiny,
+    hat: def?.hat,
+    body: def?.body,
+    color2: def?.color2,
+  }
+}
+
+interface TripTimes { startedAt: string; returnsAt: string; fromLat?: number; fromLon?: number }
+
 function markerCreature(c?: HatchedCreature): MarkerCreature {
   return c ? { emoji: c.emoji, key: creatureSpriteKey(c.species, c.isShiny) } : { emoji: '🐾', key: '' }
 }
@@ -67,7 +84,7 @@ export function MapPage() {
   const { position, gpsError, gpsLoading, steps, distanceM } = usePlayerLocation()
   const { pois, places } = usePois()
   const { posts: newsPosts } = useNews()
-  const { profile, visitedPois, addVisit, syncFoodNodes, collectFind, startFoodExpedition, collectFoodNode, busyCreatureIds, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
+  const { profile, visitedPois, addVisit, syncFoodNodes, collectFind, startFoodExpedition, collectFoodNode, syncShrineNodes, startShrineExpedition, collectShrineNode } = useProfile()
   const { showReward, showToast } = useReward()
   const { mode } = useConnectionMode()
   const navigate = useNavigate()
@@ -120,31 +137,57 @@ export function MapPage() {
     [focusLat, focusLon],
   )
 
+  // Every creature that is away walks its trip on the map: to a food node, to
+  // a shrine, or with its squad to a landmark, and back to the player.
+  const trips = useMemo(() => {
+    const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
+    const trip = (id: string, ids: string[], lat: number, lon: number, e: TripTimes): TripSpec => ({
+      id,
+      creatures: ids.map((cid) => characterSpec(cid, byId.get(cid))),
+      from: e.fromLat != null && e.fromLon != null ? [e.fromLon, e.fromLat] : null,
+      to: [lon, lat],
+      startedAt: new Date(e.startedAt).getTime(),
+      returnsAt: new Date(e.returnsAt).getTime(),
+    })
+    const list: TripSpec[] = []
+    for (const n of profile.foodNodes) {
+      if (n.expedition) list.push(trip(n.id, n.expedition.creatureIds, n.lat, n.lon, n.expedition))
+    }
+    for (const n of profile.shrineNodes) {
+      if (n.expedition) list.push(trip(n.id, n.expedition.creatureIds, n.lat, n.lon, n.expedition))
+    }
+    for (const s of profile.squads) {
+      const e = s.expedition
+      if (e) list.push(trip(s.id, s.slots.filter((id): id is string => !!id), e.lat, e.lon, e))
+    }
+    return list
+  }, [profile.foodNodes, profile.shrineNodes, profile.squads, profile.hatchedCreatures])
+
+  // A marker reads the clock to show its gift badge. This counts up at each
+  // return time, so the markers take their ready state when a trip is home.
+  const [returned, setReturned] = useState(0)
+  useEffect(() => {
+    const now = Date.now()
+    const next = trips.map((t) => t.returnsAt).filter((ms) => ms > now).sort((a, b) => a - b)[0]
+    if (next === undefined) return
+    const timer = setTimeout(() => setReturned((n) => n + 1), next - now + 50)
+    return () => clearTimeout(timer)
+  }, [trips, returned])
+
   // The active squad's creatures become the 3D companions that walk with you -
-  // unless that squad is away on an expedition, in which case nobody follows.
+  // unless that squad is away on an expedition: it then walks its trip.
   // When the active squad is empty, show a few neutral "ambient" wanderers so the
   // map is never lifeless (they're replaced by real members once you assign any).
   const companions = useMemo(() => {
     const active = profile.squads.find((s) => s.id === profile.activeSquadId)
     if (active?.expedition) return []
     const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
+    const onTrip = new Set(trips.flatMap((t) => t.creatures.map((c) => c.id)))
     const members = (active?.slots ?? [])
       .filter((id): id is string => !!id)
-      // Creatures away foraging at a food node don't walk with you.
-      .filter((id) => !busyCreatureIds.has(id))
-      .map((id) => {
-        const c = byId.get(id)
-        const def = c && creatureDefBySpecies(c.species)
-        return {
-          id,
-          color: def?.color ?? categoryColor(c?.poiCategory),
-          category: c?.poiCategory,
-          shiny: c?.isShiny,
-          hat: def?.hat,
-          body: def?.body,
-          color2: def?.color2,
-        }
-      })
+      // A creature on a trip walks that trip, not with you.
+      .filter((id) => !onTrip.has(id))
+      .map((id) => characterSpec(id, byId.get(id)))
     if (members.length > 0) return members
     // The ambient wanderers are the neighbourhood regulars: a kampung chicken,
     // a koel, and a cicada.
@@ -152,21 +195,19 @@ export function MapPage() {
       const def = creatureDefBySpecies(species)!
       return { id: `ambient-${i}`, color: def.color, color2: def.color2, body: def.body }
     })
-  }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures, busyCreatureIds])
+  }, [profile.squads, profile.activeSquadId, profile.hatchedCreatures, trips])
 
   const foodNodeMarkers = useMemo(
     () => {
-      const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
       return profile.foodNodes.map((n) => {
         const def = getFoodDef(n.foodId)
         const state: 'idle' | 'busy' | 'ready' = !n.expedition
           ? 'idle'
           : Date.now() >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
-        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => markerCreature(byId.get(id))) : []
-        return { id: n.id, foodId: n.foodId, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state, travelers }
+        return { id: n.id, foodId: n.foodId, emoji: def?.emoji ?? '🍜', name: def?.name ?? 'Food', lat: n.lat, lon: n.lon, state }
       })
     },
-    [profile.foodNodes, profile.hatchedCreatures],
+    [profile.foodNodes, returned], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const selectedFoodNode = useMemo(
@@ -176,7 +217,6 @@ export function MapPage() {
 
   const shrineNodeMarkers = useMemo(
     () => {
-      const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
       return profile.shrineNodes.map((n) => {
         const now = Date.now()
         const state: 'idle' | 'busy' | 'ready' | 'cleared' =
@@ -185,11 +225,10 @@ export function MapPage() {
             : !n.expedition
               ? 'idle'
               : now >= new Date(n.expedition.returnsAt).getTime() ? 'ready' : 'busy'
-        const travelers = n.expedition ? n.expedition.creatureIds.map((id) => markerCreature(byId.get(id))) : []
-        return { id: n.id, name: n.poiName, lat: n.lat, lon: n.lon, state, travelers }
+        return { id: n.id, name: n.poiName, lat: n.lat, lon: n.lon, state }
       })
     },
-    [profile.shrineNodes, profile.hatchedCreatures],
+    [profile.shrineNodes, returned], // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const selectedShrineNode = useMemo(
@@ -257,7 +296,7 @@ export function MapPage() {
         isActive: profile.activeSquadId === s.id,
         ready: now >= new Date(s.expedition!.returnsAt).getTime(),
       }))
-  }, [profile.squads, profile.hatchedCreatures, profile.activeSquadId])
+  }, [profile.squads, profile.hatchedCreatures, profile.activeSquadId, returned]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tracks POIs already auto-checked-in this session to prevent double-firing
   // while position keeps updating inside the radius.
@@ -386,6 +425,12 @@ export function MapPage() {
     }, 300)
   }, [])
 
+  // Where a trip sets out: the player, to the metre.
+  const origin = useMemo(
+    () => (position ? { lat: position.latitude, lon: position.longitude } : undefined),
+    [position],
+  )
+
   const handleFoodNodeClick = useCallback((id: string) => {
     if (foodPanelCloseTimer.current) { clearTimeout(foodPanelCloseTimer.current); foodPanelCloseTimer.current = null }
     setIsFoodPanelClosing(false)
@@ -406,9 +451,9 @@ export function MapPage() {
 
   const handleStartFood = useCallback((creatureIds: string[], durationMs: number) => {
     if (!selectedFoodNodeId) return
-    startFoodExpedition(selectedFoodNodeId, creatureIds, durationMs)
+    startFoodExpedition(selectedFoodNodeId, creatureIds, durationMs, origin)
     handleFoodPanelClose()
-  }, [selectedFoodNodeId, startFoodExpedition, handleFoodPanelClose])
+  }, [selectedFoodNodeId, startFoodExpedition, handleFoodPanelClose, origin])
 
   const handleShrineNodeClick = useCallback((id: string) => {
     if (shrinePanelCloseTimer.current) { clearTimeout(shrinePanelCloseTimer.current); shrinePanelCloseTimer.current = null }
@@ -429,9 +474,9 @@ export function MapPage() {
 
   const handleStartShrine = useCallback((creatureIds: string[]) => {
     if (!selectedShrineNodeId) return
-    startShrineExpedition(selectedShrineNodeId, creatureIds)
+    startShrineExpedition(selectedShrineNodeId, creatureIds, origin)
     handleShrinePanelClose()
-  }, [selectedShrineNodeId, startShrineExpedition, handleShrinePanelClose])
+  }, [selectedShrineNodeId, startShrineExpedition, handleShrinePanelClose, origin])
 
   const handleCollectShrine = useCallback(() => {
     if (!selectedShrineNodeId) return
@@ -497,6 +542,7 @@ export function MapPage() {
         squadMarkers={squadMarkers}
         onSquadClick={handleSquadClick}
         companions={companions}
+        trips={trips}
         claimMarkers={claimMarkers}
         onClaimClick={handleSquadClick}
         foodNodeMarkers={foodNodeMarkers}

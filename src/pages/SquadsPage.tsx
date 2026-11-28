@@ -5,13 +5,15 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
-import { hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
+import { affinityMultiplier, hasReturned, expeditionDurationMs, claimPendingCoins } from '@/lib/profile'
 import { haversineDistance } from '@/lib/mapUtils'
 import { CreatureTile, EmptyPad } from '@/components/UI/CreatureTile'
 import { CoinCapsule } from '@/components/UI/CoinCapsule'
 import type { ExpeditionTarget, HatchedCreature, RewardItem, Squad } from '@/types'
-import { CloseButton, InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
-import { categoryCss, forest, ink, inkHint, inkSoft, line, paperCard, stamp, pencil } from '@/lib/theme'
+import { Chip, CloseButton, InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
+import { CategoryBadge } from '@/components/UI/Icons'
+import { CATEGORY_LABEL } from '@/i18n/categories'
+import { categoryCss, forest, ink, inkHint, inkSoft, line, paperCard, stamp } from '@/lib/theme'
 import { MONO, paperCardStyle, paperPage, paperSheet, paperTag, SCRIM } from '@/lib/paper'
 import { motion } from 'motion/react'
 import { sheetIn, backdropIn } from '@/lib/motion'
@@ -39,7 +41,7 @@ function formatCountdown(ms: number) {
 }
 
 function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatLon }) {
-  const { profile, setActiveSquad, renameSquad, clearSlot, collectExpedition, recallSquad } = useProfile()
+  const { profile, setActiveSquad, renameSquad, collectExpedition, recallSquad, busyCreatureIds } = useProfile()
   const { showReward } = useReward()
   const { t } = useLocale()
   const byId = new Map(profile.hatchedCreatures.map((c) => [c.id, c]))
@@ -55,11 +57,13 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
   // Mirror external renames/resets into the controlled input.
   useEffect(() => { setNameDraft(squad.name) }, [squad.name])
 
-  function handleSlotTap(i: number) {
-    if (away) return
-    if (members[i]) clearSlot(squad.id, i)
-    else setPicker(i)
-  }
+  // What the squad is good at: the bonus that its members give at each type of
+  // place. The same number applies to a check-in and to an expedition.
+  const types = [...new Set(members.flatMap((c) => (c ? [c.poiCategory] : [])))]
+  const bonuses = types.map((category) => ({
+    category,
+    pct: Math.round((affinityMultiplier(squad, category, byId) - 1) * 100),
+  }))
 
   function handleCollect() {
     if (!exp) return
@@ -115,26 +119,50 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6 }}>
         {members.map((c, i) => c
-          ? <CreatureTile key={i} creature={c} disabled={away} onTap={() => handleSlotTap(i)} />
-          : <EmptyPad key={i} disabled={away} onTap={() => handleSlotTap(i)} />)}
+          ? (
+            <CreatureTile
+              key={i}
+              creature={c}
+              disabled={away}
+              note={!away && busyCreatureIds.has(c.id) ? t('squads_member_away') : undefined}
+              onTap={() => setPicker(i)}
+            />
+          )
+          : <EmptyPad key={i} disabled={away} onTap={() => setPicker(i)} />)}
       </div>
 
-      {!away && (() => {
-        const hasMembers = members.some(Boolean)
-        return (
-          <InkButton
-            variant={hasMembers ? 'ink' : 'paper'}
-            onClick={() => hasMembers && setExpeditionOpen(true)}
-            disabled={!hasMembers}
-            style={{
-              marginTop: 10, width: '100%', fontSize: 13,
-              ...(hasMembers ? null : { background: 'transparent', border: `1.5px dashed ${pencil}`, color: inkHint, opacity: 1 }),
-            }}
-          >
-            {hasMembers ? t('squads_send_expedition') : t('squads_add_member_first')}
+      {/* What this squad does now, in one line, then the types it is good at. */}
+      {!away && (
+        <div style={{ marginTop: 10 }}>
+          <p style={{ margin: 0, fontSize: 13, lineHeight: '18px', color: inkSoft }}>
+            {bonuses.length === 0
+              ? t('squads_status_empty')
+              : isActive ? t('squads_status_active') : t('squads_status_home')}
+          </p>
+          {bonuses.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+              {bonuses.map(({ category, pct }) => (
+                <Chip key={category} tone={forest} icon={<CategoryBadge category={category} size={18} />}>
+                  {t('squads_bonus_chip', { type: CATEGORY_LABEL[category] ? t(CATEGORY_LABEL[category]) : category, pct })}
+                </Chip>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!away && bonuses.length > 0 && (
+        <>
+          <InkButton onClick={() => setExpeditionOpen(true)} style={{ marginTop: 12, width: '100%', fontSize: 13 }}>
+            {t('squads_send_expedition')}
           </InkButton>
-        )
-      })()}
+          {isActive && (
+            <Mono style={{ display: 'block', marginTop: 6, textAlign: 'center', color: inkHint }}>
+              {t('squads_send_hint_active')}
+            </Mono>
+          )}
+        </>
+      )}
 
       {away && exp && (
         <div style={{ ...paperCardStyle, marginTop: 10, padding: '10px 12px' }}>
@@ -163,7 +191,7 @@ function SquadCard({ squad, now, from }: { squad: Squad; now: number; from: LatL
       )}
 
       {picker !== null && (
-        <CreaturePicker squad={squad} slotIndex={picker} onClose={() => setPicker(null)} />
+        <CreaturePicker squad={squad} slotIndex={picker} current={members[picker]} onClose={() => setPicker(null)} />
       )}
       {expeditionOpen && (
         <ExpeditionPicker
@@ -209,9 +237,17 @@ function Sheet({ title, children, onClose }: { title: string; children: React.Re
   )
 }
 
-function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex: number; onClose: () => void }) {
-  const { profile, assignToSlot } = useProfile()
+// Fills a free slot. For a slot that holds a creature, it changes the creature
+// or takes it out of the squad.
+function CreaturePicker({ squad, slotIndex, current, onClose }: {
+  squad: Squad
+  slotIndex: number
+  current: HatchedCreature | null
+  onClose: () => void
+}) {
+  const { profile, assignToSlot, clearSlot } = useProfile()
   const { t } = useLocale()
+  const title = current ? t('squads_change_creature') : t('squads_add_creature')
 
   const assignedIn = new Map<string, string>()
   for (const sq of profile.squads) {
@@ -220,7 +256,7 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
 
   if (profile.hatchedCreatures.length === 0) {
     return (
-      <Sheet title={t('squads_add_creature')} onClose={onClose}>
+      <Sheet title={title} onClose={onClose}>
         <p style={{ margin: '8px 0', fontSize: 13, color: inkSoft }}>
           {t('squads_no_creatures')}
         </p>
@@ -229,7 +265,16 @@ function CreaturePicker({ squad, slotIndex, onClose }: { squad: Squad; slotIndex
   }
 
   return (
-    <Sheet title={t('squads_add_creature')} onClose={onClose}>
+    <Sheet title={title} onClose={onClose}>
+      {current && (
+        <InkButton
+          variant="danger"
+          onClick={() => { clearSlot(squad.id, slotIndex); onClose() }}
+          style={{ width: '100%', fontSize: 13, marginBottom: 12 }}
+        >
+          {t('squads_remove_member')}
+        </InkButton>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, paddingBottom: 3 }}>
         {[...profile.hatchedCreatures].reverse().sort((a, b) => Number(assignedIn.has(a.id)) - Number(assignedIn.has(b.id))).map((c) => {
           const where = assignedIn.get(c.id)
@@ -260,7 +305,7 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
   const visited = profile.visitHistory.filter((v) => v.lat != null && v.lon != null && (v.tier ?? 'landmark') === 'landmark')
 
   function send(target: ExpeditionTarget, durationMs: number) {
-    startExpedition(squad.id, target, durationMs)
+    startExpedition(squad.id, target, durationMs, from)
     onClose()
   }
 
@@ -272,6 +317,9 @@ function ExpeditionPicker({ squad, byId, from, onClose }: {
         </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <p style={{ margin: '0 0 4px', fontSize: 13, lineHeight: '18px', color: inkSoft }}>
+            {t('squads_send_intro')}
+          </p>
           {visited.map((v) => {
             const matches = matchCount(squad, v.poiCategory, byId)
             const bonus = matches * 25

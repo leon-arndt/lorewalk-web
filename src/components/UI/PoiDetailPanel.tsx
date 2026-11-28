@@ -10,7 +10,7 @@ import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 import { deterministicAppearance } from '@/data/cosmetics'
 import type { Poi, PlayerPosition } from '@/types'
-import type { Translations } from '@/i18n/types'
+import { CATEGORY_LABEL } from '@/i18n/categories'
 import { categoryCss, forest, indigo, ink, inkSoft, line, ochre, paperShade, ochreInk, edge } from '@/lib/theme'
 import { Chip, CloseButton, InkButton, Mono, Stamp } from '@/components/UI/Journal'
 import { motion } from 'motion/react'
@@ -24,16 +24,6 @@ const MOCK_FRIENDS = [
 ]
 
 const CHECKIN_RADIUS_M = 50
-
-// Same category set as the map pins (mapPoiPins.ts) and creature companions (mapCharacters.ts).
-const CATEGORY_LABEL: Record<string, keyof Translations> = {
-  heritage: 'category_heritage',
-  landmark: 'poi_landmark',
-  arts: 'category_arts',
-  religious: 'category_religious',
-  museum: 'category_museum',
-  nature: 'category_nature',
-}
 
 interface PoiDetailPanelProps {
   poi: Poi

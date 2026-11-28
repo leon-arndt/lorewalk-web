@@ -234,6 +234,31 @@ test.describe('Squads page', () => {
     await expect(slot).toBeVisible()
   })
 
+  test('a squad names the bonus that its creatures give', async ({ page }) => {
+    await seedProfile(page, {
+      hatchedCreatures: [TEST_CREATURE],
+      squads: SQUAD_WITH_CREATURE,
+    })
+    await page.goto('/squads')
+    await expect(page.getByText(/walks with you on the map/i)).toBeVisible()
+    await expect(page.getByText('Heritage +25%')).toBeVisible()
+  })
+
+  test('a tap on a squad member asks first, and Remove takes it out', async ({ page }) => {
+    await seedProfile(page, {
+      hatchedCreatures: [TEST_CREATURE],
+      squads: SQUAD_WITH_CREATURE,
+    })
+    await page.goto('/squads')
+    await page.locator('button').filter({ has: page.getByRole('img', { name: 'Kampung Chicken' }) }).first().click()
+    // The tap alone changes nothing.
+    await expect(page.getByText('Change creature')).toBeVisible()
+    await expect(page.getByText('Heritage +25%')).toBeVisible()
+    await page.getByRole('button', { name: 'Remove from squad' }).click()
+    await expect(page.getByText('Heritage +25%')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /send on expedition/i })).toHaveCount(0)
+  })
+
   test('squad with creature shows Send on expedition button', async ({ page }) => {
     await seedProfile(page, {
       hatchedCreatures: [TEST_CREATURE],

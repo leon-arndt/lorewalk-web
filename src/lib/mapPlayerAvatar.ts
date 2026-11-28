@@ -1,6 +1,6 @@
 import * as maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
-import { isMapPaused } from '@/lib/mapUtils'
+import { requestMapFrame } from '@/lib/mapUtils'
 import type { PlayerAppearance } from '@/types'
 import { createPlayerAvatar, type PlayerAvatar } from '@/lib/playerAvatar'
 import { lightScene } from '@/lib/ambience'
@@ -137,7 +137,7 @@ export async function addPlayerAvatarLayer(
         scene.overrideMaterial = null
       }
       renderer.render(scene, camera)
-      if (!isMapPaused()) map.triggerRepaint()
+      requestMapFrame(map)
     },
     onRemove() {
       renderer?.dispose()

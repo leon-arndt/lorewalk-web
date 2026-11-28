@@ -1,6 +1,6 @@
 import * as maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
-import { isMapPaused } from '@/lib/mapUtils'
+import { requestMapFrame } from '@/lib/mapUtils'
 import type { CatHat } from '@/data/creatures'
 import { addBlink, type Blinker } from '@/lib/blink'
 import { lightScene } from '@/lib/ambience'
@@ -30,15 +30,44 @@ export interface CharacterSpec {
   color2?: number
 }
 
+// Creatures on a trip to a place and back: a food node, a shrine, or the
+// landmark of a squad expedition. They walk the trip on the map, as in Pikmin Bloom.
+export interface TripSpec {
+  id: string
+  creatures: CharacterSpec[]
+  // [lng, lat] where they set out. null for an old save: they start at the player.
+  from: [number, number] | null
+  to: [number, number]
+  startedAt: number   // ms
+  returnsAt: number   // ms
+}
+
+// A trip has no state of its own: the clock gives the leg. The creatures walk
+// out, stay at the place for a moment, and walk back to the player. After the
+// return time they are home and wait near the player for the collect.
+export type TripPhase = 'out' | 'stay' | 'back' | 'home'
+const TRIP_OUT_END = 0.45
+const TRIP_BACK_START = 0.55
+
+export function tripProgress(trip: Pick<TripSpec, 'startedAt' | 'returnsAt'>, nowMs: number): { phase: TripPhase; t: number } {
+  const f = (nowMs - trip.startedAt) / Math.max(1, trip.returnsAt - trip.startedAt)
+  if (f >= 1) return { phase: 'home', t: 1 }
+  if (f >= TRIP_BACK_START) return { phase: 'back', t: (f - TRIP_BACK_START) / (1 - TRIP_BACK_START) }
+  if (f >= TRIP_OUT_END) return { phase: 'stay', t: 1 }
+  return { phase: 'out', t: Math.max(0, f) / TRIP_OUT_END }
+}
+
 export interface CharacterLayerHandle {
   remove: () => void
   setCenter: (lng: number, lat: number) => void
   setCharacters: (specs: CharacterSpec[]) => void
+  setTrips: (trips: TripSpec[]) => void
 }
 
 export interface CharacterLayerOptions {
   center: [number, number]
   characters?: CharacterSpec[]
+  trips?: TripSpec[]
   modelUrl?: string
   wanderRadiusM?: number
   modelScale?: number
@@ -54,6 +83,9 @@ const SIZE_REF_ZOOM = 20
 const SIZE_COMP_MAX = 1024
 
 const LAYER_ID = 'lorewalk-characters'
+
+// The space between two creatures that walk side by side on a trip, in body units.
+const TRIP_ROW_GAP = 0.9
 
 // Height in body units that a loaded model is fitted to, independent of the
 // .glb's own units. Keeps companions a bit shorter than the player avatar.
@@ -98,6 +130,9 @@ export async function addCharacterLayer(
     speed: number
     idleUntil: number
     bobPhase: number
+    // On a trip, the clock sets the position until the creature is home.
+    trip: TripSpec | null
+    tripIndex: number
     procedural: boolean
     animal: boolean
     blink: Blinker | null
@@ -346,7 +381,8 @@ export async function addCharacterLayer(
       root, mixer, idle, walk, state: 'idle',
       x: start.x, z: start.z, tx: start.x, tz: start.z,
       speed: 1.1 + Math.random() * 0.7,
-      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, procedural, animal, blink, ownedMaterials, ownedGeometries,
+      idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, trip: null, tripIndex: 0,
+      procedural, animal, blink, ownedMaterials, ownedGeometries,
     })
   }
 
@@ -361,9 +397,46 @@ export async function addCharacterLayer(
     if (from && to && from !== to) from.crossFadeTo(to, 0.25, false)
   }
 
-  function tick(dt: number, nowMs: number) {
+  // Metres east and south of the layer centre, which is the player.
+  function local(lngLat: [number, number]) {
+    return {
+      x: (lngLat[0] - center.lng) * 111320 * Math.cos((center.lat * Math.PI) / 180),
+      z: (center.lat - lngLat[1]) * 110540,
+    }
+  }
+
+  // Puts a creature on its trip. Returns false when it is home again: it then
+  // wanders near the player like a companion. The creatures of one trip walk
+  // side by side, one body width apart, so they keep their place on every leg.
+  function travel(c: Character, trip: TripSpec, wallMs: number, charScale: number): boolean {
+    const { phase, t } = tripProgress(trip, wallMs)
+    if (phase === 'home') {
+      c.trip = null
+      setState(c, 'idle')
+      c.idleUntil = 0
+      return false
+    }
+    const place = local(trip.to)
+    const home = { x: 0, z: 0 }
+    const start = phase === 'back' ? place : trip.from ? local(trip.from) : home
+    const end = phase === 'back' ? home : place
+    const dx = end.x - start.x
+    const dz = end.z - start.z
+    const len = Math.hypot(dx, dz) || 1
+    const side = (c.tripIndex - (trip.creatures.length - 1) / 2) * charScale * TRIP_ROW_GAP
+    c.x = start.x + dx * t - (dz / len) * side
+    c.z = start.z + dz * t + (dx / len) * side
+    c.root.rotation.y = Math.atan2(dx, dz)
+    setState(c, phase === 'stay' ? 'idle' : 'walk')
+    return true
+  }
+
+  function tick(dt: number, nowMs: number, charScale: number) {
+    const wallMs = Date.now()
     for (const c of characters) {
-      if (c.state === 'idle') {
+      if (c.trip && travel(c, c.trip, wallMs, charScale)) {
+        // travel() set the position.
+      } else if (c.state === 'idle') {
         if (nowMs >= c.idleUntil) {
           const t = randomPoint()
           c.tx = t.x; c.tz = t.z
@@ -446,7 +519,7 @@ export async function addCharacterLayer(
         root: glbRoot, mixer: null, idle: null, walk: null, state: 'idle',
         x: start.x, z: start.z, tx: start.x, tz: start.z,
         speed: 1.1 + Math.random() * 0.7,
-        idleUntil: 0, bobPhase: Math.random() * Math.PI * 2,
+        idleUntil: 0, bobPhase: Math.random() * Math.PI * 2, trip: null, tripIndex: 0,
         procedural: true, animal: false, blink: null, ownedMaterials: [], ownedGeometries: [],
       })
     } else {
@@ -454,7 +527,7 @@ export async function addCharacterLayer(
     }
   }
 
-  function rebuildCharactersWithGlb(specs: CharacterSpec[]) {
+  function rebuildCharactersWithGlb(specs: CharacterSpec[], trips: TripSpec[]) {
     for (const c of characters) {
       c.mixer?.stopAllAction()
       worldGroup.remove(c.root)
@@ -464,11 +537,30 @@ export async function addCharacterLayer(
     }
     characters.length = 0
     specs.forEach(spawnWithGlb)
+    for (const trip of trips) {
+      trip.creatures.forEach((spec, i) => {
+        spawnWithGlb(spec)
+        const c = characters[characters.length - 1]
+        c.trip = trip
+        c.tripIndex = i
+      })
+    }
   }
 
-  const initialSpecs = opts.characters
+  // The page sends the roster again on many profile changes. A roster that did
+  // not change keeps its models, so a creature does not jump to a new place.
+  let companionSpecs = opts.characters
     ?? DEFAULT_PALETTE.map((color, i) => ({ id: `gen-${i}`, color }))
-  rebuildCharactersWithGlb(initialSpecs)
+  let tripSpecs = opts.trips ?? []
+  let rosterSig = ''
+  function syncRoster() {
+    const sig = JSON.stringify([companionSpecs, tripSpecs])
+    if (sig === rosterSig) return
+    rosterSig = sig
+    rebuildCharactersWithGlb(companionSpecs, tripSpecs)
+    map.triggerRepaint()
+  }
+  syncRoster()
 
   let renderer: T3.WebGLRenderer | null = null
   let lastMs = 0
@@ -487,7 +579,6 @@ export async function addCharacterLayer(
       const nowMs = performance.now()
       const dt = lastMs ? Math.min((nowMs - lastMs) / 1000, 0.1) : 0
       lastMs = nowMs
-      if (dt) tick(dt, nowMs)
       lightScene(ambient, sun, 1.4, 2.4)
 
       // Constant-ish screen size: scale each character's own body (NOT the group,
@@ -495,6 +586,7 @@ export async function addCharacterLayer(
       // Positions stay in real metres, so characters are glued to the map.
       const charScale = modelScale * Math.min(SIZE_COMP_MAX, Math.pow(2, SIZE_REF_ZOOM - map.getZoom()))
       for (const c of characters) c.root.scale.setScalar(charScale)
+      tick(dt, nowMs, charScale)
 
       const origin = maplibregl.MercatorCoordinate.fromLngLat([center.lng, center.lat], 0)
       const scale = origin.meterInMercatorCoordinateUnits()
@@ -511,8 +603,8 @@ export async function addCharacterLayer(
       renderer.render(scene, camera)
       // Characters animate continuously (idle bob + idle clip), so keep the frame
       // loop alive while any exist - but let the map go idle when the roster is
-      // empty instead of pinning the GPU at full FPS for nothing.
-      if (characters.length > 0 && !isMapPaused()) map.triggerRepaint()
+      // empty. requestMapFrame() holds the idle rate at 30 frames a second.
+      if (characters.length > 0) requestMapFrame(map)
     },
     onRemove() {
       renderer?.dispose()
@@ -536,7 +628,12 @@ export async function addCharacterLayer(
       center.lat = lat
     },
     setCharacters(specs) {
-      rebuildCharactersWithGlb(specs)
+      companionSpecs = specs
+      syncRoster()
+    },
+    setTrips(trips) {
+      tripSpecs = trips
+      syncRoster()
     },
   }
 }

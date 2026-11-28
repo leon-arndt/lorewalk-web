@@ -18,3 +18,27 @@ export function haversineDistance(
 let paused = false
 export function setMapPaused(value: boolean) { paused = value }
 export function isMapPaused() { return paused }
+
+// The 3D layers never stop: a creature idles, a pin bobs, a cloud drifts. Each
+// asks for the next frame from its own render(). Without a limit the map then
+// draws on every display refresh, 120 times a second on a current phone, tiles
+// and buildings included, and the phone gets warm. So an idle frame waits for
+// this interval. A gesture or a camera ease still draws at the full rate,
+// because MapLibre asks for those frames itself.
+const IDLE_FRAME_MS = 1000 / 30
+// The timer fires this long before the frame is due, so the frame lands on the
+// display refresh at 33 ms and not on the one after it. It is longer than a
+// late timer and shorter than one refresh of a 120 Hz display.
+const FRAME_SLACK_MS = 6
+let frameTimer: ReturnType<typeof setTimeout> | null = null
+
+export function requestMapFrame(map: { triggerRepaint: () => void }) {
+  if (paused || frameTimer !== null) return
+  // Inside render(), the timeline holds the start of the frame that draws now.
+  const now = performance.now()
+  const frameStart = Number(document.timeline.currentTime ?? now)
+  frameTimer = setTimeout(() => {
+    frameTimer = null
+    if (!paused && !(map as { _removed?: boolean })._removed) map.triggerRepaint()
+  }, Math.max(0, frameStart + IDLE_FRAME_MS - FRAME_SLACK_MS - now))
+}

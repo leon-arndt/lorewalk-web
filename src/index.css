@@ -36,11 +36,6 @@ html, body, #root {
   font-size: 11px;
 }
 
-/* Creatures orbiting a node while away on an expedition. tvOrbit spins the arm;
-   tvCounter keeps the creature bubble upright as it circles. */
-@keyframes tvOrbit   { to { transform: rotate(360deg); } }
-@keyframes tvCounter { to { transform: rotate(-360deg); } }
-
 /* Creature idle bob + matching shadow shrink */
 @keyframes creatureBob {
   0%, 100% { transform: translateY(0); }

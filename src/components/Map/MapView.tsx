@@ -1,7 +1,7 @@
 import { useEffect, useRef, type MutableRefObject } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
-import { addCharacterLayer, type CharacterLayerHandle, type CharacterSpec } from '@/lib/mapCharacters'
+import { addCharacterLayer, tripProgress, type CharacterLayerHandle, type CharacterSpec, type TripSpec } from '@/lib/mapCharacters'
 import { addVfxLayer, type VfxLayerHandle } from '@/lib/mapVfx'
 import { CAT_MODEL_URL } from '@/lib/catModel'
 import { addPlayerAvatarLayer, type PlayerAvatarLayerHandle } from '@/lib/mapPlayerAvatar'
@@ -11,11 +11,11 @@ import { addMapAmbience } from '@/lib/mapAmbience'
 import { addMapWeather } from '@/lib/mapWeather'
 import { startWeatherUpdates } from '@/lib/weather'
 import { setAmbienceOverride } from '@/lib/ambience'
-import { setMapPaused } from '@/lib/mapUtils'
+import { haversineDistance, setMapPaused } from '@/lib/mapUtils'
 import { getSpritePreviewURL } from '@/lib/creaturePreview'
 import { playClickSfx } from '@/lib/sfx'
 import type { Poi, PlayerAppearance, PlayerPosition } from '@/types'
-import { accent, accentAlpha } from '@/lib/theme'
+import { accent, accentAlpha, ink, paperLight } from '@/lib/theme'
 import { RADIUS } from '@/lib/paper'
 import { SINGAPORE_BOUNDARY } from '@/data/singapore-boundary'
 
@@ -75,7 +75,6 @@ export interface FoodNodeMarker {
   lat: number
   lon: number
   state?: 'idle' | 'busy' | 'ready'
-  travelers?: MarkerCreature[]   // creatures currently dispatched here
 }
 
 export interface FindMarker {
@@ -109,29 +108,6 @@ export interface ShrineNodeMarker {
   lat: number
   lon: number
   state: 'idle' | 'busy' | 'ready' | 'cleared'
-  travelers?: MarkerCreature[]
-}
-
-// Append little creature bubbles that orbit the node marker while an expedition is
-// in progress, so dispatched creatures are visibly "there" working. Pure CSS orbit
-// (screen-space, so it stays visible at every zoom); a static offset ring holds the
-// radius while the body counter-rotates to stay upright.
-function appendOrbitingCreatures(outer: HTMLElement, creatures: MarkerCreature[]) {
-  const R = 32
-  const DUR = 8
-  creatures.forEach((c, i) => {
-    const delay = -(i / Math.max(1, creatures.length)) * DUR
-    const arm = document.createElement('div')
-    arm.style.cssText = `position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:2;animation:tvOrbit ${DUR}s linear infinite;animation-delay:${delay}s;`
-    const offset = document.createElement('div')
-    offset.style.cssText = `position:absolute;transform:translateX(${R}px);`
-    const body = document.createElement('div')
-    body.style.cssText = `width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#FBF6E9;border:1px solid rgba(51,40,30,0.45);display:flex;align-items:center;justify-content:center;font-size:13px;animation:tvCounter ${DUR}s linear infinite;animation-delay:${delay}s;`
-    body.appendChild(spriteEl(c.emoji, 18, c.key))
-    offset.appendChild(body)
-    arm.appendChild(offset)
-    outer.appendChild(arm)
-  })
 }
 
 function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
@@ -183,7 +159,6 @@ function buildFoodNodeElement(node: FoodNodeMarker, onClick: () => void) {
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
-  if (node.travelers && node.travelers.length > 0) appendOrbitingCreatures(outer, node.travelers)
   return shell
 }
 
@@ -225,7 +200,6 @@ function buildShrineElement(node: ShrineNodeMarker, onClick: () => void) {
   outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
   outer.appendChild(inner)
   outer.appendChild(tooltip)
-  if (node.travelers && node.travelers.length > 0) appendOrbitingCreatures(outer, node.travelers)
   return shell
 }
 
@@ -240,6 +214,17 @@ const DEFAULT_CENTER: [number, number] = [103.8198, 1.3521]
 // GPS fix, and the offline framing. The Liberty building extrusions only render
 // from zoom 12, so anything wider loses the 3D depth the tilted camera is for.
 const PLAYER_ZOOM = 16.5
+
+// A phone screen has up to 3.5 device pixels for each CSS pixel. The map draws
+// at 2 at most: the fill cost goes with the square of this value, and the
+// difference does not show on a tilted map in motion.
+const MAX_PIXEL_RATIO = 2
+
+// A phone that stands still reports a fix each second, a little away from the
+// last one. The camera does not follow a move below this: each ease draws half
+// a second of frames at the full rate, for one pixel on the screen. A walker
+// covers more than this between two fixes, so the camera still follows each one.
+const CAMERA_DEADBAND_M = 1
 
 // Tap radius in screen pixels: at 70° pitch a tapped POI pin won't project to
 // exactly its coordinate, so we find the closest POI within this threshold.
@@ -388,6 +373,8 @@ interface MapViewProps {
   squadMarkers?: SquadMarker[]
   onSquadClick?: (squadId: string) => void
   companions?: CharacterSpec[]
+  // Creatures on the way to a place and back. The map walks them along a dashed line.
+  trips?: TripSpec[]
   claimMarkers?: ClaimMarker[]
   onClaimClick?: (poiId: string) => void
   foodNodeMarkers?: FoodNodeMarker[]
@@ -411,7 +398,7 @@ interface MapViewProps {
   paused?: boolean
 }
 
-export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, findMarkers = [], onFindClick, onViewChange, onBearingChange, compassResetRef, onAwayChange, recenterRef, focusRef, goal = null, paused = false }: MapViewProps) {
+export function MapView({ position, appearance, pois, visitedPois, onPoiClick, squadMarkers = [], onSquadClick, companions = [], trips = [], claimMarkers = [], onClaimClick, foodNodeMarkers = [], onFoodNodeClick, shrineNodeMarkers = [], onShrineNodeClick, findMarkers = [], onFindClick, onViewChange, onBearingChange, compassResetRef, onAwayChange, recenterRef, focusRef, goal = null, paused = false }: MapViewProps) {
   const { mode } = useConnectionMode()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -424,10 +411,13 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   const charLayerRef = useRef<CharacterLayerHandle | null>(null)
   const poiPinsRef = useRef<PoiPinsHandle | null>(null)
   const hasZoomedToPlayerRef = useRef(false)
+  const cameraTargetRef = useRef<[number, number] | null>(null)
   const positionRef = useRef(position)
   positionRef.current = position
   const companionsRef = useRef<CharacterSpec[]>(companions)
   companionsRef.current = companions
+  const tripsRef = useRef<TripSpec[]>(trips)
+  tripsRef.current = trips
   const appearanceRef = useRef<PlayerAppearance>(appearance)
   appearanceRef.current = appearance
 
@@ -460,6 +450,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       zoom: PLAYER_ZOOM,
       pitch: 70,
       maxPitch: 80,
+      pixelRatio: Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO),
       attributionControl: { compact: true },
     })
 
@@ -576,6 +567,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       mapRef.current = null
       // The DOM markers went with the map, so the next map builds them again.
       for (const store of [squadMarkersRef, claimMarkersRef, foodNodeMarkersRef, shrineMarkersRef, findMarkersRef]) store.current.clear()
+      tripRouteSigRef.current = ''
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -628,6 +620,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       const handle = await addCharacterLayer(map, {
         center: c,
         characters: companionsRef.current,
+        trips: tripsRef.current,
         modelUrl: CAT_MODEL_URL,
         wanderRadiusM: 30,
         modelScale: 4,
@@ -635,6 +628,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       if (cancelled) { handle.remove(); return }
       charLayerRef.current = handle
       handle.setCharacters(companionsRef.current)
+      handle.setTrips(tripsRef.current)
       // A GPS fix can land while the model loads, before this handle exists,
       // and a player who stands still sends no new one. Catch up here, or the
       // companions stay at the default centre.
@@ -655,6 +649,10 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   useEffect(() => {
     charLayerRef.current?.setCharacters(companions)
   }, [companions])
+
+  useEffect(() => {
+    charLayerRef.current?.setTrips(trips)
+  }, [trips])
 
   useEffect(() => {
     if (position) charLayerRef.current?.setCenter(position.longitude, position.latitude)
@@ -747,8 +745,12 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     // and the tilt reads as tilt. Later fixes only pan.
     if (!hasZoomedToPlayerRef.current) {
       hasZoomedToPlayerRef.current = true
+      cameraTargetRef.current = lngLat
       map.easeTo({ center: lngLat, zoom: PLAYER_ZOOM, duration: 1200 })
     } else if (followingRef.current) {
+      const last = cameraTargetRef.current
+      if (last && haversineDistance(last[1], last[0], lngLat[1], lngLat[0]) < CAMERA_DEADBAND_M) return
+      cameraTargetRef.current = lngLat
       map.easeTo({ center: lngLat, duration: 500 })
     }
   }, [position, mode])
@@ -813,6 +815,61 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     if (routeReadyRef.current || map.loaded()) sync()
     else map.once('load', sync)
   }, [goal, position])
+
+  // A dashed ink line along the leg that each trip is on: out to the place,
+  // then from the place back to the player. The clock moves a trip to its next
+  // leg and the player moves the end of the way back, so the line is checked
+  // one time each second while a trip is out.
+  const tripRouteSigRef = useRef('')
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const sync = () => {
+      const now = Date.now()
+      const p = positionRef.current
+      const player: [number, number] = p ? [p.longitude, p.latitude] : DEFAULT_CENTER
+      const lines: [number, number][][] = []
+      for (const trip of trips) {
+        const { phase } = tripProgress(trip, now)
+        if (phase === 'home') continue
+        lines.push(phase === 'back' ? [trip.to, player] : [trip.from ?? player, trip.to])
+      }
+      const sig = JSON.stringify(lines)
+      if (sig === tripRouteSigRef.current) return
+      const data = {
+        type: 'FeatureCollection' as const,
+        features: lines.map((coordinates) => ({
+          type: 'Feature' as const, properties: {},
+          geometry: { type: 'LineString' as const, coordinates },
+        })),
+      }
+      const source = map.getSource('trip-routes') as maplibregl.GeoJSONSource | undefined
+      if (source) {
+        source.setData(data)
+      } else {
+        // A style that is not ready takes no layer. The next check adds it.
+        if (!map.isStyleLoaded()) return
+        if (lines.length === 0) return
+        map.addSource('trip-routes', { type: 'geojson', data })
+        const firstCustom = map.getStyle().layers.find((l) => (l as { type: string }).type === 'custom')?.id
+        // Ink on a strip of paper, so the line also shows on the night map.
+        map.addLayer({
+          id: 'trip-routes-paper', type: 'line', source: 'trip-routes',
+          layout: { 'line-cap': 'round' },
+          paint: { 'line-color': paperLight, 'line-width': 9, 'line-opacity': 0.85 },
+        }, firstCustom)
+        map.addLayer({
+          id: 'trip-routes', type: 'line', source: 'trip-routes',
+          paint: { 'line-color': ink, 'line-width': 4, 'line-dasharray': [2, 1.5] },
+        }, firstCustom)
+      }
+      tripRouteSigRef.current = sig
+    }
+    sync()
+    if (trips.length === 0) return
+    const timer = setInterval(sync, 1000)
+    return () => clearInterval(timer)
+  }, [trips])
 
   return <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
 }

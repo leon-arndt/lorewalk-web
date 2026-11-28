@@ -29,6 +29,12 @@ import {
 } from '@/lib/profile'
 import type { DaySteps } from '@/lib/health'
 
+// Where a trip sets out: the place of the player at that moment.
+export interface TripOrigin { lat: number; lon: number }
+function originFields(from?: TripOrigin) {
+  return from ? { fromLat: from.lat, fromLon: from.lon } : {}
+}
+
 interface ProfileContextValue {
   profile: PlayerProfile
   visitedPois: Set<string>
@@ -48,8 +54,8 @@ interface ProfileContextValue {
   renameSquad: (squadId: string, name: string) => void
   syncFoodNodes: (spots: FoodSpot[], focus: { lat: number; lon: number } | null) => void
   collectFind: (find: DailyFind) => boolean
-  startExpedition: (squadId: string, target: ExpeditionTarget, durationMs: number) => void
-  startFoodExpedition: (nodeId: string, creatureIds: string[], durationMs: number) => void
+  startExpedition: (squadId: string, target: ExpeditionTarget, durationMs: number, from?: TripOrigin) => void
+  startFoodExpedition: (nodeId: string, creatureIds: string[], durationMs: number, from?: TripOrigin) => void
   collectFoodNode: (nodeId: string) => FoodCollectResult | null
   busyCreatureIds: Set<string>
   collectExpedition: (squadId: string) => ExpeditionCollectResult | null
@@ -75,7 +81,7 @@ interface ProfileContextValue {
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
   syncShrineNodes: (pois: Poi[]) => void
-  startShrineExpedition: (nodeId: string, creatureIds: string[]) => void
+  startShrineExpedition: (nodeId: string, creatureIds: string[], from?: TripOrigin) => void
   collectShrineNode: (nodeId: string) => ShrineCollectResult | null
   buyTicket: () => boolean
   joinWeeklyWalk: (startSteps: number) => boolean
@@ -579,7 +585,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   // Dispatch a set of creatures (not a squad) to a food node, Pikmin-style.
-  function startFoodExpedition(nodeId: string, creatureIds: string[], durationMs: number) {
+  function startFoodExpedition(nodeId: string, creatureIds: string[], durationMs: number, from?: TripOrigin) {
     if (creatureIds.length === 0) return
     const node = profile.foodNodes.find((n) => n.id === nodeId)
     if (!node || node.expedition) return
@@ -592,6 +598,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
               creatureIds,
               startedAt: new Date(now).toISOString(),
               returnsAt: new Date(now + durationMs).toISOString(),
+              ...originFields(from),
             },
           }
         : n,
@@ -639,7 +646,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     return true
   }
 
-  function startExpedition(squadId: string, target: ExpeditionTarget, durationMs: number) {
+  function startExpedition(squadId: string, target: ExpeditionTarget, durationMs: number, from?: TripOrigin) {
     const squad = profile.squads.find((sq) => sq.id === squadId)
     if (!squad || !squad.slots.some(Boolean)) return
     const now = Date.now()
@@ -647,6 +654,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       ...target,
       startedAt: new Date(now).toISOString(),
       returnsAt: new Date(now + durationMs).toISOString(),
+      ...originFields(from),
     }
     const squads = profile.squads.map((sq) =>
       sq.id === squadId ? { ...sq, expedition } : sq,
@@ -939,7 +947,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (changed) persistHousekeeping({ ...profile, shrineNodes: updated })
   }
 
-  function startShrineExpedition(nodeId: string, creatureIds: string[]) {
+  function startShrineExpedition(nodeId: string, creatureIds: string[], from?: TripOrigin) {
     const node = profile.shrineNodes.find((n) => n.id === nodeId)
     if (!node || node.expedition) return
     const now = Date.now()
@@ -951,6 +959,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       }, 0),
       startedAt: new Date(now).toISOString(),
       returnsAt: new Date(now + SHRINE_DURATION_MS).toISOString(),
+      ...originFields(from),
     }
     const shrineNodes = profile.shrineNodes.map((n) =>
       n.id === nodeId ? { ...n, expedition } : n,

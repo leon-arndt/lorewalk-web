@@ -1,7 +1,7 @@
 import type * as maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
 import { getAmbience } from '@/lib/ambience'
-import { isMapPaused } from '@/lib/mapUtils'
+import { requestMapFrame } from '@/lib/mapUtils'
 
 // Draws the weather from lib/ambience.ts on the map: drifting clouds with their
 // shadows on the ground, and rain.
@@ -189,7 +189,7 @@ async function addCloudLayer(map: maplibregl.Map): Promise<() => void> {
 
       renderer.resetState()
       renderer.render(scene, camera)
-      if (!isMapPaused()) map.triggerRepaint()
+      requestMapFrame(map)
     },
     onRemove() {
       renderer?.dispose()
@@ -277,7 +277,7 @@ function addRain(map: maplibregl.Map): () => void {
       ctx.lineTo(d.x - d.length * RAIN_LEAN, d.y + d.length)
     }
     ctx.stroke()
-    if (!isMapPaused()) map.triggerRepaint()
+    requestMapFrame(map)
   }
 
   // The map's own frames drive the rain, so it stops while the map is paused.

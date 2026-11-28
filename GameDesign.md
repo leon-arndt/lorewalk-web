@@ -366,7 +366,7 @@ A **squad** is the team, a noun. An **expedition** is what a squad does, a verb.
 
 ### Companions on the map (from Pikmin Bloom)
 - The app renders the **creatures of the active squad** as 3D characters that idle and wander around the position of the player. This makes the party physical. An empty slot means one companion fewer.
-- While the active squad is **away on an expedition**, no companion follows. They are all at the landmark.
+- While the active squad is **away on an expedition**, no companion follows. Its creatures walk the trip. See "Trips on the map" below.
 - While the active squad is **empty**, three "ambient" wanderers appear, a kampung chicken, a koel, and a cicada, so the map is never lifeless. Real members replace them once the player assigns creatures.
 - Each cat companion is the same rigged Quaternius cat (`public/models/cat.glb`) that the collection thumbnails use. A critter companion uses its model from `animalModels.ts`, with legs, wings, and head moved in code. It plays the Idle and Walk clips of the model. The coat colour comes from the species in `src/data/creatures.ts`, and a shiny creature gets a gold tint. A companion on the map therefore matches its card in the collection. If the model does not load, a procedural shape per POI category replaces it.
 - **Sizing**: the characters hold a roughly constant on-screen size, in the Pikmin Bloom style, instead of true-to-life metres. This keeps them visible at normal play zoom, about 15 and above. At the whole-island offline view they stay tiny. Zoom to street level to see them.
@@ -380,6 +380,30 @@ A **squad** is the team, a noun. An **expedition** is what a squad does, a verb.
 - On the map, the avatar walks while the GPS position moves and faces the direction of travel. It idles when the player stops. The customization preview waves after each change.
 - The customization screen never scrolls, in any direction. The character fills the middle. A fixed panel below it holds eight icon tabs of one width: skin, hair, eyes, glasses, top, bottom, shoes, and head item. The hair tab holds the six hairstyles in one row and the hair colours below them. A hairstyle card is too narrow for a name, so it shows the picture only. An item tab holds five cards in one row. Each item is a card with a 3D close-up of the avatar with that item on, so a player sees the shape of cargo trousers and not only their colour. Every tab has the height of an item tab, so the character does not jump when the player changes the tab. The camera moves in to the head for hair, eyes, glasses, and head items, to the legs for bottoms, and to the feet for shoes. The player drags to turn the character. After a drag, it eases back to face the front.
 - Player icons (the profile header, the friend list, friends on a landmark) show a rendered head-and-shoulders portrait of the same avatar, so a friend looks the same as on the map. A blocky SVG face in the same style shows while the portrait renders.
+
+### Trips on the map (from Pikmin Bloom), added 2026-11-27
+A creature that is away walks its trip on the map as a 3D character. This applies to a food node, a shrine, and a squad expedition. Before this change, small creature icons turned in a circle around the marker of a food node or a shrine.
+
+- A trip has three legs. The creatures walk out for the first 45% of the time. They stay at the place for 10%. They walk back for the last 45%.
+- The walk out starts where the player stood at the send. The walk back ends at the player, wherever the player is then.
+- The creatures of one trip walk side by side.
+- A dashed ink line on a strip of paper shows the leg that the creatures are on. The line runs straight, like the red line to the next stop.
+- After the return time, the creatures wait near the player. The reward stays at the marker of the place, as before, and the player collects it there.
+- The trip changes no game rule. The duration, the reward, and the collect step are the same as before.
+- A save from an older build holds no start position. Its creatures start at the player.
+- `tripProgress()` in `src/lib/mapCharacters.ts` holds the legs. `MapPage.tsx` builds the list of trips, and `MapView.tsx` draws the line.
+
+### The Squads tab, changed 2026-11-27
+The user found the tab hard to understand, so each squad card now says what the squad does.
+
+- The squad that walks with the player carries the stamp "With you". Each other squad shows a "Walk with me" button. The game rules still call this squad the active squad.
+- Below the slots, one line says what the squad does now: it walks with the player, or it waits at home.
+- Below that line, a chip for each type in the squad shows the bonus of that type as a percentage, such as "Heritage +25%". The number is the affinity of the squad, so a creature of a higher level raises it.
+- A tap on a free slot opens the creature list. A tap on a creature in a slot opens the same list with a "Remove from squad" button above it. Before this change, a tap removed the creature at once.
+- A creature that is on a trip to a food node shows the note "On a trip" in its slot.
+- A squad without a creature shows no send button. Its status line tells the player to add a creature.
+- The send button of the squad that walks with the player has a note below it: the check-in bonus stops while the squad is away.
+- The list of destinations starts with one line that says what an expedition gives.
 
 ### Squads on the map
 - A squad on an expedition shows a marker at the target POI: a 2×2 cluster of the emojis of its members.

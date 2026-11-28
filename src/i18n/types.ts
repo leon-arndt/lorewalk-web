@@ -109,7 +109,6 @@ export interface Translations {
   squads_active: string
   squads_set_active: string
   squads_send_expedition: string
-  squads_add_member_first: string
   squads_exploring: string
   squads_boost_paused: string
   squads_collect_reward: string
@@ -125,6 +124,15 @@ export interface Translations {
   squads_holdings_title: string
   squads_collect: string
   squads_earning: string
+  squads_status_active: string
+  squads_status_home: string
+  squads_status_empty: string
+  squads_bonus_chip: string
+  squads_send_hint_active: string
+  squads_change_creature: string
+  squads_remove_member: string
+  squads_member_away: string
+  squads_send_intro: string
 
   shop_title: string
   shop_upgrades: string

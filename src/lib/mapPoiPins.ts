@@ -1,6 +1,6 @@
 import * as maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
-import { isMapPaused } from '@/lib/mapUtils'
+import { requestMapFrame } from '@/lib/mapUtils'
 import { categoryColors } from '@/lib/theme'
 import { lightScene } from '@/lib/ambience'
 
@@ -355,7 +355,7 @@ export async function addPoiPinsLayer(
 
       renderer.resetState()
       renderer.render(scene, camera)
-      if (!isMapPaused()) map.triggerRepaint()
+      requestMapFrame(map)
     },
     onRemove() {
       renderer?.dispose()
