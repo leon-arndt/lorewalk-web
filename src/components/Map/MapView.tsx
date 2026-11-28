@@ -5,7 +5,7 @@ import { addCharacterLayer, tripProgress, type CharacterLayerHandle, type Charac
 import { addVfxLayer, type VfxLayerHandle } from '@/lib/mapVfx'
 import { CAT_MODEL_URL } from '@/lib/catModel'
 import { addPlayerAvatarLayer, type PlayerAvatarLayerHandle } from '@/lib/mapPlayerAvatar'
-import { addPoiPinsLayer, type PoiPinsHandle } from '@/lib/mapPoiPins'
+import { addPoiPinsLayer, claimFlagTapDistance, type PoiPinsHandle } from '@/lib/mapPoiPins'
 import { addMrtLayers } from '@/lib/mapMrt'
 import { addMapAmbience } from '@/lib/mapAmbience'
 import { addMapWeather } from '@/lib/mapWeather'
@@ -229,6 +229,8 @@ const CAMERA_DEADBAND_M = 1
 // Tap radius in screen pixels: at 70° pitch a tapped POI pin won't project to
 // exactly its coordinate, so we find the closest POI within this threshold.
 const TAP_RADIUS_PX = 48
+// A tap this close to a claim flag's pole opens the claim, before any POI.
+const FLAG_TAP_RADIUS_PX = 24
 
 function buildSquadElement(squad: SquadMarker, onClick: () => void) {
   const { shell, button: outer } = markerShell(onClick)
@@ -313,33 +315,6 @@ function buildFindElement(find: FindMarker, onClick: () => void) {
   return shell
 }
 
-function buildClaimElement(claim: ClaimMarker, onClick: () => void) {
-  const { shell, button: outer } = markerShell(onClick)
-  outer.setAttribute('aria-label', claim.name)
-  const inner = document.createElement('div')
-  inner.style.cssText = `
-    width:28px;height:28px;border-radius:10px;box-sizing:border-box;
-    display:flex;align-items:center;justify-content:center;font-size:15px;
-    background:#FBF6E9;border:2px solid ${claim.color};
-    box-shadow:1px 2px 0 rgba(51,40,30,0.3);
-  `
-  inner.appendChild(spriteEl('🚩', 20, 'item_claim'))
-  const tooltip = document.createElement('div')
-  tooltip.textContent = claim.name + ' · yours'
-  tooltip.style.cssText = `
-    position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
-    background:#FBF6E9;color:#33281E;border:1px solid rgba(51,40,30,0.45);font-size:12px;font-weight:500;
-    padding:4px 10px;border-radius:10px;white-space:nowrap;
-    pointer-events:none;
-    opacity:0;transition:opacity 0.12s ease;
-  `
-  outer.addEventListener('mouseenter', () => { tooltip.style.opacity = '1' })
-  outer.addEventListener('mouseleave', () => { tooltip.style.opacity = '0' })
-  outer.appendChild(inner)
-  outer.appendChild(tooltip)
-  return shell
-}
-
 type MarkerStore = Map<string, { marker: maplibregl.Marker; sig: string }>
 
 // Brings the DOM markers of one kind in line with the list. A marker that did
@@ -404,7 +379,6 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   const mapRef = useRef<maplibregl.Map | null>(null)
   const playerAvatarRef = useRef<PlayerAvatarLayerHandle | null>(null)
   const squadMarkersRef = useRef<MarkerStore>(new Map())
-  const claimMarkersRef = useRef<MarkerStore>(new Map())
   const foodNodeMarkersRef = useRef<MarkerStore>(new Map())
   const shrineMarkersRef = useRef<MarkerStore>(new Map())
   const findMarkersRef = useRef<MarkerStore>(new Map())
@@ -424,6 +398,14 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
   // Kept in refs so map event handlers never capture stale closures.
   const poisRef = useRef<Poi[]>(pois)
   poisRef.current = pois
+  // The click handlers live in a ref, so a new callback from the page does not
+  // build every marker again. The map's own tap test reads it too.
+  const clicksRef = useRef({ onSquadClick, onClaimClick, onFoodNodeClick, onShrineNodeClick, onFindClick })
+  useEffect(() => {
+    clicksRef.current = { onSquadClick, onClaimClick, onFoodNodeClick, onShrineNodeClick, onFindClick }
+  })
+
+  const claimsRef = useRef<ClaimMarker[]>(claimMarkers)
   const visitedPoisRef = useRef<Set<string>>(visitedPois)
   visitedPoisRef.current = visitedPois
   const onPoiClickRef = useRef(onPoiClick)
@@ -546,6 +528,10 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     // Used instead of a hitbox layer so the Three.js pins don't need raycasting.
     map.on('click', (e) => {
       const pt = e.point
+      const flag = claimsRef.current.find((c) =>
+        claimFlagTapDistance(map, c.lat, c.lon, pt) < FLAG_TAP_RADIUS_PX * FLAG_TAP_RADIUS_PX)
+      if (flag) { playClickSfx(); clicksRef.current.onClaimClick?.(flag.id); return }
+
       let best: Poi | null = null
       let bestDist = TAP_RADIUS_PX * TAP_RADIUS_PX
 
@@ -566,7 +552,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       map.remove()
       mapRef.current = null
       // The DOM markers went with the map, so the next map builds them again.
-      for (const store of [squadMarkersRef, claimMarkersRef, foodNodeMarkersRef, shrineMarkersRef, findMarkersRef]) store.current.clear()
+      for (const store of [squadMarkersRef, foodNodeMarkersRef, shrineMarkersRef, findMarkersRef]) store.current.clear()
       tripRouteSigRef.current = ''
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -589,6 +575,7 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
       const handle = await addPoiPinsLayer(map, specs())
       if (cancelled) { handle.remove(); return }
       poiPinsRef.current = handle
+      handle.updateClaims(claimsRef.current)
       // POIs that arrived while the layer was loading had no handle to update.
       if (poisRef.current !== initial) handle.updatePins(specs())
     }
@@ -755,21 +742,16 @@ export function MapView({ position, appearance, pois, visitedPois, onPoiClick, s
     }
   }, [position, mode])
 
-  // The click handlers live in a ref, so a new callback from the page does not
-  // build every marker again.
-  const clicksRef = useRef({ onSquadClick, onClaimClick, onFoodNodeClick, onShrineNodeClick, onFindClick })
-  useEffect(() => {
-    clicksRef.current = { onSquadClick, onClaimClick, onFoodNodeClick, onShrineNodeClick, onFindClick }
-  })
-
   // None of these wait for 'load': a DOM marker needs no style. The markers
   // change while the player walks, and map.loaded() is false then, because tiles load.
   useEffect(() => {
     if (mapRef.current) syncMarkers(mapRef.current, squadMarkersRef.current, squadMarkers, (s) => buildSquadElement(s, () => clicksRef.current.onSquadClick?.(s.id)))
   }, [squadMarkers])
 
+  // A claim is a 3D flag in the pins layer, not a DOM marker.
   useEffect(() => {
-    if (mapRef.current) syncMarkers(mapRef.current, claimMarkersRef.current, claimMarkers, (c) => buildClaimElement(c, () => clicksRef.current.onClaimClick?.(c.id)))
+    claimsRef.current = claimMarkers
+    poiPinsRef.current?.updateClaims(claimMarkers)
   }, [claimMarkers])
 
   useEffect(() => {
