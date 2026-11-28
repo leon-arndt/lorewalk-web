@@ -211,7 +211,6 @@ export interface PlayerProfile {
   dailySteps: Record<string, number>   // local date (YYYY-MM-DD) -> steps that day
   isPremium: boolean   // client-side only for now; not server-verified, see lib/profile.ts
   premiumInterval: PremiumInterval | null   // billing cycle while isPremium; null when not subscribed
-  medals: EarnedMedal[]   // one per completed monthly medal challenge, Premium only
   dailyMotivationNotifications: boolean   // preference only; no push delivery wired up yet
   partyWalkNotifications: boolean         // preference only; no push delivery wired up yet
   challengesNotifications: boolean        // preference only; no push delivery wired up yet
@@ -221,6 +220,17 @@ export interface PlayerProfile {
   appearance: PlayerAppearance
   daily: DailyState
   trailBonusWeek: string | null   // the week whose trail bonus the player already got
+  stepGoalMonths: string[]   // each 'YYYY-MM' in which the player walked the Monthly Step Goal with Premium, see lib/stepTokens.ts
+  stepTokens: StepToken[]    // the physical tokens the player collected
+}
+
+// A physical token for a count of goal months. claimStepToken() in
+// ProfileContext is the only write.
+export interface StepToken {
+  milestone: number    // the count of goal months: 1, 3, 6, 12, then every 6
+  monthKey: string     // 'YYYY-MM' of the claim: a player collects one token each month
+  claimedAt: string
+  claimCode?: string   // pickup code from the claim_step_token RPC; absent on a dev offline claim
 }
 
 export interface PlayerAppearance {
@@ -242,16 +252,6 @@ export type NotificationPrefKey =
   | 'challengesNotifications'
   | 'friendsAndGiftsNotifications'
   | 'latestNewsNotifications'
-
-// A medal earned by hitting a calendar month's step goal while Premium. One per
-// monthKey - claimMedal() in ProfileContext enforces that.
-export interface EarnedMedal {
-  id: string
-  monthKey: string   // 'YYYY-MM', the challenge this came from
-  title: string
-  claimedAt: string
-  claimCode?: string   // server-issued pickup code from the claim_medal RPC; absent on a dev offline claim
-}
 
 export interface Postcard {
   id: string
@@ -379,7 +379,7 @@ export interface RewardConfig {
   title: string
   subtitle?: string
   items: RewardItem[]
-  medalMonthKey?: string  // when set, renders MedalSvg instead of the emoji header
+  stepToken?: number      // when set, renders StepTokenSvg instead of the emoji header
 }
 
 // A landmark the player holds (claimed by finishing an expedition there). Held

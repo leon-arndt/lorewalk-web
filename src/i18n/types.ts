@@ -152,16 +152,15 @@ export interface Translations {
   premium_youre_premium: string
   premium_unlock_everything: string
   premium_benefit_landmarks: string
-  premium_benefit_medal: string
+  premium_benefit_token: string
   premium_see_included: string
   premium_manage_subscription: string
   premium_shop_teaser: string
   premium_feature_standard_landmarks: string
   premium_feature_premium_landmarks: string
-  premium_feature_medal_challenge: string
   premium_feature_all_landmarks: string
   premium_feature_unlocked: string
-  premium_feature_real_medal: string
+  premium_feature_real_token: string
   premium_plan_monthly: string
   premium_plan_yearly: string
   premium_plan_summary: string
@@ -169,7 +168,7 @@ export interface Translations {
   premium_save_badge: string
   premium_basic_col: string
   premium_premium_col: string
-  premium_medal_note: string
+  premium_token_note: string
   premium_cancel_confirm_online: string
   premium_cancel_confirm_offline: string
   premium_not_now: string
@@ -258,11 +257,7 @@ export interface Translations {
   shrine_claimed_title: string
   shrine_claimed_subtitle: string
 
-  medal_history_title: string
-  medal_earned_title: string
-  medal_claim_failed: string
-  medal_challenge_info_aria: string
-  medal_view_all_aria: string
+  token_claim_failed: string
 
   streak_chest_title: string
   streak_chest_card_title: string
@@ -350,6 +345,25 @@ export interface Translations {
   poi_source: string
   trail_chip: string
   trail_complete: string
+  step_tokens_title: string
+  step_tokens_count: string
+  step_goal_title: string
+  step_goal_intro: string
+  step_goal_progress: string
+  step_goal_reached: string
+  step_goal_premium_only: string
+  step_token_name: string
+  step_token_desc: string
+  step_token_collect: string
+  step_token_premium: string
+  step_token_wait: string
+  step_token_status_collected: string
+  step_token_status_ready: string
+  step_token_status_locked: string
+  step_token_pickup: string
+  step_token_collected_title: string
+  step_token_collected_subtitle: string
+  premium_feature_step_tokens: string
   find_label_day: string
   find_label_night: string
   find_label_rain: string

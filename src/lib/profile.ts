@@ -5,6 +5,7 @@ import { haversineDistance } from '@/lib/mapUtils'
 import { hash, poiTier } from '@/lib/places'
 import { creatureDefBySpecies, drawCreature, rollEggTier } from '@/data/creatures'
 import { DEFAULT_APPEARANCE } from '@/data/cosmetics'
+import { withStepGoalMonths } from '@/lib/stepTokens'
 export { rollEggTier }
 
 // XP needed to go from level N to level N+1
@@ -598,6 +599,12 @@ function migrateRetiredSpecies(c: HatchedCreature): HatchedCreature {
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function normalizeProfile(parsed: any): PlayerProfile {
+  // A goal month counts at the load too: the steps can come from a second device.
+  return withStepGoalMonths(normalizeFields(parsed))
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeFields(parsed: any): PlayerProfile {
   const squads = parsed.squads ?? createEmptySquads()
   // Migrate bondLevel → level + xp for saves created before the level system.
   const hatchedCreatures = (parsed.hatchedCreatures ?? []).map((c: any) => {
@@ -644,7 +651,6 @@ export function normalizeProfile(parsed: any): PlayerProfile {
     dailySteps: parsed.dailySteps ?? {},
     isPremium: parsed.isPremium ?? false,
     premiumInterval: parsed.premiumInterval ?? null,
-    medals: parsed.medals ?? [],
     dailyMotivationNotifications: parsed.dailyMotivationNotifications ?? false,
     partyWalkNotifications: parsed.partyWalkNotifications ?? false,
     challengesNotifications: parsed.challengesNotifications ?? false,
@@ -657,6 +663,8 @@ export function normalizeProfile(parsed: any): PlayerProfile {
       foodSpots: parsed.daily?.foodSpots ?? [],
     },
     trailBonusWeek: parsed.trailBonusWeek ?? null,
+    stepGoalMonths: parsed.stepGoalMonths ?? [],
+    stepTokens: parsed.stepTokens ?? [],
     pendingStreakChest: parsed.pendingStreakChest ?? false,
     // Saves from before this feature existed start at their current milestone
     // rather than retroactively granting a chest for streak days already banked.
@@ -706,7 +714,6 @@ export function loadProfile(): PlayerProfile {
     dailySteps: {},
     isPremium: false,
     premiumInterval: null,
-    medals: [],
     dailyMotivationNotifications: false,
     partyWalkNotifications: false,
     challengesNotifications: false,
@@ -716,6 +723,8 @@ export function loadProfile(): PlayerProfile {
     appearance: DEFAULT_APPEARANCE,
     daily: { date: '', finds: [], foodSpots: [] },
     trailBonusWeek: null,
+    stepGoalMonths: [],
+    stepTokens: [],
   }
 }
 
@@ -883,42 +892,6 @@ export function isWalkComplete(walk: WeeklyPartyWalk, currentSteps: number, now 
 // Walk expires if the player is still on last week's walk.
 export function isWalkExpired(walk: WeeklyPartyWalk, now = Date.now()): boolean {
   return walk.weekStart !== weekStart(now)
-}
-
-// ─── Monthly medal event (Premium) ─────────────────────────────────────────────
-// Deliberately not a persisted "event" object with a join step, unlike the weekly
-// walk above: progress is derived live from dailySteps (already tracked for the
-// journal calendar), so there's nothing to expire and nothing to lose by
-// subscribing mid-month. claimMedal() in ProfileContext is the only write.
-
-export const MEDAL_EVENT_TARGET_STEPS = 100_000
-
-export function currentMonthKey(now = Date.now()): string {
-  const d = new Date(now)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-export function monthLabel(monthKey: string): string {
-  const [y, m] = monthKey.split('-').map(Number)
-  return new Date(y, m - 1, 1).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })
-}
-
-// Oldest -> newest, ending at `from` (inclusive). Used for the recent-medals strip.
-export function recentMonthKeys(n: number, from = currentMonthKey()): string[] {
-  const [y, m] = from.split('-').map(Number)
-  const keys: string[] = []
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(y, m - 1 - i, 1)
-    keys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
-  }
-  return keys
-}
-
-export function stepsThisMonth(dailySteps: Record<string, number>, monthKey = currentMonthKey()): number {
-  return Object.entries(dailySteps).reduce(
-    (sum, [date, steps]) => (date.startsWith(monthKey) ? sum + steps : sum),
-    0,
-  )
 }
 
 // dailySteps accumulates one entry per day for as long as the profile exists

@@ -36,26 +36,25 @@ Keep each file under about 2.0 violations per 100 words and at 0 em dashes. The 
 
 GameDesign.md's Monetisation section holds the pricing and cadence decisions. This section holds the raw cost inputs behind them.
 
-All figures use **SGD**. Singapore is the first market. Lorewalk sources medals overseas in either case, so bulk-import volume into Singapore drives the cost, not a US-style split between domestic and international shipping. Where a figure started in USD, the conversion uses about 1.35 SGD to the USD.
+All figures use **SGD**. Singapore is the first market. Lorewalk sources tokens overseas in either case, so bulk-import volume into Singapore drives the cost, not a US-style split between domestic and international shipping. Where a figure started in USD, the conversion uses about 1.35 SGD to the USD.
 
-- **Physical medal (the reward for Premium's monthly event)**: a player picks the medal up in person at the monthly Singapore community meetup. Lorewalk does not mail medals, so no per-recipient shipping or customs cost applies. A medal lands at the event venue at roughly **SGD 4 to 15 per unit**:
-  - SGD 3 to 11 for the die-struck medal, depending on order size
-  - SGD 0.70 to 2.70 for engraving
-  - SGD 0.70 to 1.35 for packaging
-  - a small shared freight and customs cost for the single bulk shipment into Singapore
+- **Physical Step Token (the reward for the Monthly Step Goal)**: a player earns a token after 1, 3, 6, and 12 goal months, then every 6 months. GameDesign.md's "Step Tokens" section holds the rules. The token is a die-cast challenge coin with two sides, and a player picks it up in person at the monthly Community Walk in Singapore. Lorewalk does not mail tokens, so no per-recipient shipping or customs cost applies. The figures below come from supplier pages in 2026-11, not from a quote:
+  - Gift Market (Singapore): a coin of 1.5 to 2.0 inch and 3 mm, minimum 30, about 5 weeks. The page shows about SGD 13.50 for each coin at 30 pieces, and about SGD 1.70 at 500 pieces.
+  - Gumtoo (Singapore): minimum 100 for each design, about 3 weeks, quote only.
+  - Neither page gives the mould fee, the sample fee, or the price of a serial number. A design with two sides needs two dies.
 
-  Unit cost drops sharply at 250 units per bulk import order. It drops again at 1,000.
-- **Event costs (these replace per-recipient shipping)**: a monthly booking for the venue and the walk route, plus a free-drinks budget sized to the expected attendance. GameDesign.md's "Monthly medal event" section holds the full structure: a community 5k walk, then free drinks, then QR-code medal pickup, in the parkrun style.
-- **Candidate venue: Temasek Shophouse (Orchard Road) or a similar site.** It is a social-impact hub next to Fort Canning Park. A walk loop through heritage and nature POIs ends back at the venue for drinks and medal pickup. Its event spaces hold about 80 to 220 guests, depending on the room. The tradeoff: the venue curates for social and community impact, such as ground-ups, non-profits, and social enterprises. A booking therefore needs a pitch on the community-walk angle, not a plain commercial rental. The venue does not guarantee free or subsidized use to a for-profit premium product, even when the event itself serves the community. Nobody has booked it yet. It remains a candidate.
+  The Monthly Step Goal pays only if a token lands at about SGD 3 or less. A player gets four tokens in the first year, against about SGD 51 of income after the 15 percent fee of Google Play.
+- **Event costs (these replace per-recipient shipping)**: a monthly booking for the venue and the walk route, plus a free-drinks budget sized to the expected attendance. GameDesign.md's "Community Walk" section holds the full structure: a community 5k walk, then free drinks, then QR-code token pickup, in the parkrun style.
+- **Candidate venue: Temasek Shophouse (Orchard Road) or a similar site.** It is a social-impact hub next to Fort Canning Park. A walk loop through heritage and nature POIs ends back at the venue for drinks and token pickup. Its event spaces hold about 80 to 220 guests, depending on the room. The tradeoff: the venue curates for social and community impact, such as ground-ups, non-profits, and social enterprises. A booking therefore needs a pitch on the community-walk angle, not a plain commercial rental. The venue does not guarantee free or subsidized use to a for-profit premium product, even when the event itself serves the community. Nobody has booked it yet. It remains a candidate.
 - **Comparable anchors**: Geocaching Premium costs USD 39.99 per year, about **SGD 54 per year** or **SGD 4.50 per month**. Its monthly plan costs USD 6.99, about **SGD 9.50 per month**. Geocaching Premium is digital only and carries no physical fulfillment cost, so it anchors the price. **parkrun** anchors the structure of the event itself: free, recurring, volunteer-run community walks where a player claims a tracked achievement in person instead of by mail. Lorewalk Premium currently prices below both anchors, at SGD 15 per year per GameDesign.md. The user base is smaller and earlier, and no physical fulfillment exists yet.
-- **Why a player earns the medal instead of receiving one per subscription**: at low subscriber counts, one medal per subscriber per month costs more than a SGD 4.50 to 9.50 monthly subscription covers. A completion gate caps the real unit volume at whoever finishes that month's event, not at everyone who pays.
+- **Why a player earns the token instead of receiving one per subscription**: at low subscriber counts, one token per subscriber per month costs more than a SGD 4.50 to 9.50 monthly subscription covers. The ladder caps the volume at four tokens in the first year and two in each later year. Only a month with Premium counts, so each token has paid months behind it. A token carries no year, so one bulk order of a design serves every player.
 - **Real-money payment**: the integration has scaffolding but does not run yet. GameDesign.md's "Premium entitlement" section and the TODO.md WIP entry list the exact setup steps that remain. The design routes Google Play Billing through RevenueCat's Capacitor SDK. A Supabase-side `premium_entitlements` table becomes the server-verified source of truth once the app is online, and only a RevenueCat webhook (`supabase/functions/revenuecat-webhook`) writes to it. Until that webhook is deployed and Play Console products exist, `isPremium` on `PlayerProfile` falls back to a **client-side, unverified** flag. The dev cheats panel toggles that flag, and so does the offline test-purchase flow in `PremiumModal.tsx`. Both exist only in a dev build (`import.meta.env.DEV`): a shipped build never grants Premium or coins without a real purchase. Do not treat the flag as trustworthy for anything of real value until the Supabase row backs it in online mode.
 
 ### Core gameplay loop
 
 One sentence: **walk to real places, collect and hatch creatures, build typed squads, deploy them to boost or claim places, and grow your collection and holdings.**
 
-1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. A stretch faster than 15 km/h is a bike or a vehicle and counts no steps (`MAX_WALK_SPEED_MS` in `useStepCounter.ts`). On Android, the app can read the phone's own step count instead. See the Steps section. Steps hatch eggs and count toward the monthly Premium medal.
+1. **Walk** to a real landmark (a POI). The app counts steps from GPS on every tab. A stretch faster than 15 km/h is a bike or a vehicle and counts no steps (`MAX_WALK_SPEED_MS` in `useStepCounter.ts`). On Android, the app can read the phone's own step count instead. See the Steps section. Steps hatch eggs and count toward the Monthly Step Goal, which earns a physical Step Token.
 2. **Check in** at the landmark, within 50 m. The player earns XP and an egg. Smaller places fill the map between the landmarks: heritage markers and local spots give less XP, and an egg only now and then. Food at hawker centres, daily finds, and a trail of the week give a reason to walk the same streets again.
 3. **Visit more landmarks.** Eggs hatch into **typed** creatures, where the type matches the POI category: Heritage, Nature, Arts, and so on. The player gains XP and levels up.
 4. **Build a squad** from the collection. There are 3 squads of 4 slots each. Type matters.
@@ -108,6 +107,7 @@ src/
     profile.ts             # profile persistence + game rules (achievements, XP, eggs)
     nextGoal.ts            # picks the "next stop" bar on the map: a ready reward, or the nearest landmark
     places.ts              # imported places: POI tiers, pins near the camera, daily finds, trail of the week
+    stepTokens.ts          # Monthly Step Goal and Step Tokens: goal months, the ladder, one token each month
     cloudSave.ts           # cloud save: sync rules + the engine that uploads and downloads
     googleAuth.ts          # Google sign-in: web button, native sheet, Supabase link
     journalDb.ts           # IndexedDB store for journal photos / postcards
@@ -119,7 +119,7 @@ src/
     theme.ts, paper.ts     # theme.ts = the field journal palette, paper.ts = the paper surfaces
   dev/                    # dev-only pages, never built: vfxPreview.html (the Particle Editor preview)
   data/                   # static game data: creatures.ts, foods.ts, cosmetics.ts,
-                          #   medals.ts, singapore-pois.ts
+                          #   singapore-pois.ts
   i18n/                   # locale dictionaries (en/de/ja/ko/zh/ms/id/ta) + types
   types/
     index.ts               # Shared types: Poi, Creature, Squad, Expedition, PlayerPosition, ...
@@ -198,7 +198,9 @@ The anon key ships in the client bundle, so anyone can call the Supabase REST AP
 - **`friend_codes`**: a player reads and writes only their own codes.
 - **`friendships`**: a player reads only their own rows. The `add_friend_by_code` RPC is the only way to write a row.
 - **`player_public_stats`**: a player writes only their own row. A player reads their own row and the rows of their friends.
-- **`medal_claims`**: the `claim_medal` RPC issues one pickup code per player per month, and only for an active entitlement. Only the service role can call `redeem_medal`. A player reads only their own claims.
+- **`medal_claims`**: a table from the monthly medal that the app had before 2026-11-28. The `claim_medal` and `redeem_medal` functions belong to it. Nothing calls them. A player reads only their own claims.
+- **`step_goal_months`**: one row for each month in which a player walked the Monthly Step Goal with Premium. The `record_step_goal` RPC is the only way to write a row. It needs an active entitlement, and it takes this month, or the month before it in its first 7 days. The client reports the goal, because the server cannot see steps. A player reads only their own rows.
+- **`step_token_claims`**: the `claim_step_token` RPC issues the pickup code of a Step Token, and only for an active entitlement. It allows the next token of the ladder only, it needs that many rows in `step_goal_months`, and it allows one token per player per month. Only the service role can call `redeem_step_token`. A player reads only their own claims. `supabase/migrations/20261128000000_step_tokens.sql` holds both tables.
 - **`coin_grants`**: one row for each verified coin pack purchase. Only the RevenueCat webhook writes, and a player reads only their own rows. `syncCoinGrants()` in `ProfileContext.tsx` adds each new row to `profile.coins` and records its id in `profile.coinGrantsApplied`. The table makes sure that a paid pack arrives one time. The coin balance itself stays client data.
 - **`player_saves`**: a player reads only their own row. The `save_profile` RPC is the only way to write a row, and it refuses an anonymous account.
 - **Account deletion**: the `delete_account` RPC deletes every row of the caller in the tables above, then the auth user. `deleteAccount()` in `ProfileContext.tsx` calls it, wipes the profile and the journal photos on the device, and reloads the app as a new guest. A new table that keys on the player id needs a `delete` line in that function. The function does not cancel a Play subscription.
@@ -361,6 +363,7 @@ Playwright end-to-end is the only test runner. There is no unit runner. The spec
 - `e2e/ux.spec.ts` covers a press on a food marker, the step count of a walk that arrives as one fix each half second, the tabs of the character designer, and the back button. `e2e/steps-speed.spec.ts` covers the vehicle limit.
 - `e2e/trips.spec.ts` covers the dashed line of a trip on each leg, a trip that is home, and the frame limit of the map while nothing moves.
 - `e2e/music.spec.ts` covers the music stop in the background.
+- `e2e/step-tokens.spec.ts` covers the Monthly Step Goal and the Step Tokens: a month that counts only with Premium, the claim, the limit of one token each month, and the ladder after 12 months. It claims offline in the dev build, so it does not cover the `record_step_goal` and `claim_step_token` RPCs.
 - `e2e/cloud-save.spec.ts` covers the cloud save. It seeds a signed-in session and answers every Supabase request itself, so it needs no project and no Google account. It does not cover the Google sign-in itself.
 - Run `npm run test:e2e` before you commit a gameplay change.
 

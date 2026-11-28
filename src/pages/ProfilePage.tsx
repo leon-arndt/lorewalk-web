@@ -1,19 +1,15 @@
-import { createPortal } from 'react-dom'
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProfile } from '@/contexts/ProfileContext'
-import { useReward } from '@/contexts/RewardContext'
 import { usePlayerLocation } from '@/contexts/PlayerLocationContext'
 import { useLocale } from '@/contexts/LocaleContext'
-import { xpForNextLevel, currentMonthKey, monthLabel, recentMonthKeys, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS } from '@/lib/profile'
+import { xpForNextLevel } from '@/lib/profile'
 import { FriendsSection } from '@/components/UI/FriendsSection'
 import { PostcardsSection } from '@/components/UI/PostcardsSection'
-import { MedalSvg } from '@/components/UI/MedalSvg'
 import { AchievementCard, BadgeDetailSheet } from '@/components/UI/BadgeDetailSheet'
-import { MedalHistoryScreen } from '@/components/UI/MedalHistoryScreen'
+import { StepTokensSection } from '@/components/UI/StepTokensSection'
 import { VisitHistoryItem } from '@/components/UI/VisitHistoryItem'
 import { VisitHistoryScreen } from '@/components/UI/VisitHistoryScreen'
-import { getMedalConfig } from '@/data/medals'
 import { StreakChestCard } from '@/components/UI/StreakChestCard'
 import { WeekStrip } from '@/components/UI/WeekStrip'
 import { JournalOverlay } from '@/components/UI/JournalOverlay'
@@ -21,17 +17,10 @@ import { PlayerFaceIcon } from '@/components/UI/PlayerFaceIcon'
 import { PremiumModal } from '@/components/UI/PremiumModal'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
 import { InkButton, Mono, NoteCard, PageHeader, SectionTitle, Stamp } from '@/components/UI/Journal'
-import type { Achievement, EarnedMedal } from '@/types'
+import type { Achievement } from '@/types'
 import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, paperLight, paperShade, stamp, ochreInk, edge } from '@/lib/theme'
 import { Icon } from '@/components/UI/Icons'
-import { MONO, paperPage, paperTag, SCRIM } from '@/lib/paper'
-
-
-const iconButton = {
-  width: 44, height: 44, flexShrink: 0, padding: 0, cursor: 'pointer',
-  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-  background: 'none', border: 'none', color: inkSoft,
-} as const
+import { MONO, paperPage, paperTag } from '@/lib/paper'
 
 
 const cheatButton = {
@@ -47,23 +36,20 @@ function formatDate(iso: string) {
 }
 
 export function ProfilePage() {
-  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevStreakDays, toggleDevPremium, claimMedal } = useProfile()
+  const { profile, setDisplayName, addXp, addCoins, addDevEgg, addDevStreakDays, toggleDevPremium, addDevGoalMonths } = useProfile()
   const { addDevSteps } = usePlayerLocation()
-  const { showReward, showToast } = useReward()
   const { t } = useLocale()
   const navigate = useNavigate()
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(profile.displayName)
   const [showPremiumModal, setShowPremiumModal] = useState(false)
-  const [showChallengeInfo, setShowChallengeInfo] = useState(false)
   const premiumBenefits = [
     { icon: '🔓', text: t('premium_benefit_landmarks') },
-    { icon: <EmojiSprite id="item_badge" emoji="🏅" size={22} />, text: t('premium_benefit_medal') },
+    { icon: <EmojiSprite id="item_badge" emoji="🏅" size={22} />, text: t('premium_benefit_token') },
   ]
   const [badgeDetail, setBadgeDetail] = useState<{
     icon: ReactNode; name: string; description: string; status: string; statusColor: string
   } | null>(null)
-  const [showMedalHistory, setShowMedalHistory] = useState(false)
   const [showVisitHistory, setShowVisitHistory] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
 
@@ -73,10 +59,6 @@ export function ProfilePage() {
   const unlockedAchievements = profile.achievements.filter((a) => a.unlockedAt)
   const lockedAchievements = profile.achievements.filter((a) => !a.unlockedAt)
 
-  const currentMonth = currentMonthKey()
-  const monthSteps = stepsThisMonth(profile.dailySteps, currentMonth)
-  const medalComplete = monthSteps >= MEDAL_EVENT_TARGET_STEPS
-  const medalClaimed = profile.medals.some((m) => m.monthKey === currentMonth)
 
   function handleNameSave() {
     setDisplayName(nameInput)
@@ -95,37 +77,6 @@ export function ProfilePage() {
       description: a.description,
       status: a.unlockedAt ? `Acquired on ${formatDate(a.unlockedAt)}` : 'Not yet unlocked',
       statusColor: a.unlockedAt ? forest : inkHint,
-    })
-  }
-
-  function openMedalDetail(monthKey: string, earned: EarnedMedal | undefined) {
-    const cfg = getMedalConfig(monthKey)
-    if (!cfg) return
-    setBadgeDetail({
-      icon: (
-        <div style={{ filter: earned ? undefined : 'grayscale(1)', opacity: earned ? 1 : 0.45 }}>
-          <MedalSvg config={cfg} size={140} />
-        </div>
-      ),
-      name: cfg.title,
-      description: cfg.challenge,
-      status: earned ? `Acquired on ${formatDate(earned.claimedAt)}` : 'Not yet earned',
-      statusColor: earned ? forest : inkHint,
-    })
-  }
-
-  async function handleClaimMedal() {
-    const medal = await claimMedal()
-    if (!medal) {
-      showToast(t('medal_claim_failed'))
-      return
-    }
-    showReward({
-      emoji: '🏅',
-      title: t('medal_earned_title'),
-      subtitle: `You completed the ${monthLabel(medal.monthKey)} challenge.`,
-      items: [{ type: 'badge', label: medal.title }],
-      medalMonthKey: medal.monthKey,
     })
   }
 
@@ -298,54 +249,19 @@ export function ProfilePage() {
               <div aria-hidden style={{ height: 6, background: ochre, borderBottom: `1px solid ${edge}` }} />
               <div style={{ padding: '12px 12px 4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                    <span style={{ flexShrink: 0 }}><EmojiSprite id="item_badge" emoji="🏅" size={30} /></span>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }}>{monthLabel(currentMonth)} challenge</div>
-                      <Mono style={{ display: 'block' }}>Walk {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps this month</Mono>
+                  <div style={{ fontSize: 15, fontWeight: 500, lineHeight: '20px', color: ink }}>{t('premium_youre_premium')}</div>
+                  <Stamp color={ochreInk} tilt={3}>
+                    {t('premium_premium_col')}
+                  </Stamp>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {premiumBenefits.map((b) => (
+                    <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: ink }}>
+                      <span style={{ width: 22, flexShrink: 0, display: 'flex', justifyContent: 'center', fontSize: 15, lineHeight: 1 }}>{b.icon}</span> {b.text}
                     </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <Stamp color={ochreInk} tilt={3}>
-                      Premium
-                    </Stamp>
-                    <button
-                      onClick={() => setShowChallengeInfo(true)}
-                      aria-label={t('medal_challenge_info_aria')}
-                      style={{ ...iconButton, marginRight: -8 }}
-                    >
-                      <span style={{
-                        width: 24, height: 24, borderRadius: 10, border: `1px solid ${edge}`, boxSizing: 'border-box',
-                        background: paperCard, color: ink, fontFamily: MONO, fontSize: 13, fontWeight: 500,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1,
-                      }}>
-                        i
-                      </span>
-                    </button>
-                  </div>
+                  ))}
                 </div>
-
-                <div style={{ height: 8, background: 'rgba(51,40,30,0.12)', borderRadius: 4, overflow: 'hidden', marginBottom: 5 }}>
-                  <div style={{
-                    height: '100%',
-                    background: ochre,
-                    width: `${Math.min(100, (monthSteps / MEDAL_EVENT_TARGET_STEPS) * 100)}%`,
-                    transition: 'width 0.4s ease',
-                  }} />
-                </div>
-                <Mono style={{ display: 'block', marginBottom: medalClaimed || medalComplete ? 12 : 0 }}>
-                  {Math.min(monthSteps, MEDAL_EVENT_TARGET_STEPS).toLocaleString()} / {MEDAL_EVENT_TARGET_STEPS.toLocaleString()} steps
-                </Mono>
-
-                {medalClaimed ? (
-                  <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: forest }}>
-                    ✅ Medal claimed for {monthLabel(currentMonth)}
-                  </div>
-                ) : medalComplete ? (
-                  <InkButton onClick={handleClaimMedal} style={{ width: '100%' }}>
-                    🏅 Claim this month's medal
-                  </InkButton>
-                ) : null}
 
                 <button
                   onClick={() => setShowPremiumModal(true)}
@@ -399,41 +315,9 @@ export function ProfilePage() {
             </button>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: ink }}>{t('medal_history_title')}</span>
-            <button
-              onClick={() => setShowMedalHistory(true)}
-              aria-label={t('medal_view_all_aria')}
-              style={{ ...iconButton, marginRight: -12, color: ink, fontSize: 24, fontWeight: 500, lineHeight: 1 }}
-            >
-              ›
-            </button>
-          </div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            {recentMonthKeys(4).map((monthKey) => {
-              const cfg = getMedalConfig(monthKey)
-              if (!cfg) return null
-              const earned = profile.medals.find((m) => m.monthKey === monthKey)
-              return (
-                <button
-                  key={monthKey}
-                  onClick={() => openMedalDetail(monthKey, earned)}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 0,
-                    background: 'none', border: 'none', padding: 0, cursor: 'pointer', flex: 1,
-                  }}
-                >
-                  <div style={{ filter: earned ? undefined : 'grayscale(1)', opacity: earned ? 1 : 0.4 }}>
-                    <MedalSvg config={cfg} size={72} />
-                  </div>
-                  <Mono style={{ textAlign: 'center', color: earned ? ink : undefined }}>
-                    {monthLabel(monthKey)}
-                  </Mono>
-                </button>
-              )
-            })}
-          </div>
         </section>
+
+        <StepTokensSection onGoPremium={() => setShowPremiumModal(true)} />
 
         <PostcardsSection />
 
@@ -557,6 +441,13 @@ export function ProfilePage() {
                 🔥 +7 streak days (grant chest)
               </button>
             </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              {[1, 3].map((n) => (
+                <button key={n} onClick={() => addDevGoalMonths(n)} style={cheatButton}>
+                  +{n} goal month
+                </button>
+              ))}
+            </div>
             <div style={{ display: 'flex', marginTop: 8 }}>
               <button
                 onClick={toggleDevPremium}
@@ -582,51 +473,6 @@ export function ProfilePage() {
           </section>
         )}
       </div>
-
-      {showChallengeInfo && createPortal(
-        <div
-          onClick={() => setShowChallengeInfo(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            background: SCRIM,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '24px 20px',
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: '100%', maxWidth: 340, boxSizing: 'border-box',
-              background: paperLight, border: `1px solid ${edge}`, borderRadius: 10,
-              padding: '20px 18px 18px', boxShadow: '3px 4px 0 rgba(51,40,30,0.35)',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
-              <EmojiSprite id="item_badge" emoji="🏅" size={44} />
-            </div>
-            <h3 style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 500, lineHeight: '26px', color: ink }}>
-              How the monthly challenge works
-            </h3>
-            <p style={{ margin: '0 0 16px', fontSize: 13, color: inkSoft, lineHeight: 1.5 }}>
-              Finish this challenge to earn a real physical medal, which you can pick up at the next community event. Terms and conditions apply.
-            </p>
-            <InkButton onClick={() => setShowChallengeInfo(false)} style={{ width: '100%' }}>
-              Got it
-            </InkButton>
-          </div>
-        </div>,
-        document.body,
-      )}
-
-      {showMedalHistory && (
-        <MedalHistoryScreen
-          medals={profile.medals}
-          createdAt={profile.createdAt}
-          onSelectMonth={(monthKey, earned) => { setShowMedalHistory(false); openMedalDetail(monthKey, earned) }}
-          onClose={() => setShowMedalHistory(false)}
-        />
-      )}
 
       {showVisitHistory && (
         <VisitHistoryScreen

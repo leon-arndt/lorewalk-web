@@ -3,8 +3,7 @@ import type { CSSProperties } from 'react'
 import { useReward } from '@/contexts/RewardContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { EmojiSprite } from '@/components/UI/EmojiSprite'
-import { MedalSvg } from '@/components/UI/MedalSvg'
-import { getMedalConfig } from '@/data/medals'
+import { StepTokenSvg } from '@/components/UI/StepTokenSvg'
 import type { RewardItem, RewardItemType } from '@/types'
 import type { Translations } from '@/i18n/types'
 import { InkButton, Mono, NoteCard } from '@/components/UI/Journal'
@@ -168,8 +167,7 @@ export function RewardScreen() {
     dismissReward()
   }
 
-  const { emoji, spriteId, title, subtitle, items, medalMonthKey } = pendingReward
-  const medalConfig = medalMonthKey ? getMedalConfig(medalMonthKey) : null
+  const { emoji, spriteId, title, subtitle, items, stepToken } = pendingReward
 
   return (
     <div
@@ -198,14 +196,14 @@ export function RewardScreen() {
           textAlign: 'center',
         }}
       >
-        {/* Big icon: the medal SVG if there is one, otherwise the sprite */}
+        {/* Big icon: the Step Token if there is one, otherwise the sprite */}
         <div style={{
           lineHeight: 1, marginBottom: 14,
           animation: 'rewardBounce 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s both',
           display: 'inline-block',
         }}>
-          {medalConfig
-            ? <MedalSvg config={medalConfig} size={140} />
+          {stepToken
+            ? <StepTokenSvg milestone={stepToken} size={120} />
             : <EmojiSprite id={spriteId ?? HEADER_SPRITES[emoji] ?? emoji} emoji={emoji} size={72} />
           }
         </div>

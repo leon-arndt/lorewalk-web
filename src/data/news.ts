@@ -24,9 +24,9 @@ export const SEED_NEWS: NewsPost[] = [
     publishedAt: '2026-08-12T02:30:00.000Z',
     category: 'event',
     heroUrl: null,
-    title: { en: 'Monthly medal walk' },
+    title: { en: 'Trail medals and the monthly walk' },
     body: {
-      en: 'Premium members finish a monthly challenge to earn a real physical medal. Medals are not mailed. You pick yours up in person at the Singapore community meetup: a 5k walk through heritage and nature landmarks, free drinks afterwards, then medal pickup by QR code.\n\nThe venue and the first date are not fixed yet. This post updates when they are.',
+      en: 'Finish the trail of the week to count one trail. At 5, 10, 25, 50, and 100 trails, Premium members earn a real physical medal. Medals are not mailed. You pick yours up in person at the Singapore community meetup: a 5k walk through heritage and nature landmarks, free drinks afterwards, then medal pickup by QR code.\n\nThe venue and the first date are not fixed yet. This post updates when they are.',
     },
   },
 ]

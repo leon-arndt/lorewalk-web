@@ -13,6 +13,7 @@ interface Props {
   status: string
   statusColor: string
   onClose: () => void
+  children?: ReactNode   // shows below the status, such as a pickup code
 }
 
 // One achievement in a grid. An unlocked one is a small specimen card. A locked
@@ -56,7 +57,7 @@ export function AchievementCard({ icon, name, unlocked, tilt = 0, onClick }: {
   )
 }
 
-export function BadgeDetailSheet({ icon, name, description, status, statusColor, onClose }: Props) {
+export function BadgeDetailSheet({ icon, name, description, status, statusColor, onClose, children }: Props) {
   return createPortal(
     <motion.div {...backdropIn(SCRIM)}
       onClick={onClose}
@@ -102,6 +103,8 @@ export function BadgeDetailSheet({ icon, name, description, status, statusColor,
               {status}
             </Stamp>
           </div>
+
+          {children}
 
           <InkButton variant="paper" onClick={onClose} data-sfx="close" style={{ width: '100%', marginTop: 24 }}>
             Close

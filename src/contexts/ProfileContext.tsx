@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
-import type { Claim, DailyFind, Egg, EarnedMedal, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, FoodSpot, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
+import type { Claim, DailyFind, Egg, StepToken, ExpeditionCollectResult, ExpeditionTarget, FoodCollectResult, FoodSpot, HatchedCreature, NotificationPrefKey, Postcard, PlayerAppearance, PlayerProfile, Poi, PremiumInterval, ShrineCollectResult, SquadExpedition } from '@/types'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { supabase, ensureSession } from '@/lib/supabase'
 import { useAccount, type Account } from '@/hooks/useAccount'
@@ -12,7 +12,6 @@ import { getFoodDef } from '@/data/foods'
 import { poiTier } from '@/lib/places'
 import {
   loadProfile, saveProfile, isPoiLocked, loadAppliedSteps, saveAppliedSteps, localDateKey, clearLocalPlayerData,
-  currentMonthKey, monthLabel, stepsThisMonth, MEDAL_EVENT_TARGET_STEPS,
   applyXp, updateStreak, checkAchievements, todayStr,
   streakChestMilestoneFor, rollStreakChestRewards, type StreakChestRewards,
   createEgg, createEggFor, eggChance, advanceEggs, hatchEgg, isEggReady,
@@ -27,6 +26,7 @@ import {
   spawnShrineNodes, solveShrineResult, SHRINE_DURATION_MS,
   TICKET_COST_COINS, buildWeeklyWalk, isWalkExpired,
 } from '@/lib/profile'
+import { currentMonthKey, openGoalMonths, withStepGoalMonths, pendingStepToken, collectedStepTokenThisMonth } from '@/lib/stepTokens'
 import type { DaySteps } from '@/lib/health'
 
 // Where a trip sets out: the place of the player at that moment.
@@ -76,7 +76,8 @@ interface ProfileContextValue {
   markNewsRead: (publishedAt: string) => void
   subscribePremium: (interval: 'monthly' | 'yearly') => void
   cancelPremium: () => void
-  claimMedal: () => Promise<EarnedMedal | null>
+  claimStepToken: () => Promise<StepToken | null>
+  addDevGoalMonths: (n: number) => void
   sendPostcard: (toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) => void
   openPostcard: (postcardId: string) => void
   seedMockPostcard: () => void
@@ -245,7 +246,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         const interval = isActive ? ((data?.interval as PremiumInterval | null) ?? null) : null
         setProfile((prev) => {
           if (prev.isPremium === isActive && prev.premiumInterval === interval) return prev
-          const updated = { ...prev, isPremium: isActive, premiumInterval: interval }
+          const updated = withStepGoalMonths({ ...prev, isPremium: isActive, premiumInterval: interval })
           housekeeping.add(updated)
           saveProfile(updated)
           return updated
@@ -446,7 +447,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   // Apply today's step count, which only climbs within a day. The delta
   // advances the eggs, and the same write logs the day in dailySteps for the
-  // journal and the monthly medal. One write on purpose: two writes from the same snapshot would drop the first.
+  // journal and the Monthly Step Goal. One write on purpose: two writes from the same snapshot would drop the first.
   // A ready egg waits for the player to tap it in the Creatures tab.
   function applyTodaySteps(dateKey: string, stepsToday: number, pastDays: DaySteps[] = []) {
     // stepsToday counts this device only, but dailySteps can hold steps that
@@ -470,7 +471,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
     const eggs = advanceEggs(profile.eggs, gained)
     const newlyReady = eggs.filter((egg, i) => isEggReady(egg) && !isEggReady(profile.eggs[i]))
-    persist({ ...profile, eggs, dailySteps })
+    persist(withStepGoalMonths({ ...profile, eggs, dailySteps }))
     if (delta > 0) saveAppliedSteps(dateKey, stepsToday)
     if (newlyReady.length > 0) setJustReady(newlyReady)
   }
@@ -815,7 +816,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   function toggleDevPremium() {
     const isPremium = !profile.isPremium
-    persist({ ...profile, isPremium, premiumInterval: isPremium ? 'monthly' : null })
+    persist(withStepGoalMonths({ ...profile, isPremium, premiumInterval: isPremium ? 'monthly' : null }))
   }
 
   function toggleNotificationPref(key: NotificationPrefKey) {
@@ -831,56 +832,72 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   function subscribePremium(interval: 'monthly' | 'yearly') {
     if (profile.isPremium) return
-    persist({ ...profile, isPremium: true, premiumInterval: interval })
+    persist(withStepGoalMonths({ ...profile, isPremium: true, premiumInterval: interval }))
   }
 
-  // Only revokes eligibility going forward - medals already earned stay in
-  // profile.medals as history, same as parkrun keeps past results after a runner stops.
+  // Only revokes eligibility going forward - the goal months and the tokens stay in
+  // the profile, same as parkrun keeps past results after a runner stops.
   function cancelPremium() {
     if (!profile.isPremium) return
     persist({ ...profile, isPremium: false, premiumInterval: null })
   }
 
-  // The medal is a physical item, so the server issues the claim: the
-  // claim_medal RPC checks the verified entitlement, allows one claim per
-  // month, and returns the pickup code. Only a dev build may claim offline.
-  async function claimMedal(): Promise<EarnedMedal | null> {
-    if (!profile.isPremium) return null
-    const localMonth = currentMonthKey()
-    if (profile.medals.some((m) => m.monthKey === localMonth)) return null
-    if (stepsThisMonth(profile.dailySteps, localMonth) < MEDAL_EVENT_TARGET_STEPS) return null
+  // The server keeps its own list of goal months, because it cannot see steps
+  // but it can see the calendar and the entitlement. record_step_goal adds an
+  // open month for a player with Premium. A player who fakes steps therefore
+  // still needs as many paid months as a player who walks.
+  const recordedGoalMonths = useRef(new Set<string>())
+  const recordStepGoalMonths = useCallback(async (months: string[]) => {
+    const open = openGoalMonths().filter((m) => months.includes(m) && !recordedGoalMonths.current.has(m))
+    if (open.length === 0 || !(await ensureSession())) return
+    for (const month of open) {
+      const { error } = await supabase.rpc('record_step_goal', { p_month_key: month })
+      if (error) console.warn('record_step_goal failed', error.message)
+      else recordedGoalMonths.current.add(month)
+    }
+  }, [])
 
-    let medal: EarnedMedal
+  useEffect(() => {
+    if (mode !== 'online' || !profile.isPremium) return
+    void recordStepGoalMonths(profile.stepGoalMonths)
+  }, [mode, profile.isPremium, profile.stepGoalMonths, recordStepGoalMonths])
+
+  // A Step Token is a physical item, so the server issues the claim. The
+  // claim_step_token RPC checks the entitlement, the goal months that the
+  // server recorded, the order of the tokens, and the limit of one token each
+  // month. Only a dev build may claim offline.
+  async function claimStepToken(): Promise<StepToken | null> {
+    if (!profile.isPremium) return null
+    const milestone = pendingStepToken(profile.stepGoalMonths.length, profile.stepTokens)
+    if (milestone === null || collectedStepTokenThisMonth(profile.stepTokens)) return null
+
+    let token: StepToken
     if (import.meta.env.DEV && mode !== 'online') {
-      medal = {
-        id: `medal_${Date.now()}`,
-        monthKey: localMonth,
-        title: `${monthLabel(localMonth)} Medal`,
-        claimedAt: new Date().toISOString(),
-      }
+      token = { milestone, monthKey: currentMonthKey(), claimedAt: new Date().toISOString() }
     } else {
       if (mode !== 'online' || !(await ensureSession())) return null
-      const { data, error } = await supabase.rpc('claim_medal')
-      const row = (data as { month_key: string; claim_code: string; claimed_at: string }[] | null)?.[0]
+      await recordStepGoalMonths(profile.stepGoalMonths)
+      const { data, error } = await supabase.rpc('claim_step_token', { p_milestone: milestone })
+      const row = (data as { milestone: number; month_key: string; claim_code: string; claimed_at: string }[] | null)?.[0]
       if (error || !row) {
-        if (error) console.warn('claim_medal failed', error.message)
+        if (error) console.warn('claim_step_token failed', error.message)
         return null
       }
-      medal = {
-        id: `medal_${row.month_key}`,
-        monthKey: row.month_key,
-        title: `${monthLabel(row.month_key)} Medal`,
-        claimedAt: row.claimed_at,
-        claimCode: row.claim_code,
-      }
+      token = { milestone: row.milestone, monthKey: row.month_key, claimedAt: row.claimed_at, claimCode: row.claim_code }
     }
     setProfile((prev) => {
-      if (prev.medals.some((m) => m.monthKey === medal.monthKey)) return prev
-      const updated = { ...prev, medals: [...prev.medals, medal] }
+      if (prev.stepTokens.some((t) => t.milestone === token.milestone)) return prev
+      const updated = { ...prev, stepTokens: [...prev.stepTokens, token] }
       saveProfile(updated)
       return updated
     })
-    return medal
+    return token
+  }
+
+  function addDevGoalMonths(n: number) {
+    const stamp = Date.now()
+    const months = Array.from({ length: n }, (_, i) => `dev-${stamp}-${i}`)
+    persist({ ...profile, stepGoalMonths: [...profile.stepGoalMonths, ...months] })
   }
 
   function sendPostcard(toPlayerId: string, toName: string, poi: { id: string; name: string; category: string }) {
@@ -1044,7 +1061,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       pendingLevelUp, dismissLevelUp,
       assignToSlot, clearSlot, setActiveSquad, renameSquad,
       syncFoodNodes, collectFind, startExpedition, startFoodExpedition, collectFoodNode, busyCreatureIds, collectExpedition, recallSquad, collectClaim,
-      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevStreakDays, openStreakChest, toggleDevPremium, toggleNotificationPref, markNewsRead, subscribePremium, cancelPremium, claimMedal,
+      releaseCreature, buyCreatureSlots, buyEggSlot, buyStreakFreeze, addCoins, feedCreature, addXp, addDevEgg, addDevStreakDays, openStreakChest, claimStepToken, addDevGoalMonths, toggleDevPremium, toggleNotificationPref, markNewsRead, subscribePremium, cancelPremium, 
       sendPostcard, openPostcard, seedMockPostcard,
       syncShrineNodes, startShrineExpedition, collectShrineNode,
       buyTicket, joinWeeklyWalk, claimWeeklyWalkReward, expireWeeklyWalkIfStale,

@@ -6,6 +6,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useConnectionMode } from '@/contexts/ConnectionModeContext'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useReward } from '@/contexts/RewardContext'
+import { MONTHLY_STEP_GOAL } from '@/lib/stepTokens'
 import { MONO, paperSheet, SCRIM } from '@/lib/paper'
 import { forest, ink, inkHint, inkSoft, line, ochre, paperCard, stamp, edge } from '@/lib/theme'
 import { CloseButton, InkButton, Mono, NoteCard, Stamp } from '@/components/UI/Journal'
@@ -31,12 +32,12 @@ interface PremiumModalProps {
 export function PremiumModal({ onClose, context }: PremiumModalProps) {
   const { profile, subscribePremium, cancelPremium } = useProfile()
   const { mode } = useConnectionMode()
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const { showToast } = useReward()
   const FEATURE_ROWS: { icon: string; sprite?: string; label: string; basic: boolean; premium: string }[] = [
     { icon: '🗺️', label: t('premium_feature_standard_landmarks'), basic: true, premium: t('premium_feature_all_landmarks') },
     { icon: '🔓', label: t('premium_feature_premium_landmarks'), basic: false, premium: t('premium_feature_unlocked') },
-    { icon: '🏅', sprite: 'item_badge', label: t('premium_feature_medal_challenge'), basic: false, premium: t('premium_feature_real_medal') },
+    { icon: '🏅', sprite: 'item_badge', label: t('premium_feature_step_tokens'), basic: false, premium: t('premium_feature_real_token') },
   ]
   const PLANS: Record<PremiumInterval, { label: string; price: string; sub?: string; badge?: string }> = {
     monthly: { label: t('premium_plan_monthly'), price: PLAN_PRICES.monthly.price },
@@ -213,7 +214,7 @@ export function PremiumModal({ onClose, context }: PremiumModalProps) {
           </NoteCard>
 
           <Mono style={{ display: 'block', textAlign: 'center', margin: '10px 6px 0' }}>
-            {t('premium_medal_note')}
+            {t('premium_token_note', { goal: MONTHLY_STEP_GOAL.toLocaleString(locale) })}
           </Mono>
 
           {isManaging ? (

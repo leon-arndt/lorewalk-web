@@ -28,7 +28,7 @@
   - Remaining steps, in order:
     1. Done (2026-11-26): "Allow anonymous sign-ins" is on in the Supabase dashboard.
     2. Done: `npx supabase db push --remote` applied all 7 migrations to the empty project.
-    3. Test online mode on two devices: add a friend by code, open the friend's profile card, and claim a medal with an active entitlement.
+    3. Test online mode on two devices: add a friend by code, open the friend's profile card, and collect a Step Token with an active entitlement.
   - Still open from the audit: `permanent_pois` and `temporary_pois` do not exist in the project yet, and they need a read policy for everyone when they do (the `ensure_rls` trigger turns RLS on, and `get_pois_near` then returns no rows without a policy), the RevenueCat webhook does not check the order of events, `vercel.json` sets no security headers, and the server does not verify steps or check-ins.
 - **cloud save**: the client exists and the migrations are in the Supabase project, but the flow is not live. It needs a Google OAuth client and the Supabase setup below. The "Cloud save" section of CLAUDE.md explains the sync rules.
   - Client: `src/lib/cloudSave.ts` holds the sync engine, `src/lib/googleAuth.ts` holds the sign-in, and `AccountSection.tsx` in Settings holds the UI. `e2e/cloud-save.spec.ts` tests the sync rules against a mock server.
@@ -58,9 +58,20 @@
     4. Set `REVENUECAT_ALLOW_SANDBOX=true` on a test project only. Without it, the webhook ignores a purchase from a Play license tester. This applies to Premium too.
     5. Buy a pack on a device. Make sure that the coins arrive one time, and that a second device shows the same balance after sign-in.
     - Still open: a refund does not take the coins back.
+- **step tokens**: the code landed on 2026-11-28 and the tests pass. Nobody has applied the migration yet. A player who walks 200,000 steps in a month with Premium has a goal month. A count of goal months earns a physical token: 1, 3, 6, and 12 months, then every 6 months. `src/lib/stepTokens.ts` holds the rules, `StepTokensSection.tsx` holds the UI on the profile page, and `supabase/migrations/20261128000000_step_tokens.sql` holds the server side. GameDesign.md's "Step Tokens" section holds the design.
+  - Remaining steps:
+    1. Apply the migration with `npx supabase db push --remote`. Nobody has run its SQL yet.
+    2. Test in online mode with an active entitlement: reach the goal, then collect a token. The e2e tests claim offline only.
+    3. Build a staff tool that calls `redeem_step_token` at the Community Walk.
+    4. Show a reward screen at the moment a month reaches the goal.
+    5. Send `monthly-physical-reward.md` to the designer.
+  - Still open: the tokens in the app are placeholder drawings. Draw them again from the final designs.
+  - Still open: the Weekly Walk is a second step goal, with a party of placeholder names. Decide if it stays.
+  - The monthly step medal left the app on 2026-11-28. Its `medal_claims` table and its two functions are still in the Supabase project. Drop them in a migration after a check that the table holds no row of value.
 
 ## Backlog
 
+- **profile saves**: a check-in can stay out of the saved profile. `syncFoodNodes()` and two more updates in `ProfileContext.tsx` save the profile inside a `setProfile` updater. React runs a queued updater again at the next render. If `addVisit()` saves between the two runs, the updater writes the older profile last. The screen then shows the check-in, but the save does not hold it, so a player who closes the app loses it. An e2e test found this on 2026-11-28: a tap on a pin in the first second after the map loads loses the check-in in about 1 of 4 runs. To fix it, move the save out of each updater.
 - **landmark follow-ups**: the 117 landmarks have new positions since 2026-11-27. The position of Pulau Ubin comes from memory, not from a dataset. Check it and the Istana gate on a map. Chinatown Heritage Centre and Dempsey Hill have no Wikipedia article, so they carry no link and show the written description. No landmark sets `premiumOnly`, so the free tier holds every POI.
 - **cat hats**: test the Party Cat and its party hat in the app, then give the hat to more cats. Add `hat: 'party'` to a `CreatureDef` in `src/data/creatures.ts`. `addCatHat()` in `src/lib/catModel.ts` builds the hat.
 - **haptics**: Settings has a Vibration toggle, but nothing vibrates yet. Call `vibrate()` from `src/lib/haptics.ts` on game events, such as check-in, hatch, and level-up. The function does nothing when the player turns the toggle off. iOS Safari does not vibrate.
@@ -69,8 +80,7 @@
 - **field journal**: test the look on a mid-range Android phone. Check that Fredoka and DM Mono load, that the parchment map reads well in sunlight, and that the index tabs clear the home bar.
 - **field journal follow-ups**: Some emoji have no 3D icon yet, such as the Premium crown, the streak flame, and the tickets. Some screens hold English-only text, such as "Save", "Continue", and "Feed". A species leaves the field guide when the player releases the last creature of it.
 - **starter quests**: the "next stop" bar on the map picks from what is ready or near (`src/lib/nextGoal.ts`). A short chain of first quests can come next: check in, hatch an egg, fill a squad, send an expedition. The chain then replaces the explanation text at the top of each tab. It needs the quests and a saved progress field.
-- **premium**: pick a medal supplier and get a real quote. The CLAUDE.md cost breakdown holds the current estimates. Finalize the Premium price point after the quote arrives. A low minimum order quantity fits the monthly design change better than the 100-plus MOQ of local Singapore suppliers, so quote these first: Medal Foundry (runs of 10 to 25), Made by Cooper (MOQ 50), EverLighten (no MOQ).
-- **premium**: design and build the monthly event. It needs progress tracking and a QR code for in-person pickup at the meetup. The server side of the claim exists: the `claim_medal` RPC returns a pickup code, and `EarnedMedal.claimCode` stores it. The app does not show the code yet, and no staff tool calls `redeem_medal`. It does not need a shipping address.
-- **premium**: set up the recurring monthly Meetup listing for the Singapore community event: 5k walk, free drinks, QR-code medal pickup.
+- **premium**: pick a token supplier and get a real quote. Finalize the Premium price point after the quote arrives. Two Singapore suppliers have a quote form: Gift Market (minimum 30, about 5 weeks) and Gumtoo (minimum 100 for each design, about 3 weeks). Ask each for a coin with two sides, the mould fee for both dies, the sample fee, the price of a serial number, and the price at 100 and 250 pieces. Order the tokens for 1 and 3 months first, because no player reaches 12 months in the first year.
+- **premium**: set up the recurring monthly Meetup listing for the Community Walk in Singapore: 5k walk, free drinks, QR-code token pickup.
 - **icons**: a few emojis still sit inline in text, such as the 📰 news button, the 🎟️ tickets, and the 🔥 streak stat. Every sprite slot now shows a 3D render, with a pulsing dot while it loads and the emoji only when the render fails. `src/lib/foodModels.ts`, `src/lib/itemModels.ts`, and `src/lib/animalModels.ts` hold the models. `getSpritePreviewURL()` in `creaturePreview.ts` selects one by key: `food_<id>`, `item_<type>`, or `creatureSpriteKey()`. Nobody has seen the new map markers on a device yet.
 - **day and night, weather**: test the map ambience on a mid-range Android phone. At night MapLibre draws each building two times: the walls with the window pattern, then a roof slab. Watch the frame rate. Also confirm that real rain shows when a gauge near the player reports it. The CLAUDE.md section "Day, night, and weather" explains the system and the `_ambience()` test override.

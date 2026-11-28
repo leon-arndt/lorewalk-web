@@ -163,7 +163,7 @@ An older roster held species such as the Stonewarden (a statue) and the Luminary
 - To free a slot, **release** a creature through the ✕ on its card and confirm. To raise the cap instead, level up or buy storage in the shop. This creates curation decisions and a coin sink.
 
 ### Design rationale
-Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress in two. A **visit** to a place gives the egg, because a visit is the core action. **Steps** hatch the egg and count toward the monthly medal. The web has no pedometer, so the app estimates steps from GPS while it is open. On Android, the Health Connect wrapper in `src/lib/health.ts` can replace that estimate, but nothing calls it yet.
+Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress in two. A **visit** to a place gives the egg, because a visit is the core action. **Steps** hatch the egg and count toward the Monthly Step Goal. The web has no pedometer, so the app estimates steps from GPS while it is open. On Android, the Health Connect wrapper in `src/lib/health.ts` can replace that estimate, but nothing calls it yet.
 
 ### Future creature features
 - **Bonding XP**: a visit to a POI with a creature equipped raises the bond level.
@@ -182,7 +182,7 @@ Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress 
   - `line` is the hairline of a card. `edge` is the hairline of a tag, a button, or a panel.
   - `ink`, `inkSoft`, and `inkHint` are the text colours. All three pass the contrast check on paper.
   - `stamp` is red ink. It marks stamps, alerts, destructive actions, reward moments, and the open tab.
-  - `forest` shows progress and success. `ochre` shows coins, medals, and Premium. `indigo` shows links.
+  - `forest` shows progress and success. `ochre` shows coins, tokens, and Premium. `indigo` shows links.
   - `accent` equals `ink`. Headings, selection, and filled buttons use it.
   - `categoryColors` and `categoryCss(category)` hold one colour per creature type (POI category). The colours are muted, like watercolour washes. The 3D map pins, the map companions, and the collection grid all read them.
 - **Surfaces live in `src/lib/paper.ts`.** `paperPage` is the page. `paperPanel` and `paperSheet` are the panel and the sheet over the map. `paperTag` is a tag. `paperCardStyle` is a card. `SCRIM` is the dark veil behind a sheet. Do not add a colour gradient or a soft drop shadow.
@@ -191,7 +191,7 @@ Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress 
 - **One close button and one back button**, decided 2026-11-27. Both are a 36 px white paper tag in a 44 px touch area. `CloseButton` shows a cross and puts a sheet, a panel, or an overlay away. `BackButton` shows an arrow to the left and goes from a page to its parent page. The app had six different drawings of these two buttons before.
 - **Line icons live in `src/components/UI/Icons.tsx`.** A control or a label uses a line icon in the pen of the tab bar. A reward or an item keeps its 3D render. Each creature type has its own icon: a temple front for Heritage, a map pin for Landmark, a theatre mask for Arts, a dome for Religious, a framed picture for Museum, and a leaf for Nature. `CategoryBadge` shows the icon as a round sticker on a wash of the type colour.
 - **Chips**: a `Chip` is a small paper tag with an icon and a short typed word. It shows one fact about a thing.
-- **No flavour text**, decided 2026-11-27. A page shows its title and no line above or below it that only sets a mood or says the title again. The "Field journal, Singapore" line above each title and the one-line subtitles of the shop, the news, the journal, and the medal history are gone. A line that explains a rule stays, such as the squad explanation.
+- **No flavour text**, decided 2026-11-27. A page shows its title and no line above or below it that only sets a mood or says the title again. The "Field journal, Singapore" line above each title and the one-line subtitles of the shop, the news, and the journal are gone. A line that explains a rule stays, such as the squad explanation.
 - **Edit marks sit on the thing that they edit.** On the Profile tab, a pencil sticker on the corner of the avatar photo opens the character designer. The name is a button that renames the player, with a small pencil after it. No other icon stands next to the name.
 - **Fonts**: Fredoka is the display font and the body font. DM Mono is the typewriter font for captions, counters, and labels. The app uses the weights 400, 500, and 600 only. Text uses seven sizes: 11, 12, 13, 15, 19, 24, and 28 px (`TYPE` in `paper.ts`). An ESLint rule rejects any other `fontSize`. An emoji that stands in for an icon can be 48 or 64 px. The level number on the level-up stamp is larger, because it is part of the stamp art.
 - **Shapes**: every button, tag, and map marker has a 10 px corner (`RADIUS` in `paper.ts`), so no control is rounder than another. A card has 6 px and a note panel has 12 px. A circle is only for an avatar, a ring, a dot, a level sticker, or a colour swatch. An edge is a 1 px hairline. A strong ink outline is only for a selected item. A feature card can sit a little crooked.
@@ -203,7 +203,7 @@ Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress 
 - **POI detail**: a paper panel that slides up from the bottom, with a drag handle. A row of chips at the top shows the type, the tier, the points, and the distance when online. Each chip has an icon. Below the chips, the panel shows the name, the description, a learn-more link, and the check-in button.
 - **Mode toggle**: an "Online mode" switch in Settings, under Connection. `localStorage` keeps the choice. Online mode is the default. A player who never touched the switch starts online. Offline mode is a test mode: a tap on a landmark checks in, and purchases are simulated. The switch stays off the map, so a player does not see a test tool on the main screen.
 - **Feedback**: the app uses two patterns only.
-  - The **reward screen** (`showReward`) shows a real payout: a check-in, an expedition, a shrine, a food node, a medal, or a chest.
+  - The **reward screen** (`showReward`) shows a real payout: a check-in, an expedition, a shrine, a food node, a Step Token, or a chest.
   - The **toast** (`showToast`) shows a small update: held-landmark coins, a purchase message, a locked landmark, or a ready egg. A toast can carry a route, and a tap on it opens that route.
   - Do not add a local flash message or a one-off toast.
   - A reward screen never scrolls as a page. A long list of rewards sits in a window inside the card, and the window follows each reward as it shows.
@@ -213,32 +213,64 @@ Pikmin Bloom grows seedlings from pedometer steps. Lorewalk splits the progress 
 ## Monetisation (from the Unity game, and it applies to the PWA too)
 
 - **Free tier**: a limited POI set, starter creatures only, and basic evolution.
-- **Premium**: all POIs, unlimited creatures, the full evolution tree, exclusive landmark creatures, and the **monthly medal event** below.
+- **Premium**: all POIs, unlimited creatures, the full evolution tree, exclusive landmark creatures, and the physical **Step Tokens** below.
 - **Coin shop (IAP)**: cosmetics, extra planter and expedition slots, and convenience items. Never pay-to-win.
 
 ### Premium pricing (decided 2026-07-17, figures in SGD, Singapore is the first market)
 
 Geocaching Premium anchors the price. It costs USD 39.99 per year, about SGD 54 per year or SGD 4.50 per month. Its standalone monthly plan costs USD 6.99, about SGD 9.50 per month.
 
-The Geocaching tier is digital only, so its price covers no physical fulfillment. Lorewalk Premium does cover fulfillment once the medal event ships. The price therefore needs headroom over the digital-only SGD 15 per year figure that this document used before.
+The Geocaching tier is digital only, so its price covers no physical fulfillment. Lorewalk Premium does cover fulfillment once the Step Tokens ship. The price therefore needs headroom over the digital-only SGD 15 per year figure that this document used before.
 
-The exact price waits on a real medal supplier quote. CLAUDE.md's "Monetisation costs" section holds the landed-cost numbers that any price point has to clear. A medal costs SGD 12 to 20 per unit at low order volume. It falls toward SGD 6 to 10 per unit at a bulk import of 250 units or more.
+The exact price waits on a real supplier quote. CLAUDE.md's "Monetisation costs" section holds the landed-cost numbers that any price point has to clear. A coin costs about SGD 13.50 at 30 pieces and about SGD 1.70 at 500 pieces, per the supplier pages of 2026-11.
 
-### Monthly medal event (the flagship Premium perk)
+### Step Tokens (the flagship Premium perk), decided 2026-11-28
 
-Each month, a Premium subscriber gets access to a themed **event**, such as a step goal, a set of landmarks to visit, or a mini-challenge. A subscriber who finishes it earns a **unique, real, physical medal**. "Unique" means a fresh design each month, not one medal reused. That claim is the whole value pitch. The Premium upsell copy in `ProfilePage.tsx` uses the exact phrase "earn a unique real physical medal".
+Lorewalk rewards a walk at any place. A player in Bedok who walks to work must earn the same reward as a player who goes to a landmark. The reward therefore counts steps, not places.
 
-The claim carries a real production cost. A new design each month means a new production run each month, not one bulk order drawn down across the year.
+- **Monthly Step Goal.** A player who walks 200,000 steps in a calendar month reaches the goal. That is about 6,500 steps each day. `MONTHLY_STEP_GOAL` in `src/lib/stepTokens.ts` holds the number.
+- **Goal month.** A month counts only if the player has Premium in that month. A free player sees the same progress bar, and the month counts when the player subscribes before the month closes.
+- **Step Token.** A count of goal months earns a **real metal token**: 1, 3, 6, and 12 months, then every 6 months. A player gets four tokens in the first year and never waits more than 6 months.
+- **One token each month, in order.** The hand-over is the monthly Community Walk.
+- **A coin, not a medal.** The item is a die-cast challenge coin with two sides and no ribbon. A walk is not a race, and a ribbon medal is too much for it. The app says "token", because "coins" is the name of the soft currency.
 
-Lorewalk does **not** mail medals. A player picks the medal up in person at a monthly community event in Singapore, listed on Meetup:
+Why the goal is a month, and why only Premium months count:
 
-1. **Community 5k walk.** The walk is open to anyone and is not gated behind Premium. The walk itself draws the community. The medal is the Premium hook.
+- **Income.** A token costs real money. If free months counted, a player could walk for a year and subscribe for one month to collect. A goal month with Premium means that each token has paid months behind it.
+- **A moment.** A sum of steps over a lifetime grows without effort. A goal for each month gives the player something to reach, and it lines up with the monthly bill and the monthly event.
+- **Faked steps.** The phone reports the steps, and the server cannot check them. The server can check the calendar and the entitlement. A player who fakes steps still needs as many paid months as a player who walks, and still comes to the event in person. Faked steps are then a fairness problem, not a cost.
+
+The cost of the goal: a month with 190,000 steps counts as nothing. The player sees the bar and knows the number, so the rule is clear.
+
+The app side:
+
+- `profile.stepGoalMonths` holds each goal month as `YYYY-MM`. `withStepGoalMonths()` adds a month. It runs when the steps change, when Premium starts, and when the app loads a save.
+- A month can still count in the first 7 days of the next month. The phone gives the steps of the last 7 days, so a goal that the player reached on the last day is not lost.
+- `StepTokensSection.tsx` shows the steps of the month, the count of goal months, the next five tokens, and the claim on the profile page. `StepTokenSvg.tsx` draws a token.
+- The server keeps its own list of goal months. The `record_step_goal` RPC adds an open month for a player with an active entitlement. The `claim_step_token` RPC checks the entitlement, that list, the order, and the limit of one token each month, then returns a pickup code. The detail sheet of a collected token shows the code as a QR code, with the `qrcode` package that the friend invite already uses.
+- A goal month that the player reached without a connection does not reach the server after the month closes. The app then shows a token that the server refuses.
+
+Still open: the supplier. `monthly-physical-reward.md` holds the design brief. No staff tool calls `redeem_step_token` yet. The app shows no reward screen at the moment a month reaches the goal.
+
+### Designs that came before, 2026-11-28
+
+Three designs came before the Step Tokens. They are here so that nobody builds them again without a reason.
+
+- **A new medal each month**, each with a Singapore dish and a festival. It needed 12 production runs each year, and festivals such as Hari Raya move to a different month.
+- **A medal for a count of finished trails of the week.** A trail is in one area of Singapore, so a player far from that area got nothing for a week of walks.
+- **A medal for a sum of steps over a lifetime.** It gave no goal to reach and no reason to stay subscribed between two medals.
+
+The app also had a drawn medal for 100,000 steps in a month, next to the physical one. One set of rewards is enough, so its code and its 12 drawings left the app. The `medal_claims` table and the `claim_medal` and `redeem_medal` functions are still in the Supabase project. Nothing calls them.
+
+### Community Walk (the monthly event)
+
+Lorewalk does **not** mail tokens. A player picks a Step Token up in person at the Community Walk, a monthly event in Singapore that is listed on Meetup:
+
+1. **Community 5k walk.** The walk is open to anyone and is not gated behind Premium. The walk itself draws the community. The token is the Premium hook.
 2. **Free drinks** afterwards.
-3. **Medal pickup.** A player who finished that month's in-app challenge shows the QR code from the profile screen and takes the medal on the spot. **parkrun** uses the same model: the app tracks the achievement, and the player claims the physical reward face to face at a recurring meetup, not by mail.
+3. **Token pickup.** A Premium player who collected a Step Token in the app shows its QR code and takes the token on the spot. **parkrun** uses the same model: the app tracks the achievement, and the player claims the physical reward face to face at a recurring meetup, not by mail.
 
-- **The player earns the medal. A subscription alone does not grant one.** The subscription unlocks *eligibility* to attempt the event. Only a player who finishes the event can claim the medal. This controls cost on purpose. At low subscriber counts, one medal per subscriber per month costs more than the subscription revenue covers. See the CLAUDE.md cost breakdown. A completion gate caps the unit volume at the real finishers.
-- In-person pickup removes shipping and customs completely. There is no address to collect, no courier, and no international fulfillment. It trades all of that for **event ops**: a monthly Meetup listing, a venue and a walk route, and a drinks budget in Singapore. Medal ordering, whether print-on-demand or bulk, is **still unbuilt** and needs a chosen supplier before it can go live.
-- On the app side, the event needs only three things. It needs to know that a player holds Premium eligibility. It needs to track that player's progress on the current month's event. It needs to generate a **claimable QR code** on completion, for staff to scan at the event. The profile QR flow for friend invites already uses the `qrcode` package, so the event reuses that pattern instead of a new one.
+In-person pickup removes shipping and customs completely. There is no address to collect, no courier, and no international fulfillment. It trades all of that for **event ops**: a monthly Meetup listing, a venue and a walk route, and a drinks budget in Singapore. Token ordering is **still unbuilt** and needs a chosen supplier before it can go live.
 
 ### Shop (built, coins only so far)
 
@@ -270,14 +302,14 @@ A RevenueCat webhook (`supabase/functions/revenuecat-webhook`) verifies each pur
 A guest profile lives on one device. A player who signs in with Google in Settings gets a cloud save, and can then move to a new phone or play on two devices.
 
 - **Optional**: sign-in never blocks play. A guest keeps every feature except the cloud save.
-- **Google only**: one tap, and no password to forget. The sign-in keeps the player id of the guest, so the friends, the Premium entitlement, and the medal claims stay.
+- **Google only**: one tap, and no password to forget. The sign-in keeps the player id of the guest, so the friends, the Premium entitlement, and the token claims stay.
 - **Automatic**: the app uploads a change a few seconds after the player makes it. It downloads a newer save when the player opens the app.
 - **Second device**: a device with no progress takes the cloud save without a question.
 - **Two saves**: when the device and the account each hold progress that the other lacks, the app asks the player which save to keep. It does not merge them, because a merge of two full profiles can duplicate creatures or coins. The player can put the choice off, and Settings then shows it again.
 - **Sign-out**: the profile stays on the device, so a failed upload loses nothing. Settings always shows the "Sign out" button. For a guest the button is off, with a hint to sign in with Google first, because a guest has no login to come back to.
 - **Steps**: each device counts its own steps, and the day's total is the sum across devices.
 - **Not in the cloud save**: the journal photos. They stay on the device.
-- **Delete account**: Settings has a "Delete account" button for every player, guest or signed in, online or offline. After one confirmation the server deletes the save, the friends, the public stats, the medal claims, and the account itself. The device then deletes its profile and its journal photos and starts again as a new guest. The player cannot undo this. In offline mode the app uses the session that it stored before. A guest that never went online has no server rows, so only the device copy goes. A player who has server rows but no session gets an error, and nothing changes. A Premium subscription does not end with the account, so the dialog tells a subscriber to cancel it in Google Play first.
+- **Delete account**: Settings has a "Delete account" button for every player, guest or signed in, online or offline. After one confirmation the server deletes the save, the friends, the public stats, the token claims, and the account itself. The device then deletes its profile and its journal photos and starts again as a new guest. The player cannot undo this. In offline mode the app uses the session that it stored before. A guest that never went online has no server rows, so only the device copy goes. A player who has server rows but no session gets an error, and nothing changes. A Premium subscription does not end with the account, so the dialog tells a subscriber to cancel it in Google Play first.
 
 ### Level system
 - Each POI check-in awards XP equal to `poi.points`, which is 5 to 10 XP.
