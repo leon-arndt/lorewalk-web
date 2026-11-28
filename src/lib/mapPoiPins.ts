@@ -1,7 +1,7 @@
 import * as maplibregl from 'maplibre-gl'
 import type * as T3 from 'three'
 import { isMapPaused } from '@/lib/mapUtils'
-import { categoryColors } from '@/lib/theme'
+import { categoryColors, ink, ochre, stamp } from '@/lib/theme'
 import { lightScene } from '@/lib/ambience'
 
 // Renders Pokémon-GO–style 3D POI pins: a pulsing ground ring, a thin stem,
@@ -19,9 +19,19 @@ export interface PoiPinSpec {
   scale?: number
 }
 
+// A place the player holds. The flag stands on a closed ring round the pin.
+export interface ClaimFlagSpec {
+  id: string
+  lat: number
+  lon: number
+  // The ring colour: the category colour of the place, as CSS hex.
+  color: string
+}
+
 export interface PoiPinsHandle {
   remove: () => void
   updatePins: (specs: PoiPinSpec[]) => void
+  updateClaims: (specs: ClaimFlagSpec[]) => void
 }
 
 const LAYER_ID = 'lorewalk-poi-pins'
@@ -277,6 +287,124 @@ function buildPin(THREE: typeof T3, spec: PoiPinSpec, models: Map<string, T3.Obj
   return { group, ring, head, orb, phase: Math.random() * Math.PI * 2, scale: spec.scale ?? 1 }
 }
 
+// ─── Claim flags ─────────────────────────────────────────────────────────────
+
+// The pin's own ring pulses while the place is open. A claim is done, so its
+// ring is closed and holds still, just outside the pin ring at full pulse.
+const CLAIM_RING_INNER = 0.66
+const CLAIM_RING_OUTER = 0.8
+// The flag stands on the ring toward the default camera (south-east), so the
+// pin model never hides it.
+const FLAG_ANGLE = Math.PI / 4
+const FLAG_RADIUS = (CLAIM_RING_INNER + CLAIM_RING_OUTER) / 2
+const FLAG_POLE_HEIGHT = 1.35
+const CLOTH_W = 0.5
+const CLOTH_H = 0.32
+const CLOTH_SEGMENTS = 8
+
+interface ClaimObjects {
+  group: T3.Group
+  cloth: T3.Mesh
+  // The flat cloth, so each frame bends it from the same start.
+  clothRest: Float32Array
+  phase: number
+}
+
+function flagOffset() {
+  return { x: FLAG_RADIUS * Math.cos(FLAG_ANGLE), z: FLAG_RADIUS * Math.sin(FLAG_ANGLE) }
+}
+
+function buildClaim(THREE: typeof T3, spec: ClaimFlagSpec): ClaimObjects {
+  const group = new THREE.Group()
+  const { x, z } = toLocalXZ(spec.lat, spec.lon)
+  group.position.set(x, 0, z)
+
+  const ringGeo = new THREE.RingGeometry(CLAIM_RING_INNER, CLAIM_RING_OUTER, 64)
+  ringGeo.rotateX(-Math.PI / 2)
+  const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(spec.color), side: THREE.DoubleSide, depthWrite: false }))
+  ring.position.y = 0.03
+  group.add(ring)
+  const edgeGeo = new THREE.RingGeometry(CLAIM_RING_OUTER, CLAIM_RING_OUTER + 0.035, 64)
+  edgeGeo.rotateX(-Math.PI / 2)
+  const edge = new THREE.Mesh(edgeGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(ink), transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false }))
+  edge.position.y = 0.03
+  group.add(edge)
+
+  const flag = new THREE.Group()
+  const at = flagOffset()
+  flag.position.set(at.x, 0, at.z)
+  group.add(flag)
+
+  const pole = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.022, 0.026, FLAG_POLE_HEIGHT, 8),
+    new THREE.MeshLambertMaterial({ color: new THREE.Color(ink) }),
+  )
+  pole.position.y = FLAG_POLE_HEIGHT / 2
+  flag.add(pole)
+  const finial = new THREE.Mesh(
+    new THREE.SphereGeometry(0.05, 12, 8),
+    new THREE.MeshLambertMaterial({ color: new THREE.Color(ochre) }),
+  )
+  finial.position.y = FLAG_POLE_HEIGHT + 0.03
+  flag.add(finial)
+  const foot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.07, 0.09, 0.05, 12),
+    new THREE.MeshLambertMaterial({ color: new THREE.Color(ink) }),
+  )
+  foot.position.y = 0.025
+  flag.add(foot)
+
+  // The cloth hangs from the pole on its left edge and faces the default camera.
+  const clothGeo = new THREE.PlaneGeometry(CLOTH_W, CLOTH_H, CLOTH_SEGMENTS, 1)
+  clothGeo.translate(CLOTH_W / 2 + 0.02, 0, 0)
+  const cloth = new THREE.Mesh(clothGeo, new THREE.MeshLambertMaterial({
+    color: new THREE.Color(stamp), side: THREE.DoubleSide, flatShading: true,
+  }))
+  cloth.position.y = FLAG_POLE_HEIGHT - CLOTH_H / 2 - 0.04
+  flag.add(cloth)
+
+  return {
+    group, cloth,
+    clothRest: Float32Array.from(clothGeo.attributes.position.array as Float32Array),
+    phase: Math.random() * Math.PI * 2,
+  }
+}
+
+// A wave runs out along the cloth. The edge at the pole stays put.
+function waveCloth(claim: ClaimObjects, t: number) {
+  const pos = claim.cloth.geometry.attributes.position as T3.BufferAttribute
+  const rest = claim.clothRest
+  for (let i = 0; i < pos.count; i++) {
+    const x = rest[i * 3]
+    const along = x / CLOTH_W
+    pos.setZ(i, Math.sin(t * 4 + claim.phase - x * 11) * 0.06 * along)
+    pos.setY(i, rest[i * 3 + 1] - along * along * 0.04)
+  }
+  pos.needsUpdate = true
+}
+
+function unitsToMetres(zoom: number) {
+  return PIN_SCALE * Math.min(SIZE_COMP_MAX, Math.pow(2, SIZE_REF_ZOOM - zoom))
+}
+
+// The pins draw in three.js, so the map cannot hit-test the flag. This gives
+// the squared screen distance from a tap to the flag pole, for MapView's tap test.
+export function claimFlagTapDistance(map: maplibregl.Map, lat: number, lon: number, tap: { x: number; y: number }): number {
+  const zoom = map.getZoom()
+  const m = unitsToMetres(zoom)
+  const at = flagOffset()
+  const latRad = lat * Math.PI / 180
+  const base = map.project([
+    lon + (at.x * m) / (R_EARTH * Math.cos(latRad)) * 180 / Math.PI,
+    lat - (at.z * m) / R_EARTH * 180 / Math.PI,
+  ])
+  // A vertical pole shortens on screen as the camera looks more straight down.
+  const pxPerMetre = (512 * Math.pow(2, zoom)) / (2 * Math.PI * R_EARTH * Math.cos(latRad))
+  const height = (FLAG_POLE_HEIGHT + 0.05) * m * pxPerMetre * Math.sin(map.getPitch() * Math.PI / 180)
+  const y = Math.min(base.y, Math.max(base.y - height, tap.y))
+  return (tap.x - base.x) ** 2 + (tap.y - y) ** 2
+}
+
 export async function addPoiPinsLayer(
   map: maplibregl.Map,
   initial: PoiPinSpec[],
@@ -292,6 +420,7 @@ export async function addPoiPinsLayer(
   scene.add(dirLight)
 
   const pinsMap = new Map<string, PinObjects>()
+  const claimsMap = new Map<string, ClaimObjects>()
   const models = buildProceduralPinModels(THREE)
   let currentSpecs = initial
 
@@ -303,6 +432,16 @@ export async function addPoiPinsLayer(
       const pin = buildPin(THREE, spec, models)
       scene.add(pin.group)
       pinsMap.set(spec.id, pin)
+    }
+  }
+
+  function rebuildClaims(specs: ClaimFlagSpec[]) {
+    for (const { group } of claimsMap.values()) scene.remove(group)
+    claimsMap.clear()
+    for (const spec of specs) {
+      const claim = buildClaim(THREE, spec)
+      scene.add(claim.group)
+      claimsMap.set(spec.id, claim)
     }
   }
 
@@ -326,7 +465,7 @@ export async function addPoiPinsLayer(
       renderer.autoClear = false
     },
     render(_gl, options) {
-      if (!renderer || pinsMap.size === 0) return
+      if (!renderer || (pinsMap.size === 0 && claimsMap.size === 0)) return
 
       const t = performance.now() / 1000
       lightScene(ambient, dirLight, 1.0, 1.8)
@@ -339,8 +478,12 @@ export async function addPoiPinsLayer(
       }
 
       // Constant screen size (same formula as companion characters)
-      const pinScale = PIN_SCALE * Math.min(SIZE_COMP_MAX, Math.pow(2, SIZE_REF_ZOOM - map.getZoom()))
+      const pinScale = unitsToMetres(map.getZoom())
       for (const { group, scale } of pinsMap.values()) group.scale.setScalar(pinScale * scale)
+      for (const claim of claimsMap.values()) {
+        claim.group.scale.setScalar(pinScale)
+        waveCloth(claim, t)
+      }
 
       const origin = maplibregl.MercatorCoordinate.fromLngLat([SG_CENTER.lng, SG_CENTER.lat], 0)
       const s = origin.meterInMercatorCoordinateUnits()
@@ -371,5 +514,6 @@ export async function addPoiPinsLayer(
       try { if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID) } catch { /* map torn down */ }
     },
     updatePins(specs) { rebuild(specs); map.triggerRepaint() },
+    updateClaims(specs) { rebuildClaims(specs); map.triggerRepaint() },
   }
 }
