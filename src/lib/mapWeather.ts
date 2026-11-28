@@ -8,8 +8,8 @@ import { isMapPaused } from '@/lib/mapUtils'
 //
 // The clouds are one fixed field over the whole island, drawn by a three.js
 // custom layer like the companions. More of the field shows as the cloud cover
-// rises. The clouds sit above the street-level camera, so a player on the ground
-// sees only the shadows pass, and the clouds themselves come into view on zoom out.
+// rises. A player at street zoom sees only the shadows pass. The clouds fade in
+// only on a far zoom out, so they never cover the POIs near the player.
 //
 // The rain is a 2D canvas over the map, because it belongs to the screen and not
 // to a place.
@@ -21,6 +21,10 @@ const FIELD: [number, number] = [60_000, 38_000]
 const CLUSTERS = 700
 const BLOBS_PER_CLUSTER = 5
 const CLOUD_ALTITUDE_M = 750
+// The clouds show in full at this zoom and below, and fade out up to the next.
+// The player's street view is zoom 16.5, a town is about 13, the island 11.
+const CLOUDS_FULL_ZOOM = 11.5
+const CLOUDS_GONE_ZOOM = 13
 // Metres per second, toward the south-west. Faster than real wind, so it reads at street zoom.
 const DRIFT: [number, number] = [-9, 5]
 
@@ -172,7 +176,8 @@ async function addCloudLayer(map: maplibregl.Map): Promise<() => void> {
       shadows.uniforms.uOpacity.value = 0.26 * (1 - 0.75 * a.night)
       const white = 1 - 0.25 * a.rain
       clouds.uniforms.uColor.value.setRGB(white * (1 - 0.72 * a.night), white * (1 - 0.66 * a.night), white * (1 - 0.48 * a.night))
-      clouds.uniforms.uOpacity.value = 0.7
+      const t = Math.min(1, Math.max(0, (CLOUDS_GONE_ZOOM - map.getZoom()) / (CLOUDS_GONE_ZOOM - CLOUDS_FULL_ZOOM)))
+      clouds.uniforms.uOpacity.value = 0.7 * t * t * (3 - 2 * t)
 
       const world = new THREE.Matrix4()
         .makeTranslation(ORIGIN.x, ORIGIN.y, 0)
