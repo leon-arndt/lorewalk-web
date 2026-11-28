@@ -357,8 +357,11 @@ function buildClaim(THREE: typeof T3, spec: ClaimFlagSpec): ClaimObjects {
   // The cloth hangs from the pole on its left edge and faces the default camera.
   const clothGeo = new THREE.PlaneGeometry(CLOTH_W, CLOTH_H, CLOTH_SEGMENTS, 1)
   clothGeo.translate(CLOTH_W / 2 + 0.02, 0, 0)
+  // Lit alone, the stamp red reads as maroon on the parchment map. The glow
+  // keeps it bright by day and at night, and the light still shades the wave.
   const cloth = new THREE.Mesh(clothGeo, new THREE.MeshLambertMaterial({
-    color: new THREE.Color(stamp), side: THREE.DoubleSide, flatShading: true,
+    color: new THREE.Color(stamp), emissive: new THREE.Color(stamp), emissiveIntensity: 0.9,
+    side: THREE.DoubleSide, flatShading: true,
   }))
   cloth.position.y = FLAG_POLE_HEIGHT - CLOTH_H / 2 - 0.04
   flag.add(cloth)
